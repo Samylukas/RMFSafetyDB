@@ -3,198 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>General Department of Safety and Compliance</title>
-  
-  <link rel="manifest" href="manifest.json">
+  <title>الإدارة العامة للسلامة والمطابقة</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --primary: #003366; 
-      --secondary: #f39c12; 
-      --bg-color: #e9ecef;
-      --card-bg: #ffffff;
+      --primary: #003366; --secondary: #f39c12; --bg-color: #e9ecef; --card-bg: #ffffff;
+      --val-e: #28a745; --val-g: #ffc107; --val-p: #dc3545; --val-n: #6c757d; --val-b: #1a2a6c;
     }
+    body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    body { 
-      font-family: 'Cairo', sans-serif; 
-      margin: 0; 
-      background-color: var(--bg-color); 
-      overflow-x: hidden; 
-    }
+    /* Header */
+    .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .header img.main-logo, .header img.dept-logo { height: 90px; }
+    .header-titles { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
+    .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
     
-    /* ---------------- Splash Screen ---------------- */
-    #splash-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-      background: #ffffff; display: flex; justify-content: center; align-items: center; 
-      z-index: 9999; transition: opacity 1s ease-out;
-    }
-    
-    .splash-logo { 
-      width: 400px; 
-      animation: cinematicReveal 3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    }
-    
-    @keyframes cinematicReveal {
-      0% { transform: scale(2.5); filter: blur(20px); opacity: 0; }
-      50% { transform: scale(1.1); filter: blur(0px); opacity: 1; }
-      100% { transform: scale(1); filter: blur(0px); opacity: 1; }
-    }
-
-    /* ---------------- Login Screen ---------------- */
-    #login-screen {
-      display: none; height: 100vh; justify-content: center; align-items: center;
-      background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
-    }
-    .login-box {
-      background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;
-    }
-    .login-box img { width: 250px; margin-bottom: 25px; }
-    .input-group { margin-bottom: 20px; position: relative; }
-    .input-group i { position: absolute; right: 15px; top: 15px; color: var(--primary); }
-    .input-group input { 
-      width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; 
-      border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box;
-      transition: all 0.3s ease;
-    }
-    .input-group input:focus { border-color: var(--secondary); outline: none; box-shadow: 0 0 8px rgba(243, 156, 18, 0.3); }
-    .login-btn { 
-      width: 100%; padding: 12px; background: var(--secondary); color: #fff; 
-      border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; 
-      font-weight: 700; cursor: pointer; transition: 0.3s; 
-    }
-    .login-btn:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
-    /* ---------------- Header ---------------- */
-    .header { 
-      background: #fff; padding: 15px 40px; display: flex; 
-      justify-content: space-between; align-items: center; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-      position: sticky; top: 0; z-index: 100;
-    }
-    .header img.main-logo { height: 90px; } 
-    .header img.dept-logo { height: 90px; }
-    
-    .header-titles {
-      text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center;
-    }
-    .header-titles h1 { 
-      margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; letter-spacing: 1px;
-    }
-    .header-titles h2 { 
-      margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; 
-    }
-    
-    /* ---------------- Content Area ---------------- */
-    .content-area { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
+    .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
-    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
-    
-    /* ---------------- Departments Grid (Main) ---------------- */
-    .departments-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px;
-    }
-
-    .dept-card {
-      background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.4s ease; cursor: pointer;
-      border-bottom: 5px solid transparent;
-    }
-    
-    .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
-    
-    .dept-icon { font-size: 4.5rem; margin-bottom: 20px; transition: transform 0.4s; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .icon-safety { background-image: linear-gradient(45deg, #007bff, #00d2ff); }
-    .icon-fire { background-image: linear-gradient(45deg, #ff416c, #ff4b2b); }
-    .icon-health { background-image: linear-gradient(45deg, #11998e, #38ef7d); }
-    .icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
-    
-    .dept-card:hover .dept-icon { transform: scale(1.15); }
-    
-    .dept-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 0; line-height: 1.2; }
-    .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; font-family: 'Segoe UI', Tahoma, sans-serif;}
-
-    /* ---------------- Sub-Menu Grid (Airport Safety) ---------------- */
-    .submenu-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 10px;
-    }
-    
-    .sub-card {
-      background: #fff; border-radius: 15px; padding: 25px 15px; text-align: center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;
-      border: 1px solid #eee; position: relative; overflow: hidden;
-    }
-    
-    /* علامة مميزة للملفات (PDFs) */
-    .pdf-badge {
-      position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white;
-      font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: bold;
-    }
-
-    .sub-card:hover { transform: translateY(-5px); border-color: var(--secondary); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-    
-    .sub-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; transition: 0.3s; }
-    .sub-card:hover .sub-icon { color: var(--secondary); transform: scale(1.1); }
-    
-    .sub-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin: 0; line-height: 1.3; }
-    .sub-subtitle { font-size: 0.9rem; color: #888; margin-top: 5px; font-family: 'Segoe UI', sans-serif;}
-
-    /* Back Button */
-    .back-btn {
-      display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px;
-      border-radius: 30px; text-decoration: none; font-size: 1.2rem; font-weight: 700;
-      cursor: pointer; border: none; margin-bottom: 30px; transition: 0.3s;
-    }
+    /* Buttons & Nav */
+    .back-btn { display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; border: none; margin-bottom: 20px; transition: 0.3s; }
     .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
     .back-btn i { margin-left: 8px; }
 
-    /* Scroll Buttons */
-    .scroll-btn {
-      position: fixed; right: 25px; background: var(--secondary); color: #fff; 
-      border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; 
-      cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000;
-      display: flex; justify-content: center; align-items: center; transition: 0.3s;
-    }
-    .scroll-btn:hover { transform: scale(1.1); background: var(--primary); }
-    #scrollTop { bottom: 90px; }
-    #scrollBottom { bottom: 20px; }
+    /* Captain Survey Specific Styles */
+    .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+    
+    /* Tabs */
+    .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
+    .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--secondary); background: #fff; }
+    .tab-btn i { margin-left: 10px; }
+    .tab-content { padding: 30px; display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.4s; }
 
-    /* Containers */
-    #main-dashboard, #airport-safety-dashboard { display: none; }
+    /* Form Styles */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
+    
+    /* Evaluation Grid */
+    .eval-section { margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px; }
+    .eval-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .eval-card { background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+    .eval-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.9rem; }
+    .radio-group { display: flex; gap: 5px; }
+    .radio-group label { flex: 1; text-align: center; padding: 8px 0; background: #fff; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: 0.2s; color:#555;}
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group input[type="radio"][value="Excellent"]:checked + label { background: var(--val-e); color: white; border-color: var(--val-e); }
+    .radio-group input[type="radio"][value="Good"]:checked + label { background: var(--val-g); color: black; border-color: var(--val-g); }
+    .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
+    .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
+    .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
+
+    .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
+    .submit-btn:hover { background: var(--secondary); color: #000; }
+
+    /* Reports Styles */
+    .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; }
+    .report-filters button { background: var(--secondary); color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; }
+    
+    .report-table-wrapper { overflow-x: auto; margin-bottom: 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; background: #fff; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; }
+    th { background: var(--primary); color: white; padding: 12px; text-align: center; border: 1px solid #ddd; }
+    td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+    
+    /* Vertical text for table headers */
+    .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 120px; white-space: nowrap; padding: 5px !important; }
+    
+    .badge { display: inline-block; width: 25px; height: 25px; line-height: 25px; text-align: center; font-weight: bold; color: white; border-radius: 4px; }
+    .b-e { background: var(--val-e); } .b-g { background: var(--val-g); color: black; } 
+    .b-p { background: var(--val-p); } .b-n { background: var(--val-n); } .b-b { background: var(--val-b); }
+
+    /* Summary Matrix Colors */
+    .sum-e { background: var(--val-e); color: white; font-weight: bold; font-size: 1.1rem; }
+    .sum-g { background: var(--val-g); color: black; font-weight: bold; font-size: 1.1rem;}
+    .sum-p { background: var(--val-p); color: white; font-weight: bold; font-size: 1.1rem;}
+    .sum-n { background: var(--val-n); color: white; font-weight: bold; font-size: 1.1rem;}
+    .sum-b { background: var(--val-b); color: white; font-weight: bold; font-size: 1.1rem;}
+
+    #captain-survey-section { display: block; } /* المعروض حالياً لغرض المعاينة */
   </style>
 </head>
 <body>
 
-  <!-- Splash Screen -->
-  <div id="splash-screen">
-    <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-  </div>
-
-  <!-- Login Screen -->
-  <div id="login-screen">
-    <div class="login-box">
-      <img src="LOGO-removebg-preview (1).png" alt="Logo">
-      <h3 style="margin-top:0; color: var(--primary); font-weight: 900;">تسجيل الدخول</h3>
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="input-group">
-          <i class="fa-solid fa-user"></i>
-          <input type="text" id="username" placeholder="اسم المستخدم" required>
-        </div>
-        <div class="input-group">
-          <i class="fa-solid fa-lock"></i>
-          <input type="password" id="password" placeholder="كلمة المرور" required>
-        </div>
-        <button type="submit" class="login-btn" id="loginBtn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-        <p id="loginError" style="color:red; font-size:14px; display:none; margin-top: 10px; font-weight:bold;"></p>
-      </form>
-    </div>
-  </div>
-
-  <!-- Header (Shared) -->
-  <div class="header" id="app-header" style="display: none;">
+  <div class="header">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
       <h1>General Department of Safety and Compliance</h1>
@@ -203,142 +99,237 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
-  <!-- Main Dashboard (الإدارات المركزية) -->
-  <div id="main-dashboard" class="content-area">
-    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
-    
-    <div class="departments-grid">
-      <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
-        <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
-        <h3 class="dept-title">إدارة سلامة المطارات</h3>
-        <div class="dept-subtitle">Airport Safety Department</div>
+  <div id="captain-survey-section" class="content-area">
+    <button class="back-btn" onclick="alert('سيعود للقائمة السابقة')"><i class="fa-solid fa-arrow-right"></i> إدارة سلامة المطارات</button>
+    <h1 style="color: var(--primary); text-align: center;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
+
+    <div class="survey-container">
+      <!-- Tabs Header -->
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
+        <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير والإحصائيات</button>
       </div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
-        <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
-        <h3 class="dept-title">الحماية المدنية</h3>
-        <div class="dept-subtitle">Civil Defense</div>
+
+      <!-- Tab 1: Data Entry -->
+      <div id="tab-entry" class="tab-content active">
+        <form id="surveyForm" onsubmit="submitSurvey(event)">
+          <h3 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px;">Basic Flight Information</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" id="airline" required></div>
+            <div class="form-group"><label>Flight NO</label><input type="text" id="fltNo" required></div>
+            <div class="form-group"><label>Aircraft Type</label><input type="text" id="acType" required></div>
+            <div class="form-group"><label>Registration (REG)</label><input type="text" id="reg"></div>
+            <div class="form-group"><label>Date</label><input type="date" id="date" required></div>
+            <div class="form-group"><label>Time</label><input type="time" id="time"></div>
+          </div>
+
+          <div class="eval-section">
+            <h3 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px;">Safety Evaluation Criteria</h3>
+            <div class="eval-grid" id="criteria-container">
+              <!-- سيتم توليد أزرار التقييم هنا بواسطة الجافاسكربت -->
+            </div>
+          </div>
+
+          <div class="eval-section">
+            <div class="form-group">
+              <label>Captain Comments (ملاحظات الكابتن)</label>
+              <input type="text" id="comments" placeholder="اكتب ملاحظات الكابتن هنا..." style="height: 60px;">
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitSurveyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
+          <p id="surveyMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
       </div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
-        <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
-        <h3 class="dept-title">السلامة والصحة المهنية</h3>
-        <div class="dept-subtitle">Occupational Safety & Health</div>
-      </div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
-        <i class="fa-solid fa-dove dept-icon icon-nature"></i>
-        <h3 class="dept-title">البيئة والحياة البرية</h3>
-        <div class="dept-subtitle">Environment & Wildlife</div>
+
+      <!-- Tab 2: Reports -->
+      <div id="tab-report" class="tab-content">
+        <div class="report-filters">
+          <div class="form-group" style="flex: 1;"><label>من تاريخ (From):</label><input type="date" id="fromDate"></div>
+          <div class="form-group" style="flex: 1;"><label>إلى تاريخ (To):</label><input type="date" id="toDate"></div>
+          <button onclick="generateReport()"><i class="fa-solid fa-filter"></i> استخراج التقرير</button>
+        </div>
+
+        <div id="report-results" style="display: none;">
+          <!-- 1. الجدول الملون -->
+          <h3 style="color: var(--primary);">1. Survey Detailed Report</h3>
+          <div class="report-table-wrapper">
+            <table>
+              <thead>
+                <tr id="report-th-row">
+                  <th>Airline NAME</th><th>FltNO</th><th>Type</th><th>DateTime</th><th>REG</th>
+                  <!-- سيتم إضافة العناوين العمودية هنا -->
+                </tr>
+              </thead>
+              <tbody id="report-tbody">
+                <!-- Data goes here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 2. مصفوفة الإحصائيات -->
+          <h3 style="color: var(--primary);">2. Summary Matrix</h3>
+          <div class="report-table-wrapper">
+            <table>
+              <thead id="matrix-th-row">
+                <tr><th>Evaluation</th><!-- العناوين العمودية --></tr>
+              </thead>
+              <tbody id="matrix-tbody">
+                <!-- Matrix goes here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 3. جدول الملاحظات -->
+          <h3 style="color: var(--primary);">3. Captain Comments</h3>
+          <div class="report-table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Airline NAME</th><th>FLTNO</th><th>Type</th><th>DateTime</th><th>REG</th><th style="text-align: left;">Captain Comments</th></tr>
+              </thead>
+              <tbody id="comments-tbody">
+                <!-- Comments go here -->
+              </tbody>
+            </table>
+          </div>
+          
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Airport Safety Dashboard (شاشة سلامة المطارات) -->
-  <div id="airport-safety-dashboard" class="content-area">
-    <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
-    <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
-    
-    <div class="submenu-grid">
-      <!-- Forms / Data Tables -->
-      <div class="sub-card" onclick="openForm('Captain Survey')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
-      <div class="sub-card" onclick="openForm('Monthly Report')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-      <div class="sub-card" onclick="openForm('FOD')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
-      <div class="sub-card" onclick="openForm('Quarter Inspection')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarter Inspection EMAAS & Total</div></div>
-      <div class="sub-card" onclick="openForm('SMS')"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
-      <div class="sub-card" onclick="openForm('SPI')"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">SPI 2026</div></div>
-      <div class="sub-card" onclick="openForm('Risk Assessment')"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
-      <div class="sub-card" onclick="openForm('Hazard Log')"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
-
-      <!-- PDF Documents / Archives (تم تمييزها بعلامة PDF وربطها بدالة الأرشيف) -->
-      <div class="sub-card" onclick="openPdfArchive('Airport Safety Forms')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-file-pdf sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms</div></div>
-      <div class="sub-card" onclick="openPdfArchive('Engine Test')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحرك</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
-      <div class="sub-card" onclick="openPdfArchive('ACM')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
-      <div class="sub-card" onclick="openPdfArchive('Safety Bulletins')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-bullhorn sub-icon"></i><h3 class="sub-title">نشرات السلامة</h3><div class="sub-subtitle">Safety Bulletins</div></div>
-      <div class="sub-card" onclick="openPdfArchive('LVP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-eye-low-vision sub-icon"></i><h3 class="sub-title">الرؤية المنخفضة</h3><div class="sub-subtitle">LVP</div></div>
-      <div class="sub-card" onclick="openPdfArchive('HEMA AIP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-map-location-dot sub-icon"></i><h3 class="sub-title">دليل الطيران</h3><div class="sub-subtitle">HEMA AIP</div></div>
-      <div class="sub-card" onclick="openPdfArchive('AEP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3><div class="sub-subtitle">AEP</div></div>
-      <div class="sub-card" onclick="openPdfArchive('Leakage Procedures')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-droplet sub-icon"></i><h3 class="sub-title">إجراءات التسريب</h3><div class="sub-subtitle">Leakage Procedures</div></div>
-      <div class="sub-card" onclick="openPdfArchive('RST')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-road sub-icon"></i><h3 class="sub-title">فريق سلامة المدرج</h3><div class="sub-subtitle">RST 2025</div></div>
-      <div class="sub-card" onclick="openPdfArchive('SAG')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-users-gear sub-icon"></i><h3 class="sub-title">مجموعة عمل السلامة</h3><div class="sub-subtitle">SAG 2026</div></div>
-    </div>
-  </div>
-
-  <!-- Scroll Buttons -->
-  <button id="scrollTop" class="scroll-btn" title="للأعلى" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
-  <button id="scrollBottom" class="scroll-btn" title="للأسفل" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxuTsB9LgiNe5BBs7EWSyJ6I2d0P3Z_6Lb5exbkYYjYNxOUNl1euKFF2izH9Oq0fqr3/exec";
+    // قائمة معايير التقييم كما وردت في الصور
+    const criteriaList = [
+      "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33", 
+      "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", 
+      "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", 
+      "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", 
+      "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", 
+      "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", 
+      "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"
+    ];
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed: ', err));
+    // بناء نموذج التقييم (Data Entry) ديناميكياً
+    function buildEvaluationForm() {
+      const container = document.getElementById('criteria-container');
+      criteriaList.forEach((crit, index) => {
+        const safeName = "crit_" + index;
+        container.innerHTML += `
+          <div class="eval-card">
+            <div class="eval-title">${crit}</div>
+            <div class="radio-group">
+              <input type="radio" id="${safeName}_e" name="${safeName}" value="Excellent" checked>
+              <label for="${safeName}_e">E</label>
+              
+              <input type="radio" id="${safeName}_g" name="${safeName}" value="Good">
+              <label for="${safeName}_g">G</label>
+              
+              <input type="radio" id="${safeName}_p" name="${safeName}" value="Poor">
+              <label for="${safeName}_p">P</label>
+              
+              <input type="radio" id="${safeName}_n" name="${safeName}" value="N/A">
+              <label for="${safeName}_n">N/A</label>
+              
+              <input type="radio" id="${safeName}_b" name="${safeName}" value="Blank">
+              <label for="${safeName}_b">Blank</label>
+            </div>
+          </div>
+        `;
       });
     }
 
-    // Splash Screen Timer
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.getElementById('splash-screen').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('splash-screen').style.display = 'none';
-          document.getElementById('login-screen').style.display = 'flex';
-        }, 1000); 
-      }, 2500); 
-    });
+    // التبديل بين التبويبات (إدخال / تقارير)
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('btn-' + tab).classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
 
-    // Login Logic
-    async function handleLogin(e) {
+    // محاكاة إرسال البيانات
+    function submitSurvey(e) {
       e.preventDefault();
-      const btn = document.getElementById('loginBtn');
-      const err = document.getElementById('loginError');
+      const btn = document.getElementById('submitSurveyBtn');
+      const msg = document.getElementById('surveyMsg');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
       
-      btn.innerHTML = 'جاري التحقق... <i class="fa-solid fa-spinner fa-spin"></i>';
-      err.style.display = 'none';
+      // هنا يتم جمع البيانات وإرسالها لجوجل شيت لاحقاً
+      setTimeout(() => {
+        msg.style.color = "green";
+        msg.innerText = "تم حفظ بيانات الاستبيان بنجاح في قاعدة البيانات!";
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        document.getElementById('surveyForm').reset();
+      }, 1500);
+    }
+
+    // محاكاة توليد التقرير بناءً على التواريخ
+    function generateReport() {
+      const from = document.getElementById('fromDate').value;
+      const to = document.getElementById('toDate').value;
       
-      const payload = {
-        username: document.getElementById('username').value,
-        password: document.getElementById('password').value
-      };
-
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-        
-        if(result.status === "success") {
-          document.getElementById('login-screen').style.display = 'none';
-          document.getElementById('app-header').style.display = 'flex';
-          openSection('main-dashboard');
-        } else {
-          err.innerText = result.message;
-          err.style.display = 'block';
-        }
-      } catch (error) {
-        err.innerText = "خطأ في الاتصال بالسيرفر.";
-        err.style.display = 'block';
-      } finally {
-        btn.innerHTML = 'دخول <i class="fa-solid fa-arrow-right-to-bracket"></i>';
-      }
+      if(!from || !to) { alert("برجاء تحديد التاريخ (من) و (إلى)"); return; }
+      
+      document.getElementById('report-results').style.display = 'block';
+      buildReportHeaders();
+      mockReportData();
     }
 
-    // Navigation Between Sections
-    function openSection(sectionId) {
-      document.getElementById('main-dashboard').style.display = 'none';
-      document.getElementById('airport-safety-dashboard').style.display = 'none';
-      document.getElementById(sectionId).style.display = 'block';
-      window.scrollTo({top: 0, behavior: 'smooth'});
+    // بناء عناوين الجداول العمودية في التقارير
+    function buildReportHeaders() {
+      const tr1 = document.getElementById('report-th-row');
+      const tr2 = document.getElementById('matrix-th-row').firstElementChild;
+      
+      // مسح العناوين القديمة لو تم التوليد مرتين
+      while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
+      while(tr2.children.length > 1) tr2.removeChild(tr2.lastChild);
+
+      criteriaList.forEach(crit => {
+        tr1.innerHTML += `<th class="vertical-th">${crit}</th>`;
+        tr2.innerHTML += `<th class="vertical-th">${crit}</th>`;
+      });
     }
 
-    // دوال الأزرار
-    function openForm(formName) {
-      alert("جاري التجهيز لفتح شاشة الإدخال والتقارير الخاصة بـ: " + formName);
+    // تعبئة بيانات وهمية للتقارير لعرض التصميم المبهر
+    function mockReportData() {
+      // 1. الجدول الملون
+      const tbody1 = document.getElementById('report-tbody');
+      tbody1.innerHTML = `
+        <tr>
+          <td style="font-weight:bold;">ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td>
+          ${criteriaList.map((c,i) => i==8?'<td class="b-g">G</td>':i>26?'<td class="b-b">B</td>':'<td class="b-e">E</td>').join('')}
+        </tr>
+        <tr>
+          <td style="font-weight:bold;">AIRMALTA</td><td>W4 6179</td><td>A-320</td><td>03/08/2026 10:55</td><td>9HAEL</td>
+          ${criteriaList.map((c,i) => i==2?'<td class="b-g">G</td>':i>26?'<td class="b-b">B</td>':'<td class="b-e">E</td>').join('')}
+        </tr>
+        <tr>
+          <td style="font-weight:bold;">NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td>
+          ${criteriaList.map((c,i) => i==1?'<td class="b-n">N</td>':i==18?'<td class="b-p">P</td>':i>26?'<td class="b-b">B</td>':'<td class="b-g">G</td>').join('')}
+        </tr>
+      `;
+
+      // 2. مصفوفة الإحصائيات
+      const tbody2 = document.getElementById('matrix-tbody');
+      tbody2.innerHTML = `
+        <tr><td class="sum-e">Excellent</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*10+5)}</td>`).join('')}</tr>
+        <tr><td class="sum-g">Good</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*15)}</td>`).join('')}</tr>
+        <tr><td class="sum-p">Poor</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*3)}</td>`).join('')}</tr>
+        <tr><td class="sum-n">N/A</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*2)}</td>`).join('')}</tr>
+        <tr><td class="sum-b">Blank</td>${criteriaList.map((c,i)=>i>26?`<td>22</td>`:`<td>0</td>`).join('')}</tr>
+      `;
+
+      // 3. جدول الملاحظات
+      document.getElementById('comments-tbody').innerHTML = `
+        <tr><td style="font-weight:bold;">EDELWIESS</td><td>WK 150</td><td>A-320</td><td>13/08/2026 9:30</td><td>HBIJV</td><td style="text-align:left;">(PAPI), Hardely Visible.</td></tr>
+        <tr><td style="font-weight:bold;">ENTERAIR</td><td>E4 4141</td><td>B737-800</td><td>15/08/2026 11:30</td><td>SPENL</td><td style="text-align:left;">(Ground Handling), sometimes we wait too long for push back.</td></tr>
+      `;
     }
 
-    function openPdfArchive(docName) {
-      alert("أرشيف الملفات: سيتم فتح شاشة تعرض سجل التعديلات (تواريخ رفع الملفات) لـ " + docName + "\nمع إمكانية تحميل أحدث نسخة أو رفع نسخة جديدة.");
-    }
+    // تهيئة النموذج عند تحميل الصفحة
+    window.onload = () => {
+      buildEvaluationForm();
+    };
   </script>
 </body>
 </html>
