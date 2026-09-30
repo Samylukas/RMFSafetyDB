@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الإدارة العامة للسلامة والمطابقة</title>
+  <title>General Department of Safety and Compliance</title>
   
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -69,20 +69,29 @@
 
     /* ---------------- Header ---------------- */
     .header { 
-      background: #fff; padding: 20px 40px; display: flex; 
+      background: #fff; padding: 15px 40px; display: flex; 
       justify-content: space-between; align-items: center; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
       position: sticky; top: 0; z-index: 100;
     }
     .header img.main-logo { height: 90px; } 
     .header img.dept-logo { height: 90px; }
-    .header h2 { margin: 0; color: var(--primary); font-size: 2.5rem; font-weight: 900; text-align: center; flex: 1; }
+    
+    .header-titles {
+      text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center;
+    }
+    .header-titles h1 { 
+      margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; letter-spacing: 1px;
+    }
+    .header-titles h2 { 
+      margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; 
+    }
     
     /* ---------------- Content Area ---------------- */
     .content-area { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
-    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 50px; font-weight: 900; font-size: 2.2rem; }
+    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
     /* ---------------- Departments Grid (Main) ---------------- */
     .departments-grid {
@@ -116,9 +125,15 @@
     .sub-card {
       background: #fff; border-radius: 15px; padding: 25px 15px; text-align: center;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;
-      border: 1px solid #eee;
+      border: 1px solid #eee; position: relative; overflow: hidden;
     }
     
+    /* علامة مميزة للملفات (PDFs) */
+    .pdf-badge {
+      position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white;
+      font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: bold;
+    }
+
     .sub-card:hover { transform: translateY(-5px); border-color: var(--secondary); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     
     .sub-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; transition: 0.3s; }
@@ -136,7 +151,7 @@
     .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
     .back-btn i { margin-left: 8px; }
 
-    /* Scroll to Top/Bottom */
+    /* Scroll Buttons */
     .scroll-btn {
       position: fixed; right: 25px; background: var(--secondary); color: #fff; 
       border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; 
@@ -181,7 +196,10 @@
   <!-- Header (Shared) -->
   <div class="header" id="app-header" style="display: none;">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
-    <h2>الإدارة العامة للسلامة والمطابقة</h2>
+    <div class="header-titles">
+      <h1>General Department of Safety and Compliance</h1>
+      <h2>الإدارة العامة للسلامة والمطابقة</h2>
+    </div>
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
@@ -190,28 +208,21 @@
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     
     <div class="departments-grid">
-      <!-- 1. سلامة المطارات -->
       <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
         <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
         <h3 class="dept-title">إدارة سلامة المطارات</h3>
         <div class="dept-subtitle">Airport Safety Department</div>
       </div>
-
-      <!-- 2. الحماية المدنية -->
       <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
         <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
         <h3 class="dept-title">الحماية المدنية</h3>
         <div class="dept-subtitle">Civil Defense</div>
       </div>
-
-      <!-- 3. السلامة والصحة المهنية -->
       <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
         <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
         <h3 class="dept-title">السلامة والصحة المهنية</h3>
         <div class="dept-subtitle">Occupational Safety & Health</div>
       </div>
-
-      <!-- 4. البيئة ومكافحة الحياة البرية -->
       <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
         <i class="fa-solid fa-dove dept-icon icon-nature"></i>
         <h3 class="dept-title">البيئة والحياة البرية</h3>
@@ -223,31 +234,30 @@
   <!-- Airport Safety Dashboard (شاشة سلامة المطارات) -->
   <div id="airport-safety-dashboard" class="content-area">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
-    <h1 class="welcome-text" style="margin-bottom: 20px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
+    <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     
     <div class="submenu-grid">
-      <!-- Items from the provided image -->
-      <div class="sub-card" onclick="alert('فتح: استبيان الكابتن')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
-      <div class="sub-card"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-      <div class="sub-card"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
-      <div class="sub-card"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarter Inspection EMAAS & Total</div></div>
-      <div class="sub-card"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
-      <div class="sub-card"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">SPI 2026</div></div>
-      <div class="sub-card"><i class="fa-solid fa-car-side sub-icon"></i><h3 class="sub-title">دورة القيادة بالساحة</h3><div class="sub-subtitle">Airside Driving Course 2023</div></div>
-      <div class="sub-card"><i class="fa-solid fa-file-signature sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms 2023</div></div>
-      <div class="sub-card"><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
-      <div class="sub-card"><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحركات</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
-      <div class="sub-card"><i class="fa-solid fa-envelope-open-text sub-icon"></i><h3 class="sub-title">طلبات سلطة الطيران</h3><div class="sub-subtitle">ECAA Request 2023</div></div>
-      <div class="sub-card"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
-      <div class="sub-card"><i class="fa-solid fa-bullhorn sub-icon"></i><h3 class="sub-title">نشرات السلامة</h3><div class="sub-subtitle">Safety Bulletins</div></div>
-      <div class="sub-card"><i class="fa-solid fa-eye-low-vision sub-icon"></i><h3 class="sub-title">الرؤية المنخفضة</h3><div class="sub-subtitle">LVP</div></div>
-      <div class="sub-card"><i class="fa-solid fa-map-location-dot sub-icon"></i><h3 class="sub-title">دليل الطيران</h3><div class="sub-subtitle">HEMA AIP</div></div>
-      <div class="sub-card"><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3><div class="sub-subtitle">AEP</div></div>
-      <div class="sub-card"><i class="fa-solid fa-droplet sub-icon"></i><h3 class="sub-title">إجراءات التسريب</h3><div class="sub-subtitle">Leakage Procedures</div></div>
-      <div class="sub-card"><i class="fa-solid fa-road sub-icon"></i><h3 class="sub-title">فريق سلامة المدرج</h3><div class="sub-subtitle">RST 2025</div></div>
-      <div class="sub-card"><i class="fa-solid fa-users-gear sub-icon"></i><h3 class="sub-title">مجموعة عمل السلامة</h3><div class="sub-subtitle">SAG 2026</div></div>
-      <div class="sub-card"><i class="fa-solid fa-folder-open sub-icon"></i><h3 class="sub-title">أخرى</h3><div class="sub-subtitle">Others</div></div>
-      <div class="sub-card"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
+      <!-- Forms / Data Tables -->
+      <div class="sub-card" onclick="openForm('Captain Survey')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
+      <div class="sub-card" onclick="openForm('Monthly Report')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
+      <div class="sub-card" onclick="openForm('FOD')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
+      <div class="sub-card" onclick="openForm('Quarter Inspection')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarter Inspection EMAAS & Total</div></div>
+      <div class="sub-card" onclick="openForm('SMS')"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
+      <div class="sub-card" onclick="openForm('SPI')"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">SPI 2026</div></div>
+      <div class="sub-card" onclick="openForm('Risk Assessment')"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
+      <div class="sub-card" onclick="openForm('Hazard Log')"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
+
+      <!-- PDF Documents / Archives (تم تمييزها بعلامة PDF وربطها بدالة الأرشيف) -->
+      <div class="sub-card" onclick="openPdfArchive('Airport Safety Forms')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-file-pdf sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms</div></div>
+      <div class="sub-card" onclick="openPdfArchive('Engine Test')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحرك</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
+      <div class="sub-card" onclick="openPdfArchive('ACM')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
+      <div class="sub-card" onclick="openPdfArchive('Safety Bulletins')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-bullhorn sub-icon"></i><h3 class="sub-title">نشرات السلامة</h3><div class="sub-subtitle">Safety Bulletins</div></div>
+      <div class="sub-card" onclick="openPdfArchive('LVP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-eye-low-vision sub-icon"></i><h3 class="sub-title">الرؤية المنخفضة</h3><div class="sub-subtitle">LVP</div></div>
+      <div class="sub-card" onclick="openPdfArchive('HEMA AIP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-map-location-dot sub-icon"></i><h3 class="sub-title">دليل الطيران</h3><div class="sub-subtitle">HEMA AIP</div></div>
+      <div class="sub-card" onclick="openPdfArchive('AEP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3><div class="sub-subtitle">AEP</div></div>
+      <div class="sub-card" onclick="openPdfArchive('Leakage Procedures')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-droplet sub-icon"></i><h3 class="sub-title">إجراءات التسريب</h3><div class="sub-subtitle">Leakage Procedures</div></div>
+      <div class="sub-card" onclick="openPdfArchive('RST')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-road sub-icon"></i><h3 class="sub-title">فريق سلامة المدرج</h3><div class="sub-subtitle">RST 2025</div></div>
+      <div class="sub-card" onclick="openPdfArchive('SAG')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-users-gear sub-icon"></i><h3 class="sub-title">مجموعة عمل السلامة</h3><div class="sub-subtitle">SAG 2026</div></div>
     </div>
   </div>
 
@@ -315,13 +325,19 @@
 
     // Navigation Between Sections
     function openSection(sectionId) {
-      // إخفاء كل الأقسام
       document.getElementById('main-dashboard').style.display = 'none';
       document.getElementById('airport-safety-dashboard').style.display = 'none';
-      
-      // إظهار القسم المطلوب
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    // دوال الأزرار
+    function openForm(formName) {
+      alert("جاري التجهيز لفتح شاشة الإدخال والتقارير الخاصة بـ: " + formName);
+    }
+
+    function openPdfArchive(docName) {
+      alert("أرشيف الملفات: سيتم فتح شاشة تعرض سجل التعديلات (تواريخ رفع الملفات) لـ " + docName + "\nمع إمكانية تحميل أحدث نسخة أو رفع نسخة جديدة.");
     }
   </script>
 </body>
