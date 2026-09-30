@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة السلامة والمطابقة</title>
+  
+  <!-- ربط ملف الـ PWA -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- خط كايرو -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- مكتبة الأيقونات (FontAwesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #004080; /* أزرق كحلي */
+      --secondary: #e6b800; /* أصفر ذهبي */
+      --bg: #f4f7f6;
+    }
+    
+    body { 
+      font-family: 'Cairo', sans-serif; 
+      margin: 0; 
+      background-color: var(--bg); 
+      overflow-x: hidden; 
+    }
+    
+    /* ---------------- Splash Screen ---------------- */
+    #splash-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+      background: #ffffff;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      z-index: 9999; transition: opacity 1s ease-out;
+    }
+    .splash-logo { width: 320px; position: relative; z-index: 2; }
+    
+    /* حركة الطائرة */
+    .flying-plane {
+      position: absolute; color: var(--primary); font-size: 2.5rem; z-index: 3;
+      animation: flyAround 3.5s ease-in-out forwards;
+      opacity: 0;
+    }
+    @keyframes flyAround {
+      0% { transform: translate(-150vw, 50vh) rotate(45deg) scale(2); opacity: 1; }
+      50% { transform: translate(10vw, -30vh) rotate(90deg) scale(1.5); }
+      75% { transform: translate(40vw, 10vh) rotate(135deg) scale(1.2); }
+      100% { transform: translate(calc(30vw + 10px), calc(50vh - 60px)) rotate(15deg) scale(0); opacity: 0; }
+    }
+
+    /* ---------------- Login Screen ---------------- */
+    #login-screen {
+      display: none; height: 100vh; justify-content: center; align-items: center;
+      background: linear-gradient(135deg, #004080 0%, #001a33 100%);
+    }
+    .login-box {
+      background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 380px;
+    }
+    .login-box img { width: 220px; margin-bottom: 25px; }
+    .input-group { margin-bottom: 20px; position: relative; }
+    .input-group i { position: absolute; right: 15px; top: 15px; color: #888; }
+    .input-group input { 
+      width: 100%; padding: 12px 40px 12px 12px; border: 1px solid #ccc; 
+      border-radius: 8px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    .input-group input:focus { border-color: var(--primary); outline: none; }
+    .login-btn { 
+      width: 100%; padding: 12px; background: var(--primary); color: white; 
+      border: none; border-radius: 8px; font-size: 16px; font-family: 'Cairo'; 
+      font-weight: bold; cursor: pointer; transition: 0.3s; 
+    }
+    .login-btn:hover { background: var(--secondary); color: #000; }
+
+    /* ---------------- Main Dashboard ---------------- */
+    #main-dashboard { display: none; padding-bottom: 80px; }
+    .header { 
+      background: #fff; padding: 10px 20px; display: flex; 
+      justify-content: space-between; align-items: center; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    }
+    .header img.main-logo { height: 60px; }
+    .header img.dept-logo { height: 70px; }
+    .header h2 { margin: 0; color: var(--primary); font-size: 1.5rem; text-align: center; flex: 1; }
+    
+    /* Navigation Arrows (أول، سابق، لاحق، أخير) */
+    .nav-controls { 
+      display: flex; justify-content: center; gap: 15px; margin: 25px 0; 
+      background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      max-width: 400px; margin-left: auto; margin-right: auto;
+    }
+    .nav-btn { 
+      background: #f4f7f6; color: var(--primary); border: 1px solid #ddd; 
+      padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 18px;
+    }
+    .nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    
+    /* Scroll to Top/Bottom Buttons */
+    .scroll-btn {
+      position: fixed; right: 20px; background: var(--secondary); color: #000; 
+      border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 20px; 
+      cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 1000;
+      display: flex; justify-content: center; align-items: center; transition: 0.3s;
+    }
+    .scroll-btn:hover { transform: scale(1.1); background: var(--primary); color: #fff; }
+    #scrollTop { bottom: 80px; }
+    #scrollBottom { bottom: 20px; }
+
+    .content-area { padding: 20px; min-height: 150vh; max-width: 1200px; margin: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <i class="fa-solid fa-plane flying-plane"></i>
+    <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
+  </div>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div class="login-box">
+      <img src="LOGO-removebg-preview (1).png" alt="Logo">
+      <h3 style="margin-top:0; color: var(--primary);">تسجيل الدخول</h3>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="input-group">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="username" placeholder="اسم المستخدم" required>
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="password" placeholder="كلمة المرور" required>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">دخول <i class="fa-solid fa-right-to-bracket"></i></button>
+        <p id="loginError" style="color:red; font-size:14px; display:none; margin-top: 10px;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="main-dashboard">
+    <div class="header">
+      <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
+      <h2 id="dept-title">إدارة سلامة المطارات</h2>
+      <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Dept Logo">
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="nav-controls">
+      <button class="nav-btn" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
+      <button class="nav-btn" title="السابق"><i class="fa-solid fa-angle-right"></i></button>
+      <button class="nav-btn" title="اللاحق"><i class="fa-solid fa-angle-left"></i></button>
+      <button class="nav-btn" title="الأخير"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <div class="content-area">
+      <h3 style="text-align: center; color: var(--primary);">مرحباً بك في لوحة التحكم</h3>
+      <p style="text-align: center; color: #666;">جاري التجهيز لعرض بيانات الجداول هنا...</p>
+      <div style="height: 1000px; border: 2px dashed #ccc; border-radius: 10px; display:flex; justify-content:center; align-items:center; color:#999;">
+        (مساحة تجريبية لاختبار أزرار الصعود والهبوط)
+      </div>
+    </div>
+
+    <!-- Scroll Buttons -->
+    <button id="scrollTop" class="scroll-btn" title="للأعلى" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
+    <button id="scrollBottom" class="scroll-btn" title="للأسفل" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
+  </div>
+
+  <script>
+    // الرابط الذي قمت بإنشائه من Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbxuTsB9LgiNe5BBs7EWSyJ6I2d0P3Z_6Lb5exbkYYjYNxOUNl1euKFF2izH9Oq0fqr3/exec";
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed: ', err));
+      });
+    }
+
+    // Splash Screen Timer
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('splash-screen').style.display = 'none';
+          document.getElementById('login-screen').style.display = 'flex';
+        }, 1000); // الانتظار حتى يختفي ببطء
+      }, 3500); // وقت ظهور السبلاش سكرين (متوافق مع حركة الطائرة)
+    });
+
+    // Login Logic
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      
+      btn.innerHTML = 'جاري التحقق... <i class="fa-solid fa-spinner fa-spin"></i>';
+      btn.style.opacity = "0.7";
+      err.style.display = 'none';
+      
+      const payload = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if(result.status === "success") {
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('main-dashboard').style.display = 'block';
+          
+          // تغيير العنوان بناءً على إدارة المستخدم
+          if(result.department === "AirportSafety") {
+            document.getElementById('dept-title').innerText = "إدارة سلامة المطارات";
+          } else if(result.department === "CivilDefense") {
+            document.getElementById('dept-title').innerText = "الحماية المدنية";
+          } else {
+            document.getElementById('dept-title').innerText = result.department;
+          }
+        } else {
+          err.innerText = result.message; // رسالة الباسوورد الغلط
+          err.style.display = 'block';
+        }
+      } catch (error) {
+        err.innerText = "خطأ في الاتصال بالسيرفر، تأكد من الإنترنت.";
+        err.style.display = 'block';
+      } finally {
+        btn.innerHTML = 'دخول <i class="fa-solid fa-right-to-bracket"></i>';
+        btn.style.opacity = "1";
+      }
+    }
+  </script>
+</body>
+</html>
