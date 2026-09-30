@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام إدارة السلامة والمطابقة</title>
+  <title>الإدارة العامة للسلامة والمطابقة</title>
   
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -11,8 +11,8 @@
   
   <style>
     :root {
-      --primary: #003366; /* أزرق داكن فخم */
-      --secondary: #f39c12; /* برتقالي/ذهبي مطابق للوجو */
+      --primary: #003366; 
+      --secondary: #f39c12; 
       --bg-color: #e9ecef;
       --card-bg: #ffffff;
     }
@@ -24,7 +24,7 @@
       overflow-x: hidden; 
     }
     
-    /* ---------------- Splash Screen (Cinematic Reveal) ---------------- */
+    /* ---------------- Splash Screen ---------------- */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: #ffffff; display: flex; justify-content: center; align-items: center; 
@@ -33,7 +33,6 @@
     
     .splash-logo { 
       width: 400px; 
-      /* تأثير الدخول السينمائي للوجو */
       animation: cinematicReveal 3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
     
@@ -72,30 +71,20 @@
     #main-dashboard { display: none; padding-bottom: 80px; }
     
     .header { 
-      background: #fff; padding: 15px 30px; display: flex; 
+      background: #fff; padding: 20px 40px; display: flex; 
       justify-content: space-between; align-items: center; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
       position: sticky; top: 0; z-index: 100;
     }
-    .header img.main-logo { height: 50px; }
-    .header h2 { margin: 0; color: var(--primary); font-size: 1.8rem; font-weight: 900; }
+    /* تكبير اللوجوهات */
+    .header img.main-logo { height: 90px; } 
+    .header img.dept-logo { height: 90px; }
+    /* تكبير وتوسيط العنوان */
+    .header h2 { margin: 0; color: var(--primary); font-size: 2.5rem; font-weight: 900; text-align: center; flex: 1; }
     
-    /* أزرار التنقل (اعتمدناها) */
-    .nav-controls { 
-      display: flex; justify-content: center; gap: 15px; margin: 30px auto; 
-      background: #fff; padding: 15px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-      width: fit-content;
-    }
-    .nav-btn { 
-      background: var(--bg-color); color: var(--primary); border: none; 
-      width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
-      transition: all 0.3s ease; font-size: 18px; display: flex; justify-content: center; align-items: center;
-    }
-    .nav-btn:hover { background: var(--primary); color: #fff; transform: scale(1.1); }
-
-    /* ---------------- لوحة الإدارات (الكروت المودرن) ---------------- */
-    .content-area { padding: 20px; max-width: 1200px; margin: auto; min-height: 150vh; }
-    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2rem; }
+    /* ---------------- لوحة الإدارات (الكروت الملونة) ---------------- */
+    .content-area { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 100vh; }
+    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 50px; font-weight: 900; font-size: 2rem; }
     
     .departments-grid {
       display: grid;
@@ -130,18 +119,16 @@
     }
     .dept-card:hover::before { opacity: 1; }
 
-    .dept-icon {
-      font-size: 3.5rem;
-      margin-bottom: 20px;
-      background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      transition: transform 0.4s;
-    }
-    .dept-card:hover .dept-icon { transform: scale(1.1); }
+    /* ألوان مخصصة لكل إدارة */
+    .dept-icon { font-size: 4rem; margin-bottom: 20px; transition: transform 0.4s; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .icon-safety { background-image: linear-gradient(45deg, #007bff, #00d2ff); }
+    .icon-fire { background-image: linear-gradient(45deg, #ff416c, #ff4b2b); }
+    .icon-health { background-image: linear-gradient(45deg, #11998e, #38ef7d); }
+    .icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
 
-    .dept-title { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin: 0; }
-    .dept-desc { font-size: 0.9rem; color: #777; margin-top: 10px; }
+    .dept-card:hover .dept-icon { transform: scale(1.15); }
+    .dept-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 0; }
+    .dept-desc { font-size: 1rem; color: #777; margin-top: 10px; }
 
     /* Scroll to Top/Bottom */
     .scroll-btn {
@@ -188,16 +175,8 @@
     <!-- Header -->
     <div class="header">
       <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
-      <h2>نظام إدارة السلامة</h2>
-      <img src="wmremove-transformed-removebg-preview.png" class="main-logo" alt="Safety Logo">
-    </div>
-
-    <!-- Navigation Buttons -->
-    <div class="nav-controls">
-      <button class="nav-btn" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
-      <button class="nav-btn" title="السابق"><i class="fa-solid fa-angle-right"></i></button>
-      <button class="nav-btn" title="اللاحق"><i class="fa-solid fa-angle-left"></i></button>
-      <button class="nav-btn" title="الأخير"><i class="fa-solid fa-angles-left"></i></button>
+      <h2>الإدارة العامة للسلامة والمطابقة</h2>
+      <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
     </div>
 
     <!-- Dashboard Content -->
@@ -207,28 +186,28 @@
       <div class="departments-grid">
         <!-- 1. سلامة المطارات -->
         <div class="dept-card" onclick="openDepartment('AirportSafety')">
-          <i class="fa-solid fa-plane-circle-check dept-icon"></i>
+          <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
           <h3 class="dept-title">إدارة سلامة المطارات</h3>
           <p class="dept-desc">إدارة وتتبع سجلات وحوادث وعمليات الطيران</p>
         </div>
 
         <!-- 2. الحماية المدنية -->
         <div class="dept-card" onclick="openDepartment('CivilDefense')">
-          <i class="fa-solid fa-fire-extinguisher dept-icon"></i>
+          <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
           <h3 class="dept-title">الحماية المدنية</h3>
           <p class="dept-desc">التعامل مع الطوارئ والحرائق وتأمين المنشآت</p>
         </div>
 
         <!-- 3. السلامة والصحة المهنية -->
         <div class="dept-card" onclick="openDepartment('OccupationalSafety')">
-          <i class="fa-solid fa-hard-hat dept-icon"></i>
+          <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
           <h3 class="dept-title">السلامة والصحة المهنية</h3>
           <p class="dept-desc">تأمين بيئة العمل وسلامة العاملين بالمطار</p>
         </div>
 
         <!-- 4. البيئة ومكافحة الحياة البرية -->
         <div class="dept-card" onclick="openDepartment('Wildlife')">
-          <i class="fa-solid fa-dove dept-icon"></i>
+          <i class="fa-solid fa-dove dept-icon icon-nature"></i>
           <h3 class="dept-title">البيئة والحياة البرية</h3>
           <p class="dept-desc">مكافحة الطيور والحفاظ على البيئة المحيطة</p>
         </div>
@@ -300,7 +279,6 @@
     // التنقل بين الإدارات
     function openDepartment(deptCode) {
       alert("جاري تجهيز واجهة: " + deptCode + "\nسيتم ربطها بالجداول قريباً!");
-      // هنا سنقوم بربط كل كارت بالشاشة الخاصة به في الخطوة القادمة
     }
   </script>
 </body>
