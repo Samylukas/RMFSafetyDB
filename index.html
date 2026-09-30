@@ -8,14 +8,13 @@
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- مكتبة تصدير الـ PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     :root {
       --primary: #003366; --secondary: #f39c12; --bg-color: #e9ecef; --card-bg: #ffffff;
-      --val-e: #28a745; --val-g: #ffc107; --val-p: #dc3545; --val-n: #6c757d; --val-b: #1a2a6c;
+      /* ألوان التقرير الدقيقة */
+      --val-e: #28a745; --val-g: #ffc107; --val-p: #dc3545; --val-n: #a9a9a9; --val-b: #1a2a6c;
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
@@ -44,10 +43,10 @@
     .login-box img { width: 250px; margin-bottom: 25px; }
     .input-group { margin-bottom: 20px; position: relative; }
     .input-group i { position: absolute; right: 15px; top: 15px; color: var(--primary); }
-    .input-group input { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; transition: 0.3s; }
+    .input-group input { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
     .input-group input:focus { border-color: var(--secondary); outline: none; }
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .login-btn:hover { background: var(--primary); transform: translateY(-2px); }
+    .login-btn:hover { background: var(--primary); }
 
     /* Header */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
@@ -56,7 +55,7 @@
     .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
     .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
     
-    .content-area { padding: 40px 20px; max-width: 1300px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
+    .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
@@ -85,13 +84,12 @@
     /* Buttons */
     .back-btn { display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; border: none; margin-bottom: 20px; transition: 0.3s; }
     .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
-    .back-btn i { margin-left: 8px; }
     .scroll-btn { position: fixed; right: 25px; background: var(--secondary); color: #fff; border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
     .scroll-btn:hover { transform: scale(1.1); background: var(--primary); }
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
-    /* Captain Survey Styles */
+    /* Captain Survey Tab System */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -107,7 +105,7 @@
     .eval-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
     .eval-card { background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
     .eval-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-size: 0.9rem; }
-    .radio-group { display: flex; gap: 5px; }
+    .radio-group { display: flex; gap: 5px; direction: ltr; }
     .radio-group label { flex: 1; text-align: center; padding: 8px 0; background: #fff; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: bold; color:#555;}
     .radio-group input[type="radio"] { display: none; }
     .radio-group input[type="radio"][value="Excellent"]:checked + label { background: var(--val-e); color: white; border-color: var(--val-e); }
@@ -118,24 +116,31 @@
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
-    /* Reports Styles (LTR Layout) */
-    .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; }
+    /* ---------------- Reports Styles (LTR Perfect Match) ---------------- */
+    .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
     
-    /* إجبار الجداول على اتجاه من اليسار لليمين */
     .ltr-container { direction: ltr; text-align: left; }
-    .report-table-wrapper { overflow-x: auto; margin-bottom: 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); background: #fff; padding: 10px;}
-    .ltr-container table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; }
-    .ltr-container th { background: var(--primary); color: white; padding: 10px; text-align: center; border: 1px solid #ccc; }
-    .ltr-container td { padding: 8px; border: 1px solid #ccc; text-align: center; font-weight: 600; }
-    .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; padding: 5px !important; }
+    .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
     
-    .b-e { background: var(--val-e); color: white; } 
-    .b-g { background: var(--val-g); color: black; } 
-    .b-p { background: var(--val-p); color: white; } 
-    .b-n { background: var(--val-n); color: white; } 
-    .b-b { background: var(--val-b); color: white; }
+    /* Perfect Table Styling */
+    .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
+    .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
+    .report-table th { background-color: #f2f2f2; font-weight: bold; }
+    
+    .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
+    
+    /* Exact Colors */
+    .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
+    .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
+    .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
+    .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
+    .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
+    
+    .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
+    .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
+    .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
 
     /* Sections Control */
     #main-dashboard, #airport-safety-dashboard, #captain-survey-section, #app-header { display: none; }
@@ -156,8 +161,7 @@
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="username" placeholder="اسم المستخدم" required></div>
         <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="password" placeholder="كلمة المرور" required></div>
-        <button type="submit" class="login-btn" id="loginBtn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-        <p id="loginError" style="color:red; font-size:14px; display:none; margin-top: 10px; font-weight:bold;"></p>
+        <button type="submit" class="login-btn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
       </form>
     </div>
   </div>
@@ -190,14 +194,12 @@
     <div class="submenu-grid">
       <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
       <div class="sub-card"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-      <!-- باقي الكروت يمكن إضافتها هنا كما كانت -->
       <div class="sub-card"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
     </div>
   </div>
 
   <!-- Captain Survey Section -->
   <div id="captain-survey-section" class="content-area">
-    <!-- تم إصلاح زر الرجوع هنا ليعود للوحة سلامة المطارات -->
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
@@ -208,6 +210,7 @@
         <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير والإحصائيات</button>
       </div>
 
+      <!-- Tab 1: Entry -->
       <div id="tab-entry" class="tab-content active">
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
@@ -220,44 +223,114 @@
           </div>
           <div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div>
           <div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><input type="text" id="comments" style="height: 60px;"></div></div>
-          <button type="submit" class="submit-btn" id="submitSurveyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
+          <button type="submit" class="submit-btn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
         </form>
       </div>
 
-      <!-- Tab Report (تم تحويله لـ LTR) -->
+      <!-- Tab 2: Perfect LTR Report -->
       <div id="tab-report" class="tab-content ltr-container">
-        <div class="report-filters" style="direction: rtl;">
-          <div class="form-group" style="flex: 1;"><label>من تاريخ (From):</label><input type="date" id="fromDate"></div>
-          <div class="form-group" style="flex: 1;"><label>إلى تاريخ (To):</label><input type="date" id="toDate"></div>
-          <button onclick="generateReport()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;"><i class="fa-solid fa-filter"></i> استخراج</button>
+        <div class="report-filters">
           <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
+          <div class="form-group"><label>إلى (To):</label><input type="date" id="toDate"></div>
+          <div class="form-group"><label>من (From):</label><input type="date" id="fromDate"></div>
+          <button onclick="document.getElementById('printable-report').style.display='block';" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">عرض التقرير</button>
         </div>
 
+        <!-- المنطقة الجاهزة للطباعة والـ PDF -->
         <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: var(--primary); margin:0;">Safety Captain Survey Report</h2>
-            <h3 style="color: var(--secondary); margin:5px 0;">Generated Report</h3>
-          </div>
+          
+          <div class="report-title">Safety Captain Survey Report</div>
+          <div class="report-subtitle">For August</div>
 
-          <h3 style="color: var(--primary);">1. Survey Detailed Report</h3>
-          <div class="report-table-wrapper">
-            <table>
+          <div class="report-wrapper">
+            <table class="report-table">
               <thead>
-                <tr id="report-th-row">
-                  <!-- LTR Order -->
-                  <th>Airline NAME</th><th>FltNO</th><th>Type</th><th>DateTime</th><th>REG</th>
+                <tr>
+                  <th rowspan="2">Airline NAME</th><th rowspan="2">FltNO</th><th rowspan="2">Type</th><th rowspan="2">DateTime</th><th rowspan="2">REG</th>
+                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
+                  <th rowspan="2">Captain Comments</th>
                 </tr>
               </thead>
-              <tbody id="report-tbody"></tbody>
+              <tbody>
+                <tr>
+                  <td>ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>AIRMALTA</td><td>W4 6179</td><td>A-320</td><td>03/08/2026 10:55</td><td>9HAEL</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>HelloJets</td><td>H3 321</td><td>B737-800</td><td>03/08/2026 12:00</td><td>7RHLC</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>NEOSAIR</td><td>NO 1374</td><td>B737-800</td><td>03/08/2026 12:10</td><td>INEOT</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>NEOSAIR</td><td>NO 2542</td><td>B737-900</td><td>04/08/2026 10:30</td><td>EIHIM</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>SMARTWINGS</td><td>E4 7987</td><td>B737-800</td><td>04/08/2026 13:15</td><td>OMGEX</td>
+                  <td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>BLUEPANORAMA</td><td>H3 121</td><td>B737-800</td><td>05/08/2026 11:40</td><td>9HAMW</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>EGYPTAIR</td><td>MS 184</td><td>B737-800</td><td>06/08/2026 7:45</td><td>SUGEK</td>
+                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>SkyLine Express</td><td>QU 5174</td><td>B737-800</td><td>06/08/2026 10:00</td><td>URSLH</td>
+                  <td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+                <tr>
+                  <td>NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td>
+                  <td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-p">P</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="report-wrapper" style="width: 70%;">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
+                </tr>
+              </thead>
+              <tbody>
+                 <tr>
+                   <td class="bg-e">Excellent</td>
+                   <td>10</td><td>10</td><td>9</td><td>9</td><td>6</td><td>6</td><td>5</td><td>10</td><td>9</td><td>9</td><td>11</td><td>13</td><td>15</td><td>14</td><td>14</td><td>13</td><td>9</td><td>9</td><td>8</td><td>10</td><td>10</td><td>9</td><td>8</td><td>9</td><td>10</td><td>10</td><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                 </tr>
+                 <tr>
+                   <td class="bg-g">Good</td>
+                   <td>10</td><td>10</td><td>13</td><td>10</td><td>13</td><td>13</td><td>11</td><td>12</td><td>13</td><td>12</td><td>11</td><td>9</td><td>7</td><td>8</td><td>8</td><td>8</td><td>13</td><td>11</td><td>12</td><td>12</td><td>12</td><td>11</td><td>13</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                 </tr>
+                 <tr>
+                   <td class="bg-p">Poor</td>
+                   <td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                 </tr>
+                 <tr>
+                   <td class="bg-n">N/A</td>
+                   <td>0</td><td>2</td><td>0</td><td>3</td><td>2</td><td>2</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                 </tr>
+                 <tr>
+                   <td class="bg-b">Blank</td>
+                   <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>22</td><td>22</td><td>22</td><td>22</td>
+                 </tr>
+              </tbody>
             </table>
           </div>
           
-          <h3 style="color: var(--primary);">2. Summary Matrix</h3>
-          <div class="report-table-wrapper">
-            <table>
-              <thead id="matrix-th-row"><tr><th>Evaluation</th></tr></thead>
-              <tbody id="matrix-tbody"></tbody>
-            </table>
+          <div class="report-footer">
+            Total of survey been held on August are 22
           </div>
         </div>
       </div>
@@ -268,18 +341,7 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
-    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
-
-    // LTR Criteria List matching the image perfectly
-    const criteriaList = [
-      "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33", 
-      "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", 
-      "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", 
-      "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", 
-      "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", 
-      "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", 
-      "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"
-    ];
+    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
     window.onload = () => {
       buildEvaluationForm();
@@ -292,12 +354,11 @@
       }, 2500);
     };
 
-    async function handleLogin(e) {
+    function handleLogin(e) {
       e.preventDefault();
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-header').style.display = 'flex';
       openSection('main-dashboard');
-      // يمكنك إعادة تفعيل كود الاتصال بالسيرفر هنا لاحقاً
     }
 
     function openSection(sectionId) {
@@ -319,7 +380,7 @@
         container.innerHTML += `
           <div class="eval-card">
             <div class="eval-title">${crit}</div>
-            <div class="radio-group" style="direction: ltr;">
+            <div class="radio-group">
               <input type="radio" id="c${index}_e" name="c${index}" value="Excellent" checked><label for="c${index}_e">E</label>
               <input type="radio" id="c${index}_g" name="c${index}" value="Good"><label for="c${index}_g">G</label>
               <input type="radio" id="c${index}_p" name="c${index}" value="Poor"><label for="c${index}_p">P</label>
@@ -330,48 +391,15 @@
       });
     }
 
-    function generateReport() {
-      document.getElementById('printable-report').style.display = 'block';
-      buildReportHeaders();
-      mockReportData();
-    }
-
-    function buildReportHeaders() {
-      const tr1 = document.getElementById('report-th-row');
-      const tr2 = document.getElementById('matrix-th-row').firstElementChild;
-      while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
-      while(tr2.children.length > 1) tr2.removeChild(tr2.lastChild);
-      criteriaList.forEach(crit => {
-        tr1.innerHTML += `<th class="vertical-th">${crit}</th>`;
-        tr2.innerHTML += `<th class="vertical-th">${crit}</th>`;
-      });
-    }
-
-    function mockReportData() {
-      const tbody1 = document.getElementById('report-tbody');
-      tbody1.innerHTML = `
-        <tr><td style="text-align:left;">ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td>
-        ${criteriaList.map((c,i) => i==8?'<td class="b-g">G</td>':i>26?'<td class="b-b">B</td>':'<td class="b-e">E</td>').join('')}</tr>
-        <tr><td style="text-align:left;">NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td>
-        ${criteriaList.map((c,i) => i==1?'<td class="b-n">N</td>':i==18?'<td class="b-p">P</td>':i>26?'<td class="b-b">B</td>':'<td class="b-g">G</td>').join('')}</tr>
-      `;
-      const tbody2 = document.getElementById('matrix-tbody');
-      tbody2.innerHTML = `
-        <tr><td class="b-e">Excellent</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*10+5)}</td>`).join('')}</tr>
-        <tr><td class="b-g">Good</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*15)}</td>`).join('')}</tr>
-        <tr><td class="b-p">Poor</td>${criteriaList.map(()=>`<td>${Math.floor(Math.random()*3)}</td>`).join('')}</tr>
-      `;
-    }
-
-    // دالة تصدير الـ PDF
     function exportToPDF() {
       const element = document.getElementById('printable-report');
+      element.style.display = 'block';
       const opt = {
         margin:       0.2,
-        filename:     'Captain_Survey_Report.pdf',
+        filename:     'Captain_Survey_August_Report.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' } // عرضي ليستوعب كل الأعمدة
+        jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
       };
       html2pdf().set(opt).from(element).save();
     }
