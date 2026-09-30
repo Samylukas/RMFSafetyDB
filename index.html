@@ -67,68 +67,74 @@
     }
     .login-btn:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-    /* ---------------- Main Dashboard ---------------- */
-    #main-dashboard { display: none; padding-bottom: 80px; }
-    
+    /* ---------------- Header ---------------- */
     .header { 
       background: #fff; padding: 20px 40px; display: flex; 
       justify-content: space-between; align-items: center; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
       position: sticky; top: 0; z-index: 100;
     }
-    /* تكبير اللوجوهات */
     .header img.main-logo { height: 90px; } 
     .header img.dept-logo { height: 90px; }
-    /* تكبير وتوسيط العنوان */
     .header h2 { margin: 0; color: var(--primary); font-size: 2.5rem; font-weight: 900; text-align: center; flex: 1; }
     
-    /* ---------------- لوحة الإدارات (الكروت الملونة) ---------------- */
-    .content-area { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 100vh; }
-    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 50px; font-weight: 900; font-size: 2rem; }
+    /* ---------------- Content Area ---------------- */
+    .content-area { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
+    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 50px; font-weight: 900; font-size: 2.2rem; }
+    
+    /* ---------------- Departments Grid (Main) ---------------- */
     .departments-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 30px;
-      padding: 20px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px;
     }
 
     .dept-card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
+      background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.4s ease; cursor: pointer;
       border-bottom: 5px solid transparent;
     }
     
-    .dept-card::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, rgba(243, 156, 18, 0.1) 0%, rgba(0, 51, 102, 0.05) 100%);
-      opacity: 0; transition: opacity 0.4s;
-    }
-
-    .dept-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      border-bottom: 5px solid var(--secondary);
-    }
-    .dept-card:hover::before { opacity: 1; }
-
-    /* ألوان مخصصة لكل إدارة */
-    .dept-icon { font-size: 4rem; margin-bottom: 20px; transition: transform 0.4s; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
+    
+    .dept-icon { font-size: 4.5rem; margin-bottom: 20px; transition: transform 0.4s; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .icon-safety { background-image: linear-gradient(45deg, #007bff, #00d2ff); }
     .icon-fire { background-image: linear-gradient(45deg, #ff416c, #ff4b2b); }
     .icon-health { background-image: linear-gradient(45deg, #11998e, #38ef7d); }
     .icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
-
+    
     .dept-card:hover .dept-icon { transform: scale(1.15); }
-    .dept-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 0; }
-    .dept-desc { font-size: 1rem; color: #777; margin-top: 10px; }
+    
+    .dept-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 0; line-height: 1.2; }
+    .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; font-family: 'Segoe UI', Tahoma, sans-serif;}
+
+    /* ---------------- Sub-Menu Grid (Airport Safety) ---------------- */
+    .submenu-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 10px;
+    }
+    
+    .sub-card {
+      background: #fff; border-radius: 15px; padding: 25px 15px; text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;
+      border: 1px solid #eee;
+    }
+    
+    .sub-card:hover { transform: translateY(-5px); border-color: var(--secondary); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    
+    .sub-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; transition: 0.3s; }
+    .sub-card:hover .sub-icon { color: var(--secondary); transform: scale(1.1); }
+    
+    .sub-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin: 0; line-height: 1.3; }
+    .sub-subtitle { font-size: 0.9rem; color: #888; margin-top: 5px; font-family: 'Segoe UI', sans-serif;}
+
+    /* Back Button */
+    .back-btn {
+      display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px;
+      border-radius: 30px; text-decoration: none; font-size: 1.2rem; font-weight: 700;
+      cursor: pointer; border: none; margin-bottom: 30px; transition: 0.3s;
+    }
+    .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
+    .back-btn i { margin-left: 8px; }
 
     /* Scroll to Top/Bottom */
     .scroll-btn {
@@ -141,6 +147,8 @@
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
+    /* Containers */
+    #main-dashboard, #airport-safety-dashboard { display: none; }
   </style>
 </head>
 <body>
@@ -170,54 +178,82 @@
     </div>
   </div>
 
-  <!-- Main Dashboard -->
-  <div id="main-dashboard">
-    <!-- Header -->
-    <div class="header">
-      <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
-      <h2>الإدارة العامة للسلامة والمطابقة</h2>
-      <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
-    </div>
+  <!-- Header (Shared) -->
+  <div class="header" id="app-header" style="display: none;">
+    <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
+    <h2>الإدارة العامة للسلامة والمطابقة</h2>
+    <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
+  </div>
 
-    <!-- Dashboard Content -->
-    <div class="content-area">
-      <h1 class="welcome-text">الرئيسية - الإدارات المركزية</h1>
-      
-      <div class="departments-grid">
-        <!-- 1. سلامة المطارات -->
-        <div class="dept-card" onclick="openDepartment('AirportSafety')">
-          <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
-          <h3 class="dept-title">إدارة سلامة المطارات</h3>
-          <p class="dept-desc">إدارة وتتبع سجلات وحوادث وعمليات الطيران</p>
-        </div>
+  <!-- Main Dashboard (الإدارات المركزية) -->
+  <div id="main-dashboard" class="content-area">
+    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
+    
+    <div class="departments-grid">
+      <!-- 1. سلامة المطارات -->
+      <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
+        <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
+        <h3 class="dept-title">إدارة سلامة المطارات</h3>
+        <div class="dept-subtitle">Airport Safety Department</div>
+      </div>
 
-        <!-- 2. الحماية المدنية -->
-        <div class="dept-card" onclick="openDepartment('CivilDefense')">
-          <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
-          <h3 class="dept-title">الحماية المدنية</h3>
-          <p class="dept-desc">التعامل مع الطوارئ والحرائق وتأمين المنشآت</p>
-        </div>
+      <!-- 2. الحماية المدنية -->
+      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
+        <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
+        <h3 class="dept-title">الحماية المدنية</h3>
+        <div class="dept-subtitle">Civil Defense</div>
+      </div>
 
-        <!-- 3. السلامة والصحة المهنية -->
-        <div class="dept-card" onclick="openDepartment('OccupationalSafety')">
-          <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
-          <h3 class="dept-title">السلامة والصحة المهنية</h3>
-          <p class="dept-desc">تأمين بيئة العمل وسلامة العاملين بالمطار</p>
-        </div>
+      <!-- 3. السلامة والصحة المهنية -->
+      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
+        <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
+        <h3 class="dept-title">السلامة والصحة المهنية</h3>
+        <div class="dept-subtitle">Occupational Safety & Health</div>
+      </div>
 
-        <!-- 4. البيئة ومكافحة الحياة البرية -->
-        <div class="dept-card" onclick="openDepartment('Wildlife')">
-          <i class="fa-solid fa-dove dept-icon icon-nature"></i>
-          <h3 class="dept-title">البيئة والحياة البرية</h3>
-          <p class="dept-desc">مكافحة الطيور والحفاظ على البيئة المحيطة</p>
-        </div>
+      <!-- 4. البيئة ومكافحة الحياة البرية -->
+      <div class="dept-card" onclick="alert('جاري تجهيز القسم')">
+        <i class="fa-solid fa-dove dept-icon icon-nature"></i>
+        <h3 class="dept-title">البيئة والحياة البرية</h3>
+        <div class="dept-subtitle">Environment & Wildlife</div>
       </div>
     </div>
-
-    <!-- Scroll Buttons -->
-    <button id="scrollTop" class="scroll-btn" title="للأعلى" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
-    <button id="scrollBottom" class="scroll-btn" title="للأسفل" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
   </div>
+
+  <!-- Airport Safety Dashboard (شاشة سلامة المطارات) -->
+  <div id="airport-safety-dashboard" class="content-area">
+    <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
+    <h1 class="welcome-text" style="margin-bottom: 20px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
+    
+    <div class="submenu-grid">
+      <!-- Items from the provided image -->
+      <div class="sub-card" onclick="alert('فتح: استبيان الكابتن')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
+      <div class="sub-card"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
+      <div class="sub-card"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
+      <div class="sub-card"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarter Inspection EMAAS & Total</div></div>
+      <div class="sub-card"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
+      <div class="sub-card"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">SPI 2026</div></div>
+      <div class="sub-card"><i class="fa-solid fa-car-side sub-icon"></i><h3 class="sub-title">دورة القيادة بالساحة</h3><div class="sub-subtitle">Airside Driving Course 2023</div></div>
+      <div class="sub-card"><i class="fa-solid fa-file-signature sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms 2023</div></div>
+      <div class="sub-card"><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
+      <div class="sub-card"><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحركات</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
+      <div class="sub-card"><i class="fa-solid fa-envelope-open-text sub-icon"></i><h3 class="sub-title">طلبات سلطة الطيران</h3><div class="sub-subtitle">ECAA Request 2023</div></div>
+      <div class="sub-card"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
+      <div class="sub-card"><i class="fa-solid fa-bullhorn sub-icon"></i><h3 class="sub-title">نشرات السلامة</h3><div class="sub-subtitle">Safety Bulletins</div></div>
+      <div class="sub-card"><i class="fa-solid fa-eye-low-vision sub-icon"></i><h3 class="sub-title">الرؤية المنخفضة</h3><div class="sub-subtitle">LVP</div></div>
+      <div class="sub-card"><i class="fa-solid fa-map-location-dot sub-icon"></i><h3 class="sub-title">دليل الطيران</h3><div class="sub-subtitle">HEMA AIP</div></div>
+      <div class="sub-card"><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3><div class="sub-subtitle">AEP</div></div>
+      <div class="sub-card"><i class="fa-solid fa-droplet sub-icon"></i><h3 class="sub-title">إجراءات التسريب</h3><div class="sub-subtitle">Leakage Procedures</div></div>
+      <div class="sub-card"><i class="fa-solid fa-road sub-icon"></i><h3 class="sub-title">فريق سلامة المدرج</h3><div class="sub-subtitle">RST 2025</div></div>
+      <div class="sub-card"><i class="fa-solid fa-users-gear sub-icon"></i><h3 class="sub-title">مجموعة عمل السلامة</h3><div class="sub-subtitle">SAG 2026</div></div>
+      <div class="sub-card"><i class="fa-solid fa-folder-open sub-icon"></i><h3 class="sub-title">أخرى</h3><div class="sub-subtitle">Others</div></div>
+      <div class="sub-card"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
+    </div>
+  </div>
+
+  <!-- Scroll Buttons -->
+  <button id="scrollTop" class="scroll-btn" title="للأعلى" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
+  <button id="scrollBottom" class="scroll-btn" title="للأسفل" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxuTsB9LgiNe5BBs7EWSyJ6I2d0P3Z_6Lb5exbkYYjYNxOUNl1euKFF2izH9Oq0fqr3/exec";
@@ -263,7 +299,8 @@
         
         if(result.status === "success") {
           document.getElementById('login-screen').style.display = 'none';
-          document.getElementById('main-dashboard').style.display = 'block';
+          document.getElementById('app-header').style.display = 'flex';
+          openSection('main-dashboard');
         } else {
           err.innerText = result.message;
           err.style.display = 'block';
@@ -276,9 +313,15 @@
       }
     }
 
-    // التنقل بين الإدارات
-    function openDepartment(deptCode) {
-      alert("جاري تجهيز واجهة: " + deptCode + "\nسيتم ربطها بالجداول قريباً!");
+    // Navigation Between Sections
+    function openSection(sectionId) {
+      // إخفاء كل الأقسام
+      document.getElementById('main-dashboard').style.display = 'none';
+      document.getElementById('airport-safety-dashboard').style.display = 'none';
+      
+      // إظهار القسم المطلوب
+      document.getElementById(sectionId).style.display = 'block';
+      window.scrollTo({top: 0, behavior: 'smooth'});
     }
   </script>
 </body>
