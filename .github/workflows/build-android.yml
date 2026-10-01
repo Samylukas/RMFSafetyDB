@@ -2,7 +2,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # السطر ده بيخليك تقدر تشغل البناء بإيدك في أي وقت
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,11 +20,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
       - name: Prepare Project
         run: |
-          # تجهيز الملفات أوتوماتيكياً
           mkdir -p www
           cp index.html www/
           cp *.png www/ 2>/dev/null || true
@@ -34,7 +33,6 @@ jobs:
 
       - name: Build Android App
         run: |
-          # إنشاء تطبيق الأندرويد
           npx cap init "SafetyApp" "com.marsa.safety" --web-dir "www"
           npx cap add android
           cd android
