@@ -72,9 +72,8 @@
     .scroll-btn { position: fixed; right: 25px; background: var(--secondary); color: #fff; border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
     .scroll-btn:hover { transform: scale(1.1); background: var(--primary); }
     #scrollTop { bottom: 90px; }
-    #scrollBottom { bottom: 20px; }
 
-    /* Nav Buttons Style */
+    /* Nav Controls */
     .nav-controls { margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; gap: 15px; background: #fff; padding: 10px 20px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: fit-content; }
     .nav-btn { background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px; display: flex; justify-content: center; align-items: center; }
     .nav-btn:hover { background: var(--secondary); color: #fff; transform: scale(1.1); }
@@ -82,7 +81,7 @@
     .new-btn { background: var(--val-e); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; margin-right: 10px; }
     .new-btn:hover { background: #218838; }
 
-    /* Captain Survey */
+    /* Survey Forms */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -148,7 +147,6 @@
 </head>
 <body>
 
-  <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-content">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
@@ -157,7 +155,6 @@
     </div>
   </div>
 
-  <!-- Login Screen -->
   <div id="login-screen">
     <div class="login-box">
       <img src="LOGO-removebg-preview (1).png" alt="Logo">
@@ -177,7 +174,6 @@
     </div>
   </div>
 
-  <!-- Header -->
   <div class="header" id="app-header">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
@@ -187,7 +183,6 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
-  <!-- Main Dashboard -->
   <div id="main-dashboard" class="content-area">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
@@ -198,15 +193,11 @@
     </div>
   </div>
 
-  <!-- Airport Safety Dashboard -->
   <div id="airport-safety-dashboard" class="content-area">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <!-- استبيان الكابتن (الوحيد اللي بيفتح شاشته المخصصة) -->
       <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
-      
-      <!-- باقي الـ 19 تبويب (بيفتحوا شاشة المستندات العامة) -->
       <div class="sub-card" onclick="openGenericDoc('التقرير الشهري')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
       <div class="sub-card" onclick="openGenericDoc('الأجسام الغريبة')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
       <div class="sub-card" onclick="openGenericDoc('التفتيش الربع سنوي')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3></div>
@@ -227,7 +218,6 @@
     </div>
   </div>
 
-  <!-- Generic Document Viewer (لفتح باقي التبويبات) -->
   <div id="generic-doc-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة السلامة</button>
     <h1 class="welcome-text" id="generic-doc-title">عنوان القسم</h1>
@@ -238,12 +228,10 @@
     </div>
   </div>
 
-  <!-- Captain Survey Section -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem; margin-bottom: 5px;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
 
-    <!-- أزرار النافيجيشن -->
     <div class="nav-controls">
       <button class="new-btn" onclick="clearFormForNew()"><i class="fa-solid fa-plus"></i> إضافة جديد</button>
       <button class="nav-btn" onclick="navSurveys('first')" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
@@ -259,7 +247,6 @@
         <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير والإحصائيات</button>
       </div>
 
-      <!-- Tab 1: Entry -->
       <div id="tab-entry" class="tab-content active">
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
@@ -286,7 +273,6 @@
         </form>
       </div>
 
-      <!-- Tab 2: Reports -->
       <div id="tab-report" class="tab-content ltr-container">
         <div class="report-filters">
           <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
@@ -310,7 +296,6 @@
             </table>
           </div>
           
-          <!-- Summary Matrix -->
           <div class="report-wrapper" style="width: 80%; margin: 40px auto 0;">
              <table class="report-table">
                <thead>
@@ -325,7 +310,6 @@
     </div>
   </div>
 
-  <!-- Modal (Add New Aircraft) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -344,8 +328,8 @@
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
 
   <script>
-    // ========= ضع رابط جوجل سكربت المحدث هنا ========= 
-    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
+    // ========= استبدل هذا بالرابط الذي نسخته من حساب Gmail العادي =========
+    const API_URL = "https://script.google.com/macros/s/AKfycbyiultoDweP4fZAx01zNZznrCiEbbotO3yQSVu5UCM5D53SMvdedIC3mKLQO6ix_V1w/exec"; 
     
     let globalFleetData = []; 
     let globalSurveys = [];
@@ -354,26 +338,28 @@
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
     window.addEventListener('load', () => {
-      buildEvaluationForm();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) { registration.unregister(); }
+        });
+      }
+      try { buildEvaluationForm(); } catch (e) { console.error(e); }
+      
       setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 800); }
       }, 2000); 
     });
 
-    // ---------------- 1. نظام الدخول المحمي (Passwords) ----------------
     function handleLogin(e) {
       e.preventDefault();
-      const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
-
-      // الباسوورد الموحد حالياً لكل الحسابات هو 1234
       if(pass === "1234") {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
       } else {
-        alert("كلمة المرور غير صحيحة! (جرب 1234)");
+        alert("كلمة المرور غير صحيحة! جرب: 1234");
       }
     }
 
@@ -384,7 +370,6 @@
       if (sectionId === 'captain-survey-section') { loadAppData(); }
     }
 
-    // فتح باقي التبويبات الوهمية
     function openGenericDoc(title) {
       document.getElementById('generic-doc-title').innerText = title;
       openSection('generic-doc-section');
@@ -425,19 +410,24 @@
       autoFillAircraftData();
     }
 
-    // ---------------- 2. جلب البيانات بطريقة JSONP (تتخطى الحظر نهائياً) ----------------
-    function loadAppData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbyiultoDweP4fZAx01zNZznrCiEbbotO3yQSVu5UCM5D53SMvdedIC3mKLQO6ix_V1w/exec") return; 
+    async function loadAppData() {
+      if(API_URL.includes("YOUR_")) return; 
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل البيانات...";
       
-      const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
-      
-      window[callbackName] = function(data) {
+      try {
+        const response = await fetch(API_URL + "?action=getAppData", { redirect: 'follow' });
+        const text = await response.text();
+        
+        // لو الـ text عبارة عن كود HTML، يبقى ده حظر من جوجل بسبب الايميل
+        if(text.trim().toLowerCase().startsWith("<!doctype html>")) {
+           throw new Error("حظر من جوجل بسبب الايميل!");
+        }
+
+        const data = JSON.parse(text);
         if (data.status === "error") {
           regInput.placeholder = "خطأ: " + data.message;
         } else {
-          // تحميل الأسطول
           globalFleetData = data.fleet;
           const regList = document.getElementById('regList');
           regList.innerHTML = "";
@@ -447,23 +437,13 @@
           airlinesList.innerHTML = "";
           data.airlines.forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
           
-          // تحميل الاستبيانات للنافيجيشن
           globalSurveys = data.surveys;
           document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
-          
           regInput.placeholder = "اكتب أو اختر التسجيل...";
         }
-        delete window[callbackName];
-      };
-
-      // حقن السكربت لجلب الداتا بدون أي Cross-Origin Block
-      const script = document.createElement('script');
-      script.src = API_URL + "?action=getAppData&callback=" + callbackName;
-      script.onerror = function() {
-        regInput.placeholder = "فشل الاتصال! راجع الرابط.";
-        delete window[callbackName];
-      };
-      document.body.appendChild(script);
+      } catch (error) {
+        regInput.placeholder = "فشل الاتصال! برجاء وضع رابط حساب Gmail الشخصي.";
+      }
     }
 
     function autoFillAircraftData() {
@@ -485,7 +465,6 @@
       }
     }
 
-    // ---------------- 3. النافيجيشن (Navigation) ----------------
     function navSurveys(direction) {
       if(globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
       
@@ -564,7 +543,6 @@
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country };
       try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-        
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         globalFleetData.push({ "REG": reg, "TYPE": type, "CAR": airline });
         document.getElementById('regList').innerHTML += `<option value="${reg}">`;
@@ -603,12 +581,11 @@
 
       try {
         await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }), mode: 'no-cors' });
-        
         msg.style.color = "green"; msg.innerText = "✅ تم حفظ الاستبيان بنجاح!";
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
         btn.disabled = false;
         
-        loadAppData(); // جلب الاستبيانات الجديدة عشان تظهر في النافيجيشن والتقارير
+        loadAppData(); 
         document.getElementById('surveyForm').reset();
         autoFillAircraftData(); 
         
@@ -619,7 +596,6 @@
       }
     }
 
-    // ---------------- 5. توليد التقارير ----------------
     function generateReport() {
         document.getElementById('printable-report').style.display = 'block';
         
