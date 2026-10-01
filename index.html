@@ -15,7 +15,7 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* ---------------- 1. Splash Screen (LTR & Glowing) ---------------- */
+    /* ---------------- 1. Splash Screen ---------------- */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
@@ -24,21 +24,9 @@
     }
     .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
     .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); }
-    
-    .loading-bar-container { 
-      width: 280px; height: 6px; background: #ddd; border-radius: 6px; margin: 30px auto 0; 
-      overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .loading-bar { 
-      width: 0%; height: 100%; background: var(--secondary); 
-      box-shadow: 0 0 10px var(--secondary), 0 0 20px var(--secondary);
-      animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
-    }
-    .loading-text { 
-      margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; 
-      letter-spacing: 3px; font-family: 'Segoe UI', Tahoma, sans-serif; animation: blink 1.5s infinite; 
-    }
-
+    .loading-bar-container { width: 280px; height: 6px; background: #ddd; border-radius: 6px; margin: 30px auto 0; overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
+    .loading-bar { width: 0%; height: 100%; background: var(--secondary); box-shadow: 0 0 10px var(--secondary); animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; letter-spacing: 3px; font-family: 'Segoe UI', Tahoma, sans-serif; animation: blink 1.5s infinite; }
     @keyframes pulseLogo { 0% { transform: scale(0.98); } 100% { transform: scale(1.02); } }
     @keyframes loadProgress { 0% { width: 0%; } 30% { width: 40%; } 70% { width: 75%; } 100% { width: 100%; } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -58,7 +46,7 @@
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
-    /* ---------------- 3. Header & Navigation ---------------- */
+    /* ---------------- 3. Header ---------------- */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .header img.main-logo { height: 80px; }
     .header img.dept-logo { height: 120px; transform: scale(1.1); margin-left: 20px; } 
@@ -70,6 +58,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
+    /* ---------------- Dashboard Cards ---------------- */
     .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
     .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
     .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
@@ -97,7 +86,7 @@
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
-    /* ---------------- 4. Captain Survey Module ---------------- */
+    /* ---------------- Captain Survey ---------------- */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -130,31 +119,27 @@
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
-    /* ---------------- Modal (Add New Item) ---------------- */
+    /* Modal */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
     .close-modal { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-modal:hover { color: #000; }
 
-    /* ---------------- Reports Styles (LTR Perfect Match) ---------------- */
+    /* Reports LTR */
     .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
-    
     .ltr-container { direction: ltr; text-align: left; }
     .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
-    
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; }
     .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
-    
     .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
     .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
     .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
     .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
     .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
-    
     .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
     .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
     .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
@@ -288,7 +273,6 @@
         <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
           <div class="report-title">Safety Captain Survey Report</div>
           <div class="report-subtitle">Generated Report</div>
-
           <div class="report-wrapper">
             <table class="report-table">
               <thead>
@@ -297,9 +281,7 @@
                   <!-- Dynamic Headers -->
                 </tr>
               </thead>
-              <tbody id="report-tbody">
-                <!-- Data goes here -->
-              </tbody>
+              <tbody id="report-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -330,16 +312,27 @@
     let globalFleetData = []; 
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
-    window.onload = () => {
-      buildEvaluationForm();
+    window.addEventListener('load', () => {
+      // إجبار المتصفح على مسح الكاش القديم لو كان موجود
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) { registration.unregister(); }
+        });
+      }
+
+      try { buildEvaluationForm(); } catch (e) { console.error(e); }
+      
       setTimeout(() => {
-        document.getElementById('splash-screen').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('splash-screen').style.display = 'none';
-          document.getElementById('login-screen').style.display = 'flex';
-        }, 800); 
+        const splash = document.getElementById('splash-screen');
+        if(splash) {
+          splash.style.opacity = '0';
+          setTimeout(() => {
+            splash.style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+          }, 800);
+        }
       }, 2600); 
-    };
+    });
 
     function handleLogin(e) {
       e.preventDefault();
@@ -352,10 +345,7 @@
       document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
-      
-      if (sectionId === 'captain-survey-section') {
-        loadFleetData();
-      }
+      if (sectionId === 'captain-survey-section') { loadFleetData(); }
     }
 
     function switchTab(tab) {
@@ -382,18 +372,14 @@
       });
     }
 
-    // ---------------- Fetch Data with appropriate headers ----------------
     async function loadFleetData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbxx6bhNJGEU3FN0eLYu7aybicdCdB2e1skX_yp4SxHpSAfFBVDpBQ5XwrqddRT5fCFW/exec
-") return; 
-      
+      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // This bypasses CORS issues
           body: JSON.stringify({ action: "getFleetData" }),
           redirect: 'follow'
         });
@@ -464,14 +450,12 @@
       if(globalFleetData.some(a => String(a["REG"]).toUpperCase() === reg)) { msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return; }
 
       msg.style.color = "blue"; msg.innerText = "جاري الحفظ...";
-
       if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return;
 
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline };
       try {
         const response = await fetch(API_URL, { 
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload),
             redirect: 'follow'
         });
@@ -503,12 +487,10 @@
 
     function generateReport() {
         document.getElementById('printable-report').style.display = 'block';
-        
         const tr1 = document.getElementById('report-headers-row');
         while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
         criteriaList.forEach(crit => { tr1.innerHTML += `<th class="vertical-th">${crit}</th>`; });
         tr1.innerHTML += `<th class="vertical-th" style="height: auto;">Captain Comments</th>`;
-
         document.getElementById('report-tbody').innerHTML = "<tr><td colspan='37' style='padding: 20px; font-weight: bold; font-size: 16px;'>جاري تهيئة قاعدة البيانات لجلب التقارير الحقيقية...</td></tr>";
     }
 
