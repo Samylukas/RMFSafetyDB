@@ -15,7 +15,7 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* ---------------- 1. Splash Screen ---------------- */
+    /* ---------------- Splash Screen ---------------- */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
@@ -31,7 +31,7 @@
     @keyframes loadProgress { 0% { width: 0%; } 30% { width: 40%; } 70% { width: 75%; } 100% { width: 100%; } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-    /* ---------------- 2. Login Screen ---------------- */
+    /* ---------------- Login Screen ---------------- */
     #login-screen {
       display: none; height: 100vh; justify-content: center; align-items: center;
       background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
@@ -46,7 +46,7 @@
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
-    /* ---------------- 3. Header ---------------- */
+    /* ---------------- Header ---------------- */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .header img.main-logo { height: 80px; }
     .header img.dept-logo { height: 120px; transform: scale(1.1); margin-left: 20px; } 
@@ -97,7 +97,6 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
-    
     .input-with-btn { display: flex; gap: 5px; }
     .input-with-btn input { flex: 1; text-transform: uppercase; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
@@ -115,7 +114,6 @@
     .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
     .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
     .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
-    
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
@@ -232,6 +230,14 @@
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
 
+    <!-- Navigation Buttons -->
+    <div class="nav-controls" style="margin: 0 auto 20px; display: flex; justify-content: center; gap: 15px; background: #fff; padding: 15px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: fit-content;">
+      <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
+      <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="السابق"><i class="fa-solid fa-angle-right"></i></button>
+      <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="اللاحق"><i class="fa-solid fa-angle-left"></i></button>
+      <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="الأخير"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
     <div class="survey-container">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
@@ -273,6 +279,7 @@
         <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
           <div class="report-title">Safety Captain Survey Report</div>
           <div class="report-subtitle">Generated Report</div>
+
           <div class="report-wrapper">
             <table class="report-table">
               <thead>
@@ -281,7 +288,8 @@
                   <!-- Dynamic Headers -->
                 </tr>
               </thead>
-              <tbody id="report-tbody"></tbody>
+              <tbody id="report-tbody">
+              </tbody>
             </table>
           </div>
         </div>
@@ -345,7 +353,10 @@
       document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
-      if (sectionId === 'captain-survey-section') { loadFleetData(); }
+      
+      if (sectionId === 'captain-survey-section') {
+        loadFleetData();
+      }
     }
 
     function switchTab(tab) {
@@ -372,18 +383,15 @@
       });
     }
 
+    // ---------------- Fetch Data using GET (To avoid CORS Block) ----------------
     async function loadFleetData() {
       if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
+      
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
       try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: "getFleetData" }),
-          redirect: 'follow'
-        });
-        
+        const response = await fetch(API_URL + "?action=getFleetData");
         const data = await response.json();
         
         if (data.status === "error") {
@@ -438,6 +446,7 @@
       document.getElementById('modalMsg').innerText = "";
       document.getElementById('addModal').style.display = 'flex';
     }
+    
     function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
     async function saveNewAircraft() {
