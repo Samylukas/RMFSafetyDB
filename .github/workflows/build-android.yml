@@ -12,15 +12,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-
-      # تم حذف خطوة Setup Android SDK لتجنب التعارض
 
       - name: Install Dependencies
         run: npm install @capacitor/core @capacitor/cli @capacitor/android
