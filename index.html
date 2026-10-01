@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>General Department of Safety and Compliance</title>
-  
-  <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -17,21 +15,33 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* ---------------- 1. Splash Screen ---------------- */
+    /* ---------------- 1. Splash Screen (LTR & Glowing) ---------------- */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
       display: flex; flex-direction: column; justify-content: center; align-items: center; 
-      z-index: 9999; transition: opacity 0.8s ease-out;
+      z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; /* Force LTR */
     }
     .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
     .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); }
-    .loading-bar-container { width: 250px; height: 4px; background: #ddd; border-radius: 4px; margin-top: 30px; overflow: hidden; position: relative; }
-    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 2.5s ease-out forwards; }
-    .loading-text { margin-top: 10px; color: var(--primary); font-weight: 700; font-size: 14px; letter-spacing: 2px; font-family: 'Segoe UI', sans-serif; animation: blink 1.5s infinite; }
+    
+    .loading-bar-container { 
+      width: 280px; height: 6px; background: #ddd; border-radius: 6px; margin: 30px auto 0; 
+      overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .loading-bar { 
+      width: 0%; height: 100%; background: var(--secondary); 
+      box-shadow: 0 0 10px var(--secondary), 0 0 20px var(--secondary); /* Glowing effect */
+      animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
+    }
+    .loading-text { 
+      margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; 
+      letter-spacing: 3px; font-family: 'Segoe UI', Tahoma, sans-serif; animation: blink 1.5s infinite; 
+    }
+
     @keyframes pulseLogo { 0% { transform: scale(0.98); } 100% { transform: scale(1.02); } }
-    @keyframes loadProgress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes loadProgress { 0% { width: 0%; } 30% { width: 40%; } 70% { width: 75%; } 100% { width: 100%; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     /* ---------------- 2. Login Screen ---------------- */
     #login-screen {
@@ -48,7 +58,7 @@
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
-    /* ---------------- 3. Header & Navigation ---------------- */
+    /* ---------------- 3. Header & Cards ---------------- */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .header img.main-logo, .header img.dept-logo { height: 90px; }
     .header-titles { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
@@ -59,7 +69,6 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
-    /* ---------------- 4. Dashboard Cards ---------------- */
     .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
     .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
     .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
@@ -87,7 +96,7 @@
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
-    /* ---------------- 5. Captain Survey Module ---------------- */
+    /* ---------------- 4. Captain Survey ---------------- */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -98,7 +107,6 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
-    
     .input-with-btn { display: flex; gap: 5px; }
     .input-with-btn input { flex: 1; text-transform: uppercase; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
@@ -119,13 +127,13 @@
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
-    /* ---------------- Modal (Add New Item) ---------------- */
+    /* Modal */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
     .close-modal { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-modal:hover { color: #000; }
 
-    /* ---------------- Reports Styles (LTR Perfect Match) ---------------- */
+    /* Reports LTR */
     .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
@@ -149,6 +157,7 @@
 </head>
 <body>
 
+  <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-content">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
@@ -157,6 +166,7 @@
     </div>
   </div>
 
+  <!-- Login Screen -->
   <div id="login-screen">
     <div class="login-box">
       <img src="LOGO-removebg-preview (1).png" alt="Logo">
@@ -165,8 +175,8 @@
         <div class="input-group">
           <i class="fa-solid fa-user"></i>
           <select id="username" required>
-            <option value="" disabled selected>اختر اسم المستخدم</option>
-            <option value="admin">مدير النظام (Admin)</option>
+            <!-- Admin is now selected by default -->
+            <option value="admin" selected>مدير النظام (Admin)</option>
             <option value="safety_mgr">مدير السلامة (Safety Mgr)</option>
             <option value="safety_officer">ضابط سلامة (Safety Officer)</option>
             <option value="fire_dept">الحماية المدنية (Fire Dept)</option>
@@ -178,6 +188,7 @@
     </div>
   </div>
 
+  <!-- Header -->
   <div class="header" id="app-header">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
@@ -187,6 +198,7 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
+  <!-- Main Dashboard -->
   <div id="main-dashboard" class="content-area">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
@@ -197,7 +209,7 @@
     </div>
   </div>
 
-  <!-- التبويبات الـ 20 لسلامة المطارات -->
+  <!-- Airport Safety Dashboard -->
   <div id="airport-safety-dashboard" class="content-area">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
@@ -224,7 +236,7 @@
     </div>
   </div>
 
-  <!-- Captain Survey Section (Auto-fill matching the real Sheet headers) -->
+  <!-- Captain Survey Section -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
@@ -241,7 +253,7 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <input type="text" id="reg" list="regList" placeholder="جاري تحميل الأسطول..." oninput="autoFillAircraftData()" required autocomplete="off">
+                <input type="text" id="reg" list="regList" placeholder="جاري تحميل الأسطول..." oninput="autoFillAircraftData()" required autocomplete="off" style="text-transform: uppercase;">
                 <datalist id="regList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -252,7 +264,6 @@
             <div class="form-group"><label>Date</label><input type="date" id="date" required></div>
             <div class="form-group"><label>Time</label><input type="time" id="time"></div>
           </div>
-          
           <div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div>
           <div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><input type="text" id="comments" style="height: 60px;"></div></div>
           <button type="submit" class="submit-btn" id="submitSurveyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
@@ -260,8 +271,8 @@
         </form>
       </div>
 
-      <!-- Tab 2: Perfect LTR Report -->
       <div id="tab-report" class="tab-content ltr-container">
+        <!-- Reports Content Same As Before -->
         <div class="report-filters">
           <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
           <div class="form-group"><label>إلى (To):</label><input type="date" id="toDate"></div>
@@ -288,7 +299,6 @@
               </tbody>
             </table>
           </div>
-
           <div class="report-wrapper" style="width: 70%;">
             <table class="report-table">
               <thead>
@@ -299,9 +309,6 @@
               </thead>
               <tbody>
                  <tr><td class="bg-e">Excellent</td><td>10</td><td>10</td><td>9</td><td>9</td><td>6</td><td>6</td><td>5</td><td>10</td><td>9</td><td>9</td><td>11</td><td>13</td><td>15</td><td>14</td><td>14</td><td>13</td><td>9</td><td>9</td><td>8</td><td>10</td><td>10</td><td>9</td><td>8</td><td>9</td><td>10</td><td>10</td><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                 <tr><td class="bg-g">Good</td><td>10</td><td>10</td><td>13</td><td>10</td><td>13</td><td>13</td><td>11</td><td>12</td><td>13</td><td>12</td><td>11</td><td>9</td><td>7</td><td>8</td><td>8</td><td>8</td><td>13</td><td>11</td><td>12</td><td>12</td><td>12</td><td>11</td><td>13</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                 <tr><td class="bg-p">Poor</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                 <tr><td class="bg-n">N/A</td><td>0</td><td>2</td><td>0</td><td>3</td><td>2</td><td>2</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
                  <tr><td class="bg-b">Blank</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>22</td><td>22</td><td>22</td><td>22</td></tr>
               </tbody>
             </table>
@@ -312,7 +319,6 @@
     </div>
   </div>
 
-  <!-- Modal (Add New Aircraft) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -358,7 +364,6 @@
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
       
-      // عند فتح قسم الاستبيان يتم تحميل الأسطول
       if (sectionId === 'captain-survey-section') {
         loadFleetData();
       }
@@ -388,32 +393,23 @@
       });
     }
 
-    // ---------------- Auto-Fill & Exact Column Mapping ----------------
+    // ---------------- Fetch Data Safely using GET/Fetch ----------------
     async function loadFleetData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbxE5AA3hScOJ95vOybFzbA47fRQnh3lGvWeDDxNq5e94eXrOnZohzE9KkRSqEHojilu/exec") return; 
+      if(API_URL === "https://script.google.com/macros/s/AKfycbzOO4YSFx_OY1SsjJSh9PC9mabuPLOD7B6kUfyRQpvOVpZQToKiwqiU3liT04U9qVaE/exec") return; 
       
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
       try {
-        // استخدام POST بدل GET لحل مشاكل جوجل
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: "getFleetData" })
-        });
-        
+        const response = await fetch(API_URL + "?action=getFleetData");
         const data = await response.json();
         
-        // لو جوجل رد علينا بخطأ نعرضه
         if (data.status === "error") {
-          console.error("Server Error:", data.message);
           regInput.placeholder = "خطأ: " + data.message;
           return;
         }
         
         globalFleetData = data.fleet;
-        
         const regList = document.getElementById('regList');
         regList.innerHTML = "";
         globalFleetData.forEach(aircraft => {
@@ -427,28 +423,22 @@
           if(airline) airlinesList.innerHTML += `<option value="${airline}">`;
         });
         
-        regInput.placeholder = "اكتب أو اختر تسجيل الطائرة...";
+        regInput.placeholder = "اكتب أو اختر التسجيل...";
       } catch (error) {
-        console.error("خطأ في الاتصال:", error);
+        console.error("خطأ:", error);
         regInput.placeholder = "فشل الاتصال بالسيرفر!";
       }
     }
 
     function autoFillAircraftData() {
       let inputReg = document.getElementById('reg').value.toUpperCase();
-      
-      let foundAircraft = globalFleetData.find(a => 
-        a["REG"] && String(a["REG"]).toUpperCase() === inputReg
-      );
-
+      let foundAircraft = globalFleetData.find(a => a["REG"] && String(a["REG"]).toUpperCase() === inputReg);
       let airlineInput = document.getElementById('airline');
       let typeInput = document.getElementById('acType');
 
       if (foundAircraft) {
-        // المطابقة الدقيقة بأسماء الأعمدة في AIRLINEDATA_TBL
         airlineInput.value = foundAircraft["NAME"] || "";
         typeInput.value = foundAircraft["TYPE"] || "";
-        
         airlineInput.style.backgroundColor = "#e8f5e9";
         typeInput.style.backgroundColor = "#e8f5e9";
       } else {
@@ -466,10 +456,7 @@
       document.getElementById('modalMsg').innerText = "";
       document.getElementById('addModal').style.display = 'flex';
     }
-
-    function closeAddModal() {
-      document.getElementById('addModal').style.display = 'none';
-    }
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
     async function saveNewAircraft() {
       const reg = document.getElementById('newReg').value.toUpperCase();
@@ -478,24 +465,11 @@
       const msg = document.getElementById('modalMsg');
 
       if (!reg || !type || !airline) { msg.style.color = "red"; msg.innerText = "برجاء ملء جميع البيانات!"; return; }
-      
-      if(globalFleetData.some(a => String(a["REG"]).toUpperCase() === reg)) {
-        msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return;
-      }
+      if(globalFleetData.some(a => String(a["REG"]).toUpperCase() === reg)) { msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return; }
 
-      msg.style.color = "blue"; msg.innerText = "جاري الحفظ في الأسطول...";
+      msg.style.color = "blue"; msg.innerText = "جاري الحفظ...";
 
-      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
-        setTimeout(() => {
-          msg.style.color = "green"; msg.innerText = "تم الحفظ (محاكاة)";
-          globalFleetData.push({ "REG": reg, "TYPE": type, "NAME": airline });
-          document.getElementById('regList').innerHTML += `<option value="${reg}">`;
-          document.getElementById('reg').value = reg;
-          autoFillAircraftData();
-          setTimeout(closeAddModal, 1000);
-        }, 1000);
-        return;
-      }
+      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return;
 
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline };
       try {
@@ -509,9 +483,7 @@
           autoFillAircraftData();
           setTimeout(closeAddModal, 1200);
         }
-      } catch (error) {
-        msg.style.color = "red"; msg.innerText = "فشل الاتصال بالخادم!";
-      }
+      } catch (error) { msg.style.color = "red"; msg.innerText = "فشل الاتصال!"; }
     }
 
     function submitSurvey(e) {
@@ -521,8 +493,7 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
       
       setTimeout(() => {
-        msg.style.color = "green";
-        msg.innerText = "تم حفظ بيانات الاستبيان بنجاح في قاعدة البيانات!";
+        msg.style.color = "green"; msg.innerText = "تم حفظ بيانات الاستبيان بنجاح!";
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
         document.getElementById('surveyForm').reset();
         autoFillAircraftData(); 
@@ -532,14 +503,12 @@
     function exportToPDF() {
       const element = document.getElementById('printable-report');
       element.style.display = 'block';
-      const opt = {
-        margin:       0.2,
-        filename:     'Captain_Survey_August_Report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
-      };
-      html2pdf().set(opt).from(element).save();
+      html2pdf().set({
+        margin: 0.2, filename: 'Captain_Survey_August_Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+      }).from(element).save();
     }
   </script>
 </body>
