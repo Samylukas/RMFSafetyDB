@@ -15,7 +15,13 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; }
+    /* ---------------- Splash Screen ---------------- */
+    #splash-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+      background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr;
+    }
     .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
     .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); }
     .loading-bar-container { width: 280px; height: 6px; background: #ddd; border-radius: 6px; margin: 30px auto 0; overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
@@ -25,7 +31,11 @@
     @keyframes loadProgress { 0% { width: 0%; } 30% { width: 40%; } 70% { width: 75%; } 100% { width: 100%; } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-    #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); }
+    /* ---------------- Login Screen ---------------- */
+    #login-screen {
+      display: none; height: 100vh; justify-content: center; align-items: center;
+      background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
+    }
     .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; }
     .login-box img { width: 250px; margin-bottom: 25px; }
     .input-group { margin-bottom: 20px; position: relative; text-align: right;}
@@ -36,6 +46,7 @@
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
+    /* ---------------- Header ---------------- */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .header img.main-logo { height: 80px; }
     .header img.dept-logo { height: 120px; transform: scale(1.1); margin-left: 20px; } 
@@ -47,6 +58,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
+    /* ---------------- Dashboard Cards ---------------- */
     .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
     .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
     .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
@@ -74,6 +86,7 @@
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
+    /* ---------------- Captain Survey ---------------- */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -84,6 +97,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
+    
     .input-with-btn { display: flex; gap: 5px; }
     .input-with-btn input { flex: 1; text-transform: uppercase; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
@@ -101,29 +115,36 @@
     .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
     .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
     .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
-    .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
+    
+    .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; transition: 0.3s;}
     .submit-btn:hover { background: var(--secondary); color: #000; }
+    .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
+    /* ---------------- Modal ---------------- */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
     .close-modal { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-modal:hover { color: #000; }
 
-    /* Reports LTR */
+    /* ---------------- Reports ---------------- */
     .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
+    
     .ltr-container { direction: ltr; text-align: left; }
     .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
+    
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; }
     .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
+    
     .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
     .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
     .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
     .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
     .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
+    
     .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
     .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
     .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
@@ -133,6 +154,7 @@
 </head>
 <body>
 
+  <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-content">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
@@ -141,6 +163,7 @@
     </div>
   </div>
 
+  <!-- Login Screen -->
   <div id="login-screen">
     <div class="login-box">
       <img src="LOGO-removebg-preview (1).png" alt="Logo">
@@ -161,6 +184,7 @@
     </div>
   </div>
 
+  <!-- Header -->
   <div class="header" id="app-header">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
@@ -170,6 +194,7 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
+  <!-- Main Dashboard -->
   <div id="main-dashboard" class="content-area">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
@@ -180,6 +205,7 @@
     </div>
   </div>
 
+  <!-- Airport Safety Dashboard -->
   <div id="airport-safety-dashboard" class="content-area">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
@@ -193,6 +219,7 @@
       <div class="sub-card"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
       <div class="sub-card"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
       
+      <!-- PDF Archives -->
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-file-pdf sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms</div></div>
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحرك</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
@@ -206,11 +233,12 @@
     </div>
   </div>
 
+  <!-- Captain Survey Section -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
 
-    <!-- Navigation Buttons -->
+    <!-- أزرار النافيجيشن -->
     <div class="nav-controls" style="margin: 0 auto 20px; display: flex; justify-content: center; gap: 15px; background: #fff; padding: 15px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: fit-content;">
       <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
       <button class="nav-btn" style="background: var(--bg-color); color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 18px;" title="السابق"><i class="fa-solid fa-angle-right"></i></button>
@@ -230,7 +258,7 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <input type="text" id="reg" list="regList" placeholder="جاري التحميل..." oninput="autoFillAircraftData()" required autocomplete="off" style="text-transform: uppercase;">
+                <input type="text" id="reg" list="regList" placeholder="جاري تحميل الأسطول..." oninput="autoFillAircraftData()" required autocomplete="off" style="text-transform: uppercase;">
                 <datalist id="regList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -241,10 +269,12 @@
             <div class="form-group"><label>Date</label><input type="date" id="date" required></div>
             <div class="form-group"><label>Time</label><input type="time" id="time"></div>
           </div>
+          
           <div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div>
+          
           <div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><input type="text" id="comments" style="height: 60px;"></div></div>
           <button type="submit" class="submit-btn" id="submitSurveyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
-          <p id="surveyMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+          <p id="surveyMsg" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></p>
         </form>
       </div>
 
@@ -259,6 +289,7 @@
         <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
           <div class="report-title">Safety Captain Survey Report</div>
           <div class="report-subtitle">Generated Report</div>
+
           <div class="report-wrapper">
             <table class="report-table">
               <thead>
@@ -266,7 +297,8 @@
                   <th rowspan="2">Airline NAME</th><th rowspan="2">FltNO</th><th rowspan="2">Type</th><th rowspan="2">DateTime</th><th rowspan="2">REG</th>
                 </tr>
               </thead>
-              <tbody id="report-tbody"></tbody>
+              <tbody id="report-tbody">
+              </tbody>
             </table>
           </div>
         </div>
@@ -274,6 +306,7 @@
     </div>
   </div>
 
+  <!-- Modal (Add New Aircraft) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -290,10 +323,11 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
-    // ========= ضع رابط جوجل سكربت المحدث هنا ========= 
-    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
+    // ========= الرابط الجديد الفعلي من قاعدة البيانات الجديدة ========= 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzcA-c4Uj8GEcsZKLpy2XHmJ7upR1mT3-GGA0u_jEI-oQ5m8UL7-sh7_x50v-xGpcWw/exec"; 
     
     let globalFleetData = []; 
+    // هذه المصفوفة تطابق عناوين قاعدة البيانات الماستر بالملي
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
     window.addEventListener('load', () => {
@@ -308,7 +342,10 @@
         const splash = document.getElementById('splash-screen');
         if(splash) {
           splash.style.opacity = '0';
-          setTimeout(() => { splash.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 800);
+          setTimeout(() => {
+            splash.style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+          }, 800);
         }
       }, 2600); 
     });
@@ -324,7 +361,10 @@
       document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
-      if (sectionId === 'captain-survey-section') { loadFleetData(); }
+      
+      if (sectionId === 'captain-survey-section') {
+        loadFleetData();
+      }
     }
 
     function switchTab(tab) {
@@ -351,42 +391,39 @@
       });
     }
 
-    // ---------------- JSONP Request (The Ultimate Fix for Company Emails) ----------------
-    function loadFleetData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbwitGWlCwk_amZ9dTxjKBHXse2UtBKbloM3ONGtXIM9_M4MSVQ_nkCZmIEvw9_U0QDp/exec") return; 
+    // ---------------- جلب البيانات باستخدام GET لتخطي التعليق ----------------
+    async function loadFleetData() {
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
-      const callbackName = 'handleJSONP_' + Math.round(100000 * Math.random());
-      
-      window[callbackName] = function(data) {
+      try {
+        const response = await fetch(API_URL + "?action=getFleetData");
+        const data = await response.json();
+        
         if (data.status === "error") {
           regInput.placeholder = "خطأ: " + data.message;
-        } else {
-          globalFleetData = data.fleet;
-          const regList = document.getElementById('regList');
-          regList.innerHTML = "";
-          globalFleetData.forEach(aircraft => {
-            let regValue = aircraft["REG"]; 
-            if(regValue) regList.innerHTML += `<option value="${regValue}">`;
-          });
-          const airlinesList = document.getElementById('airlinesMasterList');
-          airlinesList.innerHTML = "";
-          data.airlines.forEach(airline => {
-            if(airline) airlinesList.innerHTML += `<option value="${airline}">`;
-          });
-          regInput.placeholder = "اكتب أو اختر التسجيل...";
+          return;
         }
-        delete window[callbackName];
-      };
+        
+        globalFleetData = data.fleet;
+        const regList = document.getElementById('regList');
+        regList.innerHTML = "";
+        globalFleetData.forEach(aircraft => {
+          let regValue = aircraft["REG"]; 
+          if(regValue) regList.innerHTML += `<option value="${regValue}">`;
+        });
 
-      const script = document.createElement('script');
-      script.src = API_URL + "?action=getFleetData&callback=" + callbackName;
-      script.onerror = function() {
-        regInput.placeholder = "فشل الاتصال! تأكد من صلاحيات إيميل المطار.";
-        delete window[callbackName];
-      };
-      document.body.appendChild(script);
+        const airlinesList = document.getElementById('airlinesMasterList');
+        airlinesList.innerHTML = "";
+        data.airlines.forEach(airline => {
+          if(airline) airlinesList.innerHTML += `<option value="${airline}">`;
+        });
+        
+        regInput.placeholder = "اكتب أو اختر التسجيل...";
+      } catch (error) {
+        console.error("خطأ:", error);
+        regInput.placeholder = "فشل الاتصال بالسيرفر!";
+      }
     }
 
     function autoFillAircraftData() {
@@ -396,7 +433,8 @@
       let typeInput = document.getElementById('acType');
 
       if (foundAircraft) {
-        airlineInput.value = foundAircraft["NAME"] || "";
+        // الربط بالبيانات من القاعدة الجديدة CAR, TYPE
+        airlineInput.value = foundAircraft["CAR"] || "";
         typeInput.value = foundAircraft["TYPE"] || "";
         airlineInput.style.backgroundColor = "#e8f5e9";
         typeInput.style.backgroundColor = "#e8f5e9";
@@ -427,47 +465,98 @@
       if(globalFleetData.some(a => String(a["REG"]).toUpperCase() === reg)) { msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return; }
 
       msg.style.color = "blue"; msg.innerText = "جاري الحفظ...";
-      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return;
 
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline };
       try {
         const response = await fetch(API_URL, { 
             method: 'POST', 
             body: JSON.stringify(payload),
-            mode: 'no-cors' // This guarantees the browser won't block the POST request
+            mode: 'no-cors' 
         });
         
-        // Since no-cors hides the response, we assume success if no error was thrown
-        msg.style.color = "green"; msg.innerText = "تم إرسال البيانات بنجاح!";
-        globalFleetData.push({ "REG": reg, "TYPE": type, "NAME": airline });
+        msg.style.color = "green"; msg.innerText = "تم حفظ الطائرة بنجاح في قاعدة البيانات!";
+        globalFleetData.push({ "REG": reg, "TYPE": type, "CAR": airline });
         document.getElementById('regList').innerHTML += `<option value="${reg}">`;
         document.getElementById('reg').value = reg;
         autoFillAircraftData();
         setTimeout(closeAddModal, 1500);
-      } catch (error) { msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!"; }
+      } catch (error) { 
+        msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!"; 
+      }
     }
 
-    function submitSurvey(e) {
+    // ---------------- الإرسال الفعلي لبيانات الاستبيان إلى جوجل شيت ----------------
+    async function submitSurvey(e) {
       e.preventDefault();
       const btn = document.getElementById('submitSurveyBtn');
       const msg = document.getElementById('surveyMsg');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
       
-      setTimeout(() => {
-        msg.style.color = "green"; msg.innerText = "تم حفظ بيانات الاستبيان بنجاح!";
+      // التأكد من أن الطائرة معروفة
+      const airline = document.getElementById('airline').value;
+      if (!airline) {
+        msg.style.color = "red";
+        msg.innerText = "برجاء اختيار الطائرة الصحيحة أو إضافتها للأسطول أولاً!";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال البيانات للسيرفر...';
+      msg.innerText = "";
+      
+      // تجميع الداتا
+      let surveyDataObj = {
+        "Date": document.getElementById('date').value,
+        "Time": document.getElementById('time').value,
+        "Flight_NO": document.getElementById('fltNo').value,
+        "REG": document.getElementById('reg').value.toUpperCase(),
+        "CAR": airline,
+        "TYPE": document.getElementById('acType').value,
+        "Captain_Comments": document.getElementById('comments').value
+      };
+
+      // سحب تقييمات الراديو باتونز
+      criteriaList.forEach((crit, index) => {
+        let selectedOption = document.querySelector(`input[name="c${index}"]:checked`);
+        surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank";
+      });
+
+      const payload = {
+        action: "submitSurvey",
+        surveyData: surveyDataObj
+      };
+
+      try {
+        // نستخدم POST مع no-cors لضمان اختراق حماية المتصفح وإرسال الداتا
+        await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload),
+            mode: 'no-cors'
+        });
+        
+        msg.style.color = "green"; 
+        msg.innerText = "✅ تم حفظ الاستبيان بنجاح في قاعدة البيانات المركزية!";
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        btn.disabled = false;
+        
         document.getElementById('surveyForm').reset();
-        autoFillAircraftData(); 
-      }, 1500);
+        autoFillAircraftData(); // تفريغ حقول القراءة فقط 
+        
+      } catch (error) {
+        msg.style.color = "red"; 
+        msg.innerText = "❌ حدث خطأ أثناء الإرسال. تأكد من الاتصال بالإنترنت.";
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        btn.disabled = false;
+      }
     }
 
+    // ---------------- تجهيز قسم التقرير ----------------
     function generateReport() {
         document.getElementById('printable-report').style.display = 'block';
         const tr1 = document.getElementById('report-headers-row');
         while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
         criteriaList.forEach(crit => { tr1.innerHTML += `<th class="vertical-th">${crit}</th>`; });
         tr1.innerHTML += `<th class="vertical-th" style="height: auto;">Captain Comments</th>`;
-        document.getElementById('report-tbody').innerHTML = "<tr><td colspan='37' style='padding: 20px; font-weight: bold; font-size: 16px;'>جاري تهيئة قاعدة البيانات لجلب التقارير الحقيقية...</td></tr>";
+        document.getElementById('report-tbody').innerHTML = "<tr><td colspan='37' style='padding: 20px; font-weight: bold; font-size: 16px; color: var(--primary);'>...جاري تهيئة قاعدة البيانات لجلب التقارير الحقيقية</td></tr>";
     }
 
     function exportToPDF() {
