@@ -20,8 +20,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # تم حذف خطوة Setup Android SDK لتجنب التعارض
 
       - name: Install Dependencies
         run: npm install @capacitor/core @capacitor/cli @capacitor/android
