@@ -1,253 +1,33 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>General Department of Safety and Compliance</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <style>
-    :root {
-      --primary: #003366; --secondary: #f39c12; --bg-color: #e9ecef; --card-bg: #ffffff;
-      --val-e: #28a745; --val-g: #ffc107; --val-p: #dc3545; --val-n: #a9a9a9; --val-b: #1a2a6c;
-    }
-    body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
-    
-    /* ---------------- Splash Screen ---------------- */
-    #splash-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-      background: #ffffff; display: flex; justify-content: center; align-items: center; 
-      z-index: 9999; transition: opacity 1s ease-out;
-    }
-    .splash-logo { width: 400px; animation: cinematicReveal 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-    @keyframes cinematicReveal {
-      0% { transform: scale(2.5); filter: blur(20px); opacity: 0; }
-      50% { transform: scale(1.1); filter: blur(0px); opacity: 1; }
-      100% { transform: scale(1); filter: blur(0px); opacity: 1; }
-    }
-
-    /* ---------------- Login Screen ---------------- */
-    #login-screen {
-      display: none; height: 100vh; justify-content: center; align-items: center;
-      background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
-    }
-    .login-box {
-      background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;
-    }
-    .login-box img { width: 250px; margin-bottom: 25px; }
-    .input-group { margin-bottom: 20px; position: relative; }
-    .input-group i { position: absolute; right: 15px; top: 15px; color: var(--primary); }
-    .input-group input { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
-    .input-group input:focus { border-color: var(--secondary); outline: none; }
-    .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .login-btn:hover { background: var(--primary); }
-
-    /* ---------------- Header ---------------- */
-    .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-    .header img.main-logo, .header img.dept-logo { height: 90px; }
-    .header-titles { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
-    .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
-    
-    .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
-    
-    /* ---------------- Dashboard Cards ---------------- */
-    .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
-    .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
-    .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
-    .dept-icon { font-size: 4.5rem; margin-bottom: 20px; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .icon-safety { background-image: linear-gradient(45deg, #007bff, #00d2ff); }
-    .icon-fire { background-image: linear-gradient(45deg, #ff416c, #ff4b2b); }
-    .icon-health { background-image: linear-gradient(45deg, #11998e, #38ef7d); }
-    .icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
-    .dept-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 0; }
-    .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; font-family: 'Segoe UI', Tahoma, sans-serif;}
-
-    .submenu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 10px; }
-    .sub-card { background: #fff; border-radius: 15px; padding: 25px 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid #eee; position: relative; }
-    .sub-card:hover { transform: translateY(-5px); border-color: var(--secondary); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-    .sub-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; transition: 0.3s; }
-    .sub-card:hover .sub-icon { color: var(--secondary); transform: scale(1.1); }
-    .sub-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin: 0; }
-    .sub-subtitle { font-size: 0.9rem; color: #888; margin-top: 5px; }
-
-    /* ---------------- Buttons ---------------- */
-    .back-btn { display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; border: none; margin-bottom: 20px; transition: 0.3s; }
-    .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
-    .scroll-btn { position: fixed; right: 25px; background: var(--secondary); color: #fff; border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-    .scroll-btn:hover { transform: scale(1.1); background: var(--primary); }
-    #scrollTop { bottom: 90px; }
-    #scrollBottom { bottom: 20px; }
-
-    /* ---------------- Captain Survey Entry ---------------- */
-    .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
-    .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
-    .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--secondary); background: #fff; }
-    .tab-content { padding: 30px; display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.4s; }
-
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
-    
-    /* Inputs with Add Button */
-    .input-with-btn { display: flex; gap: 5px; }
-    .input-with-btn select { flex: 1; }
-    .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
-    .add-btn:hover { background: var(--secondary); color: black; }
-
-    .eval-section { margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px; }
-    .eval-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-    .eval-card { background: #f8f9fa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-    .eval-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-size: 0.9rem; }
-    .radio-group { display: flex; gap: 5px; direction: ltr; }
-    .radio-group label { flex: 1; text-align: center; padding: 8px 0; background: #fff; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: bold; color:#555;}
-    .radio-group input[type="radio"] { display: none; }
-    .radio-group input[type="radio"][value="Excellent"]:checked + label { background: var(--val-e); color: white; border-color: var(--val-e); }
-    .radio-group input[type="radio"][value="Good"]:checked + label { background: var(--val-g); color: black; border-color: var(--val-g); }
-    .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
-    .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
-    .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
-    
-    .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
-    .submit-btn:hover { background: var(--secondary); color: #000; }
-
-    /* ---------------- Modal (Add New Item) ---------------- */
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
-    .close-modal { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
-    .close-modal:hover { color: #000; }
-
-    /* ---------------- Reports Styles (LTR Perfect Match) ---------------- */
-    .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
-    .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
-    .pdf-export-btn:hover { background: #c9302c; }
-    
-    .ltr-container { direction: ltr; text-align: left; }
-    .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
-    
-    .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
-    .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
-    .report-table th { background-color: #f2f2f2; font-weight: bold; }
-    .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
-    
-    .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
-    .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
-    .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
-    .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
-    .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
-    
-    .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
-    .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
-    .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
-
-    /* Sections Control */
-    #main-dashboard, #airport-safety-dashboard, #captain-survey-section, #app-header { display: none; }
-  </style>
-</head>
-<body>
-
-  <!-- Splash Screen -->
-  <div id="splash-screen">
-    <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-  </div>
-
-  <!-- Login Screen -->
-  <div id="login-screen">
-    <div class="login-box">
-      <img src="LOGO-removebg-preview (1).png" alt="Logo">
-      <h3 style="margin-top:0; color: var(--primary); font-weight: 900;">تسجيل الدخول</h3>
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="username" placeholder="اسم المستخدم" required></div>
-        <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="password" placeholder="كلمة المرور" required></div>
-        <button type="submit" class="login-btn" id="loginBtn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-        <p id="loginError" style="color:red; font-size:14px; display:none; margin-top: 10px; font-weight:bold;"></p>
-      </form>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <div class="header" id="app-header">
-    <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
-    <div class="header-titles">
-      <h1>General Department of Safety and Compliance</h1>
-      <h2>الإدارة العامة للسلامة والمطابقة</h2>
-    </div>
-    <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
-  </div>
-
-  <!-- Main Dashboard -->
-  <div id="main-dashboard" class="content-area">
-    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
-    <div class="departments-grid">
-      <div class="dept-card" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i><h3 class="dept-title">إدارة سلامة المطارات</h3><div class="dept-subtitle">Airport Safety Department</div></div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')"><i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i><h3 class="dept-title">الحماية المدنية</h3><div class="dept-subtitle">Civil Defense</div></div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')"><i class="fa-solid fa-hard-hat dept-icon icon-health"></i><h3 class="dept-title">السلامة والصحة المهنية</h3><div class="dept-subtitle">Occupational Safety & Health</div></div>
-      <div class="dept-card" onclick="alert('جاري تجهيز القسم')"><i class="fa-solid fa-dove dept-icon icon-nature"></i><h3 class="dept-title">البيئة والحياة البرية</h3><div class="dept-subtitle">Environment & Wildlife</div></div>
-    </div>
-  </div>
-
-  <!-- Airport Safety Dashboard -->
-  <div id="airport-safety-dashboard" class="content-area">
-    <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
-    <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
-    <div class="submenu-grid">
-      <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
-      <div class="sub-card"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-      <div class="sub-card"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
-    </div>
-  </div>
-
-  <!-- Captain Survey Section -->
-  <div id="captain-survey-section" class="content-area">
-    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
-
-    <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
-        <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير والإحصائيات</button>
-      </div>
-
-      <!-- Tab 1: Entry with Dropdowns & Modals -->
+<!-- Tab 1: Entry with Auto-Fill -->
       <div id="tab-entry" class="tab-content active">
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
-            <div class="form-group">
-              <label>Airline NAME (CAR)</label>
-              <div class="input-with-btn">
-                <select id="airline" required><option value="">جاري التحميل...</option></select>
-                <button type="button" class="add-btn" onclick="openAddModal('AIRLINES_TBL', 'airline', 'إضافة شركة طيران جديدة')" title="إضافة شركة جديدة"><i class="fa-solid fa-plus"></i></button>
-              </div>
-            </div>
             
             <div class="form-group">
-              <label>Flight NO</label>
-              <input type="text" id="fltNo" required>
+              <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
+              <div class="input-with-btn">
+                <!-- استخدام datalist يتيح للمستخدم الكتابة والبحث داخل القائمة -->
+                <input type="text" id="reg" list="regList" placeholder="اكتب أو اختر تسجيل الطائرة..." oninput="autoFillAircraftData()" required autocomplete="off">
+                <datalist id="regList"></datalist>
+                <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة جديدة بالأسطول"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Airline NAME (CAR)</label>
+              <!-- حقل مغلق (Read-only) يُملأ تلقائياً -->
+              <input type="text" id="airline" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً...">
             </div>
             
             <div class="form-group">
               <label>Aircraft Type</label>
-              <div class="input-with-btn">
-                <select id="acType" required><option value="">جاري التحميل...</option></select>
-                <button type="button" class="add-btn" onclick="openAddModal('A_CTYPE_TBL', 'acType', 'إضافة طراز طائرة جديد')" title="إضافة طراز جديد"><i class="fa-solid fa-plus"></i></button>
-              </div>
+              <!-- حقل مغلق (Read-only) يُملأ تلقائياً -->
+              <input type="text" id="acType" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً...">
             </div>
             
             <div class="form-group">
-              <label>Registration (REG)</label>
-              <div class="input-with-btn">
-                <select id="reg"><option value="">جاري التحميل...</option></select>
-                <button type="button" class="add-btn" onclick="openAddModal('REG_TBL', 'reg', 'إضافة تسجيل جديد')" title="إضافة تسجيل جديد"><i class="fa-solid fa-plus"></i></button>
-              </div>
+              <label>Flight NO</label>
+              <input type="text" id="fltNo" required placeholder="مثال: MS 184">
             </div>
             
             <div class="form-group"><label>Date</label><input type="date" id="date" required></div>
@@ -261,290 +41,29 @@
         </form>
       </div>
 
-      <!-- Tab 2: Perfect LTR Report -->
-      <div id="tab-report" class="tab-content ltr-container">
-        <div class="report-filters">
-          <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
-          <div class="form-group"><label>إلى (To):</label><input type="date" id="toDate"></div>
-          <div class="form-group"><label>من (From):</label><input type="date" id="fromDate"></div>
-          <button onclick="document.getElementById('printable-report').style.display='block';" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">عرض التقرير</button>
-        </div>
-
-        <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
-          <div class="report-title">Safety Captain Survey Report</div>
-          <div class="report-subtitle">For August</div>
-
-          <div class="report-wrapper">
-            <table class="report-table">
-              <thead>
-                <tr>
-                  <th rowspan="2">Airline NAME</th><th rowspan="2">FltNO</th><th rowspan="2">Type</th><th rowspan="2">DateTime</th><th rowspan="2">REG</th>
-                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
-                  <th rowspan="2">Captain Comments</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>AIRMALTA</td><td>W4 6179</td><td>A-320</td><td>03/08/2026 10:55</td><td>9HAEL</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>HelloJets</td><td>H3 321</td><td>B737-800</td><td>03/08/2026 12:00</td><td>7RHLC</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>NEOSAIR</td><td>NO 1374</td><td>B737-800</td><td>03/08/2026 12:10</td><td>INEOT</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>NEOSAIR</td><td>NO 2542</td><td>B737-900</td><td>04/08/2026 10:30</td><td>EIHIM</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>SMARTWINGS</td><td>E4 7987</td><td>B737-800</td><td>04/08/2026 13:15</td><td>OMGEX</td>
-                  <td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>BLUEPANORAMA</td><td>H3 121</td><td>B737-800</td><td>05/08/2026 11:40</td><td>9HAMW</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>EGYPTAIR</td><td>MS 184</td><td>B737-800</td><td>06/08/2026 7:45</td><td>SUGEK</td>
-                  <td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>SkyLine Express</td><td>QU 5174</td><td>B737-800</td><td>06/08/2026 10:00</td><td>URSLH</td>
-                  <td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-                <tr>
-                  <td>NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td>
-                  <td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-p">P</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="report-wrapper" style="width: 70%;">
-            <table class="report-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
-                </tr>
-              </thead>
-              <tbody>
-                 <tr>
-                   <td class="bg-e">Excellent</td>
-                   <td>10</td><td>10</td><td>9</td><td>9</td><td>6</td><td>6</td><td>5</td><td>10</td><td>9</td><td>9</td><td>11</td><td>13</td><td>15</td><td>14</td><td>14</td><td>13</td><td>9</td><td>9</td><td>8</td><td>10</td><td>10</td><td>9</td><td>8</td><td>9</td><td>10</td><td>10</td><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td>
-                 </tr>
-                 <tr>
-                   <td class="bg-g">Good</td>
-                   <td>10</td><td>10</td><td>13</td><td>10</td><td>13</td><td>13</td><td>11</td><td>12</td><td>13</td><td>12</td><td>11</td><td>9</td><td>7</td><td>8</td><td>8</td><td>8</td><td>13</td><td>11</td><td>12</td><td>12</td><td>12</td><td>11</td><td>13</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td><td>0</td><td>0</td><td>0</td>
-                 </tr>
-                 <tr>
-                   <td class="bg-p">Poor</td>
-                   <td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-                 </tr>
-                 <tr>
-                   <td class="bg-n">N/A</td>
-                   <td>0</td><td>2</td><td>0</td><td>3</td><td>2</td><td>2</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td>
-                 </tr>
-                 <tr>
-                   <td class="bg-b">Blank</td>
-                   <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>22</td><td>22</td><td>22</td><td>22</td>
-                 </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="report-footer">Total of survey been held on August are 22</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- النافذة المنبثقة (Modal) لإضافة بيانات جديدة -->
+  <!-- النافذة المنبثقة (Modal) لإضافة طائرة جديدة للأسطول -->
   <div id="addModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
-      <h3 id="modalTitle" style="color: var(--primary); margin-top: 0;">إضافة عنصر جديد</h3>
-      <input type="hidden" id="modalTargetTable">
-      <input type="hidden" id="modalTargetSelect">
-      <div class="form-group" style="text-align: right;">
-        <input type="text" id="modalNewValue" placeholder="اكتب البيانات الجديدة هنا..." required>
+      <h3 style="color: var(--primary); margin-top: 0; text-align: center;">إضافة طائرة جديدة للأسطول</h3>
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>تسجيل الطائرة (REG):</label>
+        <input type="text" id="newReg" placeholder="مثال: SU-GCM" style="text-transform: uppercase;" required>
       </div>
-      <p id="modalMsg" style="font-size: 14px; font-weight: bold; margin-top: 10px;"></p>
-      <button type="button" class="submit-btn" style="margin-top: 15px; padding: 10px;" onclick="saveNewItem()">حفظ وإضافة</button>
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>طراز الطائرة (Type):</label>
+        <input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>الشركة المشغلة (Airline):</label>
+        <input type="text" id="newAirline" list="airlinesMasterList" placeholder="اختر أو اكتب اسم الشركة" required>
+        <datalist id="airlinesMasterList"></datalist>
+      </div>
+
+      <p id="modalMsg" style="font-size: 14px; font-weight: bold; text-align: center; margin-top: 10px;"></p>
+      <button type="button" class="submit-btn" style="margin-top: 15px; padding: 10px;" onclick="saveNewAircraft()">حفظ في قاعدة البيانات</button>
     </div>
   </div>
-
-  <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
-  <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
-
-  <script>
-    // ضع هنا رابط جوجل سكربت المحدث الخاص بك
-    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
-
-    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
-
-    window.onload = () => {
-      buildEvaluationForm();
-      setTimeout(() => {
-        document.getElementById('splash-screen').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('splash-screen').style.display = 'none';
-          document.getElementById('login-screen').style.display = 'flex';
-        }, 1000); 
-      }, 2500);
-    };
-
-    function handleLogin(e) {
-      e.preventDefault();
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app-header').style.display = 'flex';
-      openSection('main-dashboard');
-    }
-
-    function openSection(sectionId) {
-      document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
-      document.getElementById(sectionId).style.display = 'block';
-      window.scrollTo({top: 0, behavior: 'smooth'});
-      
-      if (sectionId === 'captain-survey-section') {
-        loadDropdowns();
-      }
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.getElementById('btn-' + tab).classList.add('active');
-      document.getElementById('tab-' + tab).classList.add('active');
-    }
-
-    function buildEvaluationForm() {
-      const container = document.getElementById('criteria-container');
-      criteriaList.forEach((crit, index) => {
-        container.innerHTML += `
-          <div class="eval-card">
-            <div class="eval-title">${crit}</div>
-            <div class="radio-group">
-              <input type="radio" id="c${index}_e" name="c${index}" value="Excellent" checked><label for="c${index}_e">E</label>
-              <input type="radio" id="c${index}_g" name="c${index}" value="Good"><label for="c${index}_g">G</label>
-              <input type="radio" id="c${index}_p" name="c${index}" value="Poor"><label for="c${index}_p">P</label>
-              <input type="radio" id="c${index}_n" name="c${index}" value="N/A"><label for="c${index}_n">N/A</label>
-              <input type="radio" id="c${index}_b" name="c${index}" value="Blank"><label for="c${index}_b">B</label>
-            </div>
-          </div>`;
-      });
-    }
-
-    async function loadDropdowns() {
-      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; // تجاهل إذا لم يتم وضع الرابط
-      try {
-        const response = await fetch(API_URL + "?action=getDropdowns");
-        const data = await response.json();
-        populateSelect('airline', data.airlines, 'اختر شركة الطيران');
-        populateSelect('acType', data.acTypes, 'اختر طراز الطائرة');
-        populateSelect('reg', data.regs, 'اختر التسجيل');
-      } catch (error) {
-        console.error("خطأ في تحميل القوائم:", error);
-      }
-    }
-
-    function populateSelect(elementId, arrayData, placeholder) {
-      const select = document.getElementById(elementId);
-      select.innerHTML = `<option value="">-- ${placeholder} --</option>`;
-      if(arrayData && arrayData.length > 0) {
-        arrayData.forEach(item => { select.innerHTML += `<option value="${item}">${item}</option>`; });
-      }
-    }
-
-    function openAddModal(tableName, selectId, title) {
-      document.getElementById('modalTargetTable').value = tableName;
-      document.getElementById('modalTargetSelect').value = selectId;
-      document.getElementById('modalTitle').innerText = title;
-      document.getElementById('modalNewValue').value = "";
-      document.getElementById('modalMsg').innerText = "";
-      document.getElementById('addModal').style.display = 'flex';
-    }
-
-    function closeAddModal() {
-      document.getElementById('addModal').style.display = 'none';
-    }
-
-    async function saveNewItem() {
-      const newValue = document.getElementById('modalNewValue').value.trim();
-      const tableName = document.getElementById('modalTargetTable').value;
-      const selectId = document.getElementById('modalTargetSelect').value;
-      const msg = document.getElementById('modalMsg');
-
-      if (!newValue) { msg.style.color = "red"; msg.innerText = "برجاء إدخال قيمة!"; return; }
-      msg.style.color = "blue"; msg.innerText = "جاري الحفظ والتأكد من عدم التكرار...";
-
-      if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
-        // محاكاة إذا لم يتم وضع الرابط
-        setTimeout(() => {
-          msg.style.color = "green"; msg.innerText = "تمت الإضافة بنجاح (محاكاة)";
-          const select = document.getElementById(selectId);
-          select.innerHTML += `<option value="${newValue}">${newValue}</option>`;
-          select.value = newValue;
-          setTimeout(closeAddModal, 1000);
-        }, 1000);
-        return;
-      }
-
-      const payload = { action: "addDropdownItem", table: tableName, value: newValue };
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-        if (result.status === "success") {
-          msg.style.color = "green"; msg.innerText = result.message;
-          const select = document.getElementById(selectId);
-          select.innerHTML += `<option value="${result.value}">${result.value}</option>`;
-          select.value = result.value;
-          setTimeout(closeAddModal, 1000);
-        } else {
-          msg.style.color = "red"; msg.innerText = result.message; 
-        }
-      } catch (error) {
-        msg.style.color = "red"; msg.innerText = "فشل الاتصال بالخادم!";
-      }
-    }
-
-    function submitSurvey(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitSurveyBtn');
-      const msg = document.getElementById('surveyMsg');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
-      
-      setTimeout(() => {
-        msg.style.color = "green";
-        msg.innerText = "تم حفظ بيانات الاستبيان بنجاح في قاعدة البيانات!";
-        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
-        document.getElementById('surveyForm').reset();
-      }, 1500);
-    }
-
-    function exportToPDF() {
-      const element = document.getElementById('printable-report');
-      element.style.display = 'block';
-      const opt = {
-        margin:       0.2,
-        filename:     'Captain_Survey_August_Report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-  </script>
-</body>
-</html>
