@@ -17,7 +17,7 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* ---------------- 1. Splash Screen (Enhanced) ---------------- */
+    /* ---------------- 1. Splash Screen ---------------- */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
@@ -26,11 +26,9 @@
     }
     .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
     .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); }
-    
     .loading-bar-container { width: 250px; height: 4px; background: #ddd; border-radius: 4px; margin-top: 30px; overflow: hidden; position: relative; }
     .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 2.5s ease-out forwards; }
     .loading-text { margin-top: 10px; color: var(--primary); font-weight: 700; font-size: 14px; letter-spacing: 2px; font-family: 'Segoe UI', sans-serif; animation: blink 1.5s infinite; }
-
     @keyframes pulseLogo { 0% { transform: scale(0.98); } 100% { transform: scale(1.02); } }
     @keyframes loadProgress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -40,19 +38,12 @@
       display: none; height: 100vh; justify-content: center; align-items: center;
       background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
     }
-    .login-box {
-      background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;
-    }
+    .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; }
     .login-box img { width: 250px; margin-bottom: 25px; }
     .input-group { margin-bottom: 20px; position: relative; text-align: right;}
     .input-group i { position: absolute; right: 15px; top: 15px; color: var(--primary); }
-    .input-group input, .input-group select { 
-      width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; 
-      border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; 
-      appearance: none; background-color: #fff; cursor: pointer;
-    }
-    .input-group select { background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); background-repeat: no-repeat; background-position-x: 10px; background-position-y: 50%; }
+    .input-group input, .input-group select { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
+    .input-group select { appearance: none; background-color: #fff; cursor: pointer; background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); background-repeat: no-repeat; background-position-x: 10px; background-position-y: 50%; }
     .input-group input:focus, .input-group select:focus { border-color: var(--secondary); outline: none; }
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
@@ -68,7 +59,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
-    /* ---------------- 4. Dashboard Cards (Main & Sub) ---------------- */
+    /* ---------------- 4. Dashboard Cards ---------------- */
     .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
     .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
     .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
@@ -89,7 +80,6 @@
     .sub-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin: 0; }
     .sub-subtitle { font-size: 0.9rem; color: #888; margin-top: 5px; }
 
-    /* ---------------- Buttons ---------------- */
     .back-btn { display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; border: none; margin-bottom: 20px; transition: 0.3s; }
     .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
     .scroll-btn { position: fixed; right: 25px; background: var(--secondary); color: #fff; border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 22px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
@@ -109,9 +99,8 @@
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
     
-    /* Inputs with Add Button */
     .input-with-btn { display: flex; gap: 5px; }
-    .input-with-btn input { flex: 1; }
+    .input-with-btn input { flex: 1; text-transform: uppercase; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
     .add-btn:hover { background: var(--secondary); color: black; }
 
@@ -127,7 +116,6 @@
     .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
     .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
     .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
-    
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
@@ -141,32 +129,26 @@
     .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
-    
     .ltr-container { direction: ltr; text-align: left; }
     .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
-    
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; }
     .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
-    
     .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
     .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
     .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
     .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
     .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
-    
     .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
     .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
     .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
 
-    /* Sections Control */
     #main-dashboard, #airport-safety-dashboard, #captain-survey-section, #app-header { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- 1. Splash Screen -->
   <div id="splash-screen">
     <div class="splash-content">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
@@ -175,13 +157,11 @@
     </div>
   </div>
 
-  <!-- 2. Login Screen -->
   <div id="login-screen">
     <div class="login-box">
       <img src="LOGO-removebg-preview (1).png" alt="Logo">
       <h3 style="margin-top:0; color: var(--primary); font-weight: 900;">تسجيل الدخول</h3>
       <form id="loginForm" onsubmit="handleLogin(event)">
-        <!-- تعديل اسم المستخدم ليكون قائمة منسدلة -->
         <div class="input-group">
           <i class="fa-solid fa-user"></i>
           <select id="username" required>
@@ -198,7 +178,6 @@
     </div>
   </div>
 
-  <!-- 3. Header -->
   <div class="header" id="app-header">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
@@ -208,7 +187,6 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
-  <!-- 4. Main Dashboard -->
   <div id="main-dashboard" class="content-area">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
@@ -219,12 +197,11 @@
     </div>
   </div>
 
-  <!-- 5. Airport Safety Dashboard (الـ 20 تبويب بالكامل كما طلب) -->
+  <!-- التبويبات الـ 20 لسلامة المطارات -->
   <div id="airport-safety-dashboard" class="content-area">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 40px;">إدارة سلامة المطارات <br><span style="font-size: 1.5rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <!-- Data Forms -->
       <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
       <div class="sub-card"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
       <div class="sub-card"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
@@ -234,7 +211,6 @@
       <div class="sub-card"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
       <div class="sub-card"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
       
-      <!-- PDF Archives -->
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-file-pdf sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms</div></div>
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-gear sub-icon"></i><h3 class="sub-title">اختبار المحرك</h3><div class="sub-subtitle">Engine Test Procedures</div></div>
       <div class="sub-card"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
@@ -248,7 +224,7 @@
     </div>
   </div>
 
-  <!-- 6. Captain Survey Section (Auto-fill & Reports) -->
+  <!-- Captain Survey Section (Auto-fill matching the real Sheet headers) -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> لوحة سلامة المطارات</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2.2rem;">استبيان الكابتن <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
@@ -259,14 +235,13 @@
         <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير والإحصائيات</button>
       </div>
 
-      <!-- Tab 1: Entry with Smart Datalist -->
       <div id="tab-entry" class="tab-content active">
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <input type="text" id="reg" list="regList" placeholder="اكتب التسجيل..." oninput="autoFillAircraftData()" required autocomplete="off" style="text-transform: uppercase;">
+                <input type="text" id="reg" list="regList" placeholder="جاري تحميل الأسطول..." oninput="autoFillAircraftData()" required autocomplete="off">
                 <datalist id="regList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -309,14 +284,6 @@
               </thead>
               <tbody>
                 <tr><td>ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>AIRMALTA</td><td>W4 6179</td><td>A-320</td><td>03/08/2026 10:55</td><td>9HAEL</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>HelloJets</td><td>H3 321</td><td>B737-800</td><td>03/08/2026 12:00</td><td>7RHLC</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>NEOSAIR</td><td>NO 1374</td><td>B737-800</td><td>03/08/2026 12:10</td><td>INEOT</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>NEOSAIR</td><td>NO 2542</td><td>B737-900</td><td>04/08/2026 10:30</td><td>EIHIM</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>SMARTWINGS</td><td>E4 7987</td><td>B737-800</td><td>04/08/2026 13:15</td><td>OMGEX</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>BLUEPANORAMA</td><td>H3 121</td><td>B737-800</td><td>05/08/2026 11:40</td><td>9HAMW</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>EGYPTAIR</td><td>MS 184</td><td>B737-800</td><td>06/08/2026 7:45</td><td>SUGEK</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>SkyLine Express</td><td>QU 5174</td><td>B737-800</td><td>06/08/2026 10:00</td><td>URSLH</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
                 <tr><td>NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-p">P</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
               </tbody>
             </table>
@@ -345,26 +312,14 @@
     </div>
   </div>
 
-  <!-- 7. Modal (Add New Aircraft) -->
+  <!-- Modal (Add New Aircraft) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center;">إضافة طائرة جديدة للأسطول</h3>
-      
-      <div class="form-group" style="margin-bottom: 15px;">
-        <label>تسجيل الطائرة (REG):</label>
-        <input type="text" id="newReg" placeholder="مثال: SU-GCM" style="text-transform: uppercase;" required>
-      </div>
-      <div class="form-group" style="margin-bottom: 15px;">
-        <label>طراز الطائرة (Type):</label>
-        <input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required>
-      </div>
-      <div class="form-group" style="margin-bottom: 15px;">
-        <label>الشركة المشغلة (Airline):</label>
-        <input type="text" id="newAirline" list="airlinesMasterList" placeholder="اختر أو اكتب اسم الشركة" required>
-        <datalist id="airlinesMasterList"></datalist>
-      </div>
-
+      <div class="form-group" style="margin-bottom: 15px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" style="text-transform: uppercase;" required></div>
+      <div class="form-group" style="margin-bottom: 15px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
+      <div class="form-group" style="margin-bottom: 15px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList"></datalist></div>
       <p id="modalMsg" style="font-size: 14px; font-weight: bold; text-align: center; margin-top: 10px;"></p>
       <button type="button" class="submit-btn" style="margin-top: 15px; padding: 10px;" onclick="saveNewAircraft()">حفظ في قاعدة البيانات</button>
     </div>
@@ -374,7 +329,7 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
-    // ---------------- رابط الـ Backend ----------------
+    // ========= ضع رابط جوجل سكربت المحدث هنا ========= 
     const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
     
     let globalFleetData = []; 
@@ -388,7 +343,7 @@
           document.getElementById('splash-screen').style.display = 'none';
           document.getElementById('login-screen').style.display = 'flex';
         }, 800); 
-      }, 2600); // وقت الأنيميشن الجديد
+      }, 2600); 
     };
 
     function handleLogin(e) {
@@ -403,6 +358,7 @@
       document.getElementById(sectionId).style.display = 'block';
       window.scrollTo({top: 0, behavior: 'smooth'});
       
+      // عند فتح قسم الاستبيان يتم تحميل الأسطول
       if (sectionId === 'captain-survey-section') {
         loadFleetData();
       }
@@ -432,10 +388,13 @@
       });
     }
 
-    // ---------------- Auto-Fill & Fleet Logic ----------------
+    // ---------------- Auto-Fill & Exact Column Mapping ----------------
     async function loadFleetData() {
       if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") return; 
-      document.getElementById('reg').placeholder = "جاري تحميل الأسطول...";
+      
+      const regInput = document.getElementById('reg');
+      regInput.placeholder = "جاري تحميل الأسطول...";
+      
       try {
         const response = await fetch(API_URL + "?action=getFleetData");
         const data = await response.json();
@@ -445,35 +404,40 @@
         const regList = document.getElementById('regList');
         regList.innerHTML = "";
         globalFleetData.forEach(aircraft => {
-          let regValue = aircraft["Registration"] || aircraft["REG"]; 
+          // جلب بيانات التسجيل من جدول AIRLINEDATA_TBL (اسم العمود في الشيت: REG)
+          let regValue = aircraft["REG"]; 
           if(regValue) regList.innerHTML += `<option value="${regValue}">`;
         });
 
         const airlinesList = document.getElementById('airlinesMasterList');
         airlinesList.innerHTML = "";
+        // جلب بيانات الشركات من جدول AIRLINES_TBL (اسم العمود في الشيت: Air Line)
         data.airlines.forEach(airline => {
           if(airline) airlinesList.innerHTML += `<option value="${airline}">`;
         });
         
-        document.getElementById('reg').placeholder = "اكتب أو اختر التسجيل...";
+        regInput.placeholder = "اكتب أو اختر تسجيل الطائرة...";
       } catch (error) {
-        document.getElementById('reg').placeholder = "فشل التحميل!";
+        console.error("خطأ:", error);
+        regInput.placeholder = "فشل التحميل!";
       }
     }
 
     function autoFillAircraftData() {
       let inputReg = document.getElementById('reg').value.toUpperCase();
+      
       let foundAircraft = globalFleetData.find(a => 
-        (a["Registration"] && a["Registration"].toUpperCase() === inputReg) || 
-        (a["REG"] && a["REG"].toUpperCase() === inputReg)
+        a["REG"] && String(a["REG"]).toUpperCase() === inputReg
       );
 
       let airlineInput = document.getElementById('airline');
       let typeInput = document.getElementById('acType');
 
       if (foundAircraft) {
-        airlineInput.value = foundAircraft["Airline"] || foundAircraft["CAR"] || foundAircraft["Airline NAME"] || "";
-        typeInput.value = foundAircraft["Aircraft Type"] || foundAircraft["Type"] || foundAircraft["A_CTYPE"] || "";
+        // المطابقة الدقيقة بأسماء الأعمدة في AIRLINEDATA_TBL
+        airlineInput.value = foundAircraft["NAME"] || "";
+        typeInput.value = foundAircraft["TYPE"] || "";
+        
         airlineInput.style.backgroundColor = "#e8f5e9";
         typeInput.style.backgroundColor = "#e8f5e9";
       } else {
@@ -504,7 +468,7 @@
 
       if (!reg || !type || !airline) { msg.style.color = "red"; msg.innerText = "برجاء ملء جميع البيانات!"; return; }
       
-      if(globalFleetData.some(a => (a["Registration"] || a["REG"]) === reg)) {
+      if(globalFleetData.some(a => String(a["REG"]).toUpperCase() === reg)) {
         msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return;
       }
 
@@ -513,7 +477,7 @@
       if(API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
         setTimeout(() => {
           msg.style.color = "green"; msg.innerText = "تم الحفظ (محاكاة)";
-          globalFleetData.push({ "Registration": reg, "Aircraft Type": type, "Airline": airline });
+          globalFleetData.push({ "REG": reg, "TYPE": type, "NAME": airline });
           document.getElementById('regList').innerHTML += `<option value="${reg}">`;
           document.getElementById('reg').value = reg;
           autoFillAircraftData();
@@ -528,7 +492,7 @@
         const result = await response.json();
         if (result.status === "success") {
           msg.style.color = "green"; msg.innerText = result.message;
-          globalFleetData.push({ "Registration": reg, "Aircraft Type": type, "Airline": airline });
+          globalFleetData.push({ "REG": reg, "TYPE": type, "NAME": airline });
           document.getElementById('regList').innerHTML += `<option value="${reg}">`;
           document.getElementById('reg').value = reg;
           autoFillAircraftData();
@@ -550,7 +514,7 @@
         msg.innerText = "تم حفظ بيانات الاستبيان بنجاح في قاعدة البيانات!";
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
         document.getElementById('surveyForm').reset();
-        autoFillAircraftData(); // لإرجاع لون الحقول لطبيعته
+        autoFillAircraftData(); 
       }, 1500);
     }
 
