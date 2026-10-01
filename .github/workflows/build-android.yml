@@ -2,6 +2,8 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # السطر ده بيخليك تقدر تشغل البناء بإيدك في أي وقت
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,18 +22,23 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install Dependencies
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Initialize Capacitor & Add Android
+      - name: Prepare Project
         run: |
-          npx cap init "SafetyApp" "com.marsa.safety" --web-dir "."
-          npx cap add android
-          npx cap sync android
+          # تجهيز الملفات أوتوماتيكياً
+          mkdir -p www
+          cp index.html www/
+          cp *.png www/ 2>/dev/null || true
+          npm init -y
+          npm install @capacitor/core @capacitor/android
+          npm install -D @capacitor/cli
 
-      - name: Build APK
-        working-directory: android
-        run: ./gradlew assembleDebug
+      - name: Build Android App
+        run: |
+          # إنشاء تطبيق الأندرويد
+          npx cap init "SafetyApp" "com.marsa.safety" --web-dir "www"
+          npx cap add android
+          cd android
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
