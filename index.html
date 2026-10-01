@@ -20,7 +20,7 @@
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%);
       display: flex; flex-direction: column; justify-content: center; align-items: center; 
-      z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; /* Force LTR */
+      z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr;
     }
     .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
     .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); }
@@ -31,7 +31,7 @@
     }
     .loading-bar { 
       width: 0%; height: 100%; background: var(--secondary); 
-      box-shadow: 0 0 10px var(--secondary), 0 0 20px var(--secondary); /* Glowing effect */
+      box-shadow: 0 0 10px var(--secondary), 0 0 20px var(--secondary);
       animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
     }
     .loading-text { 
@@ -58,9 +58,10 @@
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
-    /* ---------------- 3. Header & Cards ---------------- */
+    /* ---------------- 3. Header & Navigation ---------------- */
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-    .header img.main-logo, .header img.dept-logo { height: 90px; }
+    .header img.main-logo { height: 80px; }
+    .header img.dept-logo { height: 120px; transform: scale(1.1); margin-left: 20px; } 
     .header-titles { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
     .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
@@ -96,7 +97,7 @@
     #scrollTop { bottom: 90px; }
     #scrollBottom { bottom: 20px; }
 
-    /* ---------------- 4. Captain Survey ---------------- */
+    /* ---------------- 4. Captain Survey Module ---------------- */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
@@ -107,6 +108,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
     .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
+    
     .input-with-btn { display: flex; gap: 5px; }
     .input-with-btn input { flex: 1; text-transform: uppercase; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
@@ -124,30 +126,35 @@
     .radio-group input[type="radio"][value="Poor"]:checked + label { background: var(--val-p); color: white; border-color: var(--val-p); }
     .radio-group input[type="radio"][value="N/A"]:checked + label { background: var(--val-n); color: white; border-color: var(--val-n); }
     .radio-group input[type="radio"][value="Blank"]:checked + label { background: var(--val-b); color: white; border-color: var(--val-b); }
+    
     .submit-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: block; width: 100%; margin-top: 30px; font-family: 'Cairo'; }
     .submit-btn:hover { background: var(--secondary); color: #000; }
 
-    /* Modal */
+    /* ---------------- Modal (Add New Item) ---------------- */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
     .close-modal { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-modal:hover { color: #000; }
 
-    /* Reports LTR */
+    /* ---------------- Reports Styles (LTR Perfect Match) ---------------- */
     .report-filters { display: flex; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 10px; align-items: flex-end; margin-bottom: 30px; direction: rtl; }
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
+    
     .ltr-container { direction: ltr; text-align: left; }
     .report-wrapper { overflow-x: auto; margin-bottom: 40px; background: #fff; padding: 10px;}
+    
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 30px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; }
     .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 140px; white-space: nowrap; }
+    
     .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
     .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
     .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
     .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
     .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
+    
     .report-title { text-align: center; color: var(--primary); font-size: 24px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
     .report-subtitle { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 20px; }
     .report-footer { font-size: 20px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 20px; }
@@ -175,7 +182,6 @@
         <div class="input-group">
           <i class="fa-solid fa-user"></i>
           <select id="username" required>
-            <!-- Admin is now selected by default -->
             <option value="admin" selected>مدير النظام (Admin)</option>
             <option value="safety_mgr">مدير السلامة (Safety Mgr)</option>
             <option value="safety_officer">ضابط سلامة (Safety Officer)</option>
@@ -272,53 +278,36 @@
       </div>
 
       <div id="tab-report" class="tab-content ltr-container">
-        <!-- Reports Content Same As Before -->
         <div class="report-filters">
           <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
           <div class="form-group"><label>إلى (To):</label><input type="date" id="toDate"></div>
           <div class="form-group"><label>من (From):</label><input type="date" id="fromDate"></div>
-          <button onclick="document.getElementById('printable-report').style.display='block';" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">عرض التقرير</button>
+          <button onclick="generateReport()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">عرض التقرير</button>
         </div>
 
         <div id="printable-report" style="display: none; background: #fff; padding: 20px;">
           <div class="report-title">Safety Captain Survey Report</div>
-          <div class="report-subtitle">For August</div>
+          <div class="report-subtitle">Generated Report</div>
 
           <div class="report-wrapper">
             <table class="report-table">
               <thead>
-                <tr>
+                <tr id="report-headers-row">
                   <th rowspan="2">Airline NAME</th><th rowspan="2">FltNO</th><th rowspan="2">Type</th><th rowspan="2">DateTime</th><th rowspan="2">REG</th>
-                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
-                  <th rowspan="2">Captain Comments</th>
+                  <!-- Dynamic Headers -->
                 </tr>
               </thead>
-              <tbody>
-                <tr><td>ALBASTAR</td><td>AP 3525</td><td>B737-800</td><td>03/08/2026 9:00</td><td>ECMTV</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
-                <tr><td>NEOSAIR</td><td>NO 4538</td><td>B737-800</td><td>06/08/2026 12:02</td><td>INEOZ</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-e">E</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-p">P</td><td class="bg-n">N</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-g">G</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td class="bg-b">B</td><td></td></tr>
+              <tbody id="report-tbody">
+                <!-- Data goes here -->
               </tbody>
             </table>
           </div>
-          <div class="report-wrapper" style="width: 70%;">
-            <table class="report-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th class="vertical-th">Communication Tower</th><th class="vertical-th">Communication Ground</th><th class="vertical-th">VOR-DME</th><th class="vertical-th">RNP APR 33_15</th><th class="vertical-th">Aeronautical Beacon</th><th class="vertical-th">Approach Lighting System</th><th class="vertical-th">PAPI System</th><th class="vertical-th">Wind Cone</th><th class="vertical-th">Apron Marking</th><th class="vertical-th">Apron Lighting</th><th class="vertical-th">Apron Signs</th><th class="vertical-th">APRON Stands Size</th><th class="vertical-th">G.H Performance</th><th class="vertical-th">Fuelling Performance</th><th class="vertical-th">Marshall Services</th><th class="vertical-th">RFF Team performance</th><th class="vertical-th">Runway Marking</th><th class="vertical-th">Runway Lighting</th><th class="vertical-th">Runway Signs</th><th class="vertical-th">RWY Brakes Action</th><th class="vertical-th">RWY Evaluating Pavement</th><th class="vertical-th">Taxi Way Marking</th><th class="vertical-th">Taxi Way Lighting</th><th class="vertical-th">Taxi Way Signs</th><th class="vertical-th">TWY Brakes Action</th><th class="vertical-th">TWY Evaluating Pavement</th><th class="vertical-th">Stop Bars</th><th class="vertical-th">Weather</th><th class="vertical-th">Wildlife</th><th class="vertical-th">Bird Strike</th><th class="vertical-th">FOD</th>
-                </tr>
-              </thead>
-              <tbody>
-                 <tr><td class="bg-e">Excellent</td><td>10</td><td>10</td><td>9</td><td>9</td><td>6</td><td>6</td><td>5</td><td>10</td><td>9</td><td>9</td><td>11</td><td>13</td><td>15</td><td>14</td><td>14</td><td>13</td><td>9</td><td>9</td><td>8</td><td>10</td><td>10</td><td>9</td><td>8</td><td>9</td><td>10</td><td>10</td><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                 <tr><td class="bg-b">Blank</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>22</td><td>22</td><td>22</td><td>22</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="report-footer">Total of survey been held on August are 22</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Modal (Add New Aircraft) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -335,7 +324,7 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <script>
-    // ========= ضع رابط جوجل سكربت المحدث هنا ========= 
+    // ========= استبدل هذا الرابط بالرابط الجديد الخاص بك ========= 
     const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
     
     let globalFleetData = []; 
@@ -393,15 +382,22 @@
       });
     }
 
-    // ---------------- Fetch Data Safely using GET/Fetch ----------------
+    // ---------------- Fetch Data with appropriate headers ----------------
     async function loadFleetData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbzOO4YSFx_OY1SsjJSh9PC9mabuPLOD7B6kUfyRQpvOVpZQToKiwqiU3liT04U9qVaE/exec") return; 
+      if(API_URL === "https://script.google.com/macros/s/AKfycbxx6bhNJGEU3FN0eLYu7aybicdCdB2e1skX_yp4SxHpSAfFBVDpBQ5XwrqddRT5fCFW/exec
+") return; 
       
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
       try {
-        const response = await fetch(API_URL + "?action=getFleetData");
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // This bypasses CORS issues
+          body: JSON.stringify({ action: "getFleetData" }),
+          redirect: 'follow'
+        });
+        
         const data = await response.json();
         
         if (data.status === "error") {
@@ -473,7 +469,12 @@
 
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline };
       try {
-        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        });
         const result = await response.json();
         if (result.status === "success") {
           msg.style.color = "green"; msg.innerText = result.message;
@@ -500,11 +501,22 @@
       }, 1500);
     }
 
+    function generateReport() {
+        document.getElementById('printable-report').style.display = 'block';
+        
+        const tr1 = document.getElementById('report-headers-row');
+        while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
+        criteriaList.forEach(crit => { tr1.innerHTML += `<th class="vertical-th">${crit}</th>`; });
+        tr1.innerHTML += `<th class="vertical-th" style="height: auto;">Captain Comments</th>`;
+
+        document.getElementById('report-tbody').innerHTML = "<tr><td colspan='37' style='padding: 20px; font-weight: bold; font-size: 16px;'>جاري تهيئة قاعدة البيانات لجلب التقارير الحقيقية...</td></tr>";
+    }
+
     function exportToPDF() {
       const element = document.getElementById('printable-report');
       element.style.display = 'block';
       html2pdf().set({
-        margin: 0.2, filename: 'Captain_Survey_August_Report.pdf',
+        margin: 0.2, filename: 'Captain_Survey_Report.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
