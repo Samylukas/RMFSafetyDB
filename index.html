@@ -390,36 +390,47 @@
 
     // ---------------- Auto-Fill & Exact Column Mapping ----------------
     async function loadFleetData() {
-      if(API_URL === "https://script.google.com/macros/s/AKfycbxQuZl2hed1V3LSngpcL2gHEvH0I5nzQmBpejLMyuasIjFW0TBT0_bgHLsURc_-hg3O/exec") return; 
+      if(API_URL === "https://script.google.com/macros/s/AKfycbxE5AA3hScOJ95vOybFzbA47fRQnh3lGvWeDDxNq5e94eXrOnZohzE9KkRSqEHojilu/exec") return; 
       
       const regInput = document.getElementById('reg');
       regInput.placeholder = "جاري تحميل الأسطول...";
       
       try {
-        const response = await fetch(API_URL + "?action=getFleetData");
+        // استخدام POST بدل GET لحل مشاكل جوجل
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: "getFleetData" })
+        });
+        
         const data = await response.json();
+        
+        // لو جوجل رد علينا بخطأ نعرضه
+        if (data.status === "error") {
+          console.error("Server Error:", data.message);
+          regInput.placeholder = "خطأ: " + data.message;
+          return;
+        }
         
         globalFleetData = data.fleet;
         
         const regList = document.getElementById('regList');
         regList.innerHTML = "";
         globalFleetData.forEach(aircraft => {
-          // جلب بيانات التسجيل من جدول AIRLINEDATA_TBL (اسم العمود في الشيت: REG)
           let regValue = aircraft["REG"]; 
           if(regValue) regList.innerHTML += `<option value="${regValue}">`;
         });
 
         const airlinesList = document.getElementById('airlinesMasterList');
         airlinesList.innerHTML = "";
-        // جلب بيانات الشركات من جدول AIRLINES_TBL (اسم العمود في الشيت: Air Line)
         data.airlines.forEach(airline => {
           if(airline) airlinesList.innerHTML += `<option value="${airline}">`;
         });
         
         regInput.placeholder = "اكتب أو اختر تسجيل الطائرة...";
       } catch (error) {
-        console.error("خطأ:", error);
-        regInput.placeholder = "فشل التحميل!";
+        console.error("خطأ في الاتصال:", error);
+        regInput.placeholder = "فشل الاتصال بالسيرفر!";
       }
     }
 
