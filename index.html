@@ -379,55 +379,72 @@
       loadAppDataInit();
     });
 
-    async function loadAppDataInit() {
+    function loadAppDataInit() {
       const regSelect = document.getElementById('reg');
       if(API_URL.includes("YOUR_")) { 
         regSelect.innerHTML = '<option value="" disabled selected>يرجى وضع رابط جوجل سكربت</option>';
         finishLoading(); 
         return; 
       }
+
+      const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
-      try {
-        const response = await fetch(API_URL + "?action=getAppData");
-        const text = await response.text();
-        
-        // لو جوجل رد بصفحة ويب بدل الداتا، ده معناه إن الصلاحية مش Anyone
-        if (text.includes("<!DOCTYPE html>") || text.includes("<html")) {
-           throw new Error("تأكد من نشر السكربت كـ (Anyone)");
-        }
-        
-        const data = JSON.parse(text);
-        
-        if (data.status === "success") {
-          globalFleetData = data.fleet.reverse(); 
-          globalSurveys = data.surveys.reverse(); 
-          globalUsers = data.users || [];
-
-          const userSelect = document.getElementById('username');
-          userSelect.innerHTML = "";
-          globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
-
-          regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
-          globalFleetData.forEach(aircraft => { if(aircraft["REG"]) regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; });
-          
-          const airlinesList = document.getElementById('airlinesMasterList');
-          airlinesList.innerHTML = "";
-          (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
-          
-          document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
-          if(typeof renderUsersTable === "function") renderUsersTable();
-        } else {
-          regSelect.innerHTML = `<option value="" disabled selected>خطأ من السيرفر: ${data.message}</option>`;
-        }
-      } catch (error) {
-        regSelect.innerHTML = `<option value="" disabled selected>خطأ: ${error.message}</option>`;
-      } finally {
+      // عداد أمان: لو السيرفر ماردش بعد 8 ثواني، اقفل شاشة التحميل بالعافية
+      const fallbackTimer = setTimeout(() => {
+        regSelect.innerHTML = '<option value="" disabled selected>انتهى وقت الاتصال بالسيرفر</option>';
         finishLoading();
-      }
-    }
+      }, 8000); 
+
+      window[callbackName] = function(data) {
+        clearTimeout(fallbackTimer); // إلغاء عداد الأمان لأن الداتا وصلت
+        try {
+          if (data && data.status === "success") {
+            globalFleetData = data.fleet ? data.fleet.reverse() : [];
+            globalSurveys = data.surveys ? data.surveys.reverse() : [];
+            globalUsers = data.users || [];
+
+            const userSelect = document.getElementById('username');
+            if(userSelect) {
+              userSelect.innerHTML = "";
+              globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
+              if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
+            }
+
+            regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
+            globalFleetData.forEach(aircraft => { 
+              if(aircraft && aircraft["REG"]) {
+                 regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
+              }
+            });
+
+            const airlinesList = document.getElementById('airlinesMasterList');
+            if(airlinesList) {
+              airlinesList.innerHTML = "";
+              (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
+            }
+
+            const navCounter = document.getElementById('nav-counter');
+            if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
+            
+            if(typeof renderUsersTable === "function") renderUsersTable();
+          } else {
+            regSelect.innerHTML = `<option value="" disabled selected>خطأ: ${data ? data.message : 'غير معروف'}</option>`;
+          }
+        } catch(err) {
+          regSelect.innerHTML = `<option value="" disabled selected>خطأ داخلي: ${err.message}</option>`;
+        }
+        delete window[callbackName];
+        finishLoading();
+      };
+
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
-      script.onerror = function() { finishLoading(); };
+      script.onerror = function() {
+        clearTimeout(fallbackTimer);
+        regSelect.innerHTML = '<option value="" disabled selected>فشل الاتصال بجوجل سكربت</option>';
+        delete window[callbackName];
+        finishLoading();
+      };
       document.body.appendChild(script);
     }
 
