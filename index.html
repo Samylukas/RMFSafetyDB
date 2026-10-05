@@ -379,36 +379,52 @@
       loadAppDataInit();
     });
 
-    function loadAppDataInit() {
-      if(API_URL.includes("YOUR_")) { finishLoading(); return; }
+    async function loadAppDataInit() {
+      const regSelect = document.getElementById('reg');
+      if(API_URL.includes("YOUR_")) { 
+        regSelect.innerHTML = '<option value="" disabled selected>يرجى وضع رابط جوجل سكربت</option>';
+        finishLoading(); 
+        return; 
+      }
       
-      const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
-      window[callbackName] = function(data) {
+      try {
+        const response = await fetch(API_URL + "?action=getAppData");
+        const text = await response.text();
+        
+        // لو جوجل رد بصفحة ويب بدل الداتا، ده معناه إن الصلاحية مش Anyone
+        if (text.includes("<!DOCTYPE html>") || text.includes("<html")) {
+           throw new Error("تأكد من نشر السكربت كـ (Anyone)");
+        }
+        
+        const data = JSON.parse(text);
+        
         if (data.status === "success") {
           globalFleetData = data.fleet.reverse(); 
           globalSurveys = data.surveys.reverse(); 
-          globalUsers = data.users;
+          globalUsers = data.users || [];
 
           const userSelect = document.getElementById('username');
           userSelect.innerHTML = "";
           globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
 
-          // تحديث قائمة الـ Select الخاصة بـ REG
-          const regSelect = document.getElementById('reg');
           regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
           globalFleetData.forEach(aircraft => { if(aircraft["REG"]) regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; });
           
           const airlinesList = document.getElementById('airlinesMasterList');
           airlinesList.innerHTML = "";
-          data.airlines.forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
+          (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
           
           document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
-          renderUsersTable();
+          if(typeof renderUsersTable === "function") renderUsersTable();
+        } else {
+          regSelect.innerHTML = `<option value="" disabled selected>خطأ من السيرفر: ${data.message}</option>`;
         }
-        delete window[callbackName];
+      } catch (error) {
+        regSelect.innerHTML = `<option value="" disabled selected>خطأ: ${error.message}</option>`;
+      } finally {
         finishLoading();
-      };
-
+      }
+    }
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
       script.onerror = function() { finishLoading(); };
