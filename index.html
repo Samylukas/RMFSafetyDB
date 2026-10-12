@@ -2,8 +2,9 @@
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- سطر الأمان عشان الأبلكيشن (APK) يقدر يتصل بجوجل بدون حظر -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,7 +33,7 @@
     .input-group { margin-bottom: 20px; position: relative; text-align: right;}
     .input-group i { position: absolute; right: 15px; top: 15px; color: var(--primary); z-index: 2;}
     .input-group input, .input-group select { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
-    .input-group select { appearance: none; background-color: #fff; cursor: pointer; background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); background-repeat: no-repeat; background-position-x: 10px; background-position-y: 50%; }
+    .input-group select { appearance: none; background-color: #fff; cursor: pointer; }
     .input-group input:focus, .input-group select:focus { border-color: var(--secondary); outline: none; }
     .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
@@ -44,8 +45,7 @@
     .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
     .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
     
-    .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; animation: fadeIn 0.5s; display: none; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; display: none; }
     .welcome-text { text-align: center; color: var(--primary); margin-bottom: 40px; font-weight: 900; font-size: 2.2rem; }
     
     .departments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 20px; }
@@ -72,13 +72,11 @@
     .back-btn { display: inline-block; background: var(--primary); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; border: none; margin-bottom: 20px; transition: 0.3s; }
     .back-btn:hover { background: var(--secondary); color: #000; transform: translateX(5px); }
     
-    /* Scroll Buttons */
     .scroll-btn { position: fixed; right: 20px; background: var(--secondary); color: #fff; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 20px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
     .scroll-btn:hover { transform: scale(1.1); background: var(--primary); }
     #scrollTop { bottom: 85px; }
     #scrollBottom { bottom: 20px; }
 
-    /* Nav Controls */
     .nav-controls { margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; gap: 10px; background: #fff; padding: 10px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: fit-content; flex-wrap: wrap;}
     .nav-btn { background: var(--bg-color); color: var(--primary); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 16px; display: flex; justify-content: center; align-items: center; }
     .nav-btn:hover { background: var(--secondary); color: #fff; transform: scale(1.1); }
@@ -86,13 +84,12 @@
     .new-btn { background: var(--val-e); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; margin-right: 5px; }
     .new-btn:hover { background: #218838; }
 
-    /* Survey Forms */
     .survey-container { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
     .tabs-header { display: flex; background: #f8f9fa; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 15px; text-align: center; font-size: 1.1rem; font-weight: 700; font-family: 'Cairo'; cursor: pointer; border: none; background: none; color: #777; transition: 0.3s; border-bottom: 4px solid transparent; }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--secondary); background: #fff; }
     .tab-content { padding: 20px; display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.4s; }
+    .tab-content.active { display: block; }
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
@@ -119,12 +116,10 @@
     .submit-btn:hover { background: var(--secondary); color: #000; }
     .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    /* Modal */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 10px;}
-    .modal-content { background-color: #fff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: fadeIn 0.3s; }
+    .modal-content { background-color: #fff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .close-modal { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
 
-    /* Reports & Tables */
     .report-filters { display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; align-items: flex-end; margin-bottom: 20px; direction: rtl; flex-wrap: wrap;}
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
@@ -146,7 +141,6 @@
     .report-subtitle { text-align: center; color: var(--primary); font-size: 16px; font-weight: bold; font-style: italic; margin-bottom: 15px; }
     .report-footer { font-size: 16px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 15px; text-align: center;}
 
-    /* ---------------- تظبيط مقاسات الموبايل (Responsive Media Queries) ---------------- */
     @media (max-width: 768px) {
       .header { flex-direction: column; padding: 15px 10px; gap: 15px; text-align: center;}
       .header img.main-logo, .header img.dept-logo { height: 60px; margin: 0;}
@@ -163,7 +157,6 @@
 </head>
 <body>
 
-  <!-- Floating Scroll Buttons -->
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
@@ -296,7 +289,6 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <!-- تم تغيير الحقل لـ Select لضمان ظهور السهم على الموبايل دايماً -->
                 <select id="reg" onchange="autoFillAircraftData()" required>
                   <option value="" disabled selected>جاري تحميل البيانات...</option>
                 </select>
@@ -364,7 +356,7 @@
   </div>
 
   <script>
-    // ========= ضع رابط جوجل سكربت بتاع إيميل الجيميل هنا =========
+    // الرابط النهائي السليم الخاص بك
     const API_URL = "https://script.google.com/macros/s/AKfycbwr5uyKEUfamamTezSVmUJ4tEtncjkQHZwZuCLeYwyVjitHQMu7iKh6H_gHdCGZzcol/exec"; 
     
     let globalFleetData = []; 
@@ -379,59 +371,45 @@
       loadAppDataInit();
     });
 
+    // دالة التحميل بطريقة JSONP الصاروخية والنظيفة
     function loadAppDataInit() {
       const regSelect = document.getElementById('reg');
-      if(API_URL.includes("YOUR_")) { 
-        regSelect.innerHTML = '<option value="" disabled selected>يرجى وضع رابط جوجل سكربت</option>';
-        finishLoading(); 
-        return; 
-      }
+      regSelect.innerHTML = '<option value="" disabled selected>جاري سحب البيانات...</option>';
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
-      // عداد أمان: لو السيرفر ماردش بعد 8 ثواني، اقفل شاشة التحميل بالعافية
-      const fallbackTimer = setTimeout(() => {
-        regSelect.innerHTML = '<option value="" disabled selected>انتهى وقت الاتصال بالسيرفر</option>';
-        finishLoading();
-      }, 8000); 
-
       window[callbackName] = function(data) {
-        clearTimeout(fallbackTimer); // إلغاء عداد الأمان لأن الداتا وصلت
-        try {
-          if (data && data.status === "success") {
-            globalFleetData = data.fleet ? data.fleet.reverse() : [];
-            globalSurveys = data.surveys ? data.surveys.reverse() : [];
-            globalUsers = data.users || [];
+        if (data && data.status === "success") {
+          globalFleetData = data.fleet ? data.fleet.reverse() : [];
+          globalSurveys = data.surveys ? data.surveys.reverse() : [];
+          globalUsers = data.users || [];
 
-            const userSelect = document.getElementById('username');
-            if(userSelect) {
-              userSelect.innerHTML = "";
-              globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
-              if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
-            }
-
-            regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
-            globalFleetData.forEach(aircraft => { 
-              if(aircraft && aircraft["REG"]) {
-                 regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
-              }
-            });
-
-            const airlinesList = document.getElementById('airlinesMasterList');
-            if(airlinesList) {
-              airlinesList.innerHTML = "";
-              (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
-            }
-
-            const navCounter = document.getElementById('nav-counter');
-            if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
-            
-            if(typeof renderUsersTable === "function") renderUsersTable();
-          } else {
-            regSelect.innerHTML = `<option value="" disabled selected>خطأ: ${data ? data.message : 'غير معروف'}</option>`;
+          const userSelect = document.getElementById('username');
+          if(userSelect) {
+            userSelect.innerHTML = "";
+            globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
+            if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
           }
-        } catch(err) {
-          regSelect.innerHTML = `<option value="" disabled selected>خطأ داخلي: ${err.message}</option>`;
+
+          regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
+          globalFleetData.forEach(aircraft => { 
+            if(aircraft && aircraft["REG"]) {
+               regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
+            }
+          });
+
+          const airlinesList = document.getElementById('airlinesMasterList');
+          if(airlinesList) {
+            airlinesList.innerHTML = "";
+            (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
+          }
+
+          const navCounter = document.getElementById('nav-counter');
+          if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
+          
+          if(typeof renderUsersTable === "function") renderUsersTable();
+        } else {
+          regSelect.innerHTML = `<option value="" disabled selected>لا توجد بيانات مسجلة</option>`;
         }
         delete window[callbackName];
         finishLoading();
@@ -440,8 +418,7 @@
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
       script.onerror = function() {
-        clearTimeout(fallbackTimer);
-        regSelect.innerHTML = '<option value="" disabled selected>فشل الاتصال بجوجل سكربت</option>';
+        regSelect.innerHTML = '<option value="" disabled selected>تأكد من اتصالك بالإنترنت</option>';
         delete window[callbackName];
         finishLoading();
       };
@@ -456,13 +433,11 @@
           setTimeout(() => { 
             splash.style.display = 'none'; 
             document.getElementById('login-screen').style.display = 'flex'; 
-            // Focus on password automatically
             const pwdField = document.getElementById('password');
-            pwdField.value = "";
-            pwdField.focus();
+            if(pwdField) { pwdField.value = ""; pwdField.focus(); }
           }, 800); 
         }
-      }, 1000);
+      }, 500);
     }
 
     function handleLogin(e) {
@@ -502,6 +477,7 @@
 
     function buildEvaluationForm() {
       const container = document.getElementById('criteria-container');
+      if(!container) return;
       criteriaList.forEach((crit, index) => {
         container.innerHTML += `
           <div class="eval-card">
@@ -521,10 +497,6 @@
       let val = inputElement.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
       if (val.length > 2) { val = val.substring(0, 2) + '-' + val.substring(2); }
       inputElement.value = val;
-    }
-
-    function formatRegAndFill(inputElement) {
-      autoFillAircraftData();
     }
 
     function autoFillAircraftData() {
@@ -593,12 +565,11 @@
       let btn = document.getElementById('submitSurveyBtn');
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
-      document.getElementById('reg').value = ""; // Reset Dropdown
+      document.getElementById('reg').value = ""; 
       autoFillAircraftData();
     }
 
     function openFleetModal() {
-      // document.getElementById('newReg').value = document.getElementById('reg').value; 
       document.getElementById('newReg').value = "";
       document.getElementById('newType').value = "";
       document.getElementById('newAirline').value = "";
@@ -697,7 +668,6 @@
         globalUsers.push({Role: role, Username: username, Password: password});
         renderUsersTable();
         
-        // أضف المستخدم فوراً لقائمة الدخول
         document.getElementById('username').innerHTML += `<option value="${username}">${username} (${role})</option>`;
         
         setTimeout(() => { msg.innerText = ""; document.getElementById('newUsername').value = ""; document.getElementById('newUserPass').value = ""; }, 1500);
@@ -706,6 +676,7 @@
 
     function renderUsersTable() {
       const tbody = document.getElementById('users-tbody');
+      if(!tbody) return;
       tbody.innerHTML = "";
       globalUsers.forEach((u, i) => {
         tbody.innerHTML += `<tr><td>${i+1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
