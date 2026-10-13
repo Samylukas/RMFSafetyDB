@@ -20,14 +20,13 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* Splash Screen - التعديلات الجديدة (لوجو أكبر، سنترة دقيقة، وانسيابية) */
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease-out; }
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.4s ease-out; }
     .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
     .splash-logo { width: 450px; max-width: 90%; margin-bottom: 30px; }
     .loading-bar-container { width: 300px; max-width: 80%; height: 6px; background: #eee; border-radius: 5px; overflow: hidden; margin: 0 auto; }
-    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 16px; letter-spacing: 2px; text-align: center; direction: ltr; }
-    @keyframes loadProgress { 0% { width: 0%; } 40% { width: 40%; } 80% { width: 80%; } 100% { width: 100%; } }
+    @keyframes loadProgress { 0% { width: 0%; } 40% { width: 50%; } 80% { width: 90%; } 100% { width: 100%; } }
 
     #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); padding: 20px;}
     .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 400px; }
@@ -97,6 +96,7 @@
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
     
+    /* ضبط السهم لخانة البحث */
     .input-with-btn { display: flex; gap: 5px; position: relative; }
     .input-with-btn input { flex: 1; padding-left: 35px; padding-right: 15px; } 
     .dropdown-icon { position: absolute; left: 55px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
@@ -397,11 +397,16 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    window.addEventListener('load', () => {
-      buildEvaluationForm();
-      loadAppDataInit();
-      // تأمين كامل لفتح البرنامج بعد 5 ثواني في جميع الأحوال
-      setTimeout(finishLoading, 5000); 
+    // 💥 الحل السحري: إغلاق التحميل بعد 3 ثواني مباشرة دون انتظار أي مكتبات
+    setTimeout(() => {
+        finishLoading();
+    }, 3000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        buildEvaluationForm();
+        loadAppDataInit();
+      } catch(e) { console.error(e); }
     });
 
     function loadAppDataInit() {
@@ -462,7 +467,7 @@
           if(loginScreen) loginScreen.style.display = 'flex'; 
           const pwdField = document.getElementById('password');
           if(pwdField) { pwdField.value = ""; pwdField.focus(); }
-        }, 500); 
+        }, 400); 
       }
     }
 
@@ -775,7 +780,6 @@
             flightsTbody.appendChild(tr);
         });
 
-        // إنشاء قسم تعليقات الكابتن بشكل منفصل أسفل الجدول
         let oldComments = document.getElementById('captain-comments-section');
         if(oldComments) oldComments.remove(); 
 
