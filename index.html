@@ -1461,15 +1461,16 @@
         
 
         if(fromD && toD) {
+
             let fd = new Date(fromD); let td = new Date(toD);
+
             filteredSurveys = globalSurveys.filter(s => {
+
                 let sd = new Date(s.Date);
+
                 return sd >= fd && sd <= td;
+
             });
-            document.getElementById('report-date-range').innerText = `الفترة: ${fromD} إلى ${toD}`;
-        } else {
-            document.getElementById('report-date-range').innerText = `جميع السجلات (All Time)`;
-        }
 
             document.getElementById('report-date-range').innerText = `الفترة: ${fromD} إلى ${toD}`;
 
