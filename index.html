@@ -8,8 +8,8 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- مكتبة الرسوم البيانية العصرية -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
@@ -20,13 +20,15 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.4s ease-out; }
-    .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-    .splash-logo { width: 450px; max-width: 90%; margin-bottom: 30px; }
-    .loading-bar-container { width: 300px; max-width: 80%; height: 6px; background: #eee; border-radius: 5px; overflow: hidden; margin: 0 auto; }
-    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 16px; letter-spacing: 2px; text-align: center; direction: ltr; }
-    @keyframes loadProgress { 0% { width: 0%; } 40% { width: 50%; } 80% { width: 90%; } 100% { width: 100%; } }
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, #ffffff 0%, #e9ecef 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; }
+    .splash-content { text-align: center; animation: pulseLogo 2s infinite alternate; }
+    .splash-logo { width: 350px; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2)); max-width: 80%; }
+    .loading-bar-container { width: 280px; height: 6px; background: #ddd; border-radius: 6px; margin: 30px auto 0; overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); max-width: 80%;}
+    .loading-bar { width: 0%; height: 100%; background: var(--secondary); box-shadow: 0 0 10px var(--secondary); animation: loadProgress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; letter-spacing: 3px; font-family: 'Segoe UI', Tahoma, sans-serif; animation: blink 1.5s infinite; }
+    @keyframes pulseLogo { 0% { transform: scale(0.98); } 100% { transform: scale(1.02); } }
+    @keyframes loadProgress { 0% { width: 0%; } 30% { width: 40%; } 70% { width: 75%; } 100% { width: 100%; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); padding: 20px;}
     .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 400px; }
@@ -36,14 +38,14 @@
     .input-group input, .input-group select { width: 100%; padding: 12px 45px 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
     .input-group select { appearance: none; background-color: #fff; cursor: pointer; }
     .input-group input:focus, .input-group select:focus { border-color: var(--secondary); outline: none; }
-    .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .login-btn { width: 100%; padding: 12px; background: var(--secondary); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .login-btn:hover { background: var(--primary); }
 
     .header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .header img.main-logo { height: 80px; }
     .header img.dept-logo { height: 120px; transform: scale(1.1); margin-left: 20px; } 
     .header-titles { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-    .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; line-height: 1.1; }
+    .header-titles h1 { margin: 0; color: var(--primary); font-size: 2rem; font-weight: 900; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.1; }
     .header-titles h2 { margin: 5px 0 0 0; color: #555; font-size: 1.6rem; font-weight: 700; }
     
     .content-area { padding: 40px 20px; max-width: 1400px; margin: auto; min-height: 100vh; display: none; }
@@ -59,7 +61,7 @@
     .icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
     .icon-users { background-image: linear-gradient(45deg, #333333, #777777); }
     .dept-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 0; }
-    .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; }
+    .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; font-family: 'Segoe UI', Tahoma, sans-serif;}
 
     .submenu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 10px; }
     .sub-card { background: #fff; border-radius: 15px; padding: 25px 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid #eee; position: relative; }
@@ -81,7 +83,7 @@
     .nav-controls { margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; gap: 10px; background: #fff; padding: 10px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: fit-content; flex-wrap: wrap;}
     .nav-btn { background: var(--bg-color); color: var(--primary); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.3s; font-size: 16px; display: flex; justify-content: center; align-items: center; }
     .nav-btn:hover { background: var(--secondary); color: #fff; transform: scale(1.1); }
-    .nav-counter { font-weight: bold; color: var(--primary); font-size: 16px; padding: 0 10px; border-left: 2px solid #eee; border-right: 2px solid #eee; }
+    .nav-counter { font-weight: bold; color: var(--primary); font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 16px; padding: 0 10px; border-left: 2px solid #eee; border-right: 2px solid #eee; }
     .new-btn { background: var(--val-e); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; transition: 0.3s; margin-right: 5px; }
     .new-btn:hover { background: #218838; }
 
@@ -95,12 +97,8 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
-    
-    /* ضبط السهم لخانة البحث */
-    .input-with-btn { display: flex; gap: 5px; position: relative; }
-    .input-with-btn input { flex: 1; padding-left: 35px; padding-right: 15px; } 
-    .dropdown-icon { position: absolute; left: 55px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
-    
+    .input-with-btn { display: flex; gap: 5px; }
+    .input-with-btn select { flex: 1; }
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
     .add-btn:hover { background: var(--secondary); color: black; }
 
@@ -125,8 +123,7 @@
     .modal-content { background-color: #fff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .close-modal { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
 
-    /* PDF Report Styles */
-    .avoid-page-break { page-break-inside: avoid !important; break-inside: avoid !important; display: block; }
+    /* Modern Dashboard Styles */
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
     .dashboard-header h2 { margin: 0; color: var(--primary); font-weight: 900; font-size: 1.8rem; }
     .dashboard-header p { margin: 5px 0 0; color: #777; font-weight: 600; }
@@ -140,21 +137,14 @@
     
     .report-filters { display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; align-items: flex-end; margin-bottom: 20px; direction: rtl; flex-wrap: wrap;}
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
+    .pdf-export-btn:hover { background: #c9302c; }
+    .ltr-container { direction: ltr; text-align: left; }
+    .report-wrapper { overflow-x: auto; margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; max-width: 100%; width: 100%; display: block;}
     
-    .report-wrapper { margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; max-width: 100%; width: 100%; display: block; overflow-x: auto; }
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin-bottom: 20px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; color: var(--primary); }
-    .rtl-table th, .rtl-table td { text-align: right !important; }
-
-    .comments-section { background: #fff8f8; border-left: 5px solid #dc3545; padding: 15px; border-radius: 8px; margin-top: 30px; }
-
-    .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
-    .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
-    .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
-    .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
-    .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
-
+    
     @media (max-width: 768px) {
       .header { flex-direction: column; padding: 15px 10px; gap: 15px; text-align: center;}
       .header img.main-logo, .header img.dept-logo { height: 60px; margin: 0;}
@@ -167,6 +157,26 @@
       .report-filters { flex-direction: column; align-items: stretch; }
       .pdf-export-btn { margin-right: 0; margin-top: 10px; width: 100%;}
       .dashboard-header { flex-direction: column-reverse; text-align: center; gap: 10px; }
+    }
+    /* إصلاح قص الورق في الـ PDF */
+    .chart-container, .stats-cards, .report-wrapper, .report-table tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .comments-section {
+      background: #fff8f8; border-left: 5px solid #dc3545; padding: 15px; border-radius: 8px;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin-top: 30px;
+    }
+    /* إصلاح قص الورق للـ PDF وتحويل الجدول لليمين */
+    .avoid-page-break {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      display: block;
+    }
+    .rtl-table th, .rtl-table td {
+      text-align: right !important;
     }
   </style>
 </head>
@@ -304,9 +314,9 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اكتب للبحث أو اختر..." required autocomplete="off" style="text-transform: uppercase;">
-                <i class="fa-solid fa-chevron-down dropdown-icon"></i>
-                <datalist id="regMasterList"></datalist>
+                <select id="reg" onchange="autoFillAircraftData()" required>
+                  <option value="" disabled selected>جاري تحميل البيانات...</option>
+                </select>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
             </div>
@@ -325,6 +335,8 @@
         </form>
       </div>
 
+      <!-- تبويب التقارير (Dashboard العصرية) -->
+      <!-- تبويب التقارير (Dashboard العصرية) -->
       <div id="tab-report" class="tab-content">
         <div class="report-filters">
           <button onclick="exportModernPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> تحميل التقرير (PDF)</button>
@@ -349,6 +361,7 @@
             <div class="stat-card"><h3 id="stat-excellent">0%</h3><p>نسبة التقييم الممتاز (E)</p></div>
           </div>
 
+          <!-- غلاف يمنع قص الرسومات البيانية في الـ PDF -->
           <div class="avoid-page-break">
             <div class="charts-grid" style="direction: ltr;">
               <div class="chart-container"><canvas id="airlinesChart"></canvas></div>
@@ -357,13 +370,15 @@
             </div>
           </div>
 
+          <!-- الجدول من اليمين لليسار مدمج فيه التعليقات -->
           <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
+            <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات وتعليقات الكابتن</h4>
             <table class="report-table rtl-table" dir="rtl">
               <thead>
                 <tr id="report-headers-row">
                   <th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th>
                   <th class="bg-e">E</th><th class="bg-g">G</th><th class="bg-p">P</th><th class="bg-n">N/A</th><th class="bg-b">B</th>
+                  <th style="width: 25%;">تعليقات الكابتن (Comments)</th>
                 </tr>
               </thead>
               <tbody id="flights-eval-tbody"></tbody>
@@ -371,8 +386,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
@@ -380,7 +393,7 @@
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
       <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
-      <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
       <div class="form-group" style="margin-bottom: 15px;"><label>الدولة (Country):</label><input type="text" id="newCountry" placeholder="Egypt, Italy, etc..."></div>
       <p id="modalMsg" style="font-size: 14px; font-weight: bold; text-align: center; margin-top: 5px;"></p>
@@ -397,78 +410,86 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    // 💥 الحل السحري: إغلاق التحميل بعد 3 ثواني مباشرة دون انتظار أي مكتبات
-    setTimeout(() => {
-        finishLoading();
-    }, 3000);
+    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        buildEvaluationForm();
-        loadAppDataInit();
-      } catch(e) { console.error(e); }
+    window.addEventListener('load', () => {
+      buildEvaluationForm();
+      loadAppDataInit();
     });
 
     function loadAppDataInit() {
-      const regDatalist = document.getElementById('regMasterList');
-      if(regDatalist) regDatalist.innerHTML = ''; 
+      const regSelect = document.getElementById('reg');
+      regSelect.innerHTML = '<option value="" disabled selected>جاري سحب البيانات...</option>';
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
+      const fallbackTimer = setTimeout(() => {
+        regSelect.innerHTML = '<option value="" disabled selected>انتهى وقت الاتصال بالسيرفر</option>';
+        finishLoading();
+      }, 10000); 
+
       window[callbackName] = function(data) {
-        try {
-            if (data && data.status === "success") {
-            globalFleetData = data.fleet ? data.fleet.reverse() : [];
-            globalSurveys = data.surveys ? data.surveys.reverse() : [];
-            globalUsers = data.users || [];
+        clearTimeout(fallbackTimer);
+        if (data && data.status === "success") {
+          globalFleetData = data.fleet ? data.fleet.reverse() : [];
+          globalSurveys = data.surveys ? data.surveys.reverse() : [];
+          globalUsers = data.users || [];
 
-            const userSelect = document.getElementById('username');
-            if(userSelect) {
-                userSelect.innerHTML = "";
-                globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
-                if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
-            }
+          const userSelect = document.getElementById('username');
+          if(userSelect) {
+            userSelect.innerHTML = "";
+            globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
+            if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
+          }
 
-            if(regDatalist) {
-                globalFleetData.forEach(aircraft => { 
-                if(aircraft && aircraft["REG"]) {
-                    regDatalist.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
-                }
-                });
+          regSelect.innerHTML = '<option value="" disabled selected>اختر التسجيل...</option>';
+          globalFleetData.forEach(aircraft => { 
+            if(aircraft && aircraft["REG"]) {
+               regSelect.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
             }
+          });
 
-            const airlinesList2 = document.getElementById('airlinesMasterList2');
-            if(airlinesList2) {
-                airlinesList2.innerHTML = "";
-                (data.airlines || []).forEach(airline => { if(airline) airlinesList2.innerHTML += `<option value="${airline}">`; });
-            }
+          const airlinesList = document.getElementById('airlinesMasterList');
+          if(airlinesList) {
+            airlinesList.innerHTML = "";
+            (data.airlines || []).forEach(airline => { if(airline) airlinesList.innerHTML += `<option value="${airline}">`; });
+          }
 
-            const navCounter = document.getElementById('nav-counter');
-            if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
-            
-            if(typeof renderUsersTable === "function") renderUsersTable();
-            }
-        } catch(e) { console.log(e); }
+          const navCounter = document.getElementById('nav-counter');
+          if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
+          
+          if(typeof renderUsersTable === "function") renderUsersTable();
+        } else {
+          regSelect.innerHTML = `<option value="" disabled selected>لا توجد بيانات مسجلة</option>`;
+        }
         delete window[callbackName];
+        finishLoading();
       };
 
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
+      script.onerror = function() {
+        clearTimeout(fallbackTimer);
+        regSelect.innerHTML = '<option value="" disabled selected>تأكد من اتصالك بالإنترنت</option>';
+        delete window[callbackName];
+        finishLoading();
+      };
       document.body.appendChild(script);
     }
 
     function finishLoading() {
-      const splash = document.getElementById('splash-screen');
-      if(splash && splash.style.display !== 'none') { 
-        splash.style.opacity = '0'; 
-        setTimeout(() => { 
-          splash.style.display = 'none'; 
-          const loginScreen = document.getElementById('login-screen');
-          if(loginScreen) loginScreen.style.display = 'flex'; 
-          const pwdField = document.getElementById('password');
-          if(pwdField) { pwdField.value = ""; pwdField.focus(); }
-        }, 400); 
-      }
+      setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if(splash) { 
+          splash.style.opacity = '0'; 
+          setTimeout(() => { 
+            splash.style.display = 'none'; 
+            document.getElementById('login-screen').style.display = 'flex'; 
+            const pwdField = document.getElementById('password');
+            if(pwdField) { pwdField.value = ""; pwdField.focus(); }
+          }, 800); 
+        }
+      }, 500);
     }
 
     function handleLogin(e) {
@@ -630,10 +651,7 @@
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         
         globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
-        
-        const regDatalist = document.getElementById('regMasterList');
-        if(regDatalist) regDatalist.innerHTML += `<option value="${reg}">${reg}</option>`;
-        
+        document.getElementById('reg').innerHTML += `<option value="${reg}">${reg}</option>`;
         document.getElementById('reg').value = reg;
         autoFillAircraftData();
         setTimeout(closeAddModal, 1500);
@@ -717,7 +735,7 @@
       });
     }
 
-    function generateModernReport() {
+  function generateModernReport() {
         document.getElementById('printable-report').style.display = 'block';
         
         let filteredSurveys = globalSurveys;
@@ -744,7 +762,7 @@
         flightsTbody.innerHTML = "";
 
         if(filteredSurveys.length === 0) {
-            flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+            flightsTbody.innerHTML = "<tr><td colspan='10' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
             document.getElementById('stat-total').innerText = "0";
             document.getElementById('stat-airlines').innerText = "0";
             document.getElementById('stat-excellent').innerText = "0%";
@@ -776,14 +794,76 @@
                 <td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td>
                 <td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td>
                 <td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>
+                <td style="color:#000; font-weight:600; text-align:right;">${survey.Captain_Comments && survey.Captain_Comments.trim() !== "" ? survey.Captain_Comments : "-"}</td>
             `;
             flightsTbody.appendChild(tr);
         });
 
-        let oldComments = document.getElementById('captain-comments-section');
-        if(oldComments) oldComments.remove(); 
+        document.getElementById('stat-total').innerText = filteredSurveys.length;
+        document.getElementById('stat-airlines').innerText = airlinesSet.size;
+        
+        let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+        let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+        document.getElementById('stat-excellent').innerText = `${excPercent}%`;
 
-        let commentsHTML = `<div id="captain-comments-section" class="comments-section avoid-page-break">
+        drawCharts(airlinesCount, datesCount, evalsCount);
+    }
+
+        filteredSurveys.forEach(survey => {
+            if(survey.CAR) { airlinesSet.add(survey.CAR); airlinesCount[survey.CAR] = (airlinesCount[survey.CAR] || 0) + 1; }
+            let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown';
+            datesCount[dStr] = (datesCount[dStr] || 0) + 1;
+
+            // حساب التقديرات الخاصة بالرحلة دي بس
+            let fCounts = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 };
+            criteriaList.forEach(crit => {
+                let val = survey[crit] || "Blank";
+                if(fCounts[val] !== undefined) fCounts[val]++;
+                if(evalsCount[val] !== undefined) evalsCount[val]++; // للإجمالي العام
+            });
+
+            // صف الرحلة في الجدول
+            let tr = document.createElement('tr');
+            let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
+            tr.innerHTML = `
+                <td><b>${survey.CAR || ''}</b></td>
+                <td>${survey.Flight_NO || ''}</td>
+                <td>${dateDisplay}</td>
+                <td>${survey.REG || ''}</td>
+                <td style="font-weight:bold; color:#28a745;">${fCounts["Excellent"]}</td>
+                <td style="font-weight:bold; color:#ffc107;">${fCounts["Good"]}</td>
+                <td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td>
+                <td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td>
+                <td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>
+            `;
+            flightsTbody.appendChild(tr);
+
+            // تجميع التعليقات
+            if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
+                let li = document.createElement('li');
+                li.style.padding = "10px";
+                li.style.borderBottom = "1px solid #eee";
+                li.innerHTML = `<strong>${survey.Flight_NO} (${survey.CAR}) - ${dateDisplay}:</strong> <span style="color:#333; font-weight:600;">"${survey.Captain_Comments}"</span>`;
+                commentsList.appendChild(li);
+            }
+        });
+
+        if(commentsList.innerHTML === "") {
+             commentsList.innerHTML = "<li style='padding:10px; color:#777;'>No comments recorded in this period.</li>";
+        }
+
+        document.getElementById('stat-total').innerText = filteredSurveys.length;
+        document.getElementById('stat-airlines').innerText = airlinesSet.size;
+        
+        let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+        let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+        document.getElementById('stat-excellent').innerText = `${excPercent}%`;
+// إضافة قسم تعليقات الكابتن في نهاية التقرير
+        const reportContainer = document.getElementById('printable-report');
+        let oldComments = document.getElementById('captain-comments-section');
+        if(oldComments) oldComments.remove(); // مسح القديم لو موجود
+
+        let commentsHTML = `<div id="captain-comments-section" class="comments-section">
             <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: left; direction: ltr;"><i class="fa-solid fa-comments"></i> Captains' Comments</h4>
             <ul style="list-style: none; padding: 0; margin: 0; text-align: left; direction: ltr;">`;
         
@@ -800,18 +880,11 @@
             commentsHTML += `<li style="padding: 8px 0; color: #777;">No comments recorded in this period.</li>`;
         }
         commentsHTML += `</ul></div>`;
-        document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', commentsHTML);
-
-        document.getElementById('stat-total').innerText = filteredSurveys.length;
-        document.getElementById('stat-airlines').innerText = airlinesSet.size;
         
-        let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
-        let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
-        document.getElementById('stat-excellent').innerText = `${excPercent}%`;
-
+        // إدراج قسم التعليقات بعد الجدول مباشرة
+        document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', commentsHTML);
         drawCharts(airlinesCount, datesCount, evalsCount);
     }
-
     function destroyCharts() {
         if(chartInstances.air) chartInstances.air.destroy();
         if(chartInstances.dates) chartInstances.dates.destroy();
@@ -821,7 +894,7 @@
     function drawCharts(airlines, dates, evals) {
         destroyCharts();
         Chart.defaults.font.family = "'Cairo', sans-serif";
-        Chart.register(ChartDataLabels); 
+        Chart.register(ChartDataLabels); // تفعيل مكتبة النسب المئوية
         
         const ctxAir = document.getElementById('airlinesChart').getContext('2d');
         chartInstances.air = new Chart(ctxAir, {
@@ -850,7 +923,7 @@
                 responsive: true, maintainAspectRatio: false, 
                 plugins: { 
                     title: { display: true, text: 'Overall Performance' },
-                    datalabels: { 
+                    datalabels: { // إعدادات النسب المئوية
                         color: '#fff',
                         font: { weight: 'bold', size: 14 },
                         formatter: (value, ctx) => {
@@ -866,22 +939,16 @@
         });
     }
 
-    function exportModernPDF() {
+function exportModernPDF() {
       const element = document.getElementById('printable-report');
-      
-      const wrappers = document.querySelectorAll('.report-wrapper');
-      wrappers.forEach(w => w.style.overflowX = 'visible');
-
       html2pdf().set({
-        margin: [0.4, 0.4, 0.4, 0.4], 
+        margin: [0.3, 0.3, 0.3, 0.3], // حواف لحماية المحتوى
         filename: 'Safety_Dashboard_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-        pagebreak: { mode: ['css', 'legacy'] } 
-      }).from(element).save().then(() => {
-        wrappers.forEach(w => w.style.overflowX = 'auto');
-      });
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // إجبار أداة الطباعة على عدم قص أي ديف يحمل الكلاس avoid
+      }).from(element).save();
     }
   </script>
 </body>
