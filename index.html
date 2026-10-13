@@ -20,12 +20,13 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* Splash Screen - تم إزالة البربشة وجعل التحميل أطول وأكثر سلاسة */
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; }
-    .splash-logo { width: 300px; max-width: 80%; margin-bottom: 20px;}
-    .loading-bar-container { width: 250px; height: 6px; background: #eee; border-radius: 5px; overflow: hidden; }
+    /* Splash Screen - التعديلات الجديدة (لوجو أكبر، سنترة دقيقة، وانسيابية) */
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease-out; }
+    .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+    .splash-logo { width: 450px; max-width: 90%; margin-bottom: 30px; }
+    .loading-bar-container { width: 300px; max-width: 80%; height: 6px; background: #eee; border-radius: 5px; overflow: hidden; margin: 0 auto; }
     .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; letter-spacing: 2px; }
+    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 16px; letter-spacing: 2px; text-align: center; direction: ltr; }
     @keyframes loadProgress { 0% { width: 0%; } 40% { width: 40%; } 80% { width: 80%; } 100% { width: 100%; } }
 
     #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); padding: 20px;}
@@ -96,7 +97,6 @@
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
     
-    /* ضبط مكان السهم ليكون في أقصى اليسار ولا يغطي النص */
     .input-with-btn { display: flex; gap: 5px; position: relative; }
     .input-with-btn input { flex: 1; padding-left: 35px; padding-right: 15px; } 
     .dropdown-icon { position: absolute; left: 55px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
@@ -400,7 +400,8 @@
     window.addEventListener('load', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      // تم إزالة التايمر الإجباري الذي كان يغلق التحميل قبل وصول البيانات
+      // تأمين كامل لفتح البرنامج بعد 5 ثواني في جميع الأحوال
+      setTimeout(finishLoading, 5000); 
     });
 
     function loadAppDataInit() {
@@ -409,13 +410,7 @@
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
-      // إعطاء فرصة أطول للسيرفر في حالة البطء (12 ثانية) قبل الاستسلام
-      const fallbackTimer = setTimeout(() => {
-          finishLoading();
-      }, 12000);
-
       window[callbackName] = function(data) {
-        clearTimeout(fallbackTimer); // لو الداتا وصلت، نلغي تايمر الطوارئ
         try {
             if (data && data.status === "success") {
             globalFleetData = data.fleet ? data.fleet.reverse() : [];
@@ -450,16 +445,10 @@
             }
         } catch(e) { console.log(e); }
         delete window[callbackName];
-        finishLoading();
       };
 
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
-      script.onerror = function() {
-        clearTimeout(fallbackTimer);
-        delete window[callbackName];
-        finishLoading();
-      };
       document.body.appendChild(script);
     }
 
@@ -469,10 +458,11 @@
         splash.style.opacity = '0'; 
         setTimeout(() => { 
           splash.style.display = 'none'; 
-          document.getElementById('login-screen').style.display = 'flex'; 
+          const loginScreen = document.getElementById('login-screen');
+          if(loginScreen) loginScreen.style.display = 'flex'; 
           const pwdField = document.getElementById('password');
           if(pwdField) { pwdField.value = ""; pwdField.focus(); }
-        }, 800); 
+        }, 500); 
       }
     }
 
