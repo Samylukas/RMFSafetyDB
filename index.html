@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- مكتبة الرسوم البيانية العصرية -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
     :root {
@@ -156,6 +157,17 @@
       .report-filters { flex-direction: column; align-items: stretch; }
       .pdf-export-btn { margin-right: 0; margin-top: 10px; width: 100%;}
       .dashboard-header { flex-direction: column-reverse; text-align: center; gap: 10px; }
+    }
+    /* إصلاح قص الورق في الـ PDF */
+    .chart-container, .stats-cards, .report-wrapper, .report-table tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .comments-section {
+      background: #fff8f8; border-left: 5px solid #dc3545; padding: 15px; border-radius: 8px;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -801,7 +813,31 @@
         let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
         let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
         document.getElementById('stat-excellent').innerText = `${excPercent}%`;
+// إضافة قسم تعليقات الكابتن في نهاية التقرير
+        const reportContainer = document.getElementById('printable-report');
+        let oldComments = document.getElementById('captain-comments-section');
+        if(oldComments) oldComments.remove(); // مسح القديم لو موجود
 
+        let commentsHTML = `<div id="captain-comments-section" class="comments-section">
+            <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: left; direction: ltr;"><i class="fa-solid fa-comments"></i> Captains' Comments</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; direction: ltr;">`;
+        
+        let hasComments = false;
+        filteredSurveys.forEach(survey => {
+            if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
+                hasComments = true;
+                let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
+                commentsHTML += `<li style="padding: 8px 0; border-bottom: 1px dashed #ccc;"><strong>${survey.Flight_NO} (${survey.CAR}) - ${dateDisplay}:</strong> <span style="color:#333; font-weight:600;">"${survey.Captain_Comments}"</span></li>`;
+            }
+        });
+
+        if(!hasComments) {
+            commentsHTML += `<li style="padding: 8px 0; color: #777;">No comments recorded in this period.</li>`;
+        }
+        commentsHTML += `</ul></div>`;
+        
+        // إدراج قسم التعليقات بعد الجدول مباشرة
+        document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', commentsHTML);
         drawCharts(airlinesCount, datesCount, evalsCount);
     }
     function destroyCharts() {
@@ -813,12 +849,13 @@
     function drawCharts(airlines, dates, evals) {
         destroyCharts();
         Chart.defaults.font.family = "'Cairo', sans-serif";
+        Chart.register(ChartDataLabels); // تفعيل مكتبة النسب المئوية
         
         const ctxAir = document.getElementById('airlinesChart').getContext('2d');
         chartInstances.air = new Chart(ctxAir, {
             type: 'bar',
-            data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys per Airline', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Top Airlines' } } }
+            data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Top Airlines' } } }
         });
 
         const ctxDates = document.getElementById('datesChart').getContext('2d');
@@ -826,8 +863,8 @@
         let sortedData = sortedDates.map(d => dates[d]);
         chartInstances.dates = new Chart(ctxDates, {
             type: 'line',
-            data: { labels: sortedDates, datasets: [{ label: 'Activity Trend', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Surveys Over Time' } } }
+            data: { labels: sortedDates, datasets: [{ label: 'Activity', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Surveys Over Time' } } }
         });
 
         const ctxEval = document.getElementById('evalChart').getContext('2d');
@@ -837,18 +874,35 @@
                 labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], 
                 datasets: [{ data: [evals["Excellent"], evals["Good"], evals["Poor"], evals["N/A"], evals["Blank"]], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#a9a9a9', '#1a2a6c'] }] 
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Performance Ratings' } } }
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    title: { display: true, text: 'Overall Performance' },
+                    datalabels: { // إعدادات النسب المئوية
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            let sum = 0;
+                            let dataArr = ctx.chart.data.datasets[0].data;
+                            dataArr.map(data => { sum += data; });
+                            if(sum === 0 || value === 0) return '';
+                            return (value * 100 / sum).toFixed(0) + "%";
+                        }
+                    }
+                } 
+            }
         });
     }
 
-    function exportModernPDF() {
+   function exportModernPDF() {
       const element = document.getElementById('printable-report');
       html2pdf().set({
         margin: 0.3, 
         filename: 'Safety_Dashboard_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: ['css', 'legacy'] } // لمنع قص الرسومات والجداول
       }).from(element).save();
     }
   </script>
