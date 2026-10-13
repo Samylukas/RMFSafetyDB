@@ -20,12 +20,13 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease-out; direction: ltr; }
+    /* Splash Screen - تم إزالة البربشة وجعل التحميل أطول وأكثر سلاسة */
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s ease-out; direction: ltr; }
     .splash-logo { width: 300px; max-width: 80%; margin-bottom: 20px;}
-    .loading-bar-container { width: 250px; height: 5px; background: #eee; border-radius: 5px; overflow: hidden; }
-    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 2s ease-in-out forwards; }
-    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 14px; letter-spacing: 2px; }
-    @keyframes loadProgress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+    .loading-bar-container { width: 250px; height: 6px; background: #eee; border-radius: 5px; overflow: hidden; }
+    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 15px; letter-spacing: 2px; }
+    @keyframes loadProgress { 0% { width: 0%; } 40% { width: 40%; } 80% { width: 80%; } 100% { width: 100%; } }
 
     #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); padding: 20px;}
     .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 400px; }
@@ -95,10 +96,10 @@
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
     
-    /* تعديل خانة البحث وإصلاح السهم */
+    /* ضبط مكان السهم ليكون في أقصى اليسار ولا يغطي النص */
     .input-with-btn { display: flex; gap: 5px; position: relative; }
-    .input-with-btn input { flex: 1; padding-left: 35px; padding-right: 10px; } 
-    .dropdown-icon { position: absolute; left: 60px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
+    .input-with-btn input { flex: 1; padding-left: 35px; padding-right: 15px; } 
+    .dropdown-icon { position: absolute; left: 55px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
     
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
     .add-btn:hover { background: var(--secondary); color: black; }
@@ -140,7 +141,6 @@
     .report-filters { display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; align-items: flex-end; margin-bottom: 20px; direction: rtl; flex-wrap: wrap;}
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     
-    /* تم تغيير overflow-x عشان الجدول يظهر كامل في الـ PDF */
     .report-wrapper { margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; max-width: 100%; width: 100%; display: block; overflow-x: auto; }
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin-bottom: 20px; }
     .report-table th, .report-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
@@ -357,7 +357,7 @@
             </div>
           </div>
 
-          <div class="report-wrapper" style="margin-top: 30px;">
+          <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
             <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table rtl-table" dir="rtl">
               <thead>
@@ -397,12 +397,10 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    window.onerror = function() { finishLoading(); };
-
     window.addEventListener('load', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      setTimeout(finishLoading, 6000); 
+      // تم إزالة التايمر الإجباري الذي كان يغلق التحميل قبل وصول البيانات
     });
 
     function loadAppDataInit() {
@@ -411,7 +409,13 @@
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
+      // إعطاء فرصة أطول للسيرفر في حالة البطء (12 ثانية) قبل الاستسلام
+      const fallbackTimer = setTimeout(() => {
+          finishLoading();
+      }, 12000);
+
       window[callbackName] = function(data) {
+        clearTimeout(fallbackTimer); // لو الداتا وصلت، نلغي تايمر الطوارئ
         try {
             if (data && data.status === "success") {
             globalFleetData = data.fleet ? data.fleet.reverse() : [];
@@ -452,6 +456,7 @@
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
       script.onerror = function() {
+        clearTimeout(fallbackTimer);
         delete window[callbackName];
         finishLoading();
       };
@@ -467,7 +472,7 @@
           document.getElementById('login-screen').style.display = 'flex'; 
           const pwdField = document.getElementById('password');
           if(pwdField) { pwdField.value = ""; pwdField.focus(); }
-        }, 500); 
+        }, 800); 
       }
     }
 
@@ -870,7 +875,6 @@
     function exportModernPDF() {
       const element = document.getElementById('printable-report');
       
-      // فتح الجدول مؤقتاً عشان ميتقصش في الـ PDF
       const wrappers = document.querySelectorAll('.report-wrapper');
       wrappers.forEach(w => w.style.overflowX = 'visible');
 
@@ -882,7 +886,7 @@
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
         pagebreak: { mode: ['css', 'legacy'] } 
       }).from(element).save().then(() => {
-        wrappers.forEach(w => w.style.overflowX = 'auto'); // نرجعه تاني بعد التحميل
+        wrappers.forEach(w => w.style.overflowX = 'auto');
       });
     }
   </script>
