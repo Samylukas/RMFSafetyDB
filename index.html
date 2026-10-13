@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- سطر الأمان عشان الأبلكيشن (APK) يقدر يتصل بجوجل بدون حظر -->
   <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
+  
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- مكتبة الرسوم البيانية العصرية -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root {
@@ -120,6 +122,18 @@
     .modal-content { background-color: #fff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .close-modal { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
 
+    /* Modern Dashboard Styles */
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
+    .dashboard-header h2 { margin: 0; color: var(--primary); font-weight: 900; font-size: 1.8rem; }
+    .dashboard-header p { margin: 5px 0 0; color: #777; font-weight: 600; }
+    .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-card { background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .stat-card h3 { margin: 0; font-size: 2.5rem; font-weight: 900; }
+    .stat-card p { margin: 5px 0 0; font-size: 1rem; opacity: 0.9; }
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; direction: ltr; }
+    .chart-container { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; }
+    .chart-container canvas { max-height: 250px; width: 100%; }
+    
     .report-filters { display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; align-items: flex-end; margin-bottom: 20px; direction: rtl; flex-wrap: wrap;}
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     .pdf-export-btn:hover { background: #c9302c; }
@@ -127,20 +141,9 @@
     .report-wrapper { overflow-x: auto; margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; max-width: 100%; width: 100%; display: block;}
     
     .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin-bottom: 20px; }
-    .report-table th, .report-table td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    .report-table th, .report-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; color: var(--primary); }
-    .vertical-th { writing-mode: vertical-rl; transform: rotate(180deg); height: 120px; white-space: nowrap; }
     
-    .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
-    .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
-    .bg-p { background-color: #dc3545 !important; color: white !important; font-weight:bold; }
-    .bg-n { background-color: #a9a9a9 !important; color: white !important; font-weight:bold; }
-    .bg-b { background-color: #1a2a6c !important; color: white !important; font-weight:bold; }
-    
-    .report-title { text-align: center; color: var(--primary); font-size: 20px; font-weight: bold; font-style: italic; margin-bottom: 5px; }
-    .report-subtitle { text-align: center; color: var(--primary); font-size: 16px; font-weight: bold; font-style: italic; margin-bottom: 15px; }
-    .report-footer { font-size: 16px; color: var(--primary); font-weight: bold; font-style: italic; margin-top: 15px; text-align: center;}
-
     @media (max-width: 768px) {
       .header { flex-direction: column; padding: 15px 10px; gap: 15px; text-align: center;}
       .header img.main-logo, .header img.dept-logo { height: 60px; margin: 0;}
@@ -152,6 +155,7 @@
       .tabs-header { flex-direction: column; }
       .report-filters { flex-direction: column; align-items: stretch; }
       .pdf-export-btn { margin-right: 0; margin-top: 10px; width: 100%;}
+      .dashboard-header { flex-direction: column-reverse; text-align: center; gap: 10px; }
     }
   </style>
 </head>
@@ -280,7 +284,7 @@
     <div class="survey-container">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
-        <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير</button>
+        <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير (Dashboard)</button>
       </div>
 
       <div id="tab-entry" class="tab-content active">
@@ -310,32 +314,43 @@
         </form>
       </div>
 
+      <!-- تبويب التقارير (Dashboard العصرية) -->
       <div id="tab-report" class="tab-content ltr-container">
         <div class="report-filters">
-          <button onclick="exportToPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+          <button onclick="exportModernPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> تحميل التقرير (PDF)</button>
           <div class="form-group"><label>إلى (To):</label><input type="date" id="toDate"></div>
           <div class="form-group"><label>من (From):</label><input type="date" id="fromDate"></div>
-          <button onclick="generateReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">عرض التقرير</button>
+          <button onclick="generateModernReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-chart-pie"></i> عرض الإحصائيات</button>
         </div>
 
-        <div id="printable-report" style="display: none; background: #fff; padding: 10px;">
-          <div class="report-title">Safety Captain Survey Report</div>
-          <div class="report-subtitle">Generated Report</div>
+        <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px;">
+          <div class="dashboard-header">
+            <div>
+              <h2>Safety Captain Survey Dashboard</h2>
+              <p id="report-date-range">All Time Records</p>
+            </div>
+            <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;">
+          </div>
+
+          <div class="stats-cards">
+            <div class="stat-card"><h3 id="stat-total">0</h3><p>Total Surveys</p></div>
+            <div class="stat-card"><h3 id="stat-airlines">0</h3><p>Airlines Evaluated</p></div>
+            <div class="stat-card"><h3 id="stat-excellent">0%</h3><p>Overall Excellent (E) Rate</p></div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-container"><canvas id="airlinesChart"></canvas></div>
+            <div class="chart-container"><canvas id="datesChart"></canvas></div>
+            <div class="chart-container"><canvas id="evalChart"></canvas></div>
+          </div>
 
           <div class="report-wrapper">
+            <h4 style="color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">Recent Surveys Details</h4>
             <table class="report-table">
-              <thead><tr id="report-headers-row"><th rowspan="2">Airline NAME</th><th rowspan="2">FltNO</th><th rowspan="2">Type</th><th rowspan="2">DateTime</th><th rowspan="2">REG</th></tr></thead>
+              <thead><tr id="report-headers-row"><th style="width: 15%">Airline</th><th>FltNO</th><th>Type</th><th>Date</th><th>REG</th><th>Comments</th></tr></thead>
               <tbody id="report-tbody"></tbody>
             </table>
           </div>
-          
-          <div class="report-wrapper" style="margin-top: 20px;">
-             <table class="report-table">
-               <thead><tr id="matrix-headers-row"><th>Evaluation</th></tr></thead>
-               <tbody id="matrix-tbody"></tbody>
-             </table>
-          </div>
-          <div class="report-footer" id="report-footer-text">Total of survey been held are 0</div>
         </div>
       </div>
     </div>
@@ -356,13 +371,13 @@
   </div>
 
   <script>
-    // الرابط النهائي السليم الخاص بك
     const API_URL = "https://script.google.com/macros/s/AKfycbwr5uyKEUfamamTezSVmUJ4tEtncjkQHZwZuCLeYwyVjitHQMu7iKh6H_gHdCGZzcol/exec"; 
     
     let globalFleetData = []; 
     let globalSurveys = [];
     let globalUsers = [];
     let currentSurveyIndex = -1;
+    let chartInstances = {}; 
 
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
@@ -371,14 +386,19 @@
       loadAppDataInit();
     });
 
-    // دالة التحميل بطريقة JSONP الصاروخية والنظيفة
     function loadAppDataInit() {
       const regSelect = document.getElementById('reg');
       regSelect.innerHTML = '<option value="" disabled selected>جاري سحب البيانات...</option>';
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
+      const fallbackTimer = setTimeout(() => {
+        regSelect.innerHTML = '<option value="" disabled selected>انتهى وقت الاتصال بالسيرفر</option>';
+        finishLoading();
+      }, 10000); 
+
       window[callbackName] = function(data) {
+        clearTimeout(fallbackTimer);
         if (data && data.status === "success") {
           globalFleetData = data.fleet ? data.fleet.reverse() : [];
           globalSurveys = data.surveys ? data.surveys.reverse() : [];
@@ -418,6 +438,7 @@
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
       script.onerror = function() {
+        clearTimeout(fallbackTimer);
         regSelect.innerHTML = '<option value="" disabled selected>تأكد من اتصالك بالإنترنت</option>';
         delete window[callbackName];
         finishLoading();
@@ -683,68 +704,112 @@
       });
     }
 
-    function generateReport() {
+    function generateModernReport() {
         document.getElementById('printable-report').style.display = 'block';
-        const tr1 = document.getElementById('report-headers-row');
-        while(tr1.children.length > 5) tr1.removeChild(tr1.lastChild);
-        criteriaList.forEach(crit => { tr1.innerHTML += `<th class="vertical-th">${crit}</th>`; });
-        tr1.innerHTML += `<th class="vertical-th" style="height: auto;">Captain Comments</th>`;
+        
+        let filteredSurveys = globalSurveys;
+        let fromD = document.getElementById('fromDate').value;
+        let toD = document.getElementById('toDate').value;
+        
+        if(fromD && toD) {
+            let fd = new Date(fromD); let td = new Date(toD);
+            filteredSurveys = globalSurveys.filter(s => {
+                let sd = new Date(s.Date);
+                return sd >= fd && sd <= td;
+            });
+            document.getElementById('report-date-range').innerText = `Period: ${fromD} to ${toD}`;
+        } else {
+            document.getElementById('report-date-range').innerText = `All Time Records`;
+        }
 
-        const matrixHeaders = document.getElementById('matrix-headers-row');
-        matrixHeaders.innerHTML = "<th>Evaluation</th>";
-        criteriaList.forEach(crit => { matrixHeaders.innerHTML += `<th class="vertical-th">${crit}</th>`; });
+        let airlinesSet = new Set();
+        let airlinesCount = {};
+        let datesCount = {};
+        let evalsCount = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 };
 
         const tbody = document.getElementById('report-tbody');
         tbody.innerHTML = "";
 
-        if(globalSurveys.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='37' style='padding: 20px; font-weight: bold;'>لا توجد بيانات مسجلة لعرضها</td></tr>";
+        if(filteredSurveys.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+            document.getElementById('stat-total').innerText = "0";
+            document.getElementById('stat-airlines').innerText = "0";
+            document.getElementById('stat-excellent').innerText = "0%";
+            destroyCharts();
             return;
         }
 
-        const letterMap = {"Excellent":"E", "Good":"G", "Poor":"P", "N/A":"N", "Blank":"B"};
-        const classMap = {"Excellent":"bg-e", "Good":"bg-g", "Poor":"bg-p", "N/A":"bg-n", "Blank":"bg-b"};
+        filteredSurveys.forEach(survey => {
+            if(survey.CAR) { airlinesSet.add(survey.CAR); airlinesCount[survey.CAR] = (airlinesCount[survey.CAR] || 0) + 1; }
+            let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown';
+            datesCount[dStr] = (datesCount[dStr] || 0) + 1;
 
-        let matrixCounts = { "Excellent":{}, "Good":{}, "Poor":{}, "N/A":{}, "Blank":{} };
-        ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(evalType => {
-           criteriaList.forEach(crit => matrixCounts[evalType][crit] = 0);
-        });
-
-        globalSurveys.forEach(survey => {
-            let tr = document.createElement('tr');
-            let dateStr = "";
-            if(survey.Date) { let d = new Date(survey.Date); dateStr = d.toLocaleDateString('en-GB'); }
-            
-            tr.innerHTML = `<td>${survey.CAR || ''}</td><td>${survey.Flight_NO || ''}</td><td>${survey.TYPE || ''}</td><td>${dateStr}</td><td>${survey.REG || ''}</td>`;
             criteriaList.forEach(crit => {
                 let val = survey[crit] || "Blank";
-                tr.innerHTML += `<td class="${classMap[val] || "bg-b"}">${letterMap[val] || "B"}</td>`;
-                if(matrixCounts[val] !== undefined) matrixCounts[val][crit]++;
+                if(evalsCount[val] !== undefined) evalsCount[val]++;
             });
-            tr.innerHTML += `<td>${survey.Captain_Comments || ''}</td>`;
+
+            let tr = document.createElement('tr');
+            let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
+            tr.innerHTML = `<td><b>${survey.CAR || ''}</b></td><td>${survey.Flight_NO || ''}</td><td>${survey.TYPE || ''}</td><td>${dateDisplay}</td><td>${survey.REG || ''}</td><td style="text-align:left;">${survey.Captain_Comments || '-'}</td>`;
             tbody.appendChild(tr);
         });
 
-        const matrixBody = document.getElementById('matrix-tbody');
-        matrixBody.innerHTML = "";
-        ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(evalType => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `<td class="${classMap[evalType]}">${evalType}</td>`;
-            criteriaList.forEach(crit => { tr.innerHTML += `<td>${matrixCounts[evalType][crit]}</td>`; });
-            matrixBody.appendChild(tr);
-        });
+        document.getElementById('stat-total').innerText = filteredSurveys.length;
+        document.getElementById('stat-airlines').innerText = airlinesSet.size;
+        
+        let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+        let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+        document.getElementById('stat-excellent').innerText = `${excPercent}%`;
 
-        document.getElementById('report-footer-text').innerText = `Total of survey been held are ${globalSurveys.length}`;
+        drawCharts(airlinesCount, datesCount, evalsCount);
     }
 
-    function exportToPDF() {
+    function destroyCharts() {
+        if(chartInstances.air) chartInstances.air.destroy();
+        if(chartInstances.dates) chartInstances.dates.destroy();
+        if(chartInstances.eval) chartInstances.eval.destroy();
+    }
+
+    function drawCharts(airlines, dates, evals) {
+        destroyCharts();
+        Chart.defaults.font.family = "'Cairo', sans-serif";
+        
+        const ctxAir = document.getElementById('airlinesChart').getContext('2d');
+        chartInstances.air = new Chart(ctxAir, {
+            type: 'bar',
+            data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys per Airline', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Top Airlines' } } }
+        });
+
+        const ctxDates = document.getElementById('datesChart').getContext('2d');
+        let sortedDates = Object.keys(dates).sort();
+        let sortedData = sortedDates.map(d => dates[d]);
+        chartInstances.dates = new Chart(ctxDates, {
+            type: 'line',
+            data: { labels: sortedDates, datasets: [{ label: 'Activity Trend', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Surveys Over Time' } } }
+        });
+
+        const ctxEval = document.getElementById('evalChart').getContext('2d');
+        chartInstances.eval = new Chart(ctxEval, {
+            type: 'doughnut',
+            data: { 
+                labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], 
+                datasets: [{ data: [evals["Excellent"], evals["Good"], evals["Poor"], evals["N/A"], evals["Blank"]], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#a9a9a9', '#1a2a6c'] }] 
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Performance Ratings' } } }
+        });
+    }
+
+    function exportModernPDF() {
       const element = document.getElementById('printable-report');
-      element.style.display = 'block';
       html2pdf().set({
-        margin: 0.2, filename: 'Captain_Survey_Report.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+        margin: 0.3, 
+        filename: 'Safety_Dashboard_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
       }).from(element).save();
     }
   </script>
