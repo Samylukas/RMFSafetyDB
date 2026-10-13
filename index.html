@@ -323,7 +323,7 @@
           <button onclick="generateModernReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-chart-pie"></i> عرض الإحصائيات</button>
         </div>
 
-        <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px;">
+       <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px;">
           <div class="dashboard-header">
             <div>
               <h2>Safety Captain Survey Dashboard</h2>
@@ -344,17 +344,27 @@
             <div class="chart-container"><canvas id="evalChart"></canvas></div>
           </div>
 
-          <div class="report-wrapper">
-            <h4 style="color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">Recent Surveys Details</h4>
+          <!-- تفاصيل كل رحلة بتقديراتها -->
+          <div class="report-wrapper" style="margin-top: 30px;">
+            <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table">
-              <thead><tr id="report-headers-row"><th style="width: 15%">Airline</th><th>FltNO</th><th>Type</th><th>Date</th><th>REG</th><th>Comments</th></tr></thead>
-              <tbody id="report-tbody"></tbody>
+              <thead>
+                <tr id="report-headers-row">
+                  <th>Airline</th><th>FltNO</th><th>Date</th><th>REG</th>
+                  <th class="bg-e">E</th><th class="bg-g">G</th><th class="bg-p">P</th><th class="bg-n">N/A</th><th class="bg-b">Blank</th>
+                </tr>
+              </thead>
+              <tbody id="flights-eval-tbody"></tbody>
             </table>
           </div>
+
+          <!-- قسم خاص لتعليقات الطيارين -->
+          <div class="report-wrapper" style="margin-top: 30px; background: #fff8f8; border-left: 5px solid #dc3545; padding: 15px;">
+            <h4 style="color: #dc3545; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: left; direction: ltr;"><i class="fa-solid fa-comments"></i> Captains' Comments</h4>
+            <ul id="comments-list" style="list-style: none; padding: 0; margin: 0; text-align: left; direction: ltr;">
+            </ul>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
@@ -704,7 +714,7 @@
       });
     }
 
-    function generateModernReport() {
+   function generateModernReport() {
         document.getElementById('printable-report').style.display = 'block';
         
         let filteredSurveys = globalSurveys;
@@ -727,11 +737,14 @@
         let datesCount = {};
         let evalsCount = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 };
 
-        const tbody = document.getElementById('report-tbody');
-        tbody.innerHTML = "";
+        const flightsTbody = document.getElementById('flights-eval-tbody');
+        const commentsList = document.getElementById('comments-list');
+        flightsTbody.innerHTML = "";
+        commentsList.innerHTML = "";
 
         if(filteredSurveys.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='6' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+            flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+            commentsList.innerHTML = "<li>No comments recorded in this period.</li>";
             document.getElementById('stat-total').innerText = "0";
             document.getElementById('stat-airlines').innerText = "0";
             document.getElementById('stat-excellent').innerText = "0%";
@@ -744,16 +757,43 @@
             let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown';
             datesCount[dStr] = (datesCount[dStr] || 0) + 1;
 
+            // حساب التقديرات الخاصة بالرحلة دي بس
+            let fCounts = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 };
             criteriaList.forEach(crit => {
                 let val = survey[crit] || "Blank";
-                if(evalsCount[val] !== undefined) evalsCount[val]++;
+                if(fCounts[val] !== undefined) fCounts[val]++;
+                if(evalsCount[val] !== undefined) evalsCount[val]++; // للإجمالي العام
             });
 
+            // صف الرحلة في الجدول
             let tr = document.createElement('tr');
             let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
-            tr.innerHTML = `<td><b>${survey.CAR || ''}</b></td><td>${survey.Flight_NO || ''}</td><td>${survey.TYPE || ''}</td><td>${dateDisplay}</td><td>${survey.REG || ''}</td><td style="text-align:left;">${survey.Captain_Comments || '-'}</td>`;
-            tbody.appendChild(tr);
+            tr.innerHTML = `
+                <td><b>${survey.CAR || ''}</b></td>
+                <td>${survey.Flight_NO || ''}</td>
+                <td>${dateDisplay}</td>
+                <td>${survey.REG || ''}</td>
+                <td style="font-weight:bold; color:#28a745;">${fCounts["Excellent"]}</td>
+                <td style="font-weight:bold; color:#ffc107;">${fCounts["Good"]}</td>
+                <td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td>
+                <td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td>
+                <td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>
+            `;
+            flightsTbody.appendChild(tr);
+
+            // تجميع التعليقات
+            if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
+                let li = document.createElement('li');
+                li.style.padding = "10px";
+                li.style.borderBottom = "1px solid #eee";
+                li.innerHTML = `<strong>${survey.Flight_NO} (${survey.CAR}) - ${dateDisplay}:</strong> <span style="color:#333; font-weight:600;">"${survey.Captain_Comments}"</span>`;
+                commentsList.appendChild(li);
+            }
         });
+
+        if(commentsList.innerHTML === "") {
+             commentsList.innerHTML = "<li style='padding:10px; color:#777;'>No comments recorded in this period.</li>";
+        }
 
         document.getElementById('stat-total').innerText = filteredSurveys.length;
         document.getElementById('stat-airlines').innerText = airlinesSet.size;
@@ -764,7 +804,6 @@
 
         drawCharts(airlinesCount, datesCount, evalsCount);
     }
-
     function destroyCharts() {
         if(chartInstances.air) chartInstances.air.destroy();
         if(chartInstances.dates) chartInstances.dates.destroy();
