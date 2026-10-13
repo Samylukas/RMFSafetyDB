@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- المكتبات -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -21,13 +20,22 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* Splash Screen - تم التخفيف لمنع التهنيج */
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease-out; direction: ltr; }
-    .splash-logo { width: 300px; max-width: 80%; margin-bottom: 20px;}
-    .loading-bar-container { width: 250px; height: 5px; background: #eee; border-radius: 5px; overflow: hidden; }
-    .loading-bar { width: 0%; height: 100%; background: var(--secondary); animation: loadProgress 2s ease-in-out forwards; }
-    .loading-text { margin-top: 15px; color: var(--primary); font-weight: 900; font-size: 14px; letter-spacing: 2px; }
-    @keyframes loadProgress { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
+    /* Splash Screen - حركة سينمائية احترافية */
+    #splash-screen { 
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+      background: #ffffff; display: flex; justify-content: center; align-items: center; 
+      z-index: 9999; transition: opacity 0.5s ease-out; 
+    }
+    .splash-logo { 
+      width: 400px; max-width: 80%; 
+      animation: cinematicZoom 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; 
+    }
+    @keyframes cinematicZoom {
+      0% { transform: scale(0); opacity: 0; filter: blur(10px); }
+      20% { transform: scale(1); opacity: 1; filter: blur(0px); }
+      75% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(5); opacity: 0; filter: blur(15px); }
+    }
 
     #login-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%); padding: 20px;}
     .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 400px; }
@@ -96,10 +104,10 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .form-group label { display: block; font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 0.9rem;}
     .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
+    
+    /* إصلاح خانة البحث وإزالة السهم المزعج */
     .input-with-btn { display: flex; gap: 5px; position: relative; }
-    .input-with-btn input { flex: 1; padding-right: 35px; } /* مساحة للسهم */
-    /* سهم شكلي لخانة البحث */
-    .dropdown-icon { position: absolute; right: 60px; top: 50%; transform: translateY(-50%); color: #777; pointer-events: none; }
+    .input-with-btn input { flex: 1; padding: 10px; } 
     .add-btn { background: var(--primary); color: white; border: none; border-radius: 8px; width: 45px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center;}
     .add-btn:hover { background: var(--secondary); color: black; }
 
@@ -124,7 +132,7 @@
     .modal-content { background-color: #fff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .close-modal { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
 
-    /* Modern Dashboard Styles & PDF Fixes */
+    /* Modern Dashboard & PDF Report Styles */
     .avoid-page-break { page-break-inside: avoid !important; break-inside: avoid !important; display: block; }
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
     .dashboard-header h2 { margin: 0; color: var(--primary); font-weight: 900; font-size: 1.8rem; }
@@ -140,13 +148,13 @@
     .report-filters { display: flex; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; align-items: flex-end; margin-bottom: 20px; direction: rtl; flex-wrap: wrap;}
     .pdf-export-btn { background: #d9534f; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; margin-right: auto;}
     
-    .report-wrapper { overflow-x: auto; margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; max-width: 100%; width: 100%; display: block;}
-    .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin-bottom: 20px; }
-    .report-table th, .report-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .report-wrapper { margin-bottom: 30px; background: #fff; padding: 15px; border-radius: 10px; max-width: 100%; width: 100%; display: block; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;}
+    .report-table { width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; margin-bottom: 20px; }
+    .report-table th, .report-table td { border: 1px solid #ccc; padding: 10px; text-align: center; }
     .report-table th { background-color: #f2f2f2; font-weight: bold; color: var(--primary); }
     .rtl-table th, .rtl-table td { text-align: right !important; }
 
-    .comments-section { background: #fff8f8; border-left: 5px solid #dc3545; padding: 15px; border-radius: 8px; margin-top: 30px; }
+    .comments-section { background: #fff8f8; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
     .bg-e { background-color: #28a745 !important; color: white !important; font-weight:bold; }
     .bg-g { background-color: #ffc107 !important; color: black !important; font-weight:bold; }
@@ -175,11 +183,7 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
   <div id="splash-screen">
-    <div class="splash-content">
-      <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-      <div class="loading-bar-container"><div class="loading-bar"></div></div>
-      <div class="loading-text" id="loading-msg">SYSTEM INITIALIZING...</div>
-    </div>
+    <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
   </div>
 
   <div id="login-screen">
@@ -303,9 +307,8 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
-                <!-- خانة بحث ذكية بدل الـ Select العادية -->
                 <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اكتب للبحث أو اختر..." required autocomplete="off" style="text-transform: uppercase;">
-                <i class="fa-solid fa-chevron-down dropdown-icon"></i>
+                <!-- إزالة أيقونة السهم المزعجة -->
                 <datalist id="regMasterList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -357,6 +360,7 @@
             </div>
           </div>
 
+          <!-- جدول تقييم الرحلات -->
           <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
             <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table rtl-table" dir="rtl">
@@ -397,21 +401,16 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
-
-    // حماية قوية جداً لمنع تهنيج السبلاش سكرين
-    window.onerror = function() { finishLoading(); };
-
+    // توقيت مثالي للأنيميشن السينمائي (يفتح البرنامج فوراً بعد الأنيميشن)
     window.addEventListener('load', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      // تأكيد الإغلاق لو السيرفر اتأخر
-      setTimeout(finishLoading, 6000); 
+      setTimeout(finishLoading, 3500); 
     });
 
     function loadAppDataInit() {
       const regDatalist = document.getElementById('regMasterList');
-      if(regDatalist) regDatalist.innerHTML = ''; // تفريغ القائمة
+      if(regDatalist) regDatalist.innerHTML = ''; 
 
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       
@@ -429,7 +428,6 @@
                 if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
             }
 
-            // تعبئة قائمة البحث الذكية للطيارات
             if(regDatalist) {
                 globalFleetData.forEach(aircraft => { 
                 if(aircraft && aircraft["REG"]) {
@@ -451,15 +449,10 @@
             }
         } catch(e) { console.log(e); }
         delete window[callbackName];
-        finishLoading();
       };
 
       const script = document.createElement('script');
       script.src = API_URL + "?action=getAppData&callback=" + callbackName;
-      script.onerror = function() {
-        delete window[callbackName];
-        finishLoading();
-      };
       document.body.appendChild(script);
     }
 
@@ -469,7 +462,8 @@
         splash.style.opacity = '0'; 
         setTimeout(() => { 
           splash.style.display = 'none'; 
-          document.getElementById('login-screen').style.display = 'flex'; 
+          const loginScreen = document.getElementById('login-screen');
+          if(loginScreen) loginScreen.style.display = 'flex'; 
           const pwdField = document.getElementById('password');
           if(pwdField) { pwdField.value = ""; pwdField.focus(); }
         }, 500); 
@@ -785,8 +779,6 @@
             flightsTbody.appendChild(tr);
         });
 
-        // إنشاء وتجميع تعليقات الكابتن
-        const reportContainer = document.getElementById('printable-report');
         let oldComments = document.getElementById('captain-comments-section');
         if(oldComments) oldComments.remove(); 
 
@@ -875,14 +867,20 @@
 
     function exportModernPDF() {
       const element = document.getElementById('printable-report');
+      
+      const wrappers = document.querySelectorAll('.report-wrapper');
+      wrappers.forEach(w => w.style.overflowX = 'visible');
+
       html2pdf().set({
-        margin: [0.3, 0.3, 0.3, 0.3], 
+        margin: [0.4, 0.4, 0.4, 0.4], 
         filename: 'Safety_Dashboard_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      }).from(element).save();
+        pagebreak: { mode: ['css', 'legacy'] } 
+      }).from(element).save().then(() => {
+        wrappers.forEach(w => w.style.overflowX = 'auto');
+      });
     }
   </script>
 </body>
