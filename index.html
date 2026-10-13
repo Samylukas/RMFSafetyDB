@@ -20,7 +20,7 @@
     }
     body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-color); overflow-x: hidden; }
     
-    /* Splash Screen - حركة سينمائية احترافية */
+    /* Splash Screen - حركة سينمائية احترافية تفتح فوراً */
     #splash-screen { 
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
       background: #ffffff; display: flex; justify-content: center; align-items: center; 
@@ -308,7 +308,7 @@
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div class="input-with-btn">
                 <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اكتب للبحث أو اختر..." required autocomplete="off" style="text-transform: uppercase;">
-                <!-- إزالة أيقونة السهم المزعجة -->
+                <!-- تم إزالة السهم المزعج من هنا -->
                 <datalist id="regMasterList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -360,7 +360,6 @@
             </div>
           </div>
 
-          <!-- جدول تقييم الرحلات -->
           <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
             <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table rtl-table" dir="rtl">
@@ -401,11 +400,12 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    // توقيت مثالي للأنيميشن السينمائي (يفتح البرنامج فوراً بعد الأنيميشن)
-    window.addEventListener('load', () => {
+    // فصلنا التايمر نهائياً ليفتح البرنامج زي الطلقة بعد 3 ثواني ونصف
+    setTimeout(finishLoading, 3500);
+
+    document.addEventListener('DOMContentLoaded', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      setTimeout(finishLoading, 3500); 
     });
 
     function loadAppDataInit() {
@@ -779,6 +779,7 @@
             flightsTbody.appendChild(tr);
         });
 
+        // إنشاء وتجميع تعليقات الكابتن
         let oldComments = document.getElementById('captain-comments-section');
         if(oldComments) oldComments.remove(); 
 
