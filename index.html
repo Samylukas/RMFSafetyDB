@@ -15,11 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-    /* تنسيق السهم في حقل الإدخال */
-    .input-with-arrow { position: relative; display: flex; align-items: center; width: 100%; }
-    .input-with-arrow input { width: 100%; padding-left: 35px !important; }
-    .input-with-arrow i.fa-chevron-down { position: absolute; left: 12px; color: var(--primary); pointer-events: none; font-size: 0.9rem; }
-
     /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
@@ -43,6 +38,10 @@
     .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
     
+    /* منع تقطيع الرسومات البيانية في الـ PDF */
+    #printable-charts-report { page-break-inside: avoid !important; }
+    .charts-grid canvas { max-height: 180px !important; width: 100% !important; object-fit: contain; }
+
     /* مصفوفة الإحصائيات (SPI) */
     .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
     .spi-matrix-table th { background-color: #28a745; color: white; }
@@ -50,8 +49,6 @@
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
-    #printable-charts-report { page-break-inside: avoid !important; }
-.charts-grid canvas { max-height: 180px !important; width: 100% !important; object-fit: contain; }
   </style>
 </head>
 <body>
@@ -202,10 +199,10 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
-              <div style="position: relative; width: 100%;">
-    <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" onclick="this.showPicker ? this.showPicker() : null" placeholder="اختر أو اكتب للبحث..." required autocomplete="off" style="text-transform: uppercase; width: 100%; padding-left: 30px; cursor: pointer;">
-    <i class="fa-solid fa-chevron-down" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #003366;"></i>
-</div>
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اختر أو اكتب للبحث..." required autocomplete="off" style="text-transform: uppercase; width: 100%; padding-left: 30px;">
+                    <i class="fa-solid fa-chevron-down" onclick="document.getElementById('reg').focus(); document.getElementById('reg').showPicker ? document.getElementById('reg').showPicker() : null;" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #003366; cursor: pointer; padding: 5px;"></i>
+                </div>
                 <datalist id="regMasterList"></datalist>
                 <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول" style="flex-shrink: 0;"><i class="fa-solid fa-plus"></i></button>
               </div>
@@ -347,18 +344,18 @@
             <!-- الصفحة 1: شيت الأيزو (قائمة الفحص) -->
             <div class="iso-report-container" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
-                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
+                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
                     <div class="iso-title">
-                        <h2>قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
+                        <h2 style="color: var(--primary); font-size: 0.95rem;">قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 11px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; font-size: 10px;">
                     <div>التاريخ: <span id="print-date-view"></span></div>
                     <div>الوقت: <span id="print-time-view"></span></div>
                     <div>الوردية: <span id="print-shift-view"></span></div>
                 </div>
                 <table class="iso-table" id="iso-checklist-table"></table>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 9px; margin-top: 3px;">
                     <div>المفتش: <span id="print-inspector-view"></span></div>
                     <div style="color: #555;">AS-F-01-01</div>
                 </div>
@@ -366,20 +363,20 @@
 
             <!-- الصفحة 2: تقرير الإجراءات التصحيحية (الجداول) -->
             <div class="html2pdf__page-break"></div>
-            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 20px;">
+            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 10px;">
                 <div class="iso-header">
-                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
+                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
                     <div class="iso-title">
-                        <h2 style="color: #dc3545;">تقرير الإجراءات التصحيحية والملاحظات</h2>
+                        <h2 style="color: #dc3545; font-size: 1rem;">تقرير الإجراءات التصحيحية والملاحظات</h2>
                     </div>
                 </div>
-                <table class="iso-table corrective-table" style="margin-bottom: 20px; font-size: 11px;">
+                <table class="iso-table corrective-table" style="margin-bottom: 20px; font-size: 10px;">
                     <thead>
                         <tr>
                             <th style="width: 5%;">م</th>
-                            <th style="width: 20%;">مكان الرصد</th>
+                            <th style="width: 15%;">مكان الرصد</th>
                             <th style="width: 40%;">المخالفة / الخطر</th>
-                            <th style="width: 20%;">الجهة المسئولة</th>
+                            <th style="width: 25%;">الجهة المسئولة</th>
                             <th style="width: 15%;">الحالة</th>
                         </tr>
                     </thead>
@@ -687,12 +684,16 @@
     }
 
     function autoFillAircraftData() {
-      let inputReg = document.getElementById('reg').value.toUpperCase();
-      let foundAircraft = globalFleetData.find(a => a["REG"] && String(a["REG"]).toUpperCase() === inputReg);
+      let rawInput = document.getElementById('reg').value.toUpperCase();
+      let cleanInput = rawInput.replace(/[^A-Z0-9]/g, ''); // إزالة المسافات والشرطات للمطابقة بذكاء
+      
+      let foundAircraft = globalFleetData.find(a => a["REG"] && String(a["REG"]).toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanInput);
+      
       let airlineInput = document.getElementById('airline');
       let typeInput = document.getElementById('acType');
 
       if (foundAircraft) {
+        document.getElementById('reg').value = foundAircraft["REG"]; // إعادة كتابة التسجيل بالشكل الصحيح
         airlineInput.value = foundAircraft["CAR"] || "";
         typeInput.value = foundAircraft["TYPE"] || "";
         airlineInput.style.backgroundColor = "#e8f5e9";
@@ -850,7 +851,10 @@
         }
 
         document.getElementById('printable-report').style.display = 'block';
-        let fd = new Date(fromD); let td = new Date(toD);
+        let fd = new Date(fromD); 
+        let td = new Date(toD);
+        td.setHours(23, 59, 59, 999); // لتضمين اليوم الأخير بالكامل
+
         let filteredSurveys = globalSurveys.filter(s => {
             let sd = new Date(s.Date);
             return sd >= fd && sd <= td;
@@ -1206,7 +1210,10 @@
         document.getElementById('printable-daily-report').style.display = 'block';
         if(globalDailyInspections.length === 0) return alert("لا توجد فحوصات محفوظة للطباعة.");
         
-        let fd = new Date(fromD); let td = new Date(toD);
+        let fd = new Date(fromD); 
+        let td = new Date(toD);
+        td.setHours(23, 59, 59, 999); // لتضمين اليوم الأخير بالكامل في الفحص اليومي
+
         let filteredDailys = globalDailyInspections.filter(r => {
             let sd = new Date(r.date);
             return sd >= fd && sd <= td;
@@ -1307,7 +1314,6 @@
         let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0;
         let monthData = { "Movements": movementsVal };
         
-        // تجميع كل البيانات من الحقول الديناميكية
         document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(input => {
             monthData[input.getAttribute('data-spi')] = parseInt(input.value) || 0;
         });
@@ -1319,7 +1325,7 @@
             group: "ECAA_SPI_Matrix",
             name: "OperationalSPI",
             target: "0",
-            actual: JSON.stringify(monthData), // دمج بيانات الشهر بالكامل كـ JSON لتخفيف الضغط
+            actual: JSON.stringify(monthData),
             status: "Submitted",
             actionPlan: movementsVal.toString(),
             preparedBy: "Safety Officer"
@@ -1348,7 +1354,6 @@
         const container = document.getElementById('spi-matrix-container');
         let selectedYear = document.getElementById('spiReportYear').value;
 
-        // استخراج وجمع البيانات المدمجة
         let monthlySpiParsed = {}; 
         globalSpiData.forEach(row => {
             if (row.Indicator_Name === "OperationalSPI" && String(row.Year) === selectedYear) {
@@ -1368,7 +1373,6 @@
             </thead>
             <tbody>`;
 
-        // صف إجمالي الحركة
         let totalMov = 0;
         tableHtml += `<tr><td>Number of aircraft movements in the month</td>`;
         for(let i=1; i<=12; i++) {
@@ -1378,7 +1382,6 @@
         }
         tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td><td style="background:#dc3545; color:#fff;">-</td></tr>`;
 
-        // صفوف المؤشرات
         spiCategories.forEach(cat => {
             tableHtml += `<tr><td colspan="15" style="background:#f4fcf6; color:#28a745; font-weight:bold; text-align:right;">${cat.name}</td></tr>`;
             cat.items.forEach(spi => {
