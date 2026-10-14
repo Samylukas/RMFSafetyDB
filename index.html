@@ -15,28 +15,38 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
+    /* تنسيق السهم في حقل الإدخال */
+    .input-with-arrow { position: relative; display: flex; align-items: center; width: 100%; }
+    .input-with-arrow input { width: 100%; padding-left: 35px !important; }
+    .input-with-arrow i.fa-chevron-down { position: absolute; left: 12px; color: var(--primary); pointer-events: none; font-size: 0.9rem; }
+
     /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-    .checklist-header { background: #e9ecef; padding: 10px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 1rem; margin-bottom: 5px; }
-    .check-item { background: #fff; border: 1px solid #eee; border-radius: 5px; padding: 8px; display: flex; flex-direction: column;}
-    .check-item-row { display: flex; align-items: center; gap: 10px; width: 100%; }
-    .check-item-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-    .check-item-row label { font-size: 0.85rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
-    .check-inputs { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 10px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
-    .check-inputs input, .check-inputs select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.8rem; box-sizing: border-box; }
+    .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
+    .check-item { background: #fff; border: 1px solid #eee; border-radius: 5px; padding: 6px; display: flex; flex-direction: column;}
+    .check-item-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+    .check-item-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+    .check-item-row label { font-size: 0.8rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
+    .check-inputs { display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
+    .check-inputs input, .check-inputs select { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.75rem; box-sizing: border-box; }
 
-    /* تنسيقات الطباعة المصغرة */
-    .iso-report-container { background: #fff; padding: 15px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; }
-    .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
-    .iso-title h2 { font-size: 1.1rem; margin: 0; }
-    .iso-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 9px; margin-bottom: 10px; }
-    .iso-table th, .iso-table td { border: 1px solid #000; padding: 3px 4px; text-align: right; }
-    .iso-table th { background-color: #e6e6e6; text-align: center; font-size: 10px;}
+    /* تنسيقات الطباعة المصغرة المتوافقة مع 3 صفحات */
+    .iso-report-container { background: #fff; padding: 15px 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
+    .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
+    .iso-title h2 { font-size: 1.1rem; margin: 0; color: var(--primary); font-weight: 900;}
+    .iso-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 9px; margin-bottom: 10px; background: #fff;}
+    .iso-table th, .iso-table td { border: 1px solid #000; padding: 4px; text-align: right; }
+    .iso-table th { background-color: #e6e6e6; text-align: center; font-size: 10px; font-weight: bold;}
     .checkbox-print { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-left: 5px; position: relative;}
     .checkbox-print.checked::after { content: '✔'; position: absolute; top: -6px; right: -1px; font-size: 14px; font-weight: bold;}
-    .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
+    .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
+    
+    /* مصفوفة الإحصائيات (SPI) */
+    .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
+    .spi-matrix-table th { background-color: #28a745; color: white; }
+    .spi-matrix-table td:first-child { text-align: left; direction: ltr; font-weight: 600; width: 300px; background: #fdfdfd;}
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
@@ -128,11 +138,17 @@
         <h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div>
       </div>
 
+      <!-- مؤشرات الأداء SPI -->
+      <div class="sub-card" onclick="openSection('spi-section')" style="border: 2px solid #28a745; background: #f4fcf6;">
+        <i class="fa-solid fa-chart-line sub-icon" style="color: #28a745;"></i>
+        <h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">Operational SPIs 2026</div>
+      </div>
+
       <div class="sub-card" onclick="openGenericDoc('التقرير الشهري')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
       <div class="sub-card" onclick="openGenericDoc('الأجسام الغريبة')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
       <div class="sub-card" onclick="openGenericDoc('التفتيش الربع سنوي')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3></div>
       <div class="sub-card" onclick="openGenericDoc('تقارير السلامة SMS')"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
-      <div class="sub-card" onclick="openGenericDoc('مؤشرات الأداء SPI')"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">SPI 2026</div></div>
+      
       <div class="sub-card" onclick="openGenericDoc('تقييم المخاطر')"><i class="fa-solid fa-scale-unbalanced sub-icon"></i><h3 class="sub-title">تقييم المخاطر</h3><div class="sub-subtitle">Risk Assessment</div></div>
       <div class="sub-card" onclick="openGenericDoc('سجل المخاطر')"><i class="fa-solid fa-file-circle-exclamation sub-icon"></i><h3 class="sub-title">سجل المخاطر</h3><div class="sub-subtitle">Hazard Log</div></div>
       <div class="sub-card" onclick="openGenericDoc('نماذج السلامة')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-file-pdf sub-icon"></i><h3 class="sub-title">نماذج السلامة</h3><div class="sub-subtitle">Airport Safety Forms</div></div>
@@ -183,10 +199,13 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
-              <div class="input-with-btn">
-                <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اكتب للبحث أو اختر..." required autocomplete="off" style="text-transform: uppercase;">
+              <div style="display: flex; gap: 5px; width: 100%;">
+                <div class="input-with-arrow">
+                    <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اختر أو اكتب للبحث..." required autocomplete="off" style="text-transform: uppercase;">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
                 <datalist id="regMasterList"></datalist>
-                <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول" style="flex-shrink: 0;"><i class="fa-solid fa-plus"></i></button>
               </div>
             </div>
             <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" id="airline" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً..."></div>
@@ -217,7 +236,7 @@
           <div class="dashboard-header avoid-page-break">
             <div>
               <h2>Safety Captain Survey Dashboard</h2>
-              <p id="report-date-range" style="direction: rtl;">جميع السجلات</p>
+              <p id="report-date-range" style="direction: rtl;">الفترة: ...</p>
             </div>
             <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;">
           </div>
@@ -259,7 +278,17 @@
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection</span></h1>
 
-    <div class="survey-container" style="margin-top: 20px;">
+    <!-- أزرار التنقل للفحص اليومي -->
+    <div class="nav-controls">
+      <button class="new-btn" onclick="clearDailyFormForNew()"><i class="fa-solid fa-plus"></i> فحص جديد</button>
+      <button class="nav-btn" onclick="navDaily('first')" title="الأول"><i class="fa-solid fa-angles-right"></i></button>
+      <button class="nav-btn" onclick="navDaily('prev')" title="السابق"><i class="fa-solid fa-angle-right"></i></button>
+      <div class="nav-counter" id="nav-daily-counter">0 / 0</div>
+      <button class="nav-btn" onclick="navDaily('next')" title="اللاحق"><i class="fa-solid fa-angle-left"></i></button>
+      <button class="nav-btn" onclick="navDaily('last')" title="الأخير"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <div class="survey-container">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry"><i class="fa-solid fa-clipboard-check"></i> نموذج التفتيش (إدخال)</button>
         <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> طباعة النماذج والتقارير</button>
@@ -285,7 +314,6 @@
               <p style="margin: 0; color: #dc3545; font-weight: bold;"><i class="fa-solid fa-circle-info"></i> تعليمات: قم بوضع علامة (✔) فقط أمام البنود المخالفة، لتظهر لك 3 حقول (الملاحظة، المكان، الجهة المسئولة).</p>
           </div>
 
-          <!-- شبكة التشيك ليست تولد تلقائياً -->
           <div class="checklist-grid" id="checklist-container"></div>
 
           <button type="submit" class="submit-btn" id="submitDailyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات</button>
@@ -313,13 +341,13 @@
           <button onclick="generateDailyPrintReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-print"></i> تجهيز وعرض التقرير</button>
         </div>
         
-        <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl;">
+        <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl; width: 100%;">
             <!-- الصفحة 1: شيت الأيزو (قائمة الفحص) -->
             <div class="iso-report-container" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                     <div class="iso-title">
-                        <h2 style="color: var(--primary);">قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
+                        <h2>قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
                     </div>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 11px;">
@@ -336,20 +364,20 @@
 
             <!-- الصفحة 2: تقرير الإجراءات التصحيحية (الجداول) -->
             <div class="html2pdf__page-break"></div>
-            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 15px;">
+            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 20px;">
                 <div class="iso-header">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                     <div class="iso-title">
                         <h2 style="color: #dc3545;">تقرير الإجراءات التصحيحية والملاحظات</h2>
                     </div>
                 </div>
-                <table class="iso-table corrective-table" style="margin-bottom: 20px;">
+                <table class="iso-table corrective-table" style="margin-bottom: 20px; font-size: 11px;">
                     <thead>
                         <tr>
                             <th style="width: 5%;">م</th>
-                            <th style="width: 15%;">مكان الرصد</th>
+                            <th style="width: 20%;">مكان الرصد</th>
                             <th style="width: 40%;">المخالفة / الخطر</th>
-                            <th style="width: 25%;">الجهة المسئولة</th>
+                            <th style="width: 20%;">الجهة المسئولة</th>
                             <th style="width: 15%;">الحالة</th>
                         </tr>
                     </thead>
@@ -357,20 +385,77 @@
                 </table>
             </div>
 
-            <!-- الصفحة 3: الإحصائيات (الرسم البياني) -->
+            <!-- الصفحة 3: الإحصائيات (الرسم البياني) محكومة الطول لتناسب الـ PDF -->
             <div class="html2pdf__page-break"></div>
-            <div class="iso-report-container" id="printable-charts-report" style="display: block; padding-top: 15px;">
-                <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 1.2rem;">إحصائيات منطقة التحركات الجوية</h3>
-                <div class="stats-cards" style="gap: 10px;">
-                  <div class="stat-card" style="background:#003366; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-total" style="margin:0; font-size:1.5rem;">0</h3><p style="margin:2px 0 0; font-size:0.9rem;">إجمالي الفحوصات</p></div>
-                  <div class="stat-card" style="background:#dc3545; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-findings" style="margin:0; font-size:1.5rem;">0</h3><p style="margin:2px 0 0; font-size:0.9rem;">المخالفات</p></div>
-                  <div class="stat-card" style="background:#28a745; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-closed" style="margin:0; font-size:1.5rem;">0%</h3><p style="margin:2px 0 0; font-size:0.9rem;">نسبة الإغلاق</p></div>
+            <div class="iso-report-container" id="printable-charts-report" style="display: block; padding-top: 30px;">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 1.4rem;">الإحصائيات والرسومات البيانية</h3>
+                <div class="stats-cards" style="gap: 15px; margin-bottom: 30px;">
+                  <div class="stat-card" style="background:#003366; color:#fff; border-radius:8px; padding:15px; text-align:center;"><h3 id="stat-daily-total" style="margin:0; font-size:1.8rem;">0</h3><p style="margin:5px 0 0; font-size:1rem;">إجمالي الفحوصات</p></div>
+                  <div class="stat-card" style="background:#dc3545; color:#fff; border-radius:8px; padding:15px; text-align:center;"><h3 id="stat-daily-findings" style="margin:0; font-size:1.8rem;">0</h3><p style="margin:5px 0 0; font-size:1rem;">المخالفات</p></div>
+                  <div class="stat-card" style="background:#28a745; color:#fff; border-radius:8px; padding:15px; text-align:center;"><h3 id="stat-daily-closed" style="margin:0; font-size:1.8rem;">0%</h3><p style="margin:5px 0 0; font-size:1rem;">نسبة الإغلاق</p></div>
                 </div>
-                <div class="charts-grid" style="direction: ltr; margin-top:20px; display:flex; gap:15px; align-items: center; justify-content: center;">
-                  <div class="chart-container" style="flex:1; max-width: 45%;"><canvas id="dailyDeptChart" style="max-height:220px;"></canvas></div>
-                  <div class="chart-container" style="flex:1; max-width: 45%;"><canvas id="dailyStatusChart" style="max-height:220px;"></canvas></div>
+                <div class="charts-grid" style="direction: ltr; display:flex; justify-content: space-around; align-items: center; width: 100%;">
+                  <div class="chart-container" style="width: 45%; max-height:280px; position:relative;"><canvas id="dailyDeptChart"></canvas></div>
+                  <div class="chart-container" style="width: 45%; max-height:280px; position:relative;"><canvas id="dailyStatusChart"></canvas></div>
                 </div>
             </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- وحدة مؤشرات الأداء ECAA SPI 2026 -->
+  <div id="spi-section" class="content-area">
+    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
+    <h1 style="color: #28a745; text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">مؤشرات الأداء التشغيلية <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Operational SPIs 2026</span></h1>
+
+    <div class="survey-container" style="margin-top: 20px;">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات الشهرية (Data Entry)</button>
+        <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير (SPI Matrix)</button>
+      </div>
+
+      <!-- إدخال SPI -->
+      <div id="tab-spi-entry" class="tab-content active">
+        <div style="background: #f4fcf6; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #155724; font-weight: bold;"><i class="fa-solid fa-circle-info"></i> مبني على نظام ECAA SPI Template 2026. يتم تسجيل عدد الرحلات والأحداث (Events) ليقوم النظام تلقائياً بحساب المعدل لكل 1000 حركة في المصفوفة.</p>
+        </div>
+        <form id="spiForm" onsubmit="submitSPI(event)">
+          <div class="form-grid" style="background:#e9ecef; padding: 15px; border-radius: 8px;">
+            <div class="form-group">
+                <label>السنة (Year)</label>
+                <select id="spiYear" required><option value="2026" selected>2026</option></select>
+            </div>
+            <div class="form-group">
+                <label>الشهر (Month)</label>
+                <select id="spiMonth" required>
+                    <option value="1">يناير (JAN)</option><option value="2">فبراير (FEB)</option><option value="3">مارس (MAR)</option>
+                    <option value="4">أبريل (APR)</option><option value="5">مايو (MAY)</option><option value="6">يونيو (JUN)</option>
+                    <option value="7">يوليو (JUL)</option><option value="8">أغسطس (AUG)</option><option value="9">سبتمبر (SEP)</option>
+                    <option value="10">أكتوبر (OCT)</option><option value="11">نوفمبر (NOV)</option><option value="12">ديسمبر (DEC)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>إجمالي حركة الطائرات (Movements)</label><input type="number" id="spiMovements" required min="1" placeholder="مثال: 1500"></div>
+          </div>
+          
+          <div id="spi-dynamic-inputs"></div>
+
+          <button type="submit" class="submit-btn" style="background-color: #28a745; margin-top: 20px;" id="submitSpiBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتسجيل بيانات الشهر</button>
+          <p id="spiMsg" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></p>
+        </form>
+      </div>
+
+      <!-- مصفوفة SPI -->
+      <div id="tab-spi-report" class="tab-content">
+        <div class="report-filters">
+           <div class="form-group"><label>اختر السنة:</label><select id="spiReportYear"><option value="2026">2026</option></select></div>
+           <button onclick="generateSpiReport()" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-sync"></i> تحديث وعرض المصفوفة</button>
+        </div>
+        
+        <div id="spi-dashboard-view" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px; overflow-x: auto;">
+           <h3 style="color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px;"><i class="fa-solid fa-table-cells"></i> مصفوفة مؤشرات الأداء التشغيلية (Operational SPIs 2026)</h3>
+           <div id="spi-matrix-container"></div>
         </div>
       </div>
     </div>
@@ -393,7 +478,6 @@
   </div>
 
   <script>
-    // الرابط المحدث كما طلبت
     const API_URL = "https://script.google.com/macros/s/AKfycbwsq9Flbb0oFN7o3XPqlIlZpguvcPKmTF6A23Dt6o-iVYkBJ-lIZjyOE-OsYiDLE6ww/exec"; 
 
     // ثوابت الاستبيان
@@ -417,11 +501,23 @@
     };
     const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
 
+    // ثوابت مؤشرات الأداء (ECAA SPI 2026)
+    const spiCategories = [
+        { name: "خدمات الإنقاذ والإطفاء (RFFS & Fires)", items: ["*Post-crash fires", "Airport firefighting services’ decreased", "Reported inadequate equipment or resources"] },
+        { name: "عمليات المدرج والتحركات (Runway & Ground Ops)", items: ["*Precursors to Runway Incursion (RI) (HRC)", "Failures or defects regarding signage", "Failures or defects regarding lighting", "Unauthorized or uncoordinated movement"] },
+        { name: "الممرات والساحات (Taxiway & Apron)", items: ["Reported inadequate signage/lights/markings on TWY & Apron", "Violations to low visibility procedures"] },
+        { name: "الحياة البرية والأجسام الغريبة (Wildlife & FOD)", items: ["Reported birds strike", "Observed birds /wildlife", "Inspections in which FOD was detected"] },
+        { name: "إجراءات الطوارئ (Emergency Procedures)", items: ["Carried out emergency procedures", "Delayed response to emergency"] }
+    ];
+
     let globalFleetData = []; 
     let globalSurveys = [];
     let globalUsers = [];
+    let globalSpiData = [];
     let globalDailyInspections = JSON.parse(localStorage.getItem('savedDailyInspectionsISO')) || [];
     let currentSurveyIndex = -1;
+    let currentDailyIndex = -1;
+    
     let chartInstances = {}; 
     let chartInstancesDaily = {};
 
@@ -430,6 +526,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       buildEvaluationForm();
       buildDailyChecklist();
+      buildSpiEntryForm();
       renderSavedDaily();
       loadAppDataInit();
       autoFillDailyDateTime(); 
@@ -447,6 +544,7 @@
                 globalFleetData = data.fleet ? data.fleet.reverse() : [];
                 globalSurveys = data.surveys ? data.surveys.reverse() : [];
                 globalUsers = data.users || [];
+                globalSpiData = data.spi || [];
 
                 const userSelect = document.getElementById('username');
                 if(userSelect) {
@@ -473,6 +571,7 @@
                 if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
                 
                 if(typeof renderUsersTable === "function") renderUsersTable();
+                updateDailyNavCounter();
             }
         } catch(e) { console.log(e); }
         delete window[callbackName];
@@ -544,6 +643,19 @@
       document.getElementById('btn-daily-' + tab).classList.add('active');
       document.getElementById('tab-daily-' + tab).classList.add('active');
     }
+
+    function switchSpiTab(tab) {
+      document.getElementById('btn-spi-entry').classList.remove('active');
+      document.getElementById('btn-spi-report').classList.remove('active');
+      document.getElementById('tab-spi-entry').classList.remove('active');
+      document.getElementById('tab-spi-report').classList.remove('active');
+
+      document.getElementById('btn-spi-' + tab).classList.add('active');
+      document.getElementById('tab-spi-' + tab).classList.add('active');
+      
+      if(tab === 'report') generateSpiReport();
+    }
+
 
     // ==========================================
     // دوال 01: الاستبيان
@@ -726,22 +838,23 @@
     }
 
     function generateModernReport() {
-        document.getElementById('printable-report').style.display = 'block';
-        
-        let filteredSurveys = globalSurveys;
         let fromD = document.getElementById('fromDate').value;
         let toD = document.getElementById('toDate').value;
         
-        if(fromD && toD) {
-            let fd = new Date(fromD); let td = new Date(toD);
-            filteredSurveys = globalSurveys.filter(s => {
-                let sd = new Date(s.Date);
-                return sd >= fd && sd <= td;
-            });
-            document.getElementById('report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
-        } else {
-            document.getElementById('report-date-range').innerHTML = `جميع السجلات <span style="display:inline-block; direction:ltr;">(All Time)</span>`;
+        // الجدار الناري: منع العرض بدون اختيار التواريخ
+        if(!fromD || !toD) {
+            alert("برجاء اختيار فترة التاريخ (من - إلى) أولاً لعرض النتائج.");
+            return;
         }
+
+        document.getElementById('printable-report').style.display = 'block';
+        let fd = new Date(fromD); let td = new Date(toD);
+        let filteredSurveys = globalSurveys.filter(s => {
+            let sd = new Date(s.Date);
+            return sd >= fd && sd <= td;
+        });
+        
+        document.getElementById('report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
 
         let airlinesSet = new Set();
         let airlinesCount = {};
@@ -959,11 +1072,65 @@
         const dField = document.getElementById('dailyDate'); const tField = document.getElementById('dailyTime'); 
         if(dField) dField.value = localISOTime.split('T')[0]; if(tField) tField.value = localISOTime.split('T')[1].substring(0, 5); 
     }
+
+    function updateDailyNavCounter() {
+        const ctr = document.getElementById('nav-daily-counter');
+        if(ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`;
+    }
+
+    function navDaily(direction) {
+        if(globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة بعد.");
+        
+        if(direction === 'first') currentDailyIndex = 0;
+        else if(direction === 'last') currentDailyIndex = globalDailyInspections.length - 1;
+        else if(direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
+        else if(direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
+        
+        if(currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
+            displayDailyInForm(globalDailyInspections[currentDailyIndex]);
+            updateDailyNavCounter();
+            document.getElementById('submitDailyBtn').disabled = true; 
+            document.getElementById('submitDailyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+        }
+    }
+
+    function displayDailyInForm(report) {
+        document.getElementById('dailyForm').reset();
+        document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none');
+        
+        document.getElementById('dailyDate').value = report.date || '';
+        document.getElementById('dailyTime').value = report.time || '';
+        document.getElementById('dailyShift').value = report.shift || 'صباحي';
+        document.getElementById('dailyInspector').value = report.inspector || '';
+
+        document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+            let parts = chk.value.split('|');
+            let found = report.findings.find(f => f.category === parts[0] && f.item === parts[1]);
+            if(found) {
+                chk.checked = true;
+                document.getElementById(`inputs_${idx}`).style.display = 'flex';
+                document.getElementById(`note_${idx}`).value = found.note || "";
+                document.getElementById(`loc_${idx}`).value = found.location || "";
+                document.getElementById(`resp_${idx}`).value = found.responsible || "";
+            }
+        });
+    }
+
+    function clearDailyFormForNew() {
+        currentDailyIndex = -1;
+        document.getElementById('dailyForm').reset();
+        document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none');
+        autoFillDailyDateTime();
+        updateDailyNavCounter();
+        let btn = document.getElementById('submitDailyBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات';
+    }
     
     async function submitDailyInspection(e) {
         e.preventDefault(); 
         const btn=document.getElementById('submitDailyBtn'); 
-        btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في قاعدة البيانات...'; 
+        btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; 
         btn.disabled=true;
         
         let findings = [];
@@ -990,12 +1157,8 @@
             document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!";
             
             setTimeout(()=>{ 
-                document.getElementById('dailyForm').reset(); 
-                document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none'); 
-                autoFillDailyDateTime(); 
+                clearDailyFormForNew();
                 renderSavedDaily(); 
-                btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير التفتيش اليومي'; 
-                btn.disabled=false; 
                 document.getElementById('dailyMsg').innerText=""; 
             }, 2000);
         } catch(err) { 
@@ -1008,6 +1171,7 @@
     function renderSavedDaily() {
         const tbody = document.getElementById('saved-daily-tbody'); 
         if(!tbody) return; tbody.innerHTML = "";
+        updateDailyNavCounter();
         
         if(globalDailyInspections.length === 0) {
             tbody.innerHTML = "<tr><td colspan='6' style='color:#777; font-weight:bold; text-align:center;'>لا توجد فحوصات محفوظة.</td></tr>";
@@ -1024,14 +1188,35 @@
             globalDailyInspections.splice(idx, 1); 
             localStorage.setItem('savedDailyInspectionsISO', JSON.stringify(globalDailyInspections)); 
             renderSavedDaily(); 
+            clearDailyFormForNew();
         } 
     }
 
     function generateDailyPrintReport() {
+        let fromD = document.getElementById('dailyFromDate').value;
+        let toD = document.getElementById('dailyToDate').value;
+        
+        if(!fromD || !toD) {
+            alert("برجاء اختيار فترة التاريخ (من - إلى) أولاً لعرض التقرير.");
+            return;
+        }
+
         document.getElementById('printable-daily-report').style.display = 'block';
         if(globalDailyInspections.length === 0) return alert("لا توجد فحوصات محفوظة للطباعة.");
         
-        let rep = globalDailyInspections[0]; 
+        let fd = new Date(fromD); let td = new Date(toD);
+        let filteredDailys = globalDailyInspections.filter(r => {
+            let sd = new Date(r.date);
+            return sd >= fd && sd <= td;
+        });
+
+        if (filteredDailys.length === 0) {
+            alert("لا توجد فحوصات في هذه الفترة.");
+            document.getElementById('printable-daily-report').style.display = 'none';
+            return;
+        }
+        
+        let rep = filteredDailys[0]; 
         
         document.getElementById('print-date-view').innerText = rep.date; 
         document.getElementById('print-time-view').innerText = rep.time; 
@@ -1052,8 +1237,8 @@
                 }); 
             };
             renderItems(colData.items, colData.title);
-            if(colData.title2) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 5px -4px 3px; padding:2px;">${colData.title2}</div>`; renderItems(colData.items2, colData.title2); }
-            if(colData.title3) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 5px -4px 3px; padding:2px;">${colData.title3}</div>`; renderItems(colData.items3, colData.title3); }
+            if(colData.title2) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title2}</div>`; renderItems(colData.items2, colData.title2); }
+            if(colData.title3) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title3}</div>`; renderItems(colData.items3, colData.title3); }
             cellHtml += "</td>"; trBody += cellHtml;
         }); 
         trBody += "</tr>"; table.innerHTML += trBody;
@@ -1061,16 +1246,20 @@
         const ctbody = document.getElementById('corrective-tbody'); ctbody.innerHTML = "";
         let counter = 1; let statusCounts = { "مغلق": 0, "مفتوح": 0 }; let deptCounts = {};
         
-        rep.findings.forEach(f => {
-            statusCounts["مفتوح"]++; 
-            deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1;
-            ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#dc3545;font-size:10px;">${f.note}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:red; color:white; text-align:center; font-weight:bold;">${f.status}</td></tr>`;
+        let allFindingsCount = 0;
+        filteredDailys.forEach(dr => {
+            dr.findings.forEach(f => {
+                allFindingsCount++;
+                statusCounts["مفتوح"]++; 
+                deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1;
+                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#dc3545;font-size:9px;">${f.note}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:red; color:white; text-align:center; font-weight:bold;">${f.status}</td></tr>`;
+            });
         });
         
-        if(counter===1) ctbody.innerHTML = "<tr><td colspan='5' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات</td></tr>";
+        if(counter===1) ctbody.innerHTML = "<tr><td colspan='5' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
         
-        document.getElementById('stat-daily-total').innerText = "1"; 
-        document.getElementById('stat-daily-findings').innerText = rep.findings.length;
+        document.getElementById('stat-daily-total').innerText = filteredDailys.length; 
+        document.getElementById('stat-daily-findings').innerText = allFindingsCount;
         
         if(chartInstancesDaily.dept) chartInstancesDaily.dept.destroy();
         if(chartInstancesDaily.status) chartInstancesDaily.status.destroy();
@@ -1082,11 +1271,135 @@
     
     function exportDailyPDF() { 
         const el = document.getElementById('printable-daily-report'); 
-        if(el.style.display==='none') generateDailyPrintReport(); 
+        if(el.style.display==='none') { alert("برجاء عرض التقرير أولاً قبل الطباعة."); return; }
         window.scrollTo(0,0); 
-        html2pdf().set({margin:[0.2, 0.4, 0.4, 0.4], filename:'Air_Side_Daily_Inspection.pdf', image:{type:'jpeg',quality:1}, html2canvas:{scale:2, useCORS:true}, jsPDF:{unit:'in', format:'a4', orientation:'landscape'}, pagebreak: { mode: ['css', 'legacy'] }}).from(el).save(); 
+        html2pdf().set({margin:[0.1, 0.2, 0.2, 0.2], filename:'Air_Side_Daily_Inspection.pdf', image:{type:'jpeg',quality:1}, html2canvas:{scale:2, useCORS:true}, jsPDF:{unit:'in', format:'a4', orientation:'landscape'}, pagebreak: { mode: ['css', 'legacy'] }}).from(el).save(); 
     }
 
+
+    // ==========================================
+    // دوال 03: مؤشرات الأداء (SPI 2026 ECAA)
+    // ==========================================
+    function buildSpiEntryForm() {
+        const container = document.getElementById('spi-dynamic-inputs');
+        container.innerHTML = '';
+        spiCategories.forEach(cat => {
+            let catHtml = `<h4 style="color: #28a745; margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${cat.name}</h4><div class="form-grid">`;
+            cat.items.forEach((spi, idx) => {
+                let safeId = "spi_" + spi.replace(/[^a-zA-Z0-9]/g, '');
+                catHtml += `<div class="form-group"><label style="font-size:0.8rem; direction:ltr; text-align:left;">${spi}</label><input type="number" id="${safeId}" data-spi="${spi}" value="0" min="0" required></div>`;
+            });
+            catHtml += `</div>`;
+            container.innerHTML += catHtml;
+        });
+    }
+
+    async function submitSPI(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitSpiBtn');
+        const msg = document.getElementById('spiMsg');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+        
+        let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0;
+        let monthData = { "Movements": movementsVal };
+        
+        // تجميع كل البيانات من الحقول الديناميكية
+        document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(input => {
+            monthData[input.getAttribute('data-spi')] = parseInt(input.value) || 0;
+        });
+
+        let spiDataObj = {
+            id: "SPI-" + Date.now(),
+            year: document.getElementById('spiYear').value,
+            month: document.getElementById('spiMonth').value,
+            group: "ECAA_SPI_Matrix",
+            name: "OperationalSPI",
+            target: "0",
+            actual: JSON.stringify(monthData), // دمج بيانات الشهر بالكامل كـ JSON لتخفيف الضغط
+            status: "Submitted",
+            actionPlan: movementsVal.toString(),
+            preparedBy: "Safety Officer"
+        };
+
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj }), mode: 'no-cors' });
+            msg.style.color = "green"; msg.innerText = "✅ تم حفظ بيانات مؤشرات الشهر بنجاح!";
+            
+            globalSpiData.push({Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual});
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتسجيل بيانات الشهر';
+                btn.disabled = false;
+                msg.innerText = "";
+                document.getElementById('spiForm').reset();
+            }, 2000);
+        } catch (error) {
+            msg.style.color = "red"; msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتسجيل بيانات الشهر';
+            btn.disabled = false;
+        }
+    }
+
+    function generateSpiReport() {
+        const container = document.getElementById('spi-matrix-container');
+        let selectedYear = document.getElementById('spiReportYear').value;
+
+        // استخراج وجمع البيانات المدمجة
+        let monthlySpiParsed = {}; 
+        globalSpiData.forEach(row => {
+            if (row.Indicator_Name === "OperationalSPI" && String(row.Year) === selectedYear) {
+                try { monthlySpiParsed[row.Month] = JSON.parse(row.Actual_Value); } catch(e) {}
+            }
+        });
+
+        let tableHtml = `<table class="report-table spi-matrix-table">
+            <thead>
+                <tr>
+                    <th>Safety issue / SPI</th>
+                    <th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th>
+                    <th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th>
+                    <th style="background:#003366; color:#fff;">Total Events</th>
+                    <th style="background:#dc3545; color:#fff;">Rate (per 1000)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        // صف إجمالي الحركة
+        let totalMov = 0;
+        tableHtml += `<tr><td>Number of aircraft movements in the month</td>`;
+        for(let i=1; i<=12; i++) {
+            let m = monthlySpiParsed[i] ? monthlySpiParsed[i].Movements || 0 : 0;
+            totalMov += m;
+            tableHtml += `<td style="font-weight:bold; background:#e8f5e9;">${m || '-'}</td>`;
+        }
+        tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td><td style="background:#dc3545; color:#fff;">-</td></tr>`;
+
+        // صفوف المؤشرات
+        spiCategories.forEach(cat => {
+            tableHtml += `<tr><td colspan="15" style="background:#f4fcf6; color:#28a745; font-weight:bold; text-align:right;">${cat.name}</td></tr>`;
+            cat.items.forEach(spi => {
+                let totalSpi = 0;
+                let rowHtml = `<tr><td>${spi}</td>`;
+                for(let i=1; i<=12; i++) {
+                    let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
+                    totalSpi += val;
+                    rowHtml += `<td>${val || '-'}</td>`;
+                }
+                let rate = totalMov > 0 ? ((totalSpi / totalMov) * 1000).toFixed(2) : 0;
+                rowHtml += `<td style="font-weight:bold; color:#003366;">${totalSpi}</td><td style="font-weight:bold; color:#dc3545;">${rate}</td></tr>`;
+                tableHtml += rowHtml;
+            });
+        });
+
+        tableHtml += `</tbody></table>`;
+        container.innerHTML = tableHtml;
+    }
+
+    // ==========================================
+    // إدارة المستخدمين
+    // ==========================================
     async function addUser(e) {
       e.preventDefault();
       const msg = document.getElementById('userMsg');
