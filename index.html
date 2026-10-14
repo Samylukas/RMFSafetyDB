@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- ربط ملف التنسيقات الخارجي بتاعك سليم 100% -->
   <link rel="stylesheet" href="style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -17,10 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-    /* =========================================================
-       تنسيقات إضافية خاصة بالفحص اليومي الجديد (Checklist) فقط
-       ولن تؤثر على أي شيء آخر في تصميمك
-       ========================================================= */
+    /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
     .checklist-header { background: #e9ecef; padding: 10px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 1rem; margin-bottom: 5px; }
@@ -257,7 +251,7 @@
   </div>
 
 
-  <!-- وحدة 02: الفحص اليومي (تم التعديل للـ Checklist حسب طلبك) -->
+  <!-- وحدة 02: الفحص اليومي (Checklist) -->
   <div id="daily-inspection-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection</span></h1>
@@ -398,8 +392,8 @@
   </div>
 
   <script>
-    // ⚠️ رابط جوجل شيت الخاص بك (المعدل ليقرأ الاستبيان بشكل صحيح) ⚠️
-    const API_URL = "https://script.google.com/macros/s/AKfycbw8VBasG7NE_8HhpXuYZhSLwcfX-ngizoRFa8mMCjS_Arv53tP_6GlP32vy0h_vzQK-/exec"; 
+    // تم تحديث الرابط بنجاح للرابط الجديد الخاص بك
+    const API_URL = "https://script.google.com/macros/s/AKfycbzWw0YYL0clhaF7J211lfxuPlhEZW7MsAQ0nIilHJvuztQeZu7bnZ_B-Cf5NSbRddrX/exec"; 
 
     // ثوابت الاستبيان
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
