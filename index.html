@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -25,14 +26,16 @@
     .check-inputs { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 10px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
     .check-inputs input, .check-inputs select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.8rem; box-sizing: border-box; }
 
-    .iso-report-container { background: #fff; padding: 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; }
-    .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-    .iso-table { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 11px; margin-bottom: 10px; }
-    .iso-table th, .iso-table td { border: 1px solid #000; padding: 5px; text-align: right; }
-    .iso-table th { background-color: #e6e6e6; text-align: center; font-size: 13px;}
-    .checkbox-print { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; margin-left: 5px; position: relative;}
-    .checkbox-print.checked::after { content: '✔'; position: absolute; top: -5px; right: 0px; font-size: 16px; font-weight: bold;}
-    .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #eee; padding-bottom: 3px; font-size: 12px; font-weight: bold;}
+    /* تنسيقات الطباعة المصغرة */
+    .iso-report-container { background: #fff; padding: 15px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; }
+    .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
+    .iso-title h2 { font-size: 1.1rem; margin: 0; }
+    .iso-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 9px; margin-bottom: 10px; }
+    .iso-table th, .iso-table td { border: 1px solid #000; padding: 3px 4px; text-align: right; }
+    .iso-table th { background-color: #e6e6e6; text-align: center; font-size: 10px;}
+    .checkbox-print { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-left: 5px; position: relative;}
+    .checkbox-print.checked::after { content: '✔'; position: absolute; top: -6px; right: -1px; font-size: 14px; font-weight: bold;}
+    .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -310,45 +313,43 @@
           <button onclick="generateDailyPrintReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-print"></i> تجهيز وعرض التقرير</button>
         </div>
         
-        <div id="printable-daily-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px; direction: rtl;">
-            <!-- الصفحة 1: شيت الأيزو -->
+        <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl;">
+            <!-- الصفحة 1: شيت الأيزو (قائمة الفحص) -->
             <div class="iso-report-container" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
-                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;">
+                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                     <div class="iso-title">
-                        <h2>قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
+                        <h2 style="color: var(--primary);">قائمة الفحص اليومية لمنطقة التحركات الجوية</h2>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; font-size: 11px;">
                     <div>التاريخ: <span id="print-date-view"></span></div>
                     <div>الوقت: <span id="print-time-view"></span></div>
                     <div>الوردية: <span id="print-shift-view"></span></div>
                 </div>
                 <table class="iso-table" id="iso-checklist-table"></table>
-                <div class="iso-footer">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 5px;">
                     <div>المفتش: <span id="print-inspector-view"></span></div>
                     <div style="color: #555;">AS-F-01-01</div>
                 </div>
             </div>
 
-            <!-- الصفحة 2: تقرير الإجراءات التصحيحية -->
+            <!-- الصفحة 2: تقرير الإجراءات التصحيحية (الجداول) -->
             <div class="html2pdf__page-break"></div>
-            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 20px;">
+            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 15px;">
                 <div class="iso-header">
-                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;">
+                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                     <div class="iso-title">
                         <h2 style="color: #dc3545;">تقرير الإجراءات التصحيحية والملاحظات</h2>
-                        <p id="corrective-date-range" style="margin:0;"></p>
                     </div>
                 </div>
-                <table class="iso-table corrective-table" style="margin-bottom: 30px;">
+                <table class="iso-table corrective-table" style="margin-bottom: 20px;">
                     <thead>
                         <tr>
                             <th style="width: 5%;">م</th>
-                            <th style="width: 10%;">التاريخ</th>
                             <th style="width: 15%;">مكان الرصد</th>
-                            <th style="width: 35%;">المخالفة / الخطر</th>
-                            <th style="width: 20%;">الجهة المسئولة</th>
+                            <th style="width: 40%;">المخالفة / الخطر</th>
+                            <th style="width: 25%;">الجهة المسئولة</th>
                             <th style="width: 15%;">الحالة</th>
                         </tr>
                     </thead>
@@ -356,18 +357,18 @@
                 </table>
             </div>
 
-            <!-- الصفحة 3: الإحصائيات -->
+            <!-- الصفحة 3: الإحصائيات (الرسم البياني) -->
             <div class="html2pdf__page-break"></div>
-            <div class="iso-report-container" id="printable-charts-report" style="display: block; padding-top: 20px;">
-                <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px;">إحصائيات منطقة التحركات الجوية</h3>
-                <div class="stats-cards">
-                  <div class="stat-card" style="background:#003366; color:#fff; border-radius:10px; padding:15px; text-align:center;"><h3 id="stat-daily-total" style="margin:0; font-size:2rem;">0</h3><p style="margin:5px 0 0;">إجمالي الفحوصات</p></div>
-                  <div class="stat-card" style="background:#dc3545; color:#fff; border-radius:10px; padding:15px; text-align:center;"><h3 id="stat-daily-findings" style="margin:0; font-size:2rem;">0</h3><p style="margin:5px 0 0;">المخالفات</p></div>
-                  <div class="stat-card" style="background:#28a745; color:#fff; border-radius:10px; padding:15px; text-align:center;"><h3 id="stat-daily-closed" style="margin:0; font-size:2rem;">0%</h3><p style="margin:5px 0 0;">نسبة الإغلاق</p></div>
+            <div class="iso-report-container" id="printable-charts-report" style="display: block; padding-top: 15px;">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 1.2rem;">إحصائيات منطقة التحركات الجوية</h3>
+                <div class="stats-cards" style="gap: 10px;">
+                  <div class="stat-card" style="background:#003366; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-total" style="margin:0; font-size:1.5rem;">0</h3><p style="margin:2px 0 0; font-size:0.9rem;">إجمالي الفحوصات</p></div>
+                  <div class="stat-card" style="background:#dc3545; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-findings" style="margin:0; font-size:1.5rem;">0</h3><p style="margin:2px 0 0; font-size:0.9rem;">المخالفات</p></div>
+                  <div class="stat-card" style="background:#28a745; color:#fff; border-radius:8px; padding:10px; text-align:center;"><h3 id="stat-daily-closed" style="margin:0; font-size:1.5rem;">0%</h3><p style="margin:2px 0 0; font-size:0.9rem;">نسبة الإغلاق</p></div>
                 </div>
-                <div class="charts-grid" style="direction: ltr; margin-top:30px; display:flex; gap:20px;">
-                  <div class="chart-container" style="flex:1;"><canvas id="dailyDeptChart" style="max-height:250px;"></canvas></div>
-                  <div class="chart-container" style="flex:1;"><canvas id="dailyStatusChart" style="max-height:250px;"></canvas></div>
+                <div class="charts-grid" style="direction: ltr; margin-top:20px; display:flex; gap:15px; align-items: center; justify-content: center;">
+                  <div class="chart-container" style="flex:1; max-width: 45%;"><canvas id="dailyDeptChart" style="max-height:220px;"></canvas></div>
+                  <div class="chart-container" style="flex:1; max-width: 45%;"><canvas id="dailyStatusChart" style="max-height:220px;"></canvas></div>
                 </div>
             </div>
         </div>
@@ -392,8 +393,8 @@
   </div>
 
   <script>
-    // تم تحديث الرابط بنجاح للرابط الجديد الخاص بك
-    const API_URL = "https://script.google.com/macros/s/AKfycbzWw0YYL0clhaF7J211lfxuPlhEZW7MsAQ0nIilHJvuztQeZu7bnZ_B-Cf5NSbRddrX/exec"; 
+    // الرابط المحدث كما طلبت
+    const API_URL = "https://script.google.com/macros/s/AKfycbwsq9Flbb0oFN7o3XPqlIlZpguvcPKmTF6A23Dt6o-iVYkBJ-lIZjyOE-OsYiDLE6ww/exec"; 
 
     // ثوابت الاستبيان
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
@@ -1051,8 +1052,8 @@
                 }); 
             };
             renderItems(colData.items, colData.title);
-            if(colData.title2) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 10px -5px 5px; padding:2px;">${colData.title2}</div>`; renderItems(colData.items2, colData.title2); }
-            if(colData.title3) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 10px -5px 5px; padding:2px;">${colData.title3}</div>`; renderItems(colData.items3, colData.title3); }
+            if(colData.title2) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 5px -4px 3px; padding:2px;">${colData.title2}</div>`; renderItems(colData.items2, colData.title2); }
+            if(colData.title3) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 5px -4px 3px; padding:2px;">${colData.title3}</div>`; renderItems(colData.items3, colData.title3); }
             cellHtml += "</td>"; trBody += cellHtml;
         }); 
         trBody += "</tr>"; table.innerHTML += trBody;
