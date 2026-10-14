@@ -9,12 +9,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- ربط ملف التنسيقات الخارجي -->
   <link rel="stylesheet" href="style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+  <style>
+    /* تنسيقات إضافية لضمان فصل الصفحات في الـ PDF */
+    .page-break {
+        page-break-before: always;
+        break-before: page;
+        padding-top: 20px; /* مسافة علوية في بداية كل صفحة جديدة */
+    }
+  </style>
 </head>
 <body>
 
@@ -90,13 +98,11 @@
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <!-- 01 - استبيان الكابتن -->
       <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;">
         <i class="fa-solid fa-clipboard-user sub-icon" style="color: var(--primary);"></i>
         <h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div>
       </div>
       
-      <!-- 02 - الفحص اليومي -->
       <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border: 2px solid var(--secondary); background: #fdfbf7;">
         <i class="fa-solid fa-list-check sub-icon" style="color: var(--secondary);"></i>
         <h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div>
@@ -132,7 +138,7 @@
     </div>
   </div>
 
-  <!-- وحدة 02: التفتيش اليومي والشهري لساحة الطيران -->
+  <!-- 02 - الفحص اليومي لساحة الطيران -->
   <div id="daily-inspection-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection & Monthly Report</span></h1>
@@ -261,7 +267,7 @@
     </div>
   </div>
 
-  <!-- وحدة 01: استبيان الكابتن الأساسية -->
+  <!-- 01 - استبيان الكابتن -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">01 - استبيان الكابتن <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
@@ -317,6 +323,7 @@
 
         <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px; direction: rtl;">
           
+          <!-- الصفحة 1: لوحة القيادة -->
           <div class="dashboard-header avoid-page-break">
             <div>
               <h2>Safety Captain Survey Dashboard</h2>
@@ -339,7 +346,8 @@
             </div>
           </div>
 
-          <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
+          <!-- الصفحة 2: جدول تقييم الرحلات -->
+          <div class="report-wrapper page-break" style="margin-top: 30px;">
             <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table rtl-table" dir="rtl">
               <thead>
@@ -351,6 +359,8 @@
               <tbody id="flights-eval-tbody"></tbody>
             </table>
           </div>
+
+          <!-- سيتم إدراج الصفحة 3 (جدول Poor) والصفحة 4 (التعليقات) بواسطة JavaScript -->
         </div>
       </div>
     </div>
@@ -373,7 +383,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwr5uyKEUfamamTezSVmUJ4tEtncjkQHZwZuCLeYwyVjitHQMu7iKh6H_gHdCGZzcol/exec"; 
     
-    // --- السطر اللي اتمسح وكان مبوظ الاستبيان رجعته تاني هنا ---
+    // تعريف قائمة التقييمات الأساسية (ضرورية لعمل الجافاسكربت)
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
     let globalFleetData = []; 
@@ -382,7 +392,7 @@
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    // --- بيانات التفتيش اليومي المأخوذة من ملف الإكسيل (للفحص اليومي 02) ---
+    // بيانات التفتيش اليومي
     const inspectionCategories = {
         "المناطق المرصوفة": ["شروخ", "حفر (5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخرى"],
         "المناطق الغير مرصوفة": ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخرى"],
@@ -397,7 +407,6 @@
     };
     const responsibleDepts = ["الهندسة والصيانة", "العمليات", "الإنقاذ والإطفاء", "أمن الطيران", "شركات الطيران / الوكالات", "الإرشاد", "الإدارة البيئية", "أخرى"];
     
-    // تخزين محلي لتقارير التفتيش اليومية 
     let globalDailyInspections = JSON.parse(localStorage.getItem('savedDailyInspections')) || [];
     let currentFindingsTemp = [];
     let chartInstancesDaily = {};
@@ -407,12 +416,10 @@
     document.addEventListener('DOMContentLoaded', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      autoFillDailyDateTime(); 
+      autoFillDailyDateTime();
     });
 
-    // ==========================================
     // -------- دوال 02: التفتيش اليومي ---------
-    // ==========================================
     function autoFillDailyDateTime() {
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
@@ -675,10 +682,7 @@
       });
     }
 
-    // ==========================================
     // -------- دوال 01: استبيان الكابتن ---------
-    // ==========================================
-
     function loadAppDataInit() {
       const regDatalist = document.getElementById('regMasterList');
       if(regDatalist) regDatalist.innerHTML = ''; 
@@ -769,7 +773,6 @@
     }
 
     function switchTab(tab) {
-      // إغلاق التابات الخاصة بالاستبيان فقط عشان ماتأثرش على الفحص اليومي
       document.getElementById('btn-entry').classList.remove('active');
       document.getElementById('btn-report').classList.remove('active');
       document.getElementById('tab-entry').classList.remove('active');
@@ -1016,6 +1019,7 @@
         const flightsTbody = document.getElementById('flights-eval-tbody');
         flightsTbody.innerHTML = "";
 
+        // مسح الأقسام السابقة
         let oldComments = document.getElementById('captain-comments-section');
         if(oldComments) oldComments.remove(); 
         let oldPoorSection = document.getElementById('poor-evaluations-section');
@@ -1082,9 +1086,10 @@
             }
         });
 
+        // --- الصفحة 3: جدول التقييمات الضعيفة (Poor) ---
         if(hasPoor) {
             let poorSectionWrapper = `
-                <div id="poor-evaluations-section" class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div id="poor-evaluations-section" class="report-wrapper page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                     <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة (Poor Evaluations)</h4>
                     <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
                         <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
@@ -1095,10 +1100,16 @@
             document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', poorSectionWrapper);
         }
 
-        let finalCommentsHTML = `<div id="captain-comments-section" class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        // --- الصفحة 4: تعليقات الكابتن ---
+        let finalCommentsHTML = `<div id="captain-comments-section" class="comments-section page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: left; direction: ltr;"><i class="fa-solid fa-comments"></i> Captains' Comments</h4>
             <ul style="list-style: none; padding: 0; margin: 0; text-align: left; direction: ltr;">`;
-        if(hasComments) { finalCommentsHTML += commentsHTML; } else { finalCommentsHTML += `<li style="padding: 8px 0; color: #777;">No comments recorded in this period.</li>`; }
+        
+        if(hasComments) { 
+            finalCommentsHTML += commentsHTML; 
+        } else { 
+            finalCommentsHTML += `<li style="padding: 8px 0; color: #777;">No comments recorded in this period.</li>`; 
+        }
         finalCommentsHTML += `</ul></div>`;
         
         let mainWrapper = document.getElementById('poor-evaluations-section') || document.querySelector('.report-wrapper');
@@ -1159,7 +1170,7 @@
 
     function exportModernPDF() {
       const element = document.getElementById('printable-report');
-      const wrappers = document.querySelectorAll('.report-wrapper');
+      const wrappers = document.querySelectorAll('.report-wrapper, .comments-section');
       wrappers.forEach(w => w.style.overflowX = 'visible');
       window.scrollTo(0, 0);
 
