@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- ربط ملف الـ CSS الخارجي -->
+  <!-- ربط ملف التنسيقات الخارجي -->
   <link rel="stylesheet" href="style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -90,12 +90,16 @@
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
+      <!-- 01 - استبيان الكابتن -->
+      <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;">
+        <i class="fa-solid fa-clipboard-user sub-icon" style="color: var(--primary);"></i>
+        <h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div>
+      </div>
       
-      <!-- قسم التفتيش اليومي والشهري -->
+      <!-- 02 - الفحص اليومي -->
       <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border: 2px solid var(--secondary); background: #fdfbf7;">
-        <i class="fa-solid fa-file-invoice sub-icon" style="color: var(--secondary);"></i>
-        <h3 class="sub-title">التفتيش اليومي والشهري</h3><div class="sub-subtitle">Daily & Monthly Report</div>
+        <i class="fa-solid fa-list-check sub-icon" style="color: var(--secondary);"></i>
+        <h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div>
       </div>
 
       <div class="sub-card" onclick="openGenericDoc('التقرير الشهري')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
@@ -128,10 +132,10 @@
     </div>
   </div>
 
-  <!-- وحدة التفتيش اليومي والشهري -->
+  <!-- وحدة 02: التفتيش اليومي والشهري لساحة الطيران -->
   <div id="daily-inspection-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">التفتيش اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection & Monthly Report</span></h1>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection & Monthly Report</span></h1>
 
     <div class="survey-container" style="margin-top: 20px;">
       <div class="tabs-header">
@@ -187,7 +191,7 @@
                 <label>الإجراء التصحيحي المتبع (Corrective Action)</label>
                 <input type="text" id="findingAction" placeholder="ما تم اتخاذه من إجراءات...">
             </div>
-            <button type="button" class="new-btn" style="width: 100%; margin-top: 15px; border-radius: 8px;" onclick="addFindingToTable()">إضافة الملاحظة للقائمة <i class="fa-solid fa-arrow-down"></i></button>
+            <button type="button" class="new-btn" style="width: 100%; margin-top: 15px; border-radius: 8px; background: var(--primary);" onclick="addFindingToTable()">إضافة الملاحظة للقائمة <i class="fa-solid fa-arrow-down"></i></button>
           </div>
 
           <div class="report-wrapper" style="margin-bottom: 20px;">
@@ -221,7 +225,7 @@
           
           <div class="dashboard-header avoid-page-break">
             <div>
-              <h2>Air-side Safety Inspection Report</h2>
+              <h2 id="daily-report-main-title">التقرير اليومي للفحص الميداني</h2>
               <p id="daily-report-date-range" style="direction: rtl;">جميع السجلات</p>
             </div>
             <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;">
@@ -257,10 +261,10 @@
     </div>
   </div>
 
-  <!-- وحدة استبيان الكابتن الأساسية -->
+  <!-- وحدة 01: استبيان الكابتن الأساسية -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">استبيان الكابتن <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">01 - استبيان الكابتن <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
 
     <div class="nav-controls">
       <button class="new-btn" onclick="clearFormForNew()"><i class="fa-solid fa-plus"></i> جديد</button>
@@ -369,13 +373,16 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwr5uyKEUfamamTezSVmUJ4tEtncjkQHZwZuCLeYwyVjitHQMu7iKh6H_gHdCGZzcol/exec"; 
     
+    // --- السطر اللي اتمسح وكان مبوظ الاستبيان رجعته تاني هنا ---
+    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
+
     let globalFleetData = []; 
     let globalSurveys = [];
     let globalUsers = [];
     let currentSurveyIndex = -1;
     let chartInstances = {}; 
 
-    // --- بيانات التفتيش اليومي الذكية المأخوذة من الشيت ---
+    // --- بيانات التفتيش اليومي المأخوذة من ملف الإكسيل (للفحص اليومي 02) ---
     const inspectionCategories = {
         "المناطق المرصوفة": ["شروخ", "حفر (5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخرى"],
         "المناطق الغير مرصوفة": ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخرى"],
@@ -390,21 +397,22 @@
     };
     const responsibleDepts = ["الهندسة والصيانة", "العمليات", "الإنقاذ والإطفاء", "أمن الطيران", "شركات الطيران / الوكالات", "الإرشاد", "الإدارة البيئية", "أخرى"];
     
-    // تخزين محلي لتقارير التفتيش اليومية
+    // تخزين محلي لتقارير التفتيش اليومية 
     let globalDailyInspections = JSON.parse(localStorage.getItem('savedDailyInspections')) || [];
     let currentFindingsTemp = [];
     let chartInstancesDaily = {};
 
-    // 💥 فتح البرنامج زي الطلقة بعد 3.5 ثانية 💥
     setTimeout(finishLoading, 3500);
 
     document.addEventListener('DOMContentLoaded', () => {
       buildEvaluationForm();
       loadAppDataInit();
-      autoFillDailyDateTime(); // التقاط تاريخ ووقت المفتش
+      autoFillDailyDateTime(); 
     });
 
-    // --------- دوال التفتيش اليومي والشهري ---------
+    // ==========================================
+    // -------- دوال 02: التفتيش اليومي ---------
+    // ==========================================
     function autoFillDailyDateTime() {
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
@@ -530,16 +538,27 @@
         let fromD = document.getElementById('dailyFromDate').value;
         let toD = document.getElementById('dailyToDate').value;
 
+        let reportTitle = "التقرير الميداني لساحة الطيران";
+        let dateSubtitle = `جميع السجلات <span style="display:inline-block; direction:ltr;">(All Time)</span>`;
+
         if(fromD && toD) {
             let fd = new Date(fromD); let td = new Date(toD);
             filtered = globalDailyInspections.filter(r => {
                 let rd = new Date(r.date);
                 return rd >= fd && rd <= td;
             });
-            document.getElementById('daily-report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
-        } else {
-            document.getElementById('daily-report-date-range').innerHTML = `جميع السجلات <span style="display:inline-block; direction:ltr;">(All Time)</span>`;
+
+            if (fromD === toD) {
+                reportTitle = `التقرير اليومي للفحص الميداني<br><span style='font-size: 1.2rem; color: #777;'>Daily Air-side Safety Inspection Report</span>`;
+                dateSubtitle = `تاريخ الفحص: <span style="display:inline-block; direction:ltr; font-weight:bold;">${fromD}</span>`;
+            } else {
+                reportTitle = `التقرير الدوري / الشهري للفحص الميداني<br><span style='font-size: 1.2rem; color: #777;'>Periodic Air-side Safety Inspection Report</span>`;
+                dateSubtitle = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
+            }
         }
+
+        document.getElementById('daily-report-main-title').innerHTML = reportTitle;
+        document.getElementById('daily-report-date-range').innerHTML = dateSubtitle;
 
         let totalFindings = 0; let closedFindings = 0;
         let catCounts = {}; let deptCounts = {}; let statusCounts = { "مغلق": 0, "مفتوح": 0 };
@@ -637,9 +656,16 @@
       wrappers.forEach(w => w.style.overflowX = 'visible');
       window.scrollTo(0, 0);
 
+      let filename = 'Air_Side_Daily_Inspection.pdf';
+      let fromD = document.getElementById('dailyFromDate').value;
+      let toD = document.getElementById('dailyToDate').value;
+      if(fromD && toD && fromD !== toD) {
+          filename = 'Air_Side_Periodic_Inspection.pdf';
+      }
+
       html2pdf().set({
-        margin: [0.1, 0.4, 0.4, 0.4], 
-        filename: 'Air_Side_Daily_Inspection_Report.pdf',
+        margin: [0.2, 0.4, 0.4, 0.4], 
+        filename: filename,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 2, useCORS: true, scrollY: 0, y: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
@@ -649,7 +675,10 @@
       });
     }
 
-    // --------- دوال التطبيق الأساسية (استبيان الكابتن) ---------
+    // ==========================================
+    // -------- دوال 01: استبيان الكابتن ---------
+    // ==========================================
+
     function loadAppDataInit() {
       const regDatalist = document.getElementById('regMasterList');
       if(regDatalist) regDatalist.innerHTML = ''; 
@@ -740,8 +769,12 @@
     }
 
     function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      // إغلاق التابات الخاصة بالاستبيان فقط عشان ماتأثرش على الفحص اليومي
+      document.getElementById('btn-entry').classList.remove('active');
+      document.getElementById('btn-report').classList.remove('active');
+      document.getElementById('tab-entry').classList.remove('active');
+      document.getElementById('tab-report').classList.remove('active');
+
       document.getElementById('btn-' + tab).classList.add('active');
       document.getElementById('tab-' + tab).classList.add('active');
     }
