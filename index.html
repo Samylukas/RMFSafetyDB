@@ -19,7 +19,7 @@
     .custom-dropdown-input {
         width: 100%; padding: 10px 35px 10px 10px; border: 1px solid #ccc; border-radius: 5px;
         font-size: 1rem; box-sizing: border-box; background: #fff; text-transform: uppercase;
-        font-family: inherit; font-weight: bold; color: #003366;
+        font-family: inherit; font-weight: bold; color: #003366; cursor: pointer;
     }
     .custom-dropdown-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(0,51,102,0.3); }
     .custom-dropdown-arrow {
@@ -479,7 +479,7 @@
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
-      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
@@ -490,12 +490,11 @@
   </div>
 
   <script>
+    // الرابط الجديد بعد تحديث كود جوجل الذي أرسلته لك للتو
     const API_URL = "https://script.google.com/macros/s/AKfycbwsq9Flbb0oFN7o3XPqlIlZpguvcPKmTF6A23Dt6o-iVYkBJ-lIZjyOE-OsYiDLE6ww/exec"; 
 
-    // ثوابت الاستبيان
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
-    // ثوابت الفحص اليومي
     const dailyChecklistData = {
         col1: { title: "المناطق المرصوفة", items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"],
                 title2: "المناطق الغير مرصوفة", items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"],
@@ -541,11 +540,11 @@
       renderSavedDaily();
       loadAppDataInit();
       autoFillDailyDateTime(); 
-      setupCustomDropdown(); // تفعيل القائمة المنسدلة المخصصة
+      setupCustomDropdown(); 
     });
 
     // ==========================================
-    // منطق القائمة المنسدلة المخصصة (السهم شغال 100%)
+    // منطق القائمة المنسدلة المخصصة
     // ==========================================
     function setupCustomDropdown() {
         const input = document.getElementById('reg');
@@ -553,30 +552,26 @@
         const list = document.getElementById('regDropdownList');
         const container = document.getElementById('regDropdownContainer');
 
-        // فتح القائمة وإظهار كل الطيارات لما تدوس على السهم
         arrow.addEventListener('click', function(e) {
             e.stopPropagation();
             list.classList.toggle('show');
             if (list.classList.contains('show')) {
                 input.focus();
-                filterRegOptions(true); // show all
+                filterRegOptions(true); 
             }
         });
 
-        // فتح القائمة والفلترة لما تكتب
         input.addEventListener('input', function() {
             list.classList.add('show');
             filterRegOptions(false);
         });
 
-        // فتح القائمة لما تدوس جوه الحقل نفسه
         input.addEventListener('click', function(e) {
             e.stopPropagation();
             list.classList.add('show');
             filterRegOptions(false);
         });
 
-        // قفل القائمة لو دوست في أي مكان فاضي في الصفحة
         document.addEventListener('click', function() {
             list.classList.remove('show');
         });
@@ -589,7 +584,6 @@
         
         list.innerHTML = '';
         
-        // جلب الداتا بناءً على البحث أو إظهار الكل
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
         
         if (matched.length === 0) {
@@ -601,16 +595,15 @@
                 div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
                 div.onclick = function(e) {
                     e.stopPropagation();
-                    input.value = a.REG; // نقل التسجيل المختار للحقل
+                    input.value = a.REG; 
                     list.classList.remove('show');
-                    checkAndFillAircraftData(a.REG); // سحب باقي بيانات الشركة والطراز
+                    checkAndFillAircraftData(a.REG); 
                 };
                 list.appendChild(div);
             });
         }
     }
 
-    // دالة تعبئة بيانات الشركة والطراز بعد الاختيار أو الكتابة
     function checkAndFillAircraftData(selectedReg = null) {
         let rawInput = selectedReg || document.getElementById('reg').value;
         let cleanInput = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -862,7 +855,6 @@
     async function submitSurvey(e) {
       e.preventDefault();
       
-      // التأكد من صحة بيانات الطائرة قبل الإرسال
       let regVal = document.getElementById('reg').value;
       checkAndFillAircraftData(regVal); 
       const airline = document.getElementById('airline').value;
