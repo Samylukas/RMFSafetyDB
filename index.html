@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -14,12 +15,16 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
+    /* إخفاء علامة X الافتراضية في المتصفحات التي تشوه شكل السهم */
+    input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
+    input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
+
     /* CSS للقائمة المنسدلة المخصصة والقابلة للبحث */
     .custom-dropdown-container { position: relative; width: 100%; font-family: 'Cairo', sans-serif; }
     .custom-dropdown-input {
         width: 100%; padding: 10px 35px 10px 10px; border: 1px solid #ccc; border-radius: 5px;
         font-size: 1rem; box-sizing: border-box; background: #fff; text-transform: uppercase;
-        font-family: inherit; font-weight: bold; color: #003366; cursor: pointer;
+        font-family: inherit; font-weight: bold; color: #003366; cursor: text;
     }
     .custom-dropdown-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(0,51,102,0.3); }
     .custom-dropdown-arrow {
@@ -216,7 +221,7 @@
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
                 
-                <!-- القائمة المنسدلة المخصصة الاحترافية (Custom Dropdown) -->
+                <!-- القائمة المنسدلة المخصصة -->
                 <div class="custom-dropdown-container" id="regDropdownContainer">
                     <input type="text" id="reg" class="custom-dropdown-input" placeholder="اختر أو اكتب للبحث..." required autocomplete="off">
                     <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
@@ -479,7 +484,7 @@
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
-      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" required></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
@@ -490,11 +495,12 @@
   </div>
 
   <script>
-    // الرابط الجديد بعد تحديث كود جوجل الذي أرسلته لك للتو
-    const API_URL = "https://script.google.com/macros/s/AKfycbwsq9Flbb0oFN7o3XPqlIlZpguvcPKmTF6A23Dt6o-iVYkBJ-lIZjyOE-OsYiDLE6ww/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwY_2TVY1rE-m7V6wszWgYhzLNLEo7u7SNod4KpOmNTfMfYVWE2W-1fYzKgHj4VMO_p/exec"; 
 
+    // ثوابت الاستبيان
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
+    // ثوابت الفحص اليومي
     const dailyChecklistData = {
         col1: { title: "المناطق المرصوفة", items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"],
                 title2: "المناطق الغير مرصوفة", items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"],
@@ -586,7 +592,9 @@
         
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
         
-        if (matched.length === 0) {
+        if (globalFleetData.length === 0) {
+            list.innerHTML = `<div class="custom-dropdown-empty">جاري تحميل البيانات أو لا توجد طائرات. اضغط (+) للإضافة.</div>`;
+        } else if (matched.length === 0) {
             list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
         } else {
             matched.forEach(a => {
