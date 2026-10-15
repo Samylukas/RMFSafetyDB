@@ -14,11 +14,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-    /* إخفاء علامات المتصفح الافتراضية للبحث */
     input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
     input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
 
-    /* CSS للقائمة المنسدلة المخصصة والقابلة للبحث */
     .custom-dropdown-container { position: relative; width: 100%; font-family: 'Cairo', sans-serif; }
     .custom-dropdown-input {
         width: 100%; padding: 10px 35px 10px 10px; border: 1px solid #ccc; border-radius: 5px;
@@ -42,7 +40,6 @@
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
 
-    /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
     .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
@@ -65,6 +62,7 @@
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
     #printable-charts-report { page-break-inside: avoid !important; }
     .charts-grid canvas { max-height: 180px !important; width: 100% !important; object-fit: contain; }
+    
     .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
     .spi-matrix-table th { background-color: #28a745; color: white; }
     .spi-matrix-table td:first-child { text-align: left; direction: ltr; font-weight: 600; width: 300px; background: #fdfdfd;}
@@ -275,9 +273,8 @@
             </div>
           </div>
 
-          <!-- حاوية مخصصة لجدول التقييم العام (حتى لا تتداخل الجداول الجديدة معه) -->
           <div id="main-eval-table-container" class="report-wrapper avoid-page-break" style="margin-top: 30px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
+            <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات</h4>
             <table class="report-table rtl-table" dir="rtl">
               <thead>
                 <tr id="report-headers-row">
@@ -289,7 +286,6 @@
             </table>
           </div>
           
-          <!-- سيتم إضافة جداول الـ Poor والـ Comments هنا عبر الجافاسكريبت -->
           <div id="additional-tables-container"></div>
 
         </div>
@@ -433,8 +429,8 @@
 
     <div class="survey-container" style="margin-top: 20px;">
       <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات الشهرية (Data Entry)</button>
-        <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير (SPI Matrix)</button>
+        <button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات الشهرية</button>
+        <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير</button>
       </div>
 
       <div id="tab-spi-entry" class="tab-content active">
@@ -444,16 +440,16 @@
         <form id="spiForm" onsubmit="submitSPI(event)">
           <div class="form-grid" style="background:#e9ecef; padding: 15px; border-radius: 8px;">
             <div class="form-group">
-                <label>السنة (Year)</label>
+                <label>السنة</label>
                 <select id="spiYear" required><option value="2026" selected>2026</option></select>
             </div>
             <div class="form-group">
-                <label>الشهر (Month)</label>
+                <label>الشهر</label>
                 <select id="spiMonth" required>
-                    <option value="1">يناير (JAN)</option><option value="2">فبراير (FEB)</option><option value="3">مارس (MAR)</option>
-                    <option value="4">أبريل (APR)</option><option value="5">مايو (MAY)</option><option value="6">يونيو (JUN)</option>
-                    <option value="7">يوليو (JUL)</option><option value="8">أغسطس (AUG)</option><option value="9">سبتمبر (SEP)</option>
-                    <option value="10">أكتوبر (OCT)</option><option value="11">نوفمبر (NOV)</option><option value="12">ديسمبر (DEC)</option>
+                    <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+                    <option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option>
+                    <option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option>
+                    <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
                 </select>
             </div>
             <div class="form-group"><label>إجمالي حركة الطائرات (Movements)</label><input type="number" id="spiMovements" required min="1" placeholder="مثال: 1500"></div>
@@ -486,7 +482,7 @@
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
-      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" required></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
@@ -499,10 +495,8 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwY_2TVY1rE-m7V6wszWgYhzLNLEo7u7SNod4KpOmNTfMfYVWE2W-1fYzKgHj4VMO_p/exec"; 
 
-    // ثوابت الاستبيان
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
-    // ثوابت الفحص اليومي
     const dailyChecklistData = {
         col1: { title: "المناطق المرصوفة", items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"],
                 title2: "المناطق الغير مرصوفة", items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"],
@@ -558,7 +552,6 @@
         const input = document.getElementById('reg');
         const arrow = document.getElementById('regArrowBtn');
         const list = document.getElementById('regDropdownList');
-        const container = document.getElementById('regDropdownContainer');
 
         arrow.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -598,7 +591,6 @@
         
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
         
-        // التحقق الذكي وملء الخانات
         let exactMatch = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === filter);
 
         if (exactMatch) {
@@ -607,10 +599,8 @@
             airlineInput.style.backgroundColor = "#e8f5e9";
             typeInput.style.backgroundColor = "#e8f5e9";
             
-            // إذا كان المطابق هو الوحيد المعروض، يمكننا إخفاء رسالة الخطأ
             list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`;
         } else {
-            // تفريغ الخانات لأن الطائرة غير موجودة
             airlineInput.value = "";
             typeInput.value = "";
             airlineInput.style.backgroundColor = "#f0f0f0";
@@ -641,7 +631,6 @@
         input.value = selectedReg;
         list.classList.remove('show');
         
-        // ملء البيانات فوراً
         let exactMatch = globalFleetData.find(a => String(a.REG) === selectedReg);
         if (exactMatch) {
             document.getElementById('airline').value = exactMatch.CAR || "";
@@ -867,7 +856,7 @@
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
         
-        selectReg(reg); // اختيارها تلقائياً بعد الحفظ
+        selectReg(reg); 
         
         setTimeout(closeAddModal, 1500);
       } catch (error) { msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!"; }
@@ -876,6 +865,7 @@
     async function submitSurvey(e) {
       e.preventDefault();
       
+      let regVal = document.getElementById('reg').value;
       const airline = document.getElementById('airline').value;
       const msg = document.getElementById('surveyMsg');
       
@@ -951,7 +941,6 @@
         const flightsTbody = document.getElementById('flights-eval-tbody');
         flightsTbody.innerHTML = "";
 
-        // حذف الجداول الإضافية السابقة لتحديثها
         const extraContainer = document.getElementById('additional-tables-container');
         extraContainer.innerHTML = "";
 
@@ -1024,13 +1013,12 @@
             }
         });
 
-        // رسم الجداول الإضافية داخل حاوية الطباعة
         let additionalTables = "";
 
         if(hasPoor) {
             additionalTables += `
                 <div class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة (Poor Evaluations)</h4>
+                    <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة</h4>
                     <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
                         <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
                         <tbody>${poorEvaluationsHTML}</tbody>
@@ -1041,7 +1029,7 @@
 
         additionalTables += `
             <div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن (Captain Comments)</h4>
+                <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن</h4>
                 <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
                     <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة (Comment)</th></tr></thead>
                     <tbody>`;
@@ -1054,7 +1042,6 @@
         
         additionalTables += `</tbody></table></div>`;
         
-        // وضع الجداول في الحاوية المخصصة للطباعة
         extraContainer.innerHTML = additionalTables;
 
         document.getElementById('stat-total').innerText = filteredSurveys.length;
