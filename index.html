@@ -1407,7 +1407,7 @@
             return;
         }
         globalDailyInspections.forEach((rep, idx) => {
-            let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">سليم 100%</span>`;
+            let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">تم تلافي الملحوظة %</span>`;
             tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i> عرض وتعديل</button></td></tr>`;
         });
     }
@@ -1534,7 +1534,7 @@
             });
         });
         
-        if(counter===1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
+        if(counter===1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>تم انتهاء الملحوظة ولا توجد ملاحظات في هذه الفترة</td></tr>";
         
         document.getElementById('stat-daily-total').innerText = filteredDailys.length; 
         document.getElementById('stat-daily-findings').innerText = allFindingsCount;
