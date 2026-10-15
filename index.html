@@ -14,9 +14,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
+    /* إخفاء علامات المتصفح الافتراضية للبحث */
     input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
     input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
 
+    /* CSS للقائمة المنسدلة المخصصة والقابلة للبحث */
     .custom-dropdown-container { position: relative; width: 100%; font-family: 'Cairo', sans-serif; }
     .custom-dropdown-input {
         width: 100%; padding: 10px 35px 10px 10px; border: 1px solid #ccc; border-radius: 5px;
@@ -40,6 +42,7 @@
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
 
+    /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
     .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
@@ -47,8 +50,9 @@
     .check-item-row { display: flex; align-items: center; gap: 8px; width: 100%; }
     .check-item-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     .check-item-row label { font-size: 0.8rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
-    .check-inputs { display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
-    .check-inputs input, .check-inputs select { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.75rem; box-sizing: border-box; }
+    .check-inputs { display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 10px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
+    .check-inputs input, .check-inputs select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.75rem; box-sizing: border-box; }
+    .check-inputs label { font-size: 0.7rem; color: #555; font-weight: bold; margin-bottom: -3px; }
 
     .iso-report-container { background: #fff; padding: 15px 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
     .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
@@ -179,16 +183,6 @@
     </div>
   </div>
 
-  <div id="generic-doc-section" class="content-area">
-    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة السلامة</button>
-    <h1 class="welcome-text" id="generic-doc-title">عنوان القسم</h1>
-    <div style="background: #fff; padding: 40px 20px; text-align: center; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 800px; margin: auto;">
-      <i class="fa-solid fa-file-pdf" style="font-size: 5rem; color: #d9534f; margin-bottom: 20px;"></i>
-      <h2 style="color: var(--primary); font-weight: 900; margin-bottom: 10px; font-size: 1.5rem;">لا توجد مستندات مرفوعة حالياً</h2>
-      <p style="color: #777; font-size: 1rem; font-weight: 600;">هذا القسم قيد التجهيز ضمن مراحل التطوير القادمة لرفع وعرض التقارير.</p>
-    </div>
-  </div>
-
   <!-- وحدة 01: استبيان الكابتن الأساسية -->
   <div id="captain-survey-section" class="content-area">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
@@ -216,7 +210,6 @@
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
                 
-                <!-- القائمة المنسدلة المخصصة الاحترافية (البحث الذكي) -->
                 <div class="custom-dropdown-container" id="regDropdownContainer">
                     <input type="text" id="reg" class="custom-dropdown-input" placeholder="اختر أو اكتب للبحث..." required autocomplete="off">
                     <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
@@ -331,7 +324,7 @@
           </div>
           
           <div style="background: #fff8f8; border: 1px solid #ffcccc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-              <p style="margin: 0; color: #dc3545; font-weight: bold;"><i class="fa-solid fa-circle-info"></i> تعليمات: قم بوضع علامة (✔) فقط أمام البنود المخالفة، لتظهر لك 3 حقول (الملاحظة، المكان، الجهة المسئولة).</p>
+              <p style="margin: 0; color: #dc3545; font-weight: bold;"><i class="fa-solid fa-circle-info"></i> تعليمات: قم بوضع علامة (✔) فقط أمام البنود المخالفة، لتظهر لك حقول (الملاحظة، الإجراء، والمكان).</p>
           </div>
 
           <div class="checklist-grid" id="checklist-container"></div>
@@ -393,9 +386,9 @@
                     <thead>
                         <tr>
                             <th style="width: 5%;">م</th>
-                            <th style="width: 20%;">مكان الرصد</th>
+                            <th style="width: 15%;">مكان الرصد</th>
                             <th style="width: 40%;">المخالفة / الخطر</th>
-                            <th style="width: 20%;">الجهة المسئولة</th>
+                            <th style="width: 25%;">الجهة المسئولة</th>
                             <th style="width: 15%;">الحالة</th>
                         </tr>
                     </thead>
@@ -469,7 +462,7 @@
         </div>
         
         <div id="spi-dashboard-view" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px; overflow-x: auto;">
-           <h3 style="color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px;"><i class="fa-solid fa-table-cells"></i> مصفوفة مؤشرات الأداء التشغيلية (Operational SPIs 2026)</h3>
+           <h3 style="color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px;"><i class="fa-solid fa-table-cells"></i> مصفوفة مؤشرات الأداء التشغيلية (Operational SPIs)</h3>
            <div id="spi-matrix-container"></div>
         </div>
       </div>
@@ -493,7 +486,8 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwY_2TVY1rE-m7V6wszWgYhzLNLEo7u7SNod4KpOmNTfMfYVWE2W-1fYzKgHj4VMO_p/exec"; 
+    // برجاء التأكد من أن هذا الرابط هو الرابط الجديد الخاص بك بعد الديبلاي الأخير
+    const API_URL = "https://script.google.com/macros/s/AKfycbzD76Vm8sGsfPZS-a8xzOLNYnEh14Sn692yPYIT5o73hF8tEwgZz5xX6cjplMZrK1fk/exec"; 
 
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
@@ -526,7 +520,7 @@
     let globalSurveys = [];
     let globalUsers = [];
     let globalSpiData = [];
-    let globalDailyInspections = JSON.parse(localStorage.getItem('savedDailyInspectionsISO')) || [];
+    let globalDailyInspections = []; // الآن ستُجلب من السيرفر
     let currentSurveyIndex = -1;
     let currentDailyIndex = -1;
     
@@ -539,14 +533,13 @@
       buildEvaluationForm();
       buildDailyChecklist();
       buildSpiEntryForm();
-      renderSavedDaily();
       loadAppDataInit();
       autoFillDailyDateTime(); 
       setupCustomDropdown(); 
     });
 
     // ==========================================
-    // منطق البحث الذكي (القائمة المنسدلة)
+    // منطق البحث الذكي (القائمة المنسدلة) - محدث 
     // ==========================================
     function setupCustomDropdown() {
         const input = document.getElementById('reg');
@@ -590,7 +583,6 @@
         list.innerHTML = '';
         
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
-        
         let exactMatch = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === filter);
 
         if (exactMatch) {
@@ -598,7 +590,6 @@
             typeInput.value = exactMatch.TYPE || "";
             airlineInput.style.backgroundColor = "#e8f5e9";
             typeInput.style.backgroundColor = "#e8f5e9";
-            
             list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`;
         } else {
             airlineInput.value = "";
@@ -607,9 +598,9 @@
             typeInput.style.backgroundColor = "#f0f0f0";
 
             if (globalFleetData.length === 0) {
-                list.innerHTML = `<div class="custom-dropdown-empty">جاري تحميل البيانات...</div>`;
+                list.innerHTML = `<div class="custom-dropdown-empty" style="color: #666;">جاري تحميل البيانات من السيرفر...</div>`;
             } else if (matched.length === 0) {
-                list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. اضغط على (+) لإضافتها.</div>`;
+                list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
             } else {
                 matched.forEach(a => {
                     let div = document.createElement('div');
@@ -652,6 +643,35 @@
                 globalSurveys = data.surveys ? data.surveys.reverse() : [];
                 globalUsers = data.users || [];
                 globalSpiData = data.spi || [];
+                
+                // تجميع بيانات الفحص اليومي من الشيت بدلاً من المتصفح
+                if(data.daily && data.daily.length > 0) {
+                    let reportsMap = {};
+                    data.daily.forEach(row => {
+                        let repId = row.Report_ID;
+                        if(!reportsMap[repId]) {
+                            reportsMap[repId] = {
+                                id: repId,
+                                date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '',
+                                time: row.Time,
+                                shift: row.Shift,
+                                inspector: row.Inspector,
+                                findings: []
+                            };
+                        }
+                        if(row.Category && row.Category !== "لا توجد ملاحظات") {
+                            reportsMap[repId].findings.push({
+                                category: row.Category,
+                                item: row.Finding_Item,
+                                location: row.Location,
+                                responsible: row.Responsible,
+                                note: row.Corrective_Action,
+                                status: row.Status
+                            });
+                        }
+                    });
+                    globalDailyInspections = Object.values(reportsMap).sort((a,b) => b.id - a.id);
+                }
 
                 const userSelect = document.getElementById('username');
                 if(userSelect) {
@@ -664,6 +684,8 @@
                 if(navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
                 
                 if(typeof renderUsersTable === "function") renderUsersTable();
+                
+                renderSavedDaily();
                 updateDailyNavCounter();
             }
         } catch(e) { console.log(e); }
@@ -771,6 +793,12 @@
       });
     }
 
+    function formatRegInput(inputElement) {
+      let val = inputElement.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (val.length > 2) { val = val.substring(0, 2) + '-' + val.substring(2); }
+      inputElement.value = val;
+    }
+
     function navSurveys(direction) {
       if(globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
       
@@ -865,7 +893,6 @@
     async function submitSurvey(e) {
       e.preventDefault();
       
-      let regVal = document.getElementById('reg').value;
       const airline = document.getElementById('airline').value;
       const msg = document.getElementById('surveyMsg');
       
@@ -1031,7 +1058,7 @@
             <div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                 <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن</h4>
                 <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
-                    <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة (Comment)</th></tr></thead>
+                    <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة</th></tr></thead>
                     <tbody>`;
                     
         if(hasComments) { 
@@ -1138,7 +1165,7 @@
                                 <label for="chk_${checkIndex}">${item}</label>
                             </div>
                             <div id="inputs_${checkIndex}" class="check-inputs">
-                                <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
+                                <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة (الإجراء المطلوب)...">
                                 <input type="text" id="loc_${checkIndex}" placeholder="المكان...">
                                 <select id="resp_${checkIndex}"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select>
                             </div>
@@ -1246,7 +1273,7 @@
         try {
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitDailyInspection", reportData: report }), mode: 'no-cors' });
             globalDailyInspections.unshift(report); 
-            localStorage.setItem('savedDailyInspectionsISO', JSON.stringify(globalDailyInspections));
+            localStorage.setItem('savedDailyInspectionsISO', JSON.stringify(globalDailyInspections)); // كنسخة احتياطية
             document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!";
             
             setTimeout(()=>{ 
