@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
   <title>General Department of Safety and Compliance</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -15,7 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-    /* إخفاء علامة X الافتراضية في المتصفحات التي تشوه شكل السهم */
+    /* إخفاء علامات المتصفح الافتراضية للبحث */
     input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
     input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
 
@@ -41,7 +40,6 @@
     .custom-dropdown-item:hover { background-color: #e8f5e9; color: var(--primary); }
     .custom-dropdown-empty { padding: 10px; text-align: center; color: #dc3545; font-size: 0.85rem; font-weight: bold; background: #fdfdfd; }
 
-    /* إصلاح تخطيط الشبكة (Grid) */
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
 
     /* تنسيقات الفحص اليومي والطباعة */
@@ -55,7 +53,6 @@
     .check-inputs { display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
     .check-inputs input, .check-inputs select { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.75rem; box-sizing: border-box; }
 
-    /* تنسيقات الطباعة المصغرة */
     .iso-report-container { background: #fff; padding: 15px 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
     .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
     .iso-title h2 { font-size: 1.1rem; margin: 0; color: var(--primary); font-weight: 900;}
@@ -221,7 +218,7 @@
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
                 
-                <!-- القائمة المنسدلة المخصصة -->
+                <!-- القائمة المنسدلة المخصصة الاحترافية (البحث الذكي) -->
                 <div class="custom-dropdown-container" id="regDropdownContainer">
                     <input type="text" id="reg" class="custom-dropdown-input" placeholder="اختر أو اكتب للبحث..." required autocomplete="off">
                     <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
@@ -270,7 +267,7 @@
             <div class="stat-card"><h3 id="stat-excellent">0%</h3><p>نسبة التقييم الممتاز (E)</p></div>
           </div>
 
-          <div class="avoid-page-break">
+          <div class="avoid-page-break" style="margin-bottom: 30px;">
             <div class="charts-grid" style="direction: ltr;">
               <div class="chart-container"><canvas id="airlinesChart"></canvas></div>
               <div class="chart-container"><canvas id="datesChart"></canvas></div>
@@ -278,7 +275,8 @@
             </div>
           </div>
 
-          <div class="report-wrapper avoid-page-break" style="margin-top: 30px;">
+          <!-- حاوية مخصصة لجدول التقييم العام (حتى لا تتداخل الجداول الجديدة معه) -->
+          <div id="main-eval-table-container" class="report-wrapper avoid-page-break" style="margin-top: 30px;">
             <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; text-align: right;">تفاصيل تقييم الرحلات (Flight Evaluations)</h4>
             <table class="report-table rtl-table" dir="rtl">
               <thead>
@@ -290,6 +288,10 @@
               <tbody id="flights-eval-tbody"></tbody>
             </table>
           </div>
+          
+          <!-- سيتم إضافة جداول الـ Poor والـ Comments هنا عبر الجافاسكريبت -->
+          <div id="additional-tables-container"></div>
+
         </div>
       </div>
     </div>
@@ -484,7 +486,7 @@
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
-      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
@@ -550,7 +552,7 @@
     });
 
     // ==========================================
-    // منطق القائمة المنسدلة المخصصة
+    // منطق البحث الذكي (القائمة المنسدلة)
     // ==========================================
     function setupCustomDropdown() {
         const input = document.getElementById('reg');
@@ -586,52 +588,66 @@
     function filterRegOptions(showAll = false) {
         const input = document.getElementById('reg');
         const list = document.getElementById('regDropdownList');
-        const filter = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const airlineInput = document.getElementById('airline');
+        const typeInput = document.getElementById('acType');
+        
+        let rawInput = input.value;
+        const filter = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
         
         list.innerHTML = '';
         
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
         
-        if (globalFleetData.length === 0) {
-            list.innerHTML = `<div class="custom-dropdown-empty">جاري تحميل البيانات أو لا توجد طائرات. اضغط (+) للإضافة.</div>`;
-        } else if (matched.length === 0) {
-            list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
-        } else {
-            matched.forEach(a => {
-                let div = document.createElement('div');
-                div.className = 'custom-dropdown-item';
-                div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
-                div.onclick = function(e) {
-                    e.stopPropagation();
-                    input.value = a.REG; 
-                    list.classList.remove('show');
-                    checkAndFillAircraftData(a.REG); 
-                };
-                list.appendChild(div);
-            });
-        }
-    }
+        // التحقق الذكي وملء الخانات
+        let exactMatch = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === filter);
 
-    function checkAndFillAircraftData(selectedReg = null) {
-        let rawInput = selectedReg || document.getElementById('reg').value;
-        let cleanInput = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        
-        let foundAircraft = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanInput);
-        
-        let airlineInput = document.getElementById('airline');
-        let typeInput = document.getElementById('acType');
-
-        if (foundAircraft) {
-            document.getElementById('reg').value = foundAircraft.REG;
-            airlineInput.value = foundAircraft.CAR || "";
-            typeInput.value = foundAircraft.TYPE || "";
+        if (exactMatch) {
+            airlineInput.value = exactMatch.CAR || "";
+            typeInput.value = exactMatch.TYPE || "";
             airlineInput.style.backgroundColor = "#e8f5e9";
             typeInput.style.backgroundColor = "#e8f5e9";
+            
+            // إذا كان المطابق هو الوحيد المعروض، يمكننا إخفاء رسالة الخطأ
+            list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`;
         } else {
+            // تفريغ الخانات لأن الطائرة غير موجودة
             airlineInput.value = "";
             typeInput.value = "";
             airlineInput.style.backgroundColor = "#f0f0f0";
             typeInput.style.backgroundColor = "#f0f0f0";
+
+            if (globalFleetData.length === 0) {
+                list.innerHTML = `<div class="custom-dropdown-empty">جاري تحميل البيانات...</div>`;
+            } else if (matched.length === 0) {
+                list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. اضغط على (+) لإضافتها.</div>`;
+            } else {
+                matched.forEach(a => {
+                    let div = document.createElement('div');
+                    div.className = 'custom-dropdown-item';
+                    div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
+                    div.onclick = function(e) {
+                        e.stopPropagation();
+                        selectReg(a.REG);
+                    };
+                    list.appendChild(div);
+                });
+            }
+        }
+    }
+
+    function selectReg(selectedReg) {
+        const input = document.getElementById('reg');
+        const list = document.getElementById('regDropdownList');
+        input.value = selectedReg;
+        list.classList.remove('show');
+        
+        // ملء البيانات فوراً
+        let exactMatch = globalFleetData.find(a => String(a.REG) === selectedReg);
+        if (exactMatch) {
+            document.getElementById('airline').value = exactMatch.CAR || "";
+            document.getElementById('acType').value = exactMatch.TYPE || "";
+            document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+            document.getElementById('acType').style.backgroundColor = "#e8f5e9";
         }
     }
 
@@ -766,12 +782,6 @@
       });
     }
 
-    function formatRegInput(inputElement) {
-      let val = inputElement.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      if (val.length > 2) { val = val.substring(0, 2) + '-' + val.substring(2); }
-      inputElement.value = val;
-    }
-
     function navSurveys(direction) {
       if(globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
       
@@ -820,7 +830,11 @@
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
       document.getElementById('reg').value = ""; 
-      checkAndFillAircraftData();
+      
+      document.getElementById('airline').value = "";
+      document.getElementById('acType').value = "";
+      document.getElementById('airline').style.backgroundColor = "#f0f0f0";
+      document.getElementById('acType').style.backgroundColor = "#f0f0f0";
     }
 
     function openFleetModal() {
@@ -853,8 +867,7 @@
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
         
-        document.getElementById('reg').value = reg;
-        checkAndFillAircraftData(reg);
+        selectReg(reg); // اختيارها تلقائياً بعد الحفظ
         
         setTimeout(closeAddModal, 1500);
       } catch (error) { msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!"; }
@@ -863,14 +876,12 @@
     async function submitSurvey(e) {
       e.preventDefault();
       
-      let regVal = document.getElementById('reg').value;
-      checkAndFillAircraftData(regVal); 
       const airline = document.getElementById('airline').value;
       const msg = document.getElementById('surveyMsg');
       
       if (!airline) { 
           msg.style.color = "red"; 
-          msg.innerText = "برجاء التأكد من تسجيل الطائرة والضغط عليه من القائمة!"; 
+          msg.innerText = "برجاء التأكد من تسجيل الطائرة (غير موجود في قاعدة البيانات)!"; 
           return; 
       }
 
@@ -911,7 +922,7 @@
       }
     }
 
-   function generateModernReport() {
+    function generateModernReport() {
         let fromD = document.getElementById('fromDate').value;
         let toD = document.getElementById('toDate').value;
         
@@ -940,10 +951,9 @@
         const flightsTbody = document.getElementById('flights-eval-tbody');
         flightsTbody.innerHTML = "";
 
-        let oldComments = document.getElementById('captain-comments-section');
-        if(oldComments) oldComments.remove(); 
-        let oldPoorSection = document.getElementById('poor-evaluations-section');
-        if(oldPoorSection) oldPoorSection.remove();
+        // حذف الجداول الإضافية السابقة لتحديثها
+        const extraContainer = document.getElementById('additional-tables-container');
+        extraContainer.innerHTML = "";
 
         if(filteredSurveys.length === 0) {
             flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
@@ -974,7 +984,6 @@
 
             let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
 
-            // الجدول الرئيسي للإحصائيات
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${survey.CAR || ''}</b></td>
@@ -989,7 +998,6 @@
             `;
             flightsTbody.appendChild(tr);
 
-            // تجميع بيانات الكومنتات في صفوف جدول
             if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
                 hasComments = true;
                 commentsHTML += `
@@ -1002,7 +1010,6 @@
                 `;
             }
 
-            // تجميع بيانات التقييم الضعيف في صفوف جدول
             if (poorCriteriaForThisFlight.length > 0) {
                 hasPoor = true;
                 poorEvaluationsHTML += `
@@ -1017,10 +1024,12 @@
             }
         });
 
-        // رسم جدول التقييمات الضعيفة (إن وجد)
+        // رسم الجداول الإضافية داخل حاوية الطباعة
+        let additionalTables = "";
+
         if(hasPoor) {
-            let poorSectionWrapper = `
-                <div id="poor-evaluations-section" class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            additionalTables += `
+                <div class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                     <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة (Poor Evaluations)</h4>
                     <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
                         <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
@@ -1028,29 +1037,26 @@
                     </table>
                 </div>
             `;
-            document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', poorSectionWrapper);
         }
 
-        // رسم جدول ملاحظات الكابتن (إن وجد)
-        let finalCommentsHTML = `
-            <div id="captain-comments-section" class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        additionalTables += `
+            <div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                 <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن (Captain Comments)</h4>
                 <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
                     <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة (Comment)</th></tr></thead>
                     <tbody>`;
                     
         if(hasComments) { 
-            finalCommentsHTML += commentsHTML; 
+            additionalTables += commentsHTML; 
         } else { 
-            finalCommentsHTML += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`; 
+            additionalTables += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`; 
         }
         
-        finalCommentsHTML += `</tbody></table></div>`;
+        additionalTables += `</tbody></table></div>`;
         
-        let mainWrapper = document.getElementById('poor-evaluations-section') || document.querySelector('.report-wrapper');
-        mainWrapper.insertAdjacentHTML('afterend', finalCommentsHTML);
+        // وضع الجداول في الحاوية المخصصة للطباعة
+        extraContainer.innerHTML = additionalTables;
 
-        // إحصائيات علوية
         document.getElementById('stat-total').innerText = filteredSurveys.length;
         document.getElementById('stat-airlines').innerText = airlinesSet.size;
         let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
