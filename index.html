@@ -496,8 +496,8 @@
   </div>
 
   <script>
-    // ⚠️ أرجوك تأكد أنك قمت بعمل New Deployment في جوجل سكريبت لكي تقرأ البيانات بشكل صحيح!
-    const API_URL = "https://script.google.com/macros/library/d/1HjP7gWKpRZucVxRCzpEDAv2-e4FzzWjZspUmSVy3EbCET1rlMQTLpQgH/35"; 
+    // الرابط الجديد الذي أرسلته
+    const API_URL = "https://script.google.com/macros/s/AKfycbzJvpA5yRh5zX9Y25xAKKThN-d8tYBLtufveoFzZPIVaZcSdO-ep1HN_IkHVm_iO_G1/exec"; 
 
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
@@ -670,7 +670,6 @@
                             };
                         }
                         if(row.Category && row.Category !== "لا توجد ملاحظات") {
-                            // نقوم بفك الملاحظة لأننا دمجناها في كود الحفظ
                             let fullNote = row.Corrective_Action || "";
                             reportsMap[repId].findings.push({
                                 category: row.Category,
@@ -886,7 +885,11 @@
       const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country };
       
       try {
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
+        await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload), 
+            headers: { "Content-Type": "text/plain;charset=utf-8" } 
+        });
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
         
@@ -929,7 +932,11 @@
       });
 
       try {
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }), mode: 'no-cors' });
+        await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }), 
+            headers: { "Content-Type": "text/plain;charset=utf-8" } 
+        });
         msg.style.color = "green"; msg.innerText = "✅ تم الحفظ بنجاح!";
         globalSurveys.unshift(surveyDataObj);
         document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
@@ -1294,7 +1301,11 @@
         const report = { id: Date.now(), date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings };
         
         try {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitDailyInspection", reportData: report }), mode: 'no-cors' });
+            await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "submitDailyInspection", reportData: report }), 
+                headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
             globalDailyInspections.unshift(report); 
             document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!";
             
@@ -1472,7 +1483,11 @@
         };
 
         try {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj }), mode: 'no-cors' });
+            await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj }), 
+                headers: { "Content-Type": "text/plain;charset=utf-8" } 
+            });
             msg.style.color = "green"; msg.innerText = "✅ تم حفظ بيانات مؤشرات الشهر بنجاح!";
             
             globalSpiData.push({Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual});
@@ -1554,7 +1569,11 @@
       
       msg.style.color = "blue"; msg.innerText = "جاري الإضافة...";
       try {
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "addUser", role: role, username: username, password: password }), mode: 'no-cors' });
+        await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: "addUser", role: role, username: username, password: password }), 
+            headers: { "Content-Type": "text/plain;charset=utf-8" } 
+        });
         msg.style.color = "green"; msg.innerText = "تمت الإضافة بنجاح!";
         globalUsers.push({Role: role, Username: username, Password: password});
         renderUsersTable();
