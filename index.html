@@ -911,7 +911,7 @@
       }
     }
 
-    function generateModernReport() {
+   function generateModernReport() {
         let fromD = document.getElementById('fromDate').value;
         let toD = document.getElementById('toDate').value;
         
@@ -974,6 +974,7 @@
 
             let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
 
+            // الجدول الرئيسي للإحصائيات
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${survey.CAR || ''}</b></td>
@@ -988,17 +989,27 @@
             `;
             flightsTbody.appendChild(tr);
 
+            // تجميع بيانات الكومنتات في صفوف جدول
             if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
                 hasComments = true;
-                commentsHTML += `<li style="padding: 8px 0; border-bottom: 1px dashed #ccc;"><strong>${survey.Flight_NO} (${survey.CAR}) - ${dateDisplay}:</strong> <span style="color:#333; font-weight:600;">"${survey.Captain_Comments}"</span></li>`;
+                commentsHTML += `
+                    <tr>
+                        <td><b>${survey.CAR || ''}</b></td>
+                        <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                        <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                        <td dir="ltr" style="text-align: left; color:#333; font-weight:600;">${survey.Captain_Comments}</td>
+                    </tr>
+                `;
             }
 
+            // تجميع بيانات التقييم الضعيف في صفوف جدول
             if (poorCriteriaForThisFlight.length > 0) {
                 hasPoor = true;
                 poorEvaluationsHTML += `
                     <tr>
                         <td><b>${survey.CAR || ''}</b></td>
                         <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                        <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
                         <td dir="ltr" style="text-align: right;">${survey.REG || ''}</td>
                         <td style="color: #dc3545; font-weight: bold; text-align: right; direction: ltr;">${poorCriteriaForThisFlight.join(' <span style="color:#ccc;">|</span> ')}</td>
                     </tr>
@@ -1006,12 +1017,13 @@
             }
         });
 
+        // رسم جدول التقييمات الضعيفة (إن وجد)
         if(hasPoor) {
             let poorSectionWrapper = `
                 <div id="poor-evaluations-section" class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                     <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة (Poor Evaluations)</h4>
                     <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
-                        <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
+                        <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
                         <tbody>${poorEvaluationsHTML}</tbody>
                     </table>
                 </div>
@@ -1019,14 +1031,26 @@
             document.querySelector('.report-wrapper').insertAdjacentHTML('afterend', poorSectionWrapper);
         }
 
-        let finalCommentsHTML = `<div id="captain-comments-section" class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: left; direction: ltr;"><i class="fa-solid fa-comments"></i> Captains' Comments</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; direction: ltr;">`;
-        if(hasComments) { finalCommentsHTML += commentsHTML; } else { finalCommentsHTML += `<li style="padding: 8px 0; color: #777;">No comments recorded in this period.</li>`; }
-        finalCommentsHTML += `</ul></div>`;
+        // رسم جدول ملاحظات الكابتن (إن وجد)
+        let finalCommentsHTML = `
+            <div id="captain-comments-section" class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن (Captain Comments)</h4>
+                <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
+                    <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة (Comment)</th></tr></thead>
+                    <tbody>`;
+                    
+        if(hasComments) { 
+            finalCommentsHTML += commentsHTML; 
+        } else { 
+            finalCommentsHTML += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`; 
+        }
+        
+        finalCommentsHTML += `</tbody></table></div>`;
+        
         let mainWrapper = document.getElementById('poor-evaluations-section') || document.querySelector('.report-wrapper');
         mainWrapper.insertAdjacentHTML('afterend', finalCommentsHTML);
 
+        // إحصائيات علوية
         document.getElementById('stat-total').innerText = filteredSurveys.length;
         document.getElementById('stat-airlines').innerText = airlinesSet.size;
         let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
