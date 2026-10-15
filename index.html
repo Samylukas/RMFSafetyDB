@@ -62,9 +62,12 @@
     .iso-report-container { background: #fff; padding: 15px 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
     .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
     .iso-title h2 { font-size: 1.1rem; margin: 0; color: var(--primary); font-weight: 900;}
-    .iso-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 9px; margin-bottom: 10px; background: #fff;}
-    .iso-table th, .iso-table td { border: 1px solid #000; padding: 4px; text-align: right; }
-    .iso-table th { background-color: #e6e6e6; text-align: center; font-size: 10px; font-weight: bold;}
+    
+    /* تنسيقات الجداول للطباعة - مطابقة للديزاين المطلوب */
+    .iso-table { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 10px; margin-bottom: 10px; background: #fff;}
+    .iso-table th, .iso-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; }
+    .iso-table th { background-color: #f2f2f2; color: #003366; font-size: 10px; font-weight: 900; }
+    
     .checkbox-print { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-left: 5px; position: relative;}
     .checkbox-print.checked::after { content: '✔'; position: absolute; top: -6px; right: -1px; font-size: 14px; font-weight: bold;}
     .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
@@ -395,21 +398,25 @@
                 </div>
             </div>
 
-            <div class="iso-report-container avoid-page-break" id="printable-corrective-report" style="display: block; padding-top: 10px;">
-                <div class="iso-header">
+            <!-- التقرير الجديد المصمم بنفس المسميات والأعمدة -->
+            <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 10px;">
+                <div class="iso-header avoid-page-break">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
                     <div class="iso-title">
-                        <h2 id="corrective-title" style="color: #dc3545; font-size: 1rem;">تقرير الإجراءات التصحيحية والملاحظات</h2>
+                        <h2 id="corrective-title" style="color: #dc3545; font-size: 1.1rem; border-bottom: 2px solid #dc3545; padding-bottom: 5px; display: inline-block;">أولاً: تقرير بالأخطار التي تم رصدها:</h2>
                     </div>
                 </div>
                 <table class="iso-table corrective-table" style="margin-bottom: 20px; font-size: 10px;">
                     <thead>
                         <tr>
                             <th style="width: 5%;">م</th>
-                            <th style="width: 15%;">مكان الرصد</th>
-                            <th style="width: 40%;">المخالفة / الخطر</th>
-                            <th style="width: 25%;">الجهة المسئولة</th>
-                            <th style="width: 15%;">الحالة</th>
+                            <th style="width: 10%;">تاريخ الرصد</th>
+                            <th style="width: 8%;">وقت الرصد</th>
+                            <th style="width: 12%;">مكان الرصد</th>
+                            <th style="width: 20%;">المخالفة / الخطر</th>
+                            <th style="width: 15%;">الجهة المسئولة</th>
+                            <th style="width: 20%;">الإجراء الوقائي التصحيحي المطلوب / المتخذ</th>
+                            <th style="width: 10%;">الحالة</th>
                         </tr>
                     </thead>
                     <tbody id="corrective-tbody"></tbody>
@@ -1437,11 +1444,11 @@
         if (isMultiDay) {
             // إخفاء الـ Checklist تماماً لأنه تقرير مجمع لعدة أيام
             document.getElementById('printable-checklist-report').style.display = 'none';
-            document.getElementById('corrective-title').innerText = `سجل الإجراءات التصحيحية والملاحظات المجمعة (من ${fromD} إلى ${toD})`;
+            document.getElementById('corrective-title').innerText = `أولاً: تقرير بالأخطار التي تم رصدها (الفترة من ${fromD} إلى ${toD}):`;
         } else {
             // تقرير يومي (إظهار Checklist)
             document.getElementById('printable-checklist-report').style.display = 'block';
-            document.getElementById('corrective-title').innerText = "تقرير الإجراءات التصحيحية والملاحظات";
+            document.getElementById('corrective-title').innerText = "أولاً: تقرير بالأخطار التي تم رصدها:";
             let rep = filteredDailys[0]; 
             document.getElementById('print-date-view').innerText = rep.date; 
             document.getElementById('print-time-view').innerText = rep.time; 
@@ -1469,7 +1476,7 @@
             trBody += "</tr>"; table.innerHTML += trBody;
         }
 
-        // بناء جدول الملاحظات المجمعة
+        // بناء جدول الملاحظات بالشكل الاحترافي المطلوب
         const ctbody = document.getElementById('corrective-tbody'); ctbody.innerHTML = "";
         let counter = 1; let statusCounts = { "مغلق": 0, "مفتوح": 0 }; let deptCounts = {};
         
@@ -1481,26 +1488,53 @@
                 if(st === 'مغلق') statusCounts["مغلق"]++; else statusCounts["مفتوح"]++;
                 deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1;
                 
+                // تحويل المسميات والألوان بناءً على الحالة (مفتوح = معلق أحمر) (مغلق = انتهى أخضر)
+                let displayStatus = st === 'مغلق' ? 'انتهى' : 'معلق';
                 let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545';
                 
-                let displayNote = f.note;
+                let violationText = f.item;
+                let correctiveAction = "لم يحدد";
+
                 try { 
                     let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); 
                     if(match) { 
-                        let actionAndDate = match[2];
-                        if(actionAndDate.includes("[تم تلافي")) {
-                            actionAndDate = actionAndDate.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'>[$1]</strong>");
+                        violationText = `<b>${f.item}</b><br><span style="color:#555;font-weight:normal;">${match[1]}</span>`;
+                        correctiveAction = match[2];
+                        let tDate = match[3];
+
+                        if(correctiveAction.includes("[تم تلافي")) {
+                            correctiveAction = correctiveAction.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'><br>[$1]</strong>");
                         }
-                        displayNote = match[1] + "<br><span style='color:#003366; font-weight:bold;'>الإجراء:</span> " + actionAndDate; 
-                        if(isMultiDay) displayNote += ` <br><span style="color:#777; font-size:8px;">(تاريخ الفحص: ${dr.date})</span>`;
+                        if (tDate !== "غير محدد" && tDate.trim() !== "") {
+                            correctiveAction += `<br><span style="color:#777; font-size:8px;">التاريخ المستهدف: ${tDate}</span>`;
+                        }
                     } 
                 } catch(e){}
 
-                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#6c757d;font-size:9.5px;line-height:1.4;">${displayNote}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold;">${st}</td></tr>`;
+                // بناء صف الجدول الرئيسي والمطابق للأعمدة الجديدة
+                ctbody.innerHTML += `
+                <tr>
+                    <td style="text-align:center;">${counter++}</td>
+                    <td style="text-align:center;">${dr.date}</td>
+                    <td style="text-align:center;">${dr.time}</td>
+                    <td style="text-align:center;">${f.location}</td>
+                    <td style="text-align:right; font-size:10px;">${violationText}</td>
+                    <td style="text-align:center;">${f.responsible}</td>
+                    <td style="text-align:right; font-size:10px;">${correctiveAction}</td>
+                    <td style="background:${statusColor}; color:white; text-align:center; font-weight:bold; font-size:11px;">${displayStatus}</td>
+                </tr>`;
+
+                // صف الصورة (مساحة إضافية مستقبلاً ليطابق الـ Excel)
+                ctbody.innerHTML += `
+                <tr>
+                    <td colspan="8" style="text-align:center; background-color:#fafafa; padding: 12px; color: #aaa; border-bottom: 3px solid #000;">
+                        صورة المخالفة حالة الرصد (مساحة مخصصة لإرفاق الصور مستقبلاً)
+                    </td>
+                </tr>`;
             });
         });
         
-        if(counter===1) ctbody.innerHTML = "<tr><td colspan='5' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
+        if(counter===1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
         
         document.getElementById('stat-daily-total').innerText = filteredDailys.length; 
         document.getElementById('stat-daily-findings').innerText = allFindingsCount;
@@ -1521,12 +1555,11 @@
         if(el.style.display==='none') { alert("برجاء عرض التقرير أولاً قبل الطباعة."); return; }
         window.scrollTo(0,0); 
         html2pdf().set({
-            margin: 0.3, 
+            margin: 0.2, 
             filename: 'Air_Side_Daily_Inspection.pdf', 
             image: {type:'jpeg',quality:1}, 
             html2canvas: {scale:4, useCORS:true}, 
             jsPDF: {unit:'in', format:'a4', orientation:'landscape'}, 
-            // الحل السحري للصفحة البيضاء: منع القطع القسري والسماح للـ CSS بإدارته
             pagebreak: { mode: 'css', avoid: ['.avoid-page-break', 'tr'] }
         }).from(el).save(); 
     }
