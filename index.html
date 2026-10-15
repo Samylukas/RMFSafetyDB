@@ -48,10 +48,16 @@
     .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
     .check-item { background: #fff; border: 1px solid #eee; border-radius: 5px; padding: 6px; display: flex; flex-direction: column;}
     .check-item-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-    .check-item-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-    .check-item-row label { font-size: 0.8rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
-    .check-inputs { display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 8px; background: #fdfdfd; border-right: 3px solid #dc3545; border-radius: 4px; }
-    .check-inputs input, .check-inputs select { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Cairo'; font-size: 0.75rem; box-sizing: border-box; }
+    .check-item-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .check-item-row label { font-size: 0.85rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
+    .check-inputs { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 12px; background: #fdfdfd; border-right: 4px solid #dc3545; border-radius: 4px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);}
+    
+    /* تكبير وتوضيح الخانات في الفحص اليومي */
+    .check-inputs input, .check-inputs select { 
+        width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; 
+        font-family: 'Cairo'; font-size: 0.85rem; font-weight: bold; box-sizing: border-box; 
+    }
+    select.status-select { cursor: pointer; border: none; }
 
     .iso-report-container { background: #fff; padding: 15px 20px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
     .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
@@ -323,7 +329,7 @@
             <div class="form-group"><label>الوقت (Time)</label><input type="time" id="dailyTime" required></div>
             <div class="form-group">
                 <label>الوردية (Shift)</label>
-                <select id="dailyShift" required>
+                <select id="dailyShift" required style="padding: 8px 10px; font-weight: bold; border: 1px solid #ccc; border-radius: 5px;">
                     <option value="صباحي">صباحي</option>
                     <option value="مسائي">مسائي</option>
                     <option value="ليلي">ليلي</option>
@@ -539,6 +545,17 @@
     let chartInstances = {}; 
     let chartInstancesDaily = {};
 
+    // دالة تلوين قائمة (مفتوح/مغلق) ديناميكياً
+    function updateStatusColor(sel) {
+        if(sel.value === 'مغلق') {
+            sel.style.backgroundColor = '#28a745';
+            sel.style.color = '#fff';
+        } else {
+            sel.style.backgroundColor = '#dc3545';
+            sel.style.color = '#fff';
+        }
+    }
+
     setTimeout(finishLoading, 2000);
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -550,9 +567,6 @@
       setupCustomDropdown(); 
     });
 
-    // ==========================================
-    // منطق البحث الذكي (القائمة المنسدلة)
-    // ==========================================
     function setupCustomDropdown() {
         const input = document.getElementById('reg');
         const arrow = document.getElementById('regArrowBtn');
@@ -618,10 +632,7 @@
                     let div = document.createElement('div');
                     div.className = 'custom-dropdown-item';
                     div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
-                    div.onclick = function(e) {
-                        e.stopPropagation();
-                        selectReg(a.REG);
-                    };
+                    div.onclick = function(e) { e.stopPropagation(); selectReg(a.REG); };
                     list.appendChild(div);
                 });
             }
@@ -643,9 +654,6 @@
         }
     }
 
-    // ==========================================
-    // تهيئة البيانات من جوجل
-    // ==========================================
     function loadAppDataInit() {
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       window[callbackName] = function(data) {
@@ -660,25 +668,32 @@
                     let reportsMap = {};
                     data.daily.forEach(row => {
                         let repId = row.Report_ID;
+                        
+                        // إصلاح مشكلة الوقت التي تظهر كـ 1899-12-30
+                        let timeStr = row.Time;
+                        if(timeStr && typeof timeStr === 'string' && timeStr.includes('T')) {
+                            let d = new Date(timeStr);
+                            if(!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                        }
+
                         if(!reportsMap[repId]) {
                             reportsMap[repId] = {
                                 id: repId,
                                 date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '',
-                                time: row.Time,
+                                time: timeStr,
                                 shift: row.Shift,
                                 inspector: row.Inspector,
                                 findings: []
                             };
                         }
                         if(row.Category && row.Category !== "لا توجد ملاحظات") {
-                            let fullNote = row.Corrective_Action || "";
                             reportsMap[repId].findings.push({
                                 category: row.Category,
                                 item: row.Finding_Item,
                                 location: row.Location,
                                 responsible: row.Responsible,
-                                note: fullNote, 
-                                status: row.Status
+                                note: row.Corrective_Action || "", 
+                                status: row.Status || "مفتوح"
                             });
                         }
                     });
@@ -756,7 +771,6 @@
       document.getElementById('btn-report').classList.remove('active');
       document.getElementById('tab-entry').classList.remove('active');
       document.getElementById('tab-report').classList.remove('active');
-
       document.getElementById('btn-' + tab).classList.add('active');
       document.getElementById('tab-' + tab).classList.add('active');
     }
@@ -766,7 +780,6 @@
       document.getElementById('btn-daily-report').classList.remove('active');
       document.getElementById('tab-daily-entry').classList.remove('active');
       document.getElementById('tab-daily-report').classList.remove('active');
-
       document.getElementById('btn-daily-' + tab).classList.add('active');
       document.getElementById('tab-daily-' + tab).classList.add('active');
     }
@@ -776,10 +789,8 @@
       document.getElementById('btn-spi-report').classList.remove('active');
       document.getElementById('tab-spi-entry').classList.remove('active');
       document.getElementById('tab-spi-report').classList.remove('active');
-
       document.getElementById('btn-spi-' + tab).classList.add('active');
       document.getElementById('tab-spi-' + tab).classList.add('active');
-      
       if(tab === 'report') generateSpiReport();
     }
 
@@ -902,7 +913,6 @@
 
     async function submitSurvey(e) {
       e.preventDefault();
-      
       let regVal = document.getElementById('reg').value;
       const airline = document.getElementById('airline').value;
       const msg = document.getElementById('surveyMsg');
@@ -1083,7 +1093,6 @@
         }
         
         additionalTables += `</tbody></table></div>`;
-        
         extraContainer.innerHTML = additionalTables;
 
         document.getElementById('stat-total').innerText = filteredSurveys.length;
@@ -1149,7 +1158,6 @@
         margin: [0.2, 0.2, 0.2, 0.2], 
         filename: 'Safety_Dashboard_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        // حل مشكلة الصورة: رفع دقة الطباعة لـ 4 أضعاف الشاشة (scale: 4)
         html2canvas: { scale: 4, useCORS: true, scrollY: 0, y: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
         pagebreak: { mode: ['css', 'legacy'] } 
@@ -1189,7 +1197,7 @@
                                 <div style="display:flex; gap:5px;">
                                     <input type="text" id="actionTaken_${checkIndex}" placeholder="الإجراء المتخذ..." style="flex:2;">
                                     <input type="date" id="targetDate_${checkIndex}" title="تاريخ التلافي" style="flex:1;">
-                                    <select id="status_${checkIndex}" style="flex:1;">
+                                    <select id="status_${checkIndex}" class="status-select" style="flex:1; background:#dc3545; color:white;" onchange="updateStatusColor(this)">
                                         <option value="مفتوح" selected>مفتوح</option>
                                         <option value="مغلق">مغلق</option>
                                     </select>
@@ -1233,11 +1241,11 @@
         else if(direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
         
         if(currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
-            navDailyTo(currentDailyIndex); // يتم الاعتماد على دالة العرض بوضع التعديل
+            navDailyTo(currentDailyIndex); 
         }
     }
 
-    // دالة عرض الفحص بوضع التعديل
+    // دالة عرض الفحص بوضع التعديل وتلوين الخانات
     function navDailyTo(idx) {
         currentDailyIndex = idx;
         let rep = globalDailyInspections[currentDailyIndex];
@@ -1257,7 +1265,6 @@
                 chk.checked = true;
                 document.getElementById(`inputs_${idx}`).style.display = 'flex';
                 
-                // فصل البيانات من النص المدمج لعرضها
                 let fullNote = found.note || "";
                 let nText = "تم الرصد"; let aText = "لم يحدد"; let tDate = "غير محدد";
                 try {
@@ -1267,21 +1274,22 @@
                 } catch(e){}
 
                 document.getElementById(`note_${idx}`).value = nText;
-                document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText : "";
+                document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim() : "";
                 
-                // تحديد تاريخ التلافي إذا كان مسجلاً وصحيحاً
                 let dField = document.getElementById(`targetDate_${idx}`);
                 dField.value = (tDate !== "غير محدد" && tDate.trim() !== "") ? tDate : "";
 
                 document.getElementById(`loc_${idx}`).value = found.location || "";
                 document.getElementById(`resp_${idx}`).value = found.responsible || "";
-                document.getElementById(`status_${idx}`).value = found.status || "مفتوح";
+                
+                let statusSel = document.getElementById(`status_${idx}`);
+                statusSel.value = found.status || "مفتوح";
+                updateStatusColor(statusSel); // تحديث لون خانة الحالة فور العرض
             }
         });
         
         updateDailyNavCounter();
         
-        // تفعيل وضع التعديل
         isDailyEditMode = true;
         currentDailyEditId = rep.id;
         
@@ -1300,6 +1308,13 @@
         
         document.getElementById('dailyForm').reset();
         document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none');
+        
+        // إرجاع ألوان قوائم (مفتوح/مغلق) للون الأحمر الافتراضي
+        document.querySelectorAll('.status-select').forEach(sel => {
+            sel.style.backgroundColor = '#dc3545';
+            sel.style.color = '#fff';
+        });
+
         autoFillDailyDateTime();
         updateDailyNavCounter();
         
@@ -1322,9 +1337,18 @@
                 let parts = chk.value.split('|');
                 let noteText = document.getElementById(`note_${idx}`).value || "تم الرصد";
                 let actionText = document.getElementById(`actionTaken_${idx}`).value || "لم يحدد";
-                let targetD = document.getElementById(`targetDate_${idx}`).value || "غير محدد";
+                let targetD = document.getElementById(`targetDate_${idx}`).value || "";
+                let st = document.getElementById(`status_${idx}`).value || "مفتوح";
                 
-                let combinedNote = `الملاحظة: ${noteText} - الإجراء: ${actionText} - تاريخ التلافي: ${targetD}`;
+                // إضافة نص الإغلاق تلقائيا إذا كانت مغلق
+                if(st === "مغلق") {
+                    let closeDate = targetD !== "" ? targetD : new Date().toISOString().split('T')[0];
+                    if(!actionText.includes("تم تلافي الملحوظة")) {
+                        actionText = actionText + ` [تم تلافي الملحوظة بتاريخ ${closeDate}]`;
+                    }
+                }
+                
+                let combinedNote = `الملاحظة: ${noteText} - الإجراء: ${actionText} - تاريخ التلافي: ${targetD !== "" ? targetD : "غير محدد"}`;
 
                 findings.push({ 
                     category: parts[0], 
@@ -1332,7 +1356,7 @@
                     note: combinedNote, 
                     location: document.getElementById(`loc_${idx}`).value || "-", 
                     responsible: document.getElementById(`resp_${idx}`).value || "-", 
-                    status: document.getElementById(`status_${idx}`).value || "مفتوح"
+                    status: st
                 });
             }
         });
@@ -1451,10 +1475,21 @@
                 
                 let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545';
                 
+                // اظهار تاريخ الإغلاق بلون أخضر في الملاحظة
                 let displayNote = f.note;
-                try { let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); if(match) { displayNote = match[1] + "<br>الإجراء: " + match[2] + " | التلافي: " + match[3]; } } catch(e){}
+                try { 
+                    let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); 
+                    if(match) { 
+                        let actionAndDate = match[2];
+                        // تلوين جملة الإغلاق بالأخضر لتمييزها في التقرير
+                        if(actionAndDate.includes("[تم تلافي")) {
+                            actionAndDate = actionAndDate.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'>[$1]</strong>");
+                        }
+                        displayNote = match[1] + "<br><span style='color:#003366; font-weight:bold;'>الإجراء:</span> " + actionAndDate; 
+                    } 
+                } catch(e){}
 
-                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#6c757d;font-size:9px;">${displayNote}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold;">${st}</td></tr>`;
+                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#6c757d;font-size:9.5px;line-height:1.4;">${displayNote}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold;">${st}</td></tr>`;
             });
         });
         
@@ -1462,6 +1497,9 @@
         
         document.getElementById('stat-daily-total').innerText = filteredDailys.length; 
         document.getElementById('stat-daily-findings').innerText = allFindingsCount;
+        
+        let closedPercent = allFindingsCount > 0 ? Math.round((statusCounts["مغلق"] / allFindingsCount) * 100) : 0;
+        document.getElementById('stat-daily-closed').innerText = closedPercent + "%";
         
         if(chartInstancesDaily.dept) chartInstancesDaily.dept.destroy();
         if(chartInstancesDaily.status) chartInstancesDaily.status.destroy();
@@ -1479,7 +1517,6 @@
             margin:[0.2, 0.2, 0.2, 0.2], 
             filename:'Air_Side_Daily_Inspection.pdf', 
             image:{type:'jpeg',quality:1}, 
-            // حل مشكلة الصورة: رفع الدقة 4 أضعاف للرسومات في الفحص اليومي (scale: 4)
             html2canvas:{scale:4, useCORS:true}, 
             jsPDF:{unit:'in', format:'a4', orientation:'landscape'}, 
             pagebreak: { mode: ['css', 'legacy'] }
