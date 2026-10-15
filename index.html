@@ -64,7 +64,7 @@
     .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
     #printable-charts-report { page-break-inside: avoid !important; }
-    .charts-grid canvas { max-height: 180px !important; width: 100% !important; object-fit: contain; }
+    .charts-grid canvas { max-height: 220px !important; width: 100% !important; object-fit: contain; }
     
     .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
     .spi-matrix-table th { background-color: #28a745; color: white; }
@@ -219,7 +219,6 @@
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
                 
-                <!-- القائمة المنسدلة المخصصة الاحترافية -->
                 <div class="custom-dropdown-container" id="regDropdownContainer">
                     <input type="text" id="reg" class="custom-dropdown-input" placeholder="اختر أو اكتب للبحث..." required autocomplete="off">
                     <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
@@ -496,8 +495,7 @@
   </div>
 
   <script>
-    // الرابط الجديد الذي أرسلته
-    const API_URL = "https://script.google.com/macros/s/AKfycbzJvpA5yRh5zX9Y25xAKKThN-d8tYBLtufveoFzZPIVaZcSdO-ep1HN_IkHVm_iO_G1/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyaIAUQWOyCLWEOO7PYbFsHRiigo12HMSY7L1jOPHCDXYibxdgkGlbJkD0SyHXDeALZ/exec"; 
 
     const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
 
@@ -533,6 +531,10 @@
     let globalDailyInspections = []; 
     let currentSurveyIndex = -1;
     let currentDailyIndex = -1;
+    
+    // متغيرات الفحص اليومي الجديدة لوضع التعديل
+    let isDailyEditMode = false;
+    let currentDailyEditId = null;
     
     let chartInstances = {}; 
     let chartInstancesDaily = {};
@@ -654,7 +656,6 @@
                 globalUsers = data.users || [];
                 globalSpiData = data.spi || [];
                 
-                // جلب بيانات الفحص اليومي وتكوينها للعرض
                 if(data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
@@ -1145,10 +1146,11 @@
       window.scrollTo(0, 0);
 
       html2pdf().set({
-        margin: [0.1, 0.4, 0.4, 0.4], 
+        margin: [0.2, 0.2, 0.2, 0.2], 
         filename: 'Safety_Dashboard_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0, y: 0 },
+        // حل مشكلة الصورة: رفع دقة الطباعة لـ 4 أضعاف الشاشة (scale: 4)
+        html2canvas: { scale: 4, useCORS: true, scrollY: 0, y: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
         pagebreak: { mode: ['css', 'legacy'] } 
       }).from(element).save().then(() => {
@@ -1231,44 +1233,81 @@
         else if(direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
         
         if(currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
-            displayDailyInForm(globalDailyInspections[currentDailyIndex]);
-            updateDailyNavCounter();
-            document.getElementById('submitDailyBtn').disabled = true; 
-            document.getElementById('submitDailyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+            navDailyTo(currentDailyIndex); // يتم الاعتماد على دالة العرض بوضع التعديل
         }
     }
 
-    function displayDailyInForm(report) {
+    // دالة عرض الفحص بوضع التعديل
+    function navDailyTo(idx) {
+        currentDailyIndex = idx;
+        let rep = globalDailyInspections[currentDailyIndex];
+        
         document.getElementById('dailyForm').reset();
         document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none');
         
-        document.getElementById('dailyDate').value = report.date || '';
-        document.getElementById('dailyTime').value = report.time || '';
-        document.getElementById('dailyShift').value = report.shift || 'صباحي';
-        document.getElementById('dailyInspector').value = report.inspector || '';
+        document.getElementById('dailyDate').value = rep.date || '';
+        document.getElementById('dailyTime').value = rep.time || '';
+        document.getElementById('dailyShift').value = rep.shift || 'صباحي';
+        document.getElementById('dailyInspector').value = rep.inspector || '';
 
         document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
             let parts = chk.value.split('|');
-            let found = report.findings.find(f => f.category === parts[0] && f.item === parts[1]);
+            let found = rep.findings.find(f => f.category === parts[0] && f.item === parts[1]);
             if(found) {
                 chk.checked = true;
                 document.getElementById(`inputs_${idx}`).style.display = 'flex';
-                document.getElementById(`note_${idx}`).value = found.note || "";
+                
+                // فصل البيانات من النص المدمج لعرضها
+                let fullNote = found.note || "";
+                let nText = "تم الرصد"; let aText = "لم يحدد"; let tDate = "غير محدد";
+                try {
+                    let match = fullNote.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
+                    if(match) { nText = match[1]; aText = match[2]; tDate = match[3]; }
+                    else { nText = fullNote; }
+                } catch(e){}
+
+                document.getElementById(`note_${idx}`).value = nText;
+                document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText : "";
+                
+                // تحديد تاريخ التلافي إذا كان مسجلاً وصحيحاً
+                let dField = document.getElementById(`targetDate_${idx}`);
+                dField.value = (tDate !== "غير محدد" && tDate.trim() !== "") ? tDate : "";
+
                 document.getElementById(`loc_${idx}`).value = found.location || "";
                 document.getElementById(`resp_${idx}`).value = found.responsible || "";
+                document.getElementById(`status_${idx}`).value = found.status || "مفتوح";
             }
         });
+        
+        updateDailyNavCounter();
+        
+        // تفعيل وضع التعديل
+        isDailyEditMode = true;
+        currentDailyEditId = rep.id;
+        
+        let btn = document.getElementById('submitDailyBtn');
+        btn.disabled = false; 
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ التعديلات وتحديث الحالة';
+        btn.style.backgroundColor = "#ffc107";
+        btn.style.color = "#000";
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function clearDailyFormForNew() {
         currentDailyIndex = -1;
+        isDailyEditMode = false;
+        currentDailyEditId = null;
+        
         document.getElementById('dailyForm').reset();
         document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none');
         autoFillDailyDateTime();
         updateDailyNavCounter();
+        
         let btn = document.getElementById('submitDailyBtn');
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات';
+        btn.style.backgroundColor = "var(--primary)";
+        btn.style.color = "#fff";
     }
     
     async function submitDailyInspection(e) {
@@ -1298,16 +1337,25 @@
             }
         });
         
-        const report = { id: Date.now(), date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings };
+        let reportId = isDailyEditMode ? currentDailyEditId : Date.now();
+        const report = { id: reportId, date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings };
         
+        let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection";
+
         try {
             await fetch(API_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: "submitDailyInspection", reportData: report }), 
+                body: JSON.stringify({ action: actionType, reportData: report }), 
                 headers: { "Content-Type": "text/plain;charset=utf-8" } 
             });
-            globalDailyInspections.unshift(report); 
-            document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!";
+            
+            if(isDailyEditMode) {
+                globalDailyInspections[currentDailyIndex] = report;
+                document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم تحديث الملاحظات بنجاح!";
+            } else {
+                globalDailyInspections.unshift(report); 
+                document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!";
+            }
             
             setTimeout(()=>{ 
                 clearDailyFormForNew();
@@ -1332,17 +1380,8 @@
         }
         globalDailyInspections.forEach((rep, idx) => {
             let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">سليم 100%</span>`;
-            tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-eye"></i> عرض</button></td></tr>`;
+            tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i> عرض وتعديل</button></td></tr>`;
         });
-    }
-    
-    function navDailyTo(idx) {
-        currentDailyIndex = idx;
-        displayDailyInForm(globalDailyInspections[currentDailyIndex]);
-        updateDailyNavCounter();
-        document.getElementById('submitDailyBtn').disabled = true; 
-        document.getElementById('submitDailyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
-        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function generateDailyPrintReport() {
@@ -1412,7 +1451,10 @@
                 
                 let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545';
                 
-                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#6c757d;font-size:9px;">${f.note}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold;">${st}</td></tr>`;
+                let displayNote = f.note;
+                try { let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); if(match) { displayNote = match[1] + "<br>الإجراء: " + match[2] + " | التلافي: " + match[3]; } } catch(e){}
+
+                ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${f.location}</td><td><b>${f.item}</b><br><span style="color:#6c757d;font-size:9px;">${displayNote}</span></td><td style="text-align:center;">${f.responsible}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold;">${st}</td></tr>`;
             });
         });
         
@@ -1433,7 +1475,15 @@
         const el = document.getElementById('printable-daily-report'); 
         if(el.style.display==='none') { alert("برجاء عرض التقرير أولاً قبل الطباعة."); return; }
         window.scrollTo(0,0); 
-        html2pdf().set({margin:[0.1, 0.2, 0.2, 0.2], filename:'Air_Side_Daily_Inspection.pdf', image:{type:'jpeg',quality:1}, html2canvas:{scale:2, useCORS:true}, jsPDF:{unit:'in', format:'a4', orientation:'landscape'}, pagebreak: { mode: ['css', 'legacy'] }}).from(el).save(); 
+        html2pdf().set({
+            margin:[0.2, 0.2, 0.2, 0.2], 
+            filename:'Air_Side_Daily_Inspection.pdf', 
+            image:{type:'jpeg',quality:1}, 
+            // حل مشكلة الصورة: رفع الدقة 4 أضعاف للرسومات في الفحص اليومي (scale: 4)
+            html2canvas:{scale:4, useCORS:true}, 
+            jsPDF:{unit:'in', format:'a4', orientation:'landscape'}, 
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(el).save(); 
     }
 
 
