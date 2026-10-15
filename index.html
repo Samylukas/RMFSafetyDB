@@ -15,6 +15,33 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
+    /* CSS للقائمة المنسدلة المخصصة والقابلة للبحث */
+    .custom-dropdown-container { position: relative; width: 100%; font-family: 'Cairo', sans-serif; }
+    .custom-dropdown-input {
+        width: 100%; padding: 10px; padding-left: 35px; border: 1px solid #ccc; border-radius: 5px;
+        font-size: 1rem; box-sizing: border-box; cursor: pointer; background: #fff; text-transform: uppercase;
+    }
+    .custom-dropdown-arrow {
+        position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+        color: var(--primary); cursor: pointer; font-size: 1rem; padding: 5px;
+    }
+    .custom-dropdown-list {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc;
+        border-top: none; border-radius: 0 0 5px 5px; max-height: 200px; overflow-y: auto; z-index: 1000;
+        display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .custom-dropdown-list.show { display: block; }
+    .custom-dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: left; direction: ltr; font-weight: bold;}
+    .custom-dropdown-item:hover { background-color: #f0f8ff; color: var(--primary); }
+
+    /* إصلاح تخطيط الشبكة (Grid) */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
     /* تنسيقات الفحص اليومي والطباعة */
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
@@ -38,11 +65,9 @@
     .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
     .html2pdf__page-break { height: 0; page-break-before: always; border: none; margin: 0; padding: 0; }
     
-    /* منع تقطيع الرسومات البيانية في الـ PDF */
     #printable-charts-report { page-break-inside: avoid !important; }
     .charts-grid canvas { max-height: 180px !important; width: 100% !important; object-fit: contain; }
 
-    /* مصفوفة الإحصائيات (SPI) */
     .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
     .spi-matrix-table th { background-color: #28a745; color: white; }
     .spi-matrix-table td:first-child { text-align: left; direction: ltr; font-weight: 600; width: 300px; background: #fdfdfd;}
@@ -125,19 +150,16 @@
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <!-- 01 - استبيان الكابتن -->
       <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;">
         <i class="fa-solid fa-clipboard-user sub-icon" style="color: var(--primary);"></i>
         <h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div>
       </div>
       
-      <!-- 02 - الفحص اليومي -->
       <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border: 2px solid var(--secondary); background: #fdfbf7;">
         <i class="fa-solid fa-list-check sub-icon" style="color: var(--secondary);"></i>
         <h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div>
       </div>
 
-      <!-- مؤشرات الأداء SPI -->
       <div class="sub-card" onclick="openSection('spi-section')" style="border: 2px solid #28a745; background: #f4fcf6;">
         <i class="fa-solid fa-chart-line sub-icon" style="color: #28a745;"></i>
         <h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">Operational SPIs 2026</div>
@@ -197,18 +219,17 @@
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
             <div class="form-group">
-              <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
-                <div style="position: relative; width: 100%;">
-                    <!-- حقل الإدخال -->
-                    <input type="text" id="reg" list="regMasterList" oninput="autoFillAircraftData()" onchange="autoFillAircraftData()" placeholder="اختر أو اكتب للبحث..." required autocomplete="off" style="text-transform: uppercase; width: 100%; padding-left: 30px;">
-                    
-                    <!-- سهم وهمي للزينة (المتصفح هو من سيفتح القائمة عند التركيز على الحقل) -->
-                    <i class="fa-solid fa-chevron-down" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #003366; pointer-events: none;"></i>
+                
+                <!-- القائمة المنسدلة المخصصة -->
+                <div class="custom-dropdown-container" id="regDropdownContainer">
+                    <input type="text" id="reg" class="custom-dropdown-input" placeholder="اختر أو اكتب للبحث..." required autocomplete="off" oninput="filterRegOptions()" onfocus="toggleRegDropdown(true)">
+                    <i class="fa-solid fa-chevron-down custom-dropdown-arrow" onclick="toggleRegDropdown()"></i>
+                    <div class="custom-dropdown-list" id="regDropdownList"></div>
                 </div>
-                <datalist id="regMasterList"></datalist>
-                <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول" style="flex-shrink: 0;"><i class="fa-solid fa-plus"></i></button>
+
+                <button type="button" class="add-btn" onclick="openFleetModal()" title="تسجيل طائرة بالأسطول" style="flex-shrink: 0; padding: 10px;"><i class="fa-solid fa-plus"></i></button>
               </div>
             </div>
             <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" id="airline" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً..."></div>
@@ -345,7 +366,7 @@
         </div>
         
         <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl; width: 100%;">
-            <!-- الصفحة 1: شيت الأيزو (قائمة الفحص) -->
+            <!-- الصفحة 1: شيت الأيزو -->
             <div class="iso-report-container" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
@@ -365,7 +386,7 @@
                 </div>
             </div>
 
-            <!-- الصفحة 2: تقرير الإجراءات التصحيحية (الجداول) -->
+            <!-- الصفحة 2: الإجراءات التصحيحية -->
             <div class="html2pdf__page-break"></div>
             <div class="iso-report-container" id="printable-corrective-report" style="display: block; padding-top: 10px;">
                 <div class="iso-header">
@@ -388,7 +409,7 @@
                 </table>
             </div>
 
-            <!-- الصفحة 3: الإحصائيات (الرسم البياني) محكومة الطول لتناسب الـ PDF -->
+            <!-- الصفحة 3: الإحصائيات -->
             <div class="html2pdf__page-break"></div>
             <div class="iso-report-container" id="printable-charts-report" style="display: block; padding-top: 30px;">
                 <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 1.4rem;">الإحصائيات والرسومات البيانية</h3>
@@ -419,7 +440,6 @@
         <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير (SPI Matrix)</button>
       </div>
 
-      <!-- إدخال SPI -->
       <div id="tab-spi-entry" class="tab-content active">
         <div style="background: #f4fcf6; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <p style="margin: 0; color: #155724; font-weight: bold;"><i class="fa-solid fa-circle-info"></i> مبني على نظام ECAA SPI Template 2026. يتم تسجيل عدد الرحلات والأحداث (Events) ليقوم النظام تلقائياً بحساب المعدل لكل 1000 حركة في المصفوفة.</p>
@@ -449,7 +469,6 @@
         </form>
       </div>
 
-      <!-- مصفوفة SPI -->
       <div id="tab-spi-report" class="tab-content">
         <div class="report-filters">
            <div class="form-group"><label>اختر السنة:</label><select id="spiReportYear"><option value="2026">2026</option></select></div>
@@ -470,7 +489,7 @@
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
-      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" oninput="formatRegInput(this)" required></div>
+      <div class="form-group" style="margin-bottom: 10px;"><label>تسجيل الطائرة (REG):</label><input type="text" id="newReg" placeholder="مثال: SU-GCM" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>طراز الطائرة (Type):</label><input type="text" id="newType" placeholder="مثال: B737-800" style="text-transform: uppercase;" required></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الشركة المشغلة (Airline):</label><input type="text" id="newAirline" list="airlinesMasterList2" placeholder="اختر أو اكتب اسم الشركة" required><datalist id="airlinesMasterList2"></datalist></div>
       <div class="form-group" style="margin-bottom: 10px;"><label>الوكالة (Handling):</label><input type="text" id="newHandling" placeholder="A.S.E, EGYPTAIR, etc..."></div>
@@ -504,7 +523,6 @@
     };
     const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
 
-    // ثوابت مؤشرات الأداء (ECAA SPI 2026)
     const spiCategories = [
         { name: "خدمات الإنقاذ والإطفاء (RFFS & Fires)", items: ["*Post-crash fires", "Airport firefighting services’ decreased", "Reported inadequate equipment or resources"] },
         { name: "عمليات المدرج والتحركات (Runway & Ground Ops)", items: ["*Precursors to Runway Incursion (RI) (HRC)", "Failures or defects regarding signage", "Failures or defects regarding lighting", "Unauthorized or uncoordinated movement"] },
@@ -533,13 +551,66 @@
       renderSavedDaily();
       loadAppDataInit();
       autoFillDailyDateTime(); 
+      setupCustomDropdown(); // تهيئة القائمة المنسدلة المخصصة
     });
 
-    // --- دوال الاتصال الأساسية ---
-    function loadAppDataInit() {
-      const regDatalist = document.getElementById('regMasterList');
-      if(regDatalist) regDatalist.innerHTML = ''; 
+    // --- منطق القائمة المنسدلة المخصصة لـ Registration ---
+    function setupCustomDropdown() {
+        const input = document.getElementById('reg');
+        const list = document.getElementById('regDropdownList');
 
+        // منع إغلاق القائمة عند النقر داخلها
+        document.getElementById('regDropdownContainer').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // إغلاق القائمة عند النقر خارجها
+        document.addEventListener('click', function() {
+            list.classList.remove('show');
+        });
+    }
+
+    function toggleRegDropdown(forceOpen = false) {
+        const list = document.getElementById('regDropdownList');
+        if (forceOpen) {
+            list.classList.add('show');
+            filterRegOptions();
+        } else {
+            list.classList.toggle('show');
+            if (list.classList.contains('show')) filterRegOptions();
+        }
+        document.getElementById('reg').focus();
+    }
+
+    function filterRegOptions() {
+        const input = document.getElementById('reg');
+        const list = document.getElementById('regDropdownList');
+        const filter = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        list.innerHTML = '';
+
+        let matched = globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
+        
+        if (matched.length === 0) {
+            list.innerHTML = `<div style="padding: 10px; color: #777; font-size: 0.8rem;">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
+        } else {
+            matched.forEach(a => {
+                let div = document.createElement('div');
+                div.className = 'custom-dropdown-item';
+                div.innerHTML = `${a.REG} <span style="font-size: 0.7rem; color: #777; float: right;">${a.CAR}</span>`;
+                div.onclick = function() {
+                    input.value = a.REG;
+                    list.classList.remove('show');
+                    autoFillAircraftData();
+                };
+                list.appendChild(div);
+            });
+        }
+        list.classList.add('show');
+        autoFillAircraftData();
+    }
+    // -----------------------------------------------------
+
+    function loadAppDataInit() {
       const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
       window[callbackName] = function(data) {
         try {
@@ -554,20 +625,6 @@
                     userSelect.innerHTML = "";
                     globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; });
                     if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
-                }
-
-                if(regDatalist) {
-                    globalFleetData.forEach(aircraft => { 
-                        if(aircraft && aircraft["REG"]) {
-                            regDatalist.innerHTML += `<option value="${aircraft["REG"]}">${aircraft["REG"]}</option>`; 
-                        }
-                    });
-                }
-
-                const airlinesList2 = document.getElementById('airlinesMasterList2');
-                if(airlinesList2) {
-                    airlinesList2.innerHTML = "";
-                    (data.airlines || []).forEach(airline => { if(airline) airlinesList2.innerHTML += `<option value="${airline}">`; });
                 }
 
                 const navCounter = document.getElementById('nav-counter');
@@ -681,15 +738,9 @@
       });
     }
 
-    function formatRegInput(inputElement) {
-      let val = inputElement.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      if (val.length > 2) { val = val.substring(0, 2) + '-' + val.substring(2); }
-      inputElement.value = val;
-    }
-
     function autoFillAircraftData() {
       let rawInput = document.getElementById('reg').value.toUpperCase();
-      let cleanInput = rawInput.replace(/[^A-Z0-9]/g, ''); // إزالة المسافات والشرطات للمطابقة بذكاء
+      let cleanInput = rawInput.replace(/[^A-Z0-9]/g, '');
       
       let foundAircraft = globalFleetData.find(a => a["REG"] && String(a["REG"]).toUpperCase().replace(/[^A-Z0-9]/g, '') === cleanInput);
       
@@ -697,7 +748,7 @@
       let typeInput = document.getElementById('acType');
 
       if (foundAircraft) {
-        document.getElementById('reg').value = foundAircraft["REG"]; // إعادة كتابة التسجيل بالشكل الصحيح
+        // لا تقم بتغيير الـ value للـ input أثناء الكتابة حتى لا يزعج المستخدم
         airlineInput.value = foundAircraft["CAR"] || "";
         typeInput.value = foundAircraft["TYPE"] || "";
         airlineInput.style.backgroundColor = "#e8f5e9";
@@ -790,8 +841,6 @@
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
         msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
         globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
-        const regDatalist = document.getElementById('regMasterList');
-        if(regDatalist) regDatalist.innerHTML += `<option value="${reg}">${reg}</option>`;
         document.getElementById('reg').value = reg;
         autoFillAircraftData();
         setTimeout(closeAddModal, 1500);
@@ -833,9 +882,7 @@
           btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
           btn.disabled = false;
           msg.innerText = "";
-          document.getElementById('surveyForm').reset();
-          document.getElementById('reg').value = "";
-          autoFillAircraftData(); 
+          clearFormForNew();
         }, 1500);
       } catch (error) {
         msg.style.color = "red"; msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
@@ -848,7 +895,6 @@
         let fromD = document.getElementById('fromDate').value;
         let toD = document.getElementById('toDate').value;
         
-        // الجدار الناري: منع العرض بدون اختيار التواريخ
         if(!fromD || !toD) {
             alert("برجاء اختيار فترة التاريخ (من - إلى) أولاً لعرض النتائج.");
             return;
@@ -857,7 +903,7 @@
         document.getElementById('printable-report').style.display = 'block';
         let fd = new Date(fromD); 
         let td = new Date(toD);
-        td.setHours(23, 59, 59, 999); // لتضمين اليوم الأخير بالكامل
+        td.setHours(23, 59, 59, 999); 
 
         let filteredSurveys = globalSurveys.filter(s => {
             let sd = new Date(s.Date);
@@ -1216,7 +1262,7 @@
         
         let fd = new Date(fromD); 
         let td = new Date(toD);
-        td.setHours(23, 59, 59, 999); // لتضمين اليوم الأخير بالكامل في الفحص اليومي
+        td.setHours(23, 59, 59, 999); 
 
         let filteredDailys = globalDailyInspections.filter(r => {
             let sd = new Date(r.date);
