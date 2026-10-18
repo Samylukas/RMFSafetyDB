@@ -467,7 +467,7 @@
 
           <div class="inc-section">
             <h3 class="inc-section-title">الوصف والإجراءات (Narrative) - يرجى الكتابة باللغة الإنجليزية إن أمكن</h3>
-            <label style="font-weight:bold; font-size:0.85rem;">الوصف (Description)</label>
+            <label style="font-weight:bold; font-size:0.85rem;">الوصف (Deion)</label>
             <textarea id="incDesc" class="inc-textarea" style="height:120px;" placeholder="Describe the incident..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">المخاطر (Hazards)</label>
             <textarea id="incHazardDesc" class="inc-textarea" style="background:#fff5f5; border-color:#dc3545;" placeholder="Primary Hazard..."></textarea><br><br>
@@ -559,7 +559,7 @@
                     <div style="flex:1;" class="iso-full-box"><div class="iso-box-title">توصيف الحادث / Occurrence Characterization</div><div style="padding:5px;" id="pIncCharList"></div></div>
                 </div>
 
-                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">الوصف / Description</div><div class="iso-box-content" id="pIncDesc"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">الوصف / Deion</div><div class="iso-box-content" id="pIncDesc"></div></div>
                 <div class="iso-full-box avoid-page-break"><div class="iso-box-title">المخاطر / Hazards</div><div class="iso-box-content" style="color:#dc3545;" id="pIncHazard"></div></div>
                 <div class="iso-full-box avoid-page-break"><div class="iso-box-title">أوجه القصور / Causes</div><div class="iso-box-content" id="pIncCausesDetails"></div></div>
                 <div class="iso-full-box avoid-page-break"><div class="iso-box-title">الإجراء المتخذ / Action Taken</div><div class="iso-box-content" id="pIncAction"></div></div>
@@ -658,7 +658,7 @@
   </div>
 
   <!-- JavaScript المجمع بعناية فائقة وتنسيق نظيف -->
-  <script>
+<script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyOzWa4aaJ6AxgOEGXbxlsusWUnFowJEu8SH4bwkSHJDNK_NtdI551acj1PK-7nAtYT/exec";
 
     const criteriaList = [
@@ -1828,9 +1828,9 @@
         }).from(el).save();
     }
 
-    // ----------------------------------------------------
-    // دوال 03: الحوادث والوقائع (Incidents)
-    // ----------------------------------------------------
+    // ==========================================
+    // 03: Incidents & Accidents
+    // ==========================================
     function switchIncidentTab(tab) {
         document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -1904,10 +1904,13 @@
     function navIncidentTo(idx) {
         currentIncidentIndex = idx;
         let inc = globalIncidents[currentIncidentIndex];
+        if (!inc) return;
+
+        switchIncidentTab('entry');
         
         document.getElementById('incidentForm').reset();
 
-        document.getElementById('incDate').value = inc.Date ? new Date(inc.Date).toISOString().split('T')[0] : '';
+        document.getElementById('incDate').value = inc.Date ? inc.Date.split('T')[0] : '';
         document.getElementById('incTime').value = inc.Time || '';
         document.getElementById('incLocation').value = inc.Location || '';
         document.getElementById('incPersonnel').value = inc.Personnel_Involved || 'NIL';
@@ -1916,12 +1919,11 @@
         document.getElementById('incEqOwner').value = inc.Equipment_Owned || 'NIL';
         document.getElementById('incStatus').value = inc.Status || 'In service';
         
-        // الخانات الجديدة
         document.getElementById('incPosition').value = inc.Position || 'NIL';
         document.getElementById('incInjuryType').value = inc.Injury_Type || 'NIL';
         document.getElementById('incCausesDetails').value = inc.Causes_Details || '';
 
-        let chks = inc.Checkboxes ? inc.Checkboxes.split(',') : [];
+        let chks = (inc.Checkboxes && typeof inc.Checkboxes === 'string') ? inc.Checkboxes.split(',') : [];
         document.getElementById('chkIncPersonnel').checked = chks.includes('Personnel');
         document.getElementById('chkIncEq').checked = chks.includes('Equipment');
         document.getElementById('chkIncAc').checked = chks.includes('Aircraft');
@@ -1959,10 +1961,11 @@
 
         let btn = document.getElementById('submitIncBtn');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الواقعة';
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ تعديلات الواقعة';
         btn.style.backgroundColor = "#ffc107";
         btn.style.color = "#000";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        window.scrollTo({ top: document.getElementById('incidentForm').offsetTop - 20, behavior: 'smooth' });
     }
 
     async function submitIncident(e) {
@@ -2115,13 +2118,15 @@
 
         globalIncidents.forEach((inc, idx) => {
             let d = inc.Date ? inc.Date.split('T')[0] : '';
+            let charText = inc.Characterization ? inc.Characterization.split('/')[0] : '';
             let fileIcon = (inc.Attachment_URL && inc.Attachment_URL !== "") ? `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary);"><i class="fa-solid fa-file-pdf"></i></a>` : "-";
+            
             tbody.innerHTML += `
             <tr>
                 <td dir="ltr">${d}</td>
-                <td>${inc.Flight_No || inc.Location}</td>
-                <td>${inc.Characterization.split('/')[0]}</td>
-                <td>${inc.Prepared_By}</td>
+                <td>${inc.Flight_No || inc.Location || ''}</td>
+                <td>${charText}</td>
+                <td>${inc.Prepared_By || ''}</td>
                 <td style="font-size:1.2rem;">${fileIcon}</td>
                 <td>
                     <button type="button" onclick="navIncidentTo(${idx})" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button> 
@@ -2137,7 +2142,7 @@
         document.getElementById('printable-incident-report').style.display = 'block';
         switchIncidentTab('report');
 
-        let chks = inc.Checkboxes ? inc.Checkboxes.split(',') : [];
+        let chks = (inc.Checkboxes && typeof inc.Checkboxes === 'string') ? inc.Checkboxes.split(',') : [];
         document.getElementById('pChkOG').className = chks.includes('OnGround') ? "checkbox-print checked" : "checkbox-print";
         document.getElementById('pChkIF').className = chks.includes('InFlight') ? "checkbox-print checked" : "checkbox-print";
         document.getElementById('pChkAc').className = chks.includes('Aircraft') ? "checkbox-print checked" : "checkbox-print";
@@ -2153,7 +2158,7 @@
         document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
         document.getElementById('pIncDriver').innerText = inc.Driver_Name || "NIL";
         document.getElementById('pIncPosition').innerText = inc.Position || "NIL";
-        document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; // Equipment_No is used as Aircraft Type in our mapping
+        document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; 
 
         let route = ((inc.ORG_VIA || "NIL") + " - " + (inc.VIA_DST || "NIL")).toUpperCase();
         document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG || 'NIL'}<br>Route: ${route}`;
@@ -2232,11 +2237,17 @@
         td.setHours(23, 59, 59, 999);
 
         let filteredInc = globalIncidents.filter(r => {
+            if (!r.Date) return false;
             let sd = new Date(r.Date);
             let inDate = (sd >= fd && sd <= td);
-            if (currentIncidentFilter === 'All') return inDate;
-            if (currentIncidentFilter === 'Technical') return inDate && r.Occurrence_Causes.includes('Technical');
-            return inDate && r.Characterization.includes(currentIncidentFilter);
+            
+            if (!inDate) return false;
+            
+            if (currentIncidentFilter === 'All') return true;
+            if (currentIncidentFilter === 'Technical') {
+                return r.Occurrence_Causes && r.Occurrence_Causes.includes('Technical');
+            }
+            return r.Characterization && r.Characterization.includes(currentIncidentFilter);
         });
 
         const tbody = document.getElementById('inc-monthly-table');
@@ -2249,7 +2260,7 @@
 
         let grouped = {};
         filteredInc.forEach(inc => {
-            let c = inc.Characterization.split('/')[0].trim();
+            let c = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Unknown';
             if (!grouped[c]) grouped[c] = [];
             grouped[c].push(inc);
         });
@@ -2261,7 +2272,10 @@
 
             items.forEach((inc) => {
                 let d = inc.Date ? inc.Date.split('T')[0] : '';
-                let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${inc.Description}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${inc.Action_Taken}</span>`;
+                let descSafe = inc.Description || '';
+                let actSafe = inc.Action_Taken || '';
+                
+                let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${descSafe}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${actSafe}</span>`;
                 let airlineHtml = `Airline:<br>${inc.CAR || inc.Equipment_Owned || '-'}<br>Agent:<br>-`;
 
                 let row = `<tr>`;
@@ -2299,9 +2313,9 @@
         }).from(el).save();
     }
 
-    // ----------------------------------------------------
-    // دوال 04: مؤشرات الأداء (SPI)
-    // ----------------------------------------------------
+    // ==========================================
+    // 04: SPI Functions
+    // ==========================================
     function switchSpiTab(tab) {
         document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -2416,9 +2430,9 @@
         container.innerHTML = tableHtml;
     }
 
-    // ----------------------------------------------------
-    // إدارة الحسابات
-    // ----------------------------------------------------
+    // ==========================================
+    // User Functions
+    // ==========================================
     async function addUser(e) {
         e.preventDefault();
         const msg = document.getElementById('userMsg');
@@ -2458,6 +2472,6 @@
             tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
         });
     }
-  </script>
+</script>
 </body>
 </html>
