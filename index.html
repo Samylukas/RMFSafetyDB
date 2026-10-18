@@ -1971,8 +1971,11 @@
     async function submitIncident(e) {
         e.preventDefault();
         const btn = document.getElementById('submitIncBtn');
+        const originalBtnText = isIncidentEditMode ? '<i class="fa-solid fa-pen-to-square"></i> حفظ تعديلات الواقعة' : '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
+        
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والتسجيل...';
         btn.disabled = true;
+        document.getElementById('incMsg').innerText = "";
 
         let chks = [];
         if (document.getElementById('chkIncPersonnel').checked) chks.push('Personnel');
@@ -2075,6 +2078,19 @@
             document.getElementById('incMsg').style.color = "green";
             document.getElementById('incMsg').innerText = "✅ تم حفظ الواقعة بنجاح!";
             
+            setTimeout(() => {
+                clearIncidentForm();
+                renderSavedIncidents();
+                document.getElementById('incMsg').innerText = "";
+            }, 2000);
+        } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
+            document.getElementById('incMsg').style.color = "red";
+            document.getElementById('incMsg').innerText = "❌ حدث خطأ: تأكد من إعطاء الصلاحيات لـ Google Drive، أو أن حجم الملف أقل من 3MB.";
+        }
+    }
             setTimeout(() => {
                 clearIncidentForm();
                 renderSavedIncidents();
