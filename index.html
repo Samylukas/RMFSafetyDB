@@ -2091,18 +2091,6 @@
             document.getElementById('incMsg').innerText = "❌ حدث خطأ: تأكد من إعطاء الصلاحيات لـ Google Drive، أو أن حجم الملف أقل من 3MB.";
         }
     }
-            setTimeout(() => {
-                clearIncidentForm();
-                renderSavedIncidents();
-                document.getElementById('incMsg').innerText = "";
-            }, 2000);
-        } catch (err) {
-            btn.disabled = false;
-            document.getElementById('incMsg').style.color = "red";
-            document.getElementById('incMsg').innerText = "❌ خطأ في الإرسال.";
-        }
-    }
-
     async function deleteIncidentRecord(idx) {
         if (!confirm("هل أنت متأكد من رغبتك في حذف هذه الواقعة تماماً؟")) return;
         
