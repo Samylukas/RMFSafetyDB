@@ -107,10 +107,8 @@
     .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
     .iso-row:last-child { border-bottom: none; }
     .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
-    .iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold;}
-    
-    .iso-full-box { border: 2px solid #000; margin-bottom: 8px; }
-    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
+.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }    
+.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
     .iso-box-content { padding: 10px; font-size: 10px; text-align: left; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; }
     
     .iso-checklist-row { display: flex; align-items: center; padding: 4px 10px; font-weight: bold; font-size: 10px; justify-content: flex-end; direction: ltr;}
@@ -640,8 +638,8 @@
                         </div>
                         <div class="iso-grid-box" style="flex-direction: column;">
                             <div style="display:flex; width:100%; border-bottom:1px solid #000;">
-                                <div class="iso-label" style="width:30%;">رقم الرحلة<br>Flight Number</div>
-                                <div class="iso-val" style="width:70%; justify-content:flex-start; text-align:left;" id="pIncFlightDetails" dir="ltr"></div>
+                                <div style="display:flex; width:100%; border-bottom:1px solid #000;"><div class="iso-label" style="width:30%;">رقم الرحلة<br>Flight Number</div><div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncFlightDetails" dir="ltr"></div></div>
+<div style="display:flex; width:100%;"><div class="iso-label" style="width:30%;">الشركة / الوكيل<br>Airline / Agent</div><div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncAirlineDetails" dir="ltr"></div></div>
                             </div>
                             <div style="display:flex; width:100%;">
                                 <div class="iso-label" style="width:30%;">الشركة / الوكيل<br>Airline / Agent</div>
@@ -2081,12 +2079,22 @@
         document.getElementById('incRec').value = inc.Recommendation || '';
 
         if (inc.Attachment_URL && inc.Attachment_URL.includes("http")) {
-            document.getElementById('incAttachedLink').style.display = "block";
-            document.getElementById('incViewLink').href = inc.Attachment_URL;
+            // محاولة استخراج كود الملف من رابط جوجل درايف لعمل رابط صورة مباشر
+            let fileIdMatch = inc.Attachment_URL.match(/\/d\/(.+?)\//);
+            if (fileIdMatch && fileIdMatch[1]) {
+                let fileId = fileIdMatch[1];
+                let directImgUrl = "https://drive.google.com/uc?id=" + fileId;
+                
+                document.getElementById('pIncAttach').innerHTML = `
+                    <a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none; display:block; margin-bottom:10px;">🔗 Click here to view original attachment</a>
+                    <img src="${directImgUrl}" style="max-width:100%; max-height:300px; object-fit:contain; border:1px solid #ccc; padding:5px; margin:auto; display:block;" onerror="this.style.display='none';">
+                `;
+            } else {
+                document.getElementById('pIncAttach').innerHTML = `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none;">🔗 Attached Documentations - Available via Link</a>`;
+            }
         } else {
-            document.getElementById('incAttachedLink').style.display = "none";
+            document.getElementById('pIncAttach').innerText = "NIL";
         }
-
         updateIncidentNavCounter();
 
         isIncidentEditMode = true;
