@@ -2041,7 +2041,6 @@
         if (!inc) return;
 
         switchIncidentTab('entry');
-        
         document.getElementById('incidentForm').reset();
 
         document.getElementById('incDate').value = inc.Date ? inc.Date.split('T')[0] : '';
@@ -2067,8 +2066,8 @@
         document.getElementById('incCar').value = inc.CAR || '';
         document.getElementById('incFlightNo').value = inc.Flight_No || '';
         document.getElementById('incReg').value = inc.REG || '';
-        document.getElementById('incOrgVia').value = inc.ORG_VIA || '';
-        document.getElementById('incViaDst').value = inc.VIA_DST || '';
+        // دمج خط السير
+        document.getElementById('incOrgVia').value = (inc.ORG_VIA || '') + (inc.VIA_DST ? ' - ' + inc.VIA_DST : '');
 
         document.getElementById('incCauses').value = inc.Occurrence_Causes || '';
         document.getElementById('incChar').value = inc.Characterization || '';
@@ -2095,88 +2094,82 @@
 
         let btn = document.getElementById('submitIncBtn');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ تعديلات الواقعة';
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الواقعة';
         btn.style.backgroundColor = "#ffc107";
         btn.style.color = "#000";
-        
         window.scrollTo({ top: document.getElementById('incidentForm').offsetTop - 20, behavior: 'smooth' });
     }
 
     async function submitIncident(e) {
         e.preventDefault();
         const btn = document.getElementById('submitIncBtn');
-        const originalBtnText = isIncidentEditMode ? '<i class="fa-solid fa-pen-to-square"></i> حفظ تعديلات الواقعة' : '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
+        const originalBtnText = isIncidentEditMode ? '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الواقعة' : '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
         
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والتسجيل...';
-        btn.disabled = true;
-        document.getElementById('incMsg').innerText = "";
-
-        let chks = [];
-        if (document.getElementById('chkIncPersonnel').checked) chks.push('Personnel');
-        if (document.getElementById('chkIncEq').checked) chks.push('Equipment');
-        if (document.getElementById('chkIncAc').checked) chks.push('Aircraft');
-        if (document.getElementById('chkIncInFlight').checked) chks.push('InFlight');
-        if (document.getElementById('chkIncOnGround').checked) chks.push('OnGround');
-
-        let incId = isIncidentEditMode ? currentIncidentEditId : "INC-" + Date.now();
-
-        let payload = {
-            id: incId,
-            date: document.getElementById('incDate').value,
-            time: document.getElementById('incTime').value,
-            location: document.getElementById('incLocation').value,
-            personnel: document.getElementById('incPersonnel').value,
-            equipmentNo: document.getElementById('incEqNo').value,
-            driver: document.getElementById('incDriver').value,
-            eqOwner: document.getElementById('incEqOwner').value,
-            status: document.getElementById('incStatus').value,
-            causes: document.getElementById('incCauses').value,
-            charaterization: document.getElementById('incChar').value,
-            riskSeverity: document.getElementById('incRiskSev').value,
-            riskProb: document.getElementById('incRiskProb').value,
-            checkboxes: chks.join(','),
-            car: document.getElementById('incCar').value,
-            flightNo: document.getElementById('incFlightNo').value,
-            reg: document.getElementById('incReg').value,
-            orgVia: document.getElementById('incOrgVia').value,
-            viaDst: document.getElementById('incViaDst').value,
-            preparedBy: document.getElementById('incPreparedBy').value,
-            hazardDesc: document.getElementById('incHazardDesc').value,
-            description: document.getElementById('incDesc').value,
-            actionTaken: document.getElementById('incAction').value,
-            recommendation: document.getElementById('incRec').value,
-            Attachment_URL: isIncidentEditMode ? globalIncidents[currentIncidentIndex].Attachment_URL : "",
-            position: document.getElementById('incPosition').value,
-            injuryType: document.getElementById('incInjuryType').value,
-            causesDetails: document.getElementById('incCausesDetails').value
-        };
-
-        let postData = {
-            action: isIncidentEditMode ? "updateIncident" : "submitIncident",
-            incidentData: payload
-        };
-
-        if (incFileBase64) {
-            postData.fileData = incFileBase64;
-            postData.fileName = incFileName;
-            postData.fileMimeType = incFileType;
-        }
-
         try {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والتسجيل...';
+            btn.disabled = true;
+            document.getElementById('incMsg').innerText = "";
+
+            let chks = [];
+            if (document.getElementById('chkIncPersonnel').checked) chks.push('Personnel');
+            if (document.getElementById('chkIncEq').checked) chks.push('Equipment');
+            if (document.getElementById('chkIncAc').checked) chks.push('Aircraft');
+            if (document.getElementById('chkIncInFlight').checked) chks.push('InFlight');
+            if (document.getElementById('chkIncOnGround').checked) chks.push('OnGround');
+
+            let incId = isIncidentEditMode ? currentIncidentEditId : "INC-" + Date.now();
+
+            // قراءة البيانات بشكل آمن
+            let payload = {
+                id: incId,
+                date: document.getElementById('incDate').value,
+                time: document.getElementById('incTime').value,
+                location: document.getElementById('incLocation').value,
+                personnel: document.getElementById('incPersonnel').value,
+                equipmentNo: document.getElementById('incEqNo').value,
+                driver: document.getElementById('incDriver').value,
+                eqOwner: document.getElementById('incEqOwner').value,
+                status: document.getElementById('incStatus').value,
+                causes: document.getElementById('incCauses').value,
+                charaterization: document.getElementById('incChar').value,
+                riskSeverity: document.getElementById('incRiskSev').value,
+                riskProb: document.getElementById('incRiskProb').value,
+                checkboxes: chks.join(','),
+                car: document.getElementById('incCar').value,
+                flightNo: document.getElementById('incFlightNo').value,
+                reg: document.getElementById('incReg').value,
+                orgVia: document.getElementById('incOrgVia').value,
+                viaDst: "", // تم إلغاء هذه الخانة في الواجهة
+                preparedBy: document.getElementById('incPreparedBy').value,
+                hazardDesc: document.getElementById('incHazardDesc').value,
+                description: document.getElementById('incDesc').value,
+                actionTaken: document.getElementById('incAction').value,
+                recommendation: document.getElementById('incRec').value,
+                Attachment_URL: isIncidentEditMode ? globalIncidents[currentIncidentIndex].Attachment_URL : "",
+                position: document.getElementById('incPosition').value,
+                injuryType: document.getElementById('incInjuryType').value,
+                causesDetails: document.getElementById('incCausesDetails').value
+            };
+
+            let postData = {
+                action: isIncidentEditMode ? "updateIncident" : "submitIncident",
+                incidentData: payload
+            };
+
+            if (incFileBase64) {
+                postData.fileData = incFileBase64;
+                postData.fileName = incFileName;
+                postData.fileMimeType = incFileType;
+            }
+
             let res = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify(postData),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
             
-            let textResult = await res.text();
-            let result;
-            try {
-                result = JSON.parse(textResult);
-            } catch (parseErr) {
-                throw new Error("سيرفر جوجل رفض العملية (قد يكون الشيت غير موجود أو الصلاحيات ناقصة).");
-            }
-
+            let result = await res.json();
+            
             if (result.status === "error") {
                 throw new Error(result.message);
             }
@@ -2201,17 +2194,15 @@
                 renderSavedIncidents();
                 document.getElementById('incMsg').innerText = "";
             }, 2000);
-            
+
         } catch (err) {
             console.error(err);
-            alert("حدث خطأ أثناء الحفظ:\n\n" + err.message + "\n\nبرجاء التأكد من الضغط على Run لدالة setup في سيرفر جوجل لإنشاء شيت Incidents.");
             btn.disabled = false;
             btn.innerHTML = originalBtnText;
             document.getElementById('incMsg').style.color = "red";
-            document.getElementById('incMsg').innerText = "❌ حدث خطأ، راجع الرسالة المنبثقة.";
+            document.getElementById('incMsg').innerText = "❌ حدث خطأ. تأكد من جودة الاتصال وتصاريح جوجل.";
         }
     }
-
     async function deleteIncidentRecord(idx) {
         if (!confirm("هل أنت متأكد من رغبتك في حذف هذه الواقعة تماماً؟")) return;
         
