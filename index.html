@@ -156,6 +156,7 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
+  <!-- لوحة القيادة -->
   <div id="main-dashboard" class="content-area" style="display:none;">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
@@ -167,6 +168,7 @@
     </div>
   </div>
 
+  <!-- إدارة الحسابات -->
   <div id="account-management-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text">إدارة الحسابات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">User Accounts</span></h1>
@@ -191,6 +193,7 @@
     </div>
   </div>
 
+  <!-- لوحة سلامة المطارات -->
   <div id="airport-safety-dashboard" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
@@ -458,6 +461,7 @@
               <div class="form-group"><label>الوقت (Time)</label><input type="time" id="incTime" required></div>
               <div class="form-group"><label>المكان (Location)</label><input type="text" id="incLocation" required placeholder="مثال: Stand No 19"></div>
               
+              <!-- خانات جديدة للآيزو -->
               <div class="form-group"><label>الوظيفة (Position)</label><input type="text" id="incPosition" value="NIL"></div>
               <div class="form-group"><label>نوع الإصابات (Type of Injury)</label><input type="text" id="incInjuryType" value="NIL"></div>
               
@@ -508,8 +512,11 @@
             <textarea id="incDesc" class="inc-textarea" style="height:120px;" placeholder="Describe the incident..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">المخاطر (Hazards)</label>
             <textarea id="incHazardDesc" class="inc-textarea" style="background:#fff5f5; border-color:#dc3545;" placeholder="Primary Hazard..."></textarea><br><br>
+            
+            <!-- خانة أوجه القصور الجديدة -->
             <label style="font-weight:bold; font-size:0.85rem;">أوجه القصور (Causes / Contributing Factors)</label>
             <textarea id="incCausesDetails" class="inc-textarea" style="height:80px; background:#fdfdfd; border-color:#003366;" placeholder="Root causes or contributing factors..."></textarea><br><br>
+
             <label style="font-weight:bold; font-size:0.85rem;">الإجراء المتخذ (Action Taken)</label>
             <textarea id="incAction" class="inc-textarea" style="height:100px; background:#f4fcf6; border-color:#28a745;" placeholder="Actions taken to manage the incident..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">التوصيات (Recommendation)</label>
@@ -581,8 +588,9 @@
                     <label><span id="pChkPe" class="checkbox-print"></span> Personnel</label>
                 </div>
 
-                <!-- جدول البيانات الأساسية -->
+                <!-- جدول البيانات الأساسية (مقسم لعمودين حسب الصورة) -->
                 <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <!-- العمود الأيمن في الصورة (المكان، الإصابات، الشركة) -->
                     <div style="flex:1;">
                         <div class="iso-grid-box">
                             <div class="iso-label">المكان<br>Location</div>
@@ -606,6 +614,7 @@
                         </div>
                     </div>
                     
+                    <!-- العمود الأيسر في الصورة (التاريخ، الوقت، المتسبب، الرحلة) -->
                     <div style="flex:1;">
                         <div style="display:flex; gap:5px;">
                             <div class="iso-grid-box" style="flex:1;">
@@ -642,17 +651,21 @@
                     </div>
                 </div>
 
+                <!-- المسببات والتوصيف (Checkboxes) -->
                 <div style="display:flex; gap:5px; margin-bottom:8px;">
+                    <!-- المسببات -->
                     <div style="flex:1;" class="iso-full-box">
                         <div class="iso-box-title">مسببات الحادث / Occurrence Causes</div>
                         <div style="padding:5px;" id="pIncCauseList"></div>
                     </div>
+                    <!-- التوصيف -->
                     <div style="flex:1;" class="iso-full-box">
                         <div class="iso-box-title">توصيف الحادث / Occurrence Characterization</div>
                         <div style="padding:5px;" id="pIncCharList"></div>
                     </div>
                 </div>
 
+                <!-- النصوص المتتالية (موسّطة العناوين ومضبوطة المسافات) -->
                 <div class="iso-full-box avoid-page-break">
                     <div class="iso-box-title">الوصف / Description</div>
                     <div class="iso-box-content" id="pIncDesc"></div>
@@ -687,7 +700,7 @@
                     <div>Prepared By: <span id="pIncPreparedBy" style="color:#003366;"></span></div>
                     <div style="color:#777;">AS-F-01-05</div>
                 </div>
-            </div>
+            </div> <!-- نهاية الإطار الخارجي -->
         </div>
       </div>
 
@@ -715,6 +728,7 @@
                 <h2 style="color:#003366; font-size:1.3rem; margin:0;">سجل الحوادث والوقائع المجمعة <br><span style="font-size:0.9rem; color:#777;" id="inc-monthly-period"></span></h2>
             </div>
             <table class="report-table rtl-table" style="width:100%; font-size:11px; border:2px solid #000;" id="inc-monthly-table">
+                <!-- يُملأ بالسكريبت -->
             </table>
         </div>
       </div>
@@ -763,6 +777,7 @@
     </div>
   </div>
 
+  <!-- المودال (لإضافة طائرة) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -778,7 +793,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyOzWa4aaJ6AxgOEGXbxlsusWUnFowJEu8SH4bwkSHJDNK_NtdI551acj1PK-7nAtYT/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbx4EiQHs1gxAY9jcGRoLMB4_wCMsqeSq-LWEXXn9UaCYMfaLOSQL3VnPlWci4x5P_H5/exec";
 
     const criteriaList = [
         "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
@@ -1941,15 +1956,15 @@
             margin: 0.1,
             filename: 'Air_Side_Daily_Inspection.pdf',
             image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 4, useCORS: true, letterRendering: true },
+            html2canvas: { scale: 4, useCORS: true },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
             pagebreak: { mode: 'css', avoid: ['.avoid-page-break', 'tr'] }
         }).from(el).save();
     }
 
-    // ==========================================
-    // 03: Incidents & Accidents
-    // ==========================================
+    // ----------------------------------------------------
+    // دوال 03: الحوادث والوقائع (Incidents)
+    // ----------------------------------------------------
     function switchIncidentTab(tab) {
         document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -2038,7 +2053,6 @@
         document.getElementById('incEqOwner').value = inc.Equipment_Owned || 'NIL';
         document.getElementById('incStatus').value = inc.Status || 'In service';
         
-        // الخانات الجديدة
         document.getElementById('incPosition').value = inc.Position || 'NIL';
         document.getElementById('incInjuryType').value = inc.Injury_Type || 'NIL';
         document.getElementById('incCausesDetails').value = inc.Causes_Details || '';
@@ -2154,39 +2168,23 @@
                 body: JSON.stringify(postData),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             });
-            let result = await res.json();
+            
+            let textResult = await res.text();
+            let result;
+            try {
+                result = JSON.parse(textResult);
+            } catch (parseErr) {
+                throw new Error("سيرفر جوجل رفض العملية (قد يكون الشيت غير موجود أو الصلاحيات ناقصة).");
+            }
+
+            if (result.status === "error") {
+                throw new Error(result.message);
+            }
             
             if (result.fileUrl) payload.Attachment_URL = result.fileUrl;
 
             let updatedObj = {
-                ID: payload.id,
-                Date: payload.date,
-                Time: payload.time,
-                Location: payload.location,
-                Personnel_Involved: payload.personnel,
-                Equipment_No: payload.equipmentNo,
-                Driver_Name: payload.driver,
-                Equipment_Owned: payload.eqOwner,
-                Status: payload.status,
-                Occurrence_Causes: payload.causes,
-                Characterization: payload.charaterization,
-                Risk_Severity: payload.riskSeverity,
-                Risk_Probability: payload.riskProb,
-                Checkboxes: payload.checkboxes,
-                CAR: payload.car,
-                Flight_No: payload.flightNo,
-                REG: payload.reg,
-                ORG_VIA: payload.orgVia,
-                VIA_DST: payload.viaDst,
-                Prepared_By: payload.preparedBy,
-                Hazard_Description: payload.hazardDesc,
-                Description: payload.description,
-                Action_Taken: payload.actionTaken,
-                Recommendation: payload.recommendation,
-                Attachment_URL: payload.Attachment_URL,
-                Position: payload.position,
-                Injury_Type: payload.injuryType,
-                Causes_Details: payload.causesDetails
+                ID: payload.id, Date: payload.date, Time: payload.time, Location: payload.location, Personnel_Involved: payload.personnel, Equipment_No: payload.equipmentNo, Driver_Name: payload.driver, Equipment_Owned: payload.eqOwner, Status: payload.status, Occurrence_Causes: payload.causes, Characterization: payload.charaterization, Risk_Severity: payload.riskSeverity, Risk_Probability: payload.riskProb, Checkboxes: payload.checkboxes, CAR: payload.car, Flight_No: payload.flightNo, REG: payload.reg, ORG_VIA: payload.orgVia, VIA_DST: payload.viaDst, Prepared_By: payload.preparedBy, Hazard_Description: payload.hazardDesc, Description: payload.description, Action_Taken: payload.actionTaken, Recommendation: payload.recommendation, Attachment_URL: payload.Attachment_URL, Position: payload.position, Injury_Type: payload.injuryType, Causes_Details: payload.causesDetails
             };
 
             if (isIncidentEditMode) {
@@ -2203,12 +2201,14 @@
                 renderSavedIncidents();
                 document.getElementById('incMsg').innerText = "";
             }, 2000);
+            
         } catch (err) {
             console.error(err);
+            alert("حدث خطأ أثناء الحفظ:\n\n" + err.message + "\n\nبرجاء التأكد من الضغط على Run لدالة setup في سيرفر جوجل لإنشاء شيت Incidents.");
             btn.disabled = false;
             btn.innerHTML = originalBtnText;
             document.getElementById('incMsg').style.color = "red";
-            document.getElementById('incMsg').innerText = "❌ حدث خطأ: تأكد من إعطاء الصلاحيات لـ Google Drive، أو أن حجم الملف أقل من 3MB.";
+            document.getElementById('incMsg').innerText = "❌ حدث خطأ، راجع الرسالة المنبثقة.";
         }
     }
 
@@ -2597,14 +2597,6 @@
             tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
         });
     }
-function renderUsersTable() {
-        const tbody = document.getElementById('users-tbody');
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        globalUsers.forEach((u, i) => {
-            tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
-        });
-    }
-  </script>
+</script>
 </body>
 </html>
