@@ -28,7 +28,6 @@
     .custom-dropdown-empty { padding: 10px; text-align: center; color: #dc3545; font-size: 0.8rem; font-weight: bold; background: #fdfdfd; }
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-
     .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
     .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
     .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
@@ -59,14 +58,12 @@
     .spi-matrix-table td:first-child { text-align: left; direction: ltr; font-weight: 600; width: 300px; background: #fdfdfd;}
 
     .avoid-page-break { page-break-inside: avoid; }
-    
-    /* تنسيقات الوقائع لتفادي التداخل في الـ PDF */
-    .pdf-content-text { padding: 10px; font-size: 11px; text-align: left; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; }
-    .pdf-header-center { background: #f2f2f2; text-align: center; font-weight: bold; padding: 5px; border-bottom: 1px solid #000; font-size: 12px; }
+    .corrective-table tr { page-break-inside: avoid; }
 
+    /* تنسيقات نموذج الوقائع */
     .inc-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
     .inc-section-title { font-size: 1rem; color: #003366; font-weight: bold; border-bottom: 2px solid #003366; padding-bottom: 5px; margin-bottom: 15px; margin-top: 0;}
-    .inc-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: 'Cairo'; resize: vertical; box-sizing: border-box; direction: ltr; text-align: left;}
+    .inc-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: 'Cairo'; resize: vertical; box-sizing: border-box; }
     .inc-checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;}
     .inc-checkbox-group label { display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 0.85rem; cursor: pointer;}
     .inc-file-upload { border: 2px dashed #ccc; padding: 20px; text-align: center; background: #fff; border-radius: 8px; cursor: pointer; transition: 0.3s; }
@@ -74,6 +71,22 @@
 
     .cat-btn { padding: 8px 15px; border: 1px solid #003366; background: #fff; color: #003366; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
     .cat-btn:hover, .cat-btn.active { background: #003366; color: #fff; }
+
+    /* تنسيقات نموذج الـ ISO الجديد للطباعة */
+    .iso-grid-box { display: flex; border: 2px solid #000; margin-bottom: 8px; font-size: 10px; }
+    .iso-grid-col { flex: 1; display: flex; flex-direction: column; }
+    .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
+    .iso-row:last-child { border-bottom: none; }
+    .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
+    .iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold;}
+    
+    .iso-full-box { border: 2px solid #000; margin-bottom: 8px; }
+    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
+    .iso-box-content { padding: 10px; font-size: 10px; text-align: left; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; }
+    
+    .iso-checklist-row { display: flex; align-items: center; padding: 4px 10px; font-weight: bold; font-size: 10px; justify-content: flex-end; direction: ltr;}
+    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; margin-left: 8px; }
+    .iso-check-box.empty { background: #fff; }
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
@@ -281,7 +294,7 @@
   </div>
 
 
-  <!-- ==================== وحدة 02: الفحص اليومي للساحة ==================== -->
+  <!-- ==================== وحدة 02: الفحص اليومي ==================== -->
   <div id="daily-inspection-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection</span></h1>
@@ -314,7 +327,6 @@
             </div>
             <div class="form-group"><label>المفتش (Inspector)</label><input type="text" id="dailyInspector" required placeholder="اسم مفتش السلامة..."></div>
           </div>
-          
           <div style="background: #fff8f8; border: 1px solid #ffcccc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
               <p style="margin: 0; color: #dc3545; font-weight: bold; font-size: 0.95rem;"><i class="fa-solid fa-circle-info"></i> تعليمات: قم بوضع علامة (✔) فقط أمام البنود المخالفة، لتظهر لك حقول (الملاحظة، الإجراء، والمكان).</p>
           </div>
@@ -339,10 +351,8 @@
           <div class="form-group"><label>من (From):</label><input type="date" id="dailyFromDate"></div>
           <button onclick="generateDailyPrintReport()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-print"></i> تجهيز وعرض التقرير</button>
         </div>
-        <p style="text-align:center; font-weight:bold; color:#0056b3; font-size:0.85rem; margin-top:-10px;">ملحوظة: اختيار (نفس اليوم) يُصدر تقرير فحص يومي شامل. اختيار (فترة) يُصدر تقرير إحصائي للمخالفات فقط.</p>
         
         <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl; width: 100%;">
-            
             <div class="iso-report-container avoid-page-break" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
@@ -363,9 +373,7 @@
                     <div class="iso-title"><h2 id="corrective-title" style="color: #dc3545; font-size: 1.1rem; border-bottom: 2px solid #dc3545; padding-bottom: 5px; display: inline-block;">أولاً: تقرير بالأخطار التي تم رصدها:</h2></div>
                 </div>
                 <table class="iso-table corrective-table" style="margin-bottom: 20px; font-size: 10px;">
-                    <thead>
-                        <tr><th style="width: 4%;">م</th><th style="width: 8%;">تاريخ الرصد</th><th style="width: 6%;">وقت الرصد</th><th style="width: 12%;">مكان الرصد</th><th style="width: 25%;">المخالفة / الخطر</th><th style="width: 12%;">الجهة المسئولة</th><th style="width: 25%;">الإجراء الوقائي التصحيحي المطلوب / المتخذ</th><th style="width: 8%;">الحالة</th></tr>
-                    </thead>
+                    <thead><tr><th style="width: 4%;">م</th><th style="width: 8%;">تاريخ الرصد</th><th style="width: 6%;">وقت الرصد</th><th style="width: 12%;">مكان الرصد</th><th style="width: 25%;">المخالفة / الخطر</th><th style="width: 12%;">الجهة المسئولة</th><th style="width: 25%;">الإجراء الوقائي التصحيحي المطلوب / المتخذ</th><th style="width: 8%;">الحالة</th></tr></thead>
                     <tbody id="corrective-tbody"></tbody>
                 </table>
             </div>
@@ -387,7 +395,7 @@
     </div>
   </div>
 
-  <!-- ==================== وحدة 03: سجل الحوادث والوقائع (الجديدة) ==================== -->
+  <!-- ==================== وحدة 03: سجل الحوادث والوقائع ==================== -->
   <div id="incident-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #dc3545; text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">سجل الحوادث والوقائع <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Accident / Incident Safety Report</span></h1>
@@ -408,48 +416,49 @@
         <button class="tab-btn" onclick="switchIncidentTab('monthly')" id="btn-inc-monthly"><i class="fa-solid fa-table-list"></i> التقرير الشهري المجمع</button>
       </div>
 
-      <!-- نموذج الإدخال -->
       <div id="tab-inc-entry" class="tab-content active">
         <form id="incidentForm" onsubmit="submitIncident(event)">
-          
           <div class="inc-section">
             <h3 class="inc-section-title">البيانات الأساسية للواقعة (General Info)</h3>
             <div class="form-grid">
               <div class="form-group"><label>التاريخ (Date)</label><input type="date" id="incDate" required></div>
               <div class="form-group"><label>الوقت (Time)</label><input type="time" id="incTime" required></div>
               <div class="form-group"><label>المكان (Location)</label><input type="text" id="incLocation" required placeholder="مثال: Stand No 19"></div>
-              <div class="form-group"><label>الأشخاص المتورطين (Personnel)</label><input type="text" id="incPersonnel" value="NIL"></div>
-              <div class="form-group"><label>رقم المعدة (Eq. No)</label><input type="text" id="incEqNo" value="NIL"></div>
-              <div class="form-group"><label>اسم السائق (Driver)</label><input type="text" id="incDriver" value="NIL"></div>
-              <div class="form-group"><label>الجهة المالكة للمعدة</label><input type="text" id="incEqOwner" value="NIL"></div>
+              <div class="form-group"><label>الوظيفة (Position)</label><input type="text" id="incPosition" value="NIL"></div>
+              <div class="form-group"><label>نوع الإصابات (Type of Injury)</label><input type="text" id="incInjuryType" value="NIL"></div>
+              <div class="form-group"><label>عدد وأسماء المصابين (Injured)</label><input type="text" id="incPersonnel" value="NIL"></div>
+              <div class="form-group"><label>اسم المتسبب (Name)</label><input type="text" id="incDriver" value="NIL"></div>
+              <div class="form-group"><label>الشركة التابع لها (Company Name)</label><input type="text" id="incEqOwner" value="NIL"></div>
               <div class="form-group"><label>حالة المعدة (Status)</label><select id="incStatus"><option value="In service">In service</option><option value="Out of service">Out of service</option></select></div>
             </div>
-            <!-- خانات تحديد نوع الواقعة (Checkbox) -->
-            <div class="inc-checkbox-group">
-                <label><input type="checkbox" id="chkIncOnGround"> On Ground</label>
-                <label><input type="checkbox" id="chkIncInFlight"> In Flight</label>
-                <label><input type="checkbox" id="chkIncAc"> Aircraft</label>
-                <label><input type="checkbox" id="chkIncEq"> Equipment</label>
-                <label><input type="checkbox" id="chkIncPersonnel"> Personnel</label>
+            <div style="background:#fff; border:1px solid #ccc; padding:10px; border-radius:5px; margin-top:10px;">
+                <label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:10px;">تحديد عام لموقع وتأثير الحادث:</label>
+                <div class="inc-checkbox-group" dir="ltr" style="justify-content:flex-end;">
+                    <label><input type="checkbox" id="chkIncOnGround"> On Ground</label>
+                    <label><input type="checkbox" id="chkIncInFlight"> In Flight</label>
+                    <label><input type="checkbox" id="chkIncAc"> Aircraft</label>
+                    <label><input type="checkbox" id="chkIncEq"> Equipment</label>
+                    <label><input type="checkbox" id="chkIncPersonnel"> Personnel</label>
+                </div>
             </div>
           </div>
 
           <div class="inc-section">
             <h3 class="inc-section-title">بيانات الرحلة والطائرة (Flight Info)</h3>
             <div class="form-grid">
-              <div class="form-group"><label>الشركة والوكيل (CAR)</label><input type="text" id="incCar" placeholder="مثال: Smartwings - Tiger"></div>
+              <div class="form-group"><label>الشركة والوكيل (Airline Company / Agent)</label><input type="text" id="incCar" placeholder="مثال: Smartwings - Tiger"></div>
               <div class="form-group"><label>رقم الرحلة (Flight No)</label><input type="text" id="incFlightNo" placeholder="مثال: TVS 1222"></div>
+              <div class="form-group"><label>طراز الطائرة (Aircraft Type)</label><input type="text" id="incEqNo" placeholder="مثال: B737-800"></div>
               <div class="form-group"><label>تسجيل الطائرة (REG)</label><input type="text" id="incReg" placeholder="مثال: OK-SWM"></div>
-              <div class="form-group"><label>خط السير (ORG/VIA)</label><input type="text" id="incOrgVia" placeholder="مثال: PRG"></div>
-              <div class="form-group"><label>الوجهة (VIA/DST)</label><input type="text" id="incViaDst" placeholder="مثال: HEMA"></div>
+              <div class="form-group"><label>خط السير (Route - ORG/VIA/DST)</label><input type="text" id="incOrgVia" placeholder="مثال: DUS-RMF-DUS"></div>
             </div>
           </div>
 
           <div class="inc-section">
             <h3 class="inc-section-title">تصنيف الواقعة والمخاطر (Classification & Risk)</h3>
             <div class="form-grid">
-              <div class="form-group"><label>مسببات الحادث (Causes)</label><select id="incCauses"><option value="Technical Causes / أسباب فنية">أسباب فنية</option><option value="Human Causes / أسباب بشرية">أسباب بشرية</option><option value="Natural Causes / أسباب طبيعية">أسباب طبيعية</option><option value="Organizational Causes / أسباب تنظيمية">أسباب تنظيمية</option><option value="Legal Causes / أسباب قانونية">أسباب قانونية</option></select></div>
-              <div class="form-group"><label>توصيف الحادث (Characterization)</label><select id="incChar"><option value="Others / أخرى">أخرى</option><option value="Bird/Animal Strike / اصطدام طيور/حيوانات">اصطدام طيور/حيوانات</option><option value="Equipment Accident / حادث معدة">حادث معدة</option><option value="Leakage/Spill / تسريب إنسكاب">تسريب إنسكاب</option><option value="Fire Alarm / إنذار حريق">إنذار حريق</option></select></div>
+              <div class="form-group"><label>مسببات الحادث (Causes Category)</label><select id="incCauses"><option value="Technical Causes / أسباب فنية">أسباب فنية</option><option value="Human Causes / أسباب بشرية">أسباب بشرية</option><option value="Natural Causes / أسباب طبيعية">أسباب طبيعية</option><option value="Organizational Causes / أسباب تنظيمية">أسباب تنظيمية</option><option value="Legal Causes / أسباب قانونية">أسباب قانونية</option></select></div>
+              <div class="form-group"><label>توصيف الحادث (Characterization)</label><select id="incChar"><option value="Others / أخرى">أخرى</option><option value="Equipment Accident / حادث معدة">حادث معدة</option><option value="Leakage/Spill / تسريب إنسكاب">تسريب إنسكاب</option><option value="Bird/Animal Strike / اصطدام طيور/حيوانات">اصطدام طيور/حيوانات</option><option value="Fire Alarm / إنذار حريق">إنذار حريق</option></select></div>
               <div class="form-group"><label>شدة الخطر (Risk Severity)</label><select id="incRiskSev"><option value="Minor">Minor</option><option value="Major">Major</option><option value="Hazardous">Hazardous</option><option value="Catastrophic">Catastrophic</option></select></div>
               <div class="form-group"><label>احتمالية الخطر (Probability)</label><select id="incRiskProb"><option value="Frequent">Frequent</option><option value="Occasional">Occasional</option><option value="Remote">Remote</option><option value="Improbable">Improbable</option></select></div>
               <div class="form-group"><label>المُعد (Prepared By)</label><input type="text" id="incPreparedBy" required placeholder="اسم مفتش السلامة"></div>
@@ -457,20 +466,22 @@
           </div>
 
           <div class="inc-section">
-            <h3 class="inc-section-title">الوصف والإجراءات (Narrative)</h3>
-            <label style="font-weight:bold; font-size:0.85rem;">وصف الواقعة (Description)</label>
-            <textarea id="incDesc" class="inc-textarea" style="height:120px;" placeholder="اكتب تفاصيل الواقعة بوضوح..."></textarea><br><br>
-            <label style="font-weight:bold; font-size:0.85rem;">وصف الخطر (Hazard Description)</label>
-            <textarea id="incHazardDesc" class="inc-textarea" style="background:#fff5f5; border-color:#dc3545;" placeholder="Primary Hazard: ..."></textarea><br><br>
+            <h3 class="inc-section-title">الوصف والإجراءات (Narrative) - يرجى الكتابة باللغة الإنجليزية إن أمكن</h3>
+            <label style="font-weight:bold; font-size:0.85rem;">الوصف (Description)</label>
+            <textarea id="incDesc" class="inc-textarea" style="height:120px;" placeholder="Describe the incident..."></textarea><br><br>
+            <label style="font-weight:bold; font-size:0.85rem;">المخاطر (Hazards)</label>
+            <textarea id="incHazardDesc" class="inc-textarea" style="background:#fff5f5; border-color:#dc3545;" placeholder="Primary Hazard..."></textarea><br><br>
+            <label style="font-weight:bold; font-size:0.85rem;">أوجه القصور (Causes / Contributing Factors)</label>
+            <textarea id="incCausesDetails" class="inc-textarea" style="height:80px; background:#fdfdfd; border-color:#003366;" placeholder="Root causes or contributing factors..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">الإجراء المتخذ (Action Taken)</label>
-            <textarea id="incAction" class="inc-textarea" style="height:100px; background:#f4fcf6; border-color:#28a745;" placeholder="ماذا تم للتعامل مع الواقعة؟"></textarea><br><br>
+            <textarea id="incAction" class="inc-textarea" style="height:100px; background:#f4fcf6; border-color:#28a745;" placeholder="Actions taken to manage the incident..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">التوصيات (Recommendation)</label>
-            <textarea id="incRec" class="inc-textarea" style="background:#fffaf0; border-color:#ffc107;" placeholder="لتفادي تكرار الواقعة مستقبلاً..."></textarea>
+            <textarea id="incRec" class="inc-textarea" style="background:#fffaf0; border-color:#ffc107;" placeholder="Recommendations to prevent recurrence..."></textarea>
           </div>
 
           <div class="inc-section">
             <h3 class="inc-section-title"><i class="fa-solid fa-paperclip"></i> إرفاق المستندات (Attachments)</h3>
-            <p style="font-size:0.8rem; color:#777;">ارفع ملف (PDF أو صورة) بحد أقصى 3 ميجابايت. سيتم حفظه في سحابة Google Drive وربطه بالواقعة.</p>
+            <p style="font-size:0.8rem; color:#777;">ارفع ملف (PDF أو صورة) بحد أقصى 3 ميجابايت.</p>
             <div class="inc-file-upload" onclick="document.getElementById('incFile').click()">
                 <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--primary); margin-bottom:10px;"></i>
                 <div id="incFileLabel" style="font-weight:bold; color:#003366;">اضغط لاختيار ملف المرفقات</div>
@@ -494,117 +505,84 @@
         </div>
       </div>
 
-      <!-- تقرير الواقعة الفردية للطباعة -->
       <div id="tab-inc-report" class="tab-content">
         <div class="report-filters" style="background:#fff5f5; border:1px solid #ffcccc;">
           <button onclick="exportIncidentPDF()" class="pdf-export-btn" style="background:#dc3545; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> تصدير التقرير (PDF)</button>
-          <p style="text-align:center; font-weight:bold; color:#dc3545; margin:0; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي (Accident / Incident Form).</p>
+          <p style="text-align:center; font-weight:bold; color:#dc3545; margin:0; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي مطابق للآيزو (AS-F-01-05).</p>
         </div>
         
-        <div id="printable-incident-report" style="background: #fff; padding: 10px 15px; margin-top: 20px; direction: rtl; display: none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #003366; padding-bottom:10px; margin-bottom:15px;">
-                <div style="text-align:right;">
-                    <h3 style="margin:0; font-size:1rem; color:#003366;">الإدارة العامة للمطابقة والسلامة</h3>
-                    <h3 style="margin:0; font-size:1.1rem; color:#003366; font-weight:900;">Mandatory reporting system</h3>
+        <div id="printable-incident-report" style="background: #fff; padding: 0; margin-top: 20px; direction: rtl; display: none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="text-align:right; font-weight:bold;"><h3 style="margin:0; font-size:1.1rem; color:#777;">الإدارة العامة للمطابقة والسلامة</h3></div>
+                <div style="text-align:center;"><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 45px;"><h3 style="margin:0; font-size:1rem; color:#777; font-weight:900;">Mandatory reporting system</h3></div>
+                <div style="text-align:left; font-weight:bold;"><h3 style="margin:0; font-size:1.1rem; color:#777;">مطار مرسى علم الدولي</h3></div>
+            </div>
+
+            <div style="border: 3px solid #000; padding: 5px;">
+                <div style="text-align:center; font-weight:bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 5px;">
+                    <h2 style="margin:0; font-size:1.1rem;">نموذج تقرير حادثة / واقعة</h2><h3 style="margin:0; font-size:0.95rem;">Accident / Incident Safety Report Form</h3>
                 </div>
-                <div style="text-align:center;">
-                    <h2 style="margin:0; font-size:1.2rem; color:#dc3545;">نموذج تقرير حادثة / واقعة</h2>
-                    <h3 style="margin:0; font-size:1rem; color:#dc3545;">Accident / Incident Safety Report Form</h3>
+
+                <div style="display:flex; justify-content:center; gap:20px; font-weight:bold; font-size:11px; margin-bottom:10px;" dir="ltr">
+                    <label><span id="pChkOG" class="checkbox-print"></span> On Ground</label>
+                    <label><span id="pChkIF" class="checkbox-print"></span> In Flight</label>
+                    <label><span id="pChkAc" class="checkbox-print"></span> Aircraft</label>
+                    <label><span id="pChkEq" class="checkbox-print"></span> Equipment</label>
+                    <label><span id="pChkPe" class="checkbox-print"></span> Personnel</label>
                 </div>
-                <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 45px;">
-            </div>
 
-            <!-- عرض الخيارات (Checkboxes) في أعلى التقرير -->
-            <div style="display:flex; justify-content:center; gap:20px; font-weight:bold; font-size:11px; margin-bottom:15px;" dir="ltr">
-                <label><span id="pChkOG" class="checkbox-print"></span> On Ground</label>
-                <label><span id="pChkIF" class="checkbox-print"></span> In Flight</label>
-                <label><span id="pChkAc" class="checkbox-print"></span> Aircraft</label>
-                <label><span id="pChkEq" class="checkbox-print"></span> Equipment</label>
-                <label><span id="pChkPe" class="checkbox-print"></span> Personnel</label>
-            </div>
-
-            <!-- جدول البيانات الأساسية -->
-            <table style="width:100%; border-collapse:collapse; margin-bottom:15px; font-size:11px; border:2px solid #000; text-align:center;">
-                <tr>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold; width:15%;">المكان<br>Location</td>
-                    <td style="border:1px solid #000; width:15%;" id="pIncLoc" dir="ltr"></td>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold; width:15%;">عدد المصابين<br>Number of Injuries</td>
-                    <td style="border:1px solid #000; width:15%;" id="pIncInj" dir="ltr">NIL</td>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold; width:15%;">أسماء المصابين<br>Names of Injuries</td>
-                    <td style="border:1px solid #000; width:25%;" id="pIncNames" dir="ltr">NIL</td>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold;">الشركة التابع لها<br>Company Name</td>
-                    <td style="border:1px solid #000;" id="pIncOwner" dir="ltr"></td>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold;">الوقت<br>Time</td>
-                    <td style="border:1px solid #000;" id="pIncTime" dir="ltr"></td>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold;">التاريخ<br>Date</td>
-                    <td style="border:1px solid #000;" id="pIncDate" dir="ltr"></td>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold;">أسم المتسبب<br>Name</td>
-                    <td style="border:1px solid #000;" id="pIncDriver" dir="ltr"></td>
-                    <td style="border:1px solid #000; background:#f2f2f2; font-weight:bold;">طراز الطائرة<br>Aircraft Type</td>
-                    <td style="border:1px solid #000; text-align:left; direction:ltr; padding-left:10px;" colspan="3" id="pIncFlightDetails"></td>
-                </tr>
-            </table>
-
-            <!-- الترتيب الجديد للفقرات -->
-            <div class="avoid-page-break" style="border:2px solid #000; margin-bottom:10px;">
-                <div class="pdf-header-center">الوصف / Description</div>
-                <div class="pdf-content-text" id="pIncDesc"></div>
-            </div>
-            
-            <div class="avoid-page-break" style="border:2px solid #000; margin-bottom:10px;">
-                <div class="pdf-header-center">المخاطر / Hazards</div>
-                <div class="pdf-content-text" style="color:#dc3545;" id="pIncHazard"></div>
-            </div>
-
-            <!-- المسببات والتوصيف -->
-            <div class="avoid-page-break" style="display:flex; border:2px solid #000; margin-bottom:10px;">
-                <div style="flex:1; border-left:2px solid #000;">
-                    <div class="pdf-header-center">مسببات الحادث / Occurrence Causes</div>
-                    <div style="padding:10px; font-size:11px; line-height:1.8;" id="pIncCauseList"></div>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <div style="flex:1;">
+                        <div class="iso-grid-box"><div class="iso-label">المكان<br>Location</div><div class="iso-val" id="pIncLoc" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">عدد المصابين<br>Number of Injuries</div><div class="iso-val" id="pIncInj" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">نوع الإصابات<br>Type of Injury</div><div class="iso-val" id="pIncInjType" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">أسماء المصابين<br>Injured Personnel</div><div class="iso-val" id="pIncNames" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">الشركة التابع لها<br>Company Name</div><div class="iso-val" id="pIncOwner" dir="ltr"></div></div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; gap:5px;">
+                            <div class="iso-grid-box" style="flex:1;"><div class="iso-label">الوقت<br>Time</div><div class="iso-val" id="pIncTime" dir="ltr"></div></div>
+                            <div class="iso-grid-box" style="flex:1;"><div class="iso-label">التاريخ<br>Date</div><div class="iso-val" id="pIncDate" dir="ltr"></div></div>
+                        </div>
+                        <div class="iso-grid-box"><div class="iso-label">أسم المتسبب<br>Name</div><div class="iso-val" id="pIncDriver" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">الوظيفة<br>Position</div><div class="iso-val" id="pIncPosition" dir="ltr"></div></div>
+                        <div class="iso-grid-box"><div class="iso-label">طراز الطائرة<br>Aircraft Type</div><div class="iso-val" id="pIncAcType" dir="ltr"></div></div>
+                        <div class="iso-grid-box" style="flex-direction: column;">
+                            <div style="display:flex; width:100%; border-bottom:1px solid #000;"><div class="iso-label" style="width:30%;">رقم الرحلة<br>Flight Number</div><div class="iso-val" style="width:70%; justify-content:flex-start; text-align:left;" id="pIncFlightDetails" dir="ltr"></div></div>
+                            <div style="display:flex; width:100%;"><div class="iso-label" style="width:30%;">الشركة / الوكيل<br>Airline / Agent</div><div class="iso-val" style="width:70%; justify-content:flex-start; text-align:left;" id="pIncAirlineDetails" dir="ltr"></div></div>
+                        </div>
+                    </div>
                 </div>
-                <div style="flex:1;">
-                    <div class="pdf-header-center">توصيف الحادث / Occurrence Characterization</div>
-                    <div style="padding:10px; font-size:11px; line-height:1.8;" id="pIncCharList"></div>
+
+                <div style="display:flex; gap:5px; margin-bottom:8px;">
+                    <div style="flex:1;" class="iso-full-box"><div class="iso-box-title">مسببات الحادث / Occurrence Causes</div><div style="padding:5px;" id="pIncCauseList"></div></div>
+                    <div style="flex:1;" class="iso-full-box"><div class="iso-box-title">توصيف الحادث / Occurrence Characterization</div><div style="padding:5px;" id="pIncCharList"></div></div>
                 </div>
-            </div>
 
-            <div class="avoid-page-break" style="border:2px solid #000; margin-bottom:10px;">
-                <div class="pdf-header-center">الإجراء المتخذ / Action Taken</div>
-                <div class="pdf-content-text" id="pIncAction"></div>
-            </div>
-
-            <div class="avoid-page-break" style="border:2px solid #000; margin-bottom:10px;">
-                <div class="pdf-header-center">التوصيات / Recommendation</div>
-                <div class="pdf-content-text" id="pIncRec"></div>
-            </div>
-
-            <div class="avoid-page-break" style="border:2px solid #000; margin-bottom:10px;">
-                <div class="pdf-header-center">المرفقات / Attachments</div>
-                <div class="pdf-content-text" style="text-align:center; font-weight:bold; color:var(--primary);" id="pIncAttach"></div>
-            </div>
-            
-            <div class="avoid-page-break" style="display:flex; justify-content:space-between; margin-top:30px; font-weight:bold; font-size:11px;">
-                <div>المُعد (Prepared By): <span id="pIncPreparedBy" style="color:#003366;"></span></div>
-                <div>التوقيع (Signature): _____________________</div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">الوصف / Description</div><div class="iso-box-content" id="pIncDesc"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">المخاطر / Hazards</div><div class="iso-box-content" style="color:#dc3545;" id="pIncHazard"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">أوجه القصور / Causes</div><div class="iso-box-content" id="pIncCausesDetails"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">الإجراء المتخذ / Action Taken</div><div class="iso-box-content" id="pIncAction"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">التوصيات / Recommendation</div><div class="iso-box-content" id="pIncRec"></div></div>
+                <div class="iso-full-box avoid-page-break"><div class="iso-box-title">المرفقات / Attachments</div><div class="iso-box-content" style="text-align:center; font-weight:bold; color:var(--primary);" id="pIncAttach"></div></div>
+                
+                <div class="avoid-page-break" style="display:flex; justify-content:space-between; margin-top:20px; font-weight:bold; font-size:11px; padding:0 10px;">
+                    <div>Prepared By: <span id="pIncPreparedBy" style="color:#003366;"></span></div><div style="color:#777;">AS-F-01-05</div>
+                </div>
             </div>
         </div>
       </div>
 
-      <!-- التقرير الشهري المجمع للوقائع -->
       <div id="tab-inc-monthly" class="tab-content">
         <div class="report-filters">
           <div style="display:flex; gap:10px; margin-bottom:10px; justify-content:center; flex-wrap:wrap;" id="inc-filter-buttons">
               <button class="cat-btn active" onclick="setIncFilter('All')">الكل</button>
               <button class="cat-btn" onclick="setIncFilter('Equipment Accident')">حوادث المعدات</button>
-              <button class="cat-btn" onclick="setIncFilter('Leakage/Spill')">تسريب انسكاب</button>
-              <button class="cat-btn" onclick="setIncFilter('Bird/Animal Strike')">اصطدام طيور</button>
-              <button class="cat-btn" onclick="setIncFilter('Others')">أخرى</button>
+              <button class="cat-btn" onclick="setIncFilter('Leakage')">تسريب انسكاب</button>
+              <button class="cat-btn" onclick="setIncFilter('Bird')">اصطدام طيور/حيوانات</button>
+              <button class="cat-btn" onclick="setIncFilter('Technical')">أسباب فنية</button>
           </div>
-          <div style="display:flex; gap:10px; justify-content:center; align-items:center; width:100%;">
+          <div style="display:flex; gap:10px; justify-content:center; align-items:center; width:100%; flex-wrap:wrap;">
               <button onclick="exportMonthlyIncidentsPDF()" class="pdf-export-btn"><i class="fa-solid fa-file-pdf"></i> طباعة التقرير المجمع</button>
               <div class="form-group"><label>إلى (To):</label><input type="date" id="incToDate"></div>
               <div class="form-group"><label>من (From):</label><input type="date" id="incFromDate"></div>
@@ -617,9 +595,7 @@
                 <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                 <h2 style="color:#003366; font-size:1.3rem; margin:0;">سجل الحوادث والوقائع المجمعة <br><span style="font-size:0.9rem; color:#777;" id="inc-monthly-period"></span></h2>
             </div>
-            <table class="report-table rtl-table" style="width:100%; font-size:11px; border:2px solid #000;" id="inc-monthly-table">
-                <!-- يُملأ بالسكريبت -->
-            </table>
+            <table class="report-table rtl-table" style="width:100%; font-size:11px; border:2px solid #000;" id="inc-monthly-table"></table>
         </div>
       </div>
 
@@ -667,7 +643,6 @@
     </div>
   </div>
 
-  <!-- المودال (لإضافة طائرة) -->
   <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
@@ -682,18 +657,52 @@
     </div>
   </div>
 
+  <!-- JavaScript المجمع بعناية فائقة وتنسيق نظيف -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyUjcjyEx9BqL5FdB898eg5LiiJ0QJvXWkJcpC9W9eXmT_fkQusRE5MdMRBKpokKaVO/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyOzWa4aaJ6AxgOEGXbxlsusWUnFowJEu8SH4bwkSHJDNK_NtdI551acj1PK-7nAtYT/exec";
 
-    // قوائم الفحص والبيانات
-    const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
+    const criteriaList = [
+        "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
+        "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", 
+        "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", 
+        "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", 
+        "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", 
+        "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"
+    ];
+
     const dailyChecklistData = {
-        col1: { title: "المناطق المرصوفة", items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"], title2: "المناطق الغير مرصوفة", items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"], title3: "المساعدات الملاحية", items3: ["البيكون الدوار بالبرج لا يعمل", "كم الريح غير مطابق", "PAPI غير مطابق", "السارينة لاتعمل", "لمبات العوائق غير مضاءة", "أخري"] },
-        col2: { title: "التخطيط (Marking)", items: ["غير مطابق / واضح بالمدرج RWY", "محور المدرج مغطي بالمطاط", "غيرمطابق/ واضح في Holding Position", "غير مطابق / واضح في الـ TXY", "غير مطابق / واضح في الترمك"], title2: "اللافتات الإرشادية", items2: ["غير مطابقة.", "غير مضاءة", "محجوبة بواسطة النباتات.", "قاعدتها الخرسانية أعلي من مستوي الأرض", "القواعد الغير قابلة للكسر.", "أخرى"], title3: "الإنارة", items3: ["لمبات مكسورة/ تالفة علي المدرج RWY", "لمبات مكسورة/ تالفة علي الممرات TXY", "لمبات مكسورة/ تالفة على الترمك", "إنارة وحدات Floodlight غير مطابقة أو أقل من (20لاكس)", "اللمبات الغاطسة غير مضاءة", "لمبات وحدات الإقتراب غير مطابقة", "لمبات العوائق غير مضاءة", "لمبات مكسورة/ تالفة لإنارة الطرق الخدمية داخل Airside", "أخرى"] },
-        col3: { title: "عملية تموين الوقود", items: ["وقوف غير سليم علي الطائرة", "الهروب السريع غير متوفر", "النظام الإطفائي غير مكتمل", "الـDEAD MAN غير مستعمل", "سلك التأريض غير موصل", "زر الطوارئ لايعمل", "عدد المشغلين غير كاف", "المشغل لا يرتدي مهمات السلامة", "أختبار العينة لا يتم إجراؤه", "منطقة العمل غير محددة", "حساسات المصعد لاتعمل", "ملصقات عدم التدخين والـ Jet A", "البيكون لايعمل", "السلامة العامة للسيارة غير لائقة", "عدم توافر المواد الماصة للوقود.", "إستخدام تليفون محمول في حدود 15 م أثناء التموين.", "أخرى"], title2: "أخطار الحياة البرية", items2: ["مشاهدة حيوانات برية /طيور مقيمة / نافقة", "وجود مصادر جذب للحياة البرية", "أخرى"] },
-        col4: { title: "التحركات ووقوف الطائرات", items: ["سائق المعدة لا يحمل تصريح قيادة على المهبط", "رخصة المعدة غير متوفرة.", "عدم الإلتزام بالسرعات المقررة", "عدم إستخدام طريق الخدمة .", "إستخدام أكثر من 3مقطورة أثناء الخدمة", "عدم تجميع الFOD الناتج من تحميل الحقائب", "إرتفاع الحقائب يتعدى 3 صفوف", "الأقماع غير موضوعة علي حدود الطائرة", "المعدة الأرضية غير مجهزة بالبيكون.", "المعدة الأرضية غير مطابقة .", "طفايات الحريق غير سارية.", "عملية الدفع الخلفي تتم بسرعة غير مناسبة", "عدم إتباع تعليمات سلامة التحركات علي المهبط", "وجود أشخاص غير مصرح بهم.", "وجود معدات غير مصرح بها.", "عدم إرتداء مهمات الوقاية الشخصية", "أخرى"], title2: "الإنقاذ والإطفاء", items2: ["عدم صلاحية الإتصالات", "عدم الإستجابة السريعة للأفراد.", "نقص فى عدد مشغلى سيارة الإطفاء", "أخرى"] }
+        col1: { 
+            title: "المناطق المرصوفة", 
+            items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"], 
+            title2: "المناطق الغير مرصوفة", 
+            items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"], 
+            title3: "المساعدات الملاحية", 
+            items3: ["البيكون الدوار بالبرج لا يعمل", "كم الريح غير مطابق", "PAPI غير مطابق", "السارينة لاتعمل", "لمبات العوائق غير مضاءة", "أخري"] 
+        },
+        col2: { 
+            title: "التخطيط (Marking)", 
+            items: ["غير مطابق / واضح بالمدرج RWY", "محور المدرج مغطي بالمطاط", "غيرمطابق/ واضح في Holding Position", "غير مطابق / واضح في الـ TXY", "غير مطابق / واضح في الترمك"], 
+            title2: "اللافتات الإرشادية", 
+            items2: ["غير مطابقة.", "غير مضاءة", "محجوبة بواسطة النباتات.", "قاعدتها الخرسانية أعلي من مستوي الأرض", "القواعد الغير قابلة للكسر.", "أخرى"], 
+            title3: "الإنارة", 
+            items3: ["لمبات مكسورة/ تالفة علي المدرج RWY", "لمبات مكسورة/ تالفة علي الممرات TXY", "لمبات مكسورة/ تالفة على الترمك", "إنارة وحدات Floodlight غير مطابقة أو أقل من (20لاكس)", "اللمبات الغاطسة غير مضاءة", "لمبات وحدات الإقتراب غير مطابقة", "لمبات العوائق غير مضاءة", "لمبات مكسورة/ تالفة لإنارة الطرق الخدمية داخل Airside", "أخرى"] 
+        },
+        col3: { 
+            title: "عملية تموين الوقود", 
+            items: ["وقوف غير سليم علي الطائرة", "الهروب السريع غير متوفر", "النظام الإطفائي غير مكتمل", "الـDEAD MAN غير مستعمل", "سلك التأريض غير موصل", "زر الطوارئ لايعمل", "عدد المشغلين غير كاف", "المشغل لا يرتدي مهمات السلامة", "أختبار العينة لا يتم إجراؤه", "منطقة العمل غير محددة", "حساسات المصعد لاتعمل", "ملصقات عدم التدخين والـ Jet A", "البيكون لايعمل", "السلامة العامة للسيارة غير لائقة", "عدم توافر المواد الماصة للوقود.", "إستخدام تليفون محمول في حدود 15 م أثناء التموين.", "أخرى"], 
+            title2: "أخطار الحياة البرية", 
+            items2: ["مشاهدة حيوانات برية /طيور مقيمة / نافقة", "وجود مصادر جذب للحياة البرية", "أخرى"] 
+        },
+        col4: { 
+            title: "التحركات ووقوف الطائرات", 
+            items: ["سائق المعدة لا يحمل تصريح قيادة على المهبط", "رخصة المعدة غير متوفرة.", "عدم الإلتزام بالسرعات المقررة", "عدم إستخدام طريق الخدمة .", "إستخدام أكثر من 3مقطورة أثناء الخدمة", "عدم تجميع الFOD الناتج من تحميل الحقائب", "إرتفاع الحقائب يتعدى 3 صفوف", "الأقماع غير موضوعة علي حدود الطائرة", "المعدة الأرضية غير مجهزة بالبيكون.", "المعدة الأرضية غير مطابقة .", "طفايات الحريق غير سارية.", "عملية الدفع الخلفي تتم بسرعة غير مناسبة", "عدم إتباع تعليمات سلامة التحركات علي المهبط", "وجود أشخاص غير مصرح بهم.", "وجود معدات غير مصرح بها.", "عدم إرتداء مهمات الوقاية الشخصية", "أخرى"], 
+            title2: "الإنقاذ والإطفاء", 
+            items2: ["عدم صلاحية الإتصالات", "عدم الإستجابة السريعة للأفراد.", "نقص فى عدد مشغلى سيارة الإطفاء", "أخرى"] 
+        }
     };
+
     const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
+    
     const spiCategories = [
         { name: "خدمات الإنقاذ والإطفاء (RFFS & Fires)", items: ["*Post-crash fires", "Airport firefighting services’ decreased", "Reported inadequate equipment or resources"] },
         { name: "عمليات المدرج والتحركات (Runway & Ground Ops)", items: ["*Precursors to Runway Incursion (RI) (HRC)", "Failures or defects regarding signage", "Failures or defects regarding lighting", "Unauthorized or uncoordinated movement"] },
@@ -702,125 +711,1126 @@
         { name: "إجراءات الطوارئ (Emergency Procedures)", items: ["Carried out emergency procedures", "Delayed response to emergency"] }
     ];
 
-    // المتغيرات العامة
-    let globalFleetData = []; let globalSurveys = []; let globalUsers = []; let globalSpiData = []; let globalDailyInspections = []; 
-    let globalIncidents = []; 
-    let currentSurveyIndex = -1; let currentDailyIndex = -1; let currentIncidentIndex = -1;
-    let isDailyEditMode = false; let currentDailyEditId = null;
-    let isIncidentEditMode = false; let currentIncidentEditId = null;
-    let chartInstances = {}; let chartInstancesDaily = {};
-    let incFileBase64 = null; let incFileName = null; let incFileType = null;
-    let currentIncidentFilter = 'All'; // فلتر التقارير المجمعة
+    let globalFleetData = []; 
+    let globalSurveys = []; 
+    let globalUsers = []; 
+    let globalSpiData = []; 
+    let globalDailyInspections = []; 
+    let globalIncidents = [];
+    
+    let currentSurveyIndex = -1; 
+    let currentDailyIndex = -1; 
+    let currentIncidentIndex = -1;
+    
+    let isDailyEditMode = false; 
+    let currentDailyEditId = null;
+    let isIncidentEditMode = false; 
+    let currentIncidentEditId = null;
+    
+    let chartInstances = {}; 
+    let chartInstancesDaily = {};
+    
+    let incFileBase64 = null; 
+    let incFileName = null; 
+    let incFileType = null;
 
-    function updateStatusColor(sel) {
-        sel.style.backgroundColor = sel.value === 'مغلق' ? '#28a745' : '#dc3545';
-        sel.style.color = '#fff';
+    let currentIncidentFilter = 'All';
+
+    // ----------------------------------------------------
+    // الدوال الأساسية للتحميل
+    // ----------------------------------------------------
+    function finishLoading() {
+        try {
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    const loginScreen = document.getElementById('login-screen');
+                    if (loginScreen) loginScreen.style.display = 'flex';
+                }, 500);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     setTimeout(finishLoading, 2000);
 
     document.addEventListener('DOMContentLoaded', () => {
-      buildEvaluationForm(); buildDailyChecklist(); buildSpiEntryForm();
-      loadAppDataInit(); autoFillDailyDateTime(); setupCustomDropdown(); 
+        try {
+            buildEvaluationForm();
+            buildDailyChecklist();
+            buildSpiEntryForm();
+            autoFillDailyDateTime();
+            setupCustomDropdown();
+            loadAppDataInit();
+        } catch (e) {
+            console.error(e);
+        }
     });
 
-    // ------------------------------------------
-    // دوال مساعدة وأساسية
-    // ------------------------------------------
-    function setupCustomDropdown() { /* نفس الكود السابق للقائمة المنسدلة */
-        const input = document.getElementById('reg'); const arrow = document.getElementById('regArrowBtn'); const list = document.getElementById('regDropdownList');
-        arrow.addEventListener('click', function(e) { e.stopPropagation(); list.classList.toggle('show'); if (list.classList.contains('show')) { input.focus(); filterRegOptions(true); }});
-        input.addEventListener('input', function() { list.classList.add('show'); filterRegOptions(false); });
-        input.addEventListener('click', function(e) { e.stopPropagation(); list.classList.add('show'); filterRegOptions(false); });
-        document.addEventListener('click', function() { list.classList.remove('show'); });
+    function handleLogin(e) {
+        e.preventDefault();
+        const userField = document.getElementById('username').value;
+        const passField = document.getElementById('password').value;
+        let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
+        if (validUser || (globalUsers.length === 0 && passField === "1234")) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-header').style.display = 'flex';
+            openSection('main-dashboard');
+        } else {
+            alert("كلمة المرور غير صحيحة!");
+            document.getElementById('password').value = "";
+            document.getElementById('password').focus();
+        }
     }
+
+    function openSection(sectionId) {
+        document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
+        document.getElementById(sectionId).style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openGenericDoc(title) {
+        document.getElementById('generic-doc-title').innerText = title;
+        openSection('generic-doc-section');
+    }
+
+    function loadAppDataInit() {
+        const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
+        window[callbackName] = function (data) {
+            try {
+                if (data && data.status === "success") {
+                    globalFleetData = data.fleet ? data.fleet.reverse() : [];
+                    globalSurveys = data.surveys ? data.surveys.reverse() : [];
+                    globalUsers = data.users || [];
+                    globalSpiData = data.spi || [];
+                    globalIncidents = data.incidents ? data.incidents.reverse() : [];
+
+                    if (data.daily && data.daily.length > 0) {
+                        let reportsMap = {};
+                        data.daily.forEach(row => {
+                            let repId = row.Report_ID;
+                            let timeStr = row.Time;
+                            if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) {
+                                let d = new Date(timeStr);
+                                if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                            }
+                            if (!reportsMap[repId]) {
+                                reportsMap[repId] = {
+                                    id: repId,
+                                    date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '',
+                                    time: timeStr,
+                                    shift: row.Shift,
+                                    inspector: row.Inspector,
+                                    findings: []
+                                };
+                            }
+                            if (row.Category && row.Category !== "لا توجد ملاحظات") {
+                                reportsMap[repId].findings.push({
+                                    category: row.Category,
+                                    item: row.Finding_Item,
+                                    location: row.Location,
+                                    responsible: row.Responsible,
+                                    note: row.Corrective_Action || "",
+                                    status: row.Status || "مفتوح"
+                                });
+                            }
+                        });
+                        globalDailyInspections = Object.values(reportsMap).sort((a, b) => b.id - a.id);
+                    }
+
+                    const userSelect = document.getElementById('username');
+                    if (userSelect) {
+                        userSelect.innerHTML = "";
+                        globalUsers.forEach(u => {
+                            userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`;
+                        });
+                        if (globalUsers.length === 0) {
+                            userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>';
+                        }
+                    }
+
+                    const navCounter = document.getElementById('nav-counter');
+                    if (navCounter) navCounter.innerText = `0 / ${globalSurveys.length}`;
+
+                    if (typeof renderUsersTable === "function") renderUsersTable();
+
+                    renderSavedDaily();
+                    updateDailyNavCounter();
+                    renderSavedIncidents();
+                    updateIncidentNavCounter();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            delete window[callbackName];
+        };
+
+        const script = document.createElement('script');
+        script.src = API_URL + "?action=getAppData&callback=" + callbackName;
+        document.body.appendChild(script);
+    }
+
+    // ----------------------------------------------------
+    // دوال الاستبيان والقائمة المنسدلة (Survey)
+    // ----------------------------------------------------
+    function switchTab(tab) {
+        document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#captain-survey-section .tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('btn-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function buildEvaluationForm() {
+        const container = document.getElementById('criteria-container');
+        if (!container) return;
+        criteriaList.forEach((crit, index) => {
+            let html = `<div class="eval-card">
+                            <div class="eval-title">${crit}</div>
+                            <div class="radio-group">
+                                <input type="radio" id="c${index}_e" name="${crit}" value="Excellent" checked><label for="c${index}_e" class="lbl-e">E</label>
+                                <input type="radio" id="c${index}_g" name="${crit}" value="Good"><label for="c${index}_g" class="lbl-g">G</label>
+                                <input type="radio" id="c${index}_p" name="${crit}" value="Poor"><label for="c${index}_p" class="lbl-p">P</label>
+                                <input type="radio" id="c${index}_n" name="${crit}" value="N/A"><label for="c${index}_n" class="lbl-n">N/A</label>
+                                <input type="radio" id="c${index}_b" name="${crit}" value="Blank"><label for="c${index}_b" class="lbl-b">B</label>
+                            </div>
+                        </div>`;
+            container.innerHTML += html;
+        });
+    }
+
+    function setupCustomDropdown() {
+        const input = document.getElementById('reg');
+        const arrow = document.getElementById('regArrowBtn');
+        const list = document.getElementById('regDropdownList');
+
+        arrow.addEventListener('click', function(e) {
+            e.stopPropagation();
+            list.classList.toggle('show');
+            if (list.classList.contains('show')) {
+                input.focus();
+                filterRegOptions(true);
+            }
+        });
+
+        input.addEventListener('input', function() {
+            list.classList.add('show');
+            filterRegOptions(false);
+        });
+
+        input.addEventListener('click', function(e) {
+            e.stopPropagation();
+            list.classList.add('show');
+            filterRegOptions(false);
+        });
+
+        document.addEventListener('click', function() {
+            list.classList.remove('show');
+        });
+    }
+
     function filterRegOptions(showAll = false) {
-        const input = document.getElementById('reg'); const list = document.getElementById('regDropdownList'); const airlineInput = document.getElementById('airline'); const typeInput = document.getElementById('acType');
-        let rawInput = input.value; const filter = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, ''); list.innerHTML = '';
+        const input = document.getElementById('reg');
+        const list = document.getElementById('regDropdownList');
+        const airlineInput = document.getElementById('airline');
+        const typeInput = document.getElementById('acType');
+        
+        let rawInput = input.value;
+        const filter = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        
+        list.innerHTML = '';
+        
         let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
         let exactMatch = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === filter);
-        if (exactMatch) { airlineInput.value = exactMatch.CAR || ""; typeInput.value = exactMatch.TYPE || ""; airlineInput.style.backgroundColor = "#e8f5e9"; typeInput.style.backgroundColor = "#e8f5e9"; list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`; } else { airlineInput.value = ""; typeInput.value = ""; airlineInput.style.backgroundColor = "#f0f0f0"; typeInput.style.backgroundColor = "#f0f0f0"; if (globalFleetData.length === 0) list.innerHTML = `<div class="custom-dropdown-empty" style="color: #666;">جاري تحميل البيانات من السيرفر...</div>`; else if (matched.length === 0) list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`; else { matched.forEach(a => { let div = document.createElement('div'); div.className = 'custom-dropdown-item'; div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`; div.onclick = function(e) { e.stopPropagation(); selectReg(a.REG); }; list.appendChild(div); }); } }
-    }
-    function selectReg(selectedReg) {
-        const input = document.getElementById('reg'); const list = document.getElementById('regDropdownList'); input.value = selectedReg; list.classList.remove('show'); let exactMatch = globalFleetData.find(a => String(a.REG) === selectedReg); if (exactMatch) { document.getElementById('airline').value = exactMatch.CAR || ""; document.getElementById('acType').value = exactMatch.TYPE || ""; document.getElementById('airline').style.backgroundColor = "#e8f5e9"; document.getElementById('acType').style.backgroundColor = "#e8f5e9"; }
-    }
-    function finishLoading() { const splash = document.getElementById('splash-screen'); if(splash && splash.style.display !== 'none') { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; const loginScreen = document.getElementById('login-screen'); if(loginScreen) loginScreen.style.display = 'flex'; const pwdField = document.getElementById('password'); if(pwdField) { pwdField.value = ""; pwdField.focus(); } }, 500); } }
-    function handleLogin(e) { e.preventDefault(); const userField = document.getElementById('username').value; const passField = document.getElementById('password').value; let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField); if(validUser || (globalUsers.length === 0 && passField === "1234")) { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-header').style.display = 'flex'; openSection('main-dashboard'); } else { alert("كلمة المرور غير صحيحة!"); document.getElementById('password').value = ""; document.getElementById('password').focus(); } }
-    function openSection(sectionId) { document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none'); document.getElementById(sectionId).style.display = 'block'; window.scrollTo({top: 0, behavior: 'smooth'}); }
-    function openGenericDoc(title) { document.getElementById('generic-doc-title').innerText = title; openSection('generic-doc-section'); }
 
-    // ------------------------------------------
-    // تحميل البيانات من جوجل شيت
-    // ------------------------------------------
-    function loadAppDataInit() {
-      const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
-      window[callbackName] = function(data) {
+        if (exactMatch) {
+            airlineInput.value = exactMatch.CAR || "";
+            typeInput.value = exactMatch.TYPE || "";
+            airlineInput.style.backgroundColor = "#e8f5e9";
+            typeInput.style.backgroundColor = "#e8f5e9";
+            list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`;
+        } else {
+            airlineInput.value = "";
+            typeInput.value = "";
+            airlineInput.style.backgroundColor = "#f0f0f0";
+            typeInput.style.backgroundColor = "#f0f0f0";
+
+            if (globalFleetData.length === 0) {
+                list.innerHTML = `<div class="custom-dropdown-empty" style="color: #666;">جاري تحميل البيانات من السيرفر...</div>`;
+            } else if (matched.length === 0) {
+                list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
+            } else {
+                matched.forEach(a => {
+                    let div = document.createElement('div');
+                    div.className = 'custom-dropdown-item';
+                    div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
+                    div.onclick = function(e) { e.stopPropagation(); selectReg(a.REG); };
+                    list.appendChild(div);
+                });
+            }
+        }
+    }
+
+    function selectReg(selectedReg) {
+        const input = document.getElementById('reg');
+        const list = document.getElementById('regDropdownList');
+        input.value = selectedReg;
+        list.classList.remove('show');
+        
+        let exactMatch = globalFleetData.find(a => String(a.REG) === selectedReg);
+        if (exactMatch) {
+            document.getElementById('airline').value = exactMatch.CAR || "";
+            document.getElementById('acType').value = exactMatch.TYPE || "";
+            document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+            document.getElementById('acType').style.backgroundColor = "#e8f5e9";
+        }
+    }
+
+    function navSurveys(direction) {
+        if (globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
+        if (direction === 'first') currentSurveyIndex = 0;
+        else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1;
+        else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
+        else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
+
+        if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
+            displaySurveyInForm(globalSurveys[currentSurveyIndex]);
+            document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`;
+            document.getElementById('submitSurveyBtn').disabled = true;
+            document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+        }
+    }
+
+    function displaySurveyInForm(survey) {
+        document.getElementById('date').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
+        let timeVal = survey.Time;
+        if (timeVal && timeVal.includes('T')) {
+            let t = new Date(timeVal);
+            document.getElementById('time').value = t.toTimeString().substring(0, 5);
+        } else {
+            document.getElementById('time').value = timeVal || '';
+        }
+
+        document.getElementById('fltNo').value = survey.Flight_NO || '';
+        document.getElementById('reg').value = survey.REG || '';
+        document.getElementById('airline').value = survey.CAR || '';
+        document.getElementById('acType').value = survey.TYPE || '';
+        document.getElementById('comments').value = survey.Captain_Comments || '';
+
+        document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+        document.getElementById('acType').style.backgroundColor = "#e8f5e9";
+
+        criteriaList.forEach(crit => {
+            let val = survey[crit] || "Blank";
+            let radio = document.querySelector(`input[name="${crit}"][value="${val}"]`);
+            if (radio) radio.checked = true;
+        });
+    }
+
+    function clearFormForNew() {
+        currentSurveyIndex = -1;
+        document.getElementById('surveyForm').reset();
+        document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+        let btn = document.getElementById('submitSurveyBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        document.getElementById('reg').value = "";
+        document.getElementById('airline').value = "";
+        document.getElementById('acType').value = "";
+        document.getElementById('airline').style.backgroundColor = "#f0f0f0";
+        document.getElementById('acType').style.backgroundColor = "#f0f0f0";
+    }
+
+    function openFleetModal() {
+        document.getElementById('newReg').value = "";
+        document.getElementById('newType').value = "";
+        document.getElementById('newAirline').value = "";
+        document.getElementById('newHandling').value = "";
+        document.getElementById('newCountry').value = "";
+        document.getElementById('modalMsg').innerText = "";
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    async function saveNewAircraft() {
+        const reg = document.getElementById('newReg').value.toUpperCase();
+        const type = document.getElementById('newType').value.toUpperCase();
+        const airline = document.getElementById('newAirline').value.toUpperCase();
+        const handling = document.getElementById('newHandling').value;
+        const country = document.getElementById('newCountry').value;
+        const msg = document.getElementById('modalMsg');
+
+        if (!reg || !type || !airline) {
+            msg.style.color = "red";
+            msg.innerText = "برجاء ملء البيانات الأساسية!";
+            return;
+        }
+
+        if (globalFleetData.some(a => String(a.REG).toUpperCase() === reg)) {
+            msg.style.color = "red";
+            msg.innerText = "هذا التسجيل موجود بالفعل!";
+            return;
+        }
+
+        msg.style.color = "blue";
+        msg.innerText = "جاري الحفظ...";
+
+        const payload = {
+            action: "addNewAircraft",
+            reg: reg,
+            acType: type,
+            airline: airline,
+            handling: handling,
+            country: country
+        };
+
         try {
-            if (data && data.status === "success") {
-                globalFleetData = data.fleet ? data.fleet.reverse() : [];
-                globalSurveys = data.surveys ? data.surveys.reverse() : [];
-                globalUsers = data.users || [];
-                globalSpiData = data.spi || [];
-                globalIncidents = data.incidents ? data.incidents.reverse() : [];
-                
-                if(data.daily && data.daily.length > 0) {
-                    let reportsMap = {};
-                    data.daily.forEach(row => {
-                        let repId = row.Report_ID; let timeStr = row.Time;
-                        if(timeStr && typeof timeStr === 'string' && timeStr.includes('T')) { let d = new Date(timeStr); if(!isNaN(d)) timeStr = d.toISOString().substring(11, 16); }
-                        if(!reportsMap[repId]) reportsMap[repId] = { id: repId, date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '', time: timeStr, shift: row.Shift, inspector: row.Inspector, findings: [] };
-                        if(row.Category && row.Category !== "لا توجد ملاحظات") reportsMap[repId].findings.push({ category: row.Category, item: row.Finding_Item, location: row.Location, responsible: row.Responsible, note: row.Corrective_Action || "", status: row.Status || "مفتوح" });
-                    });
-                    globalDailyInspections = Object.values(reportsMap).sort((a,b) => b.id - a.id);
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            msg.style.color = "green";
+            msg.innerText = "تم الحفظ بنجاح!";
+            globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
+            selectReg(reg);
+            setTimeout(closeAddModal, 1500);
+        } catch (error) {
+            msg.style.color = "red";
+            msg.innerText = "فشل الاتصال بالسيرفر!";
+        }
+    }
+
+    async function submitSurvey(e) {
+        e.preventDefault();
+        const airline = document.getElementById('airline').value;
+        const msg = document.getElementById('surveyMsg');
+
+        if (!airline) {
+            msg.style.color = "red";
+            msg.innerText = "برجاء التأكد من تسجيل الطائرة (غير موجود في قاعدة البيانات)!";
+            return;
+        }
+
+        const btn = document.getElementById('submitSurveyBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
+
+        let surveyDataObj = {
+            "Date": document.getElementById('date').value,
+            "Time": document.getElementById('time').value,
+            "Flight_NO": document.getElementById('fltNo').value,
+            "REG": document.getElementById('reg').value.toUpperCase(),
+            "CAR": airline,
+            "TYPE": document.getElementById('acType').value,
+            "Captain_Comments": document.getElementById('comments').value
+        };
+
+        criteriaList.forEach(crit => {
+            let selectedOption = document.querySelector(`input[name="${crit}"]:checked`);
+            surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank";
+        });
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            msg.style.color = "green";
+            msg.innerText = "✅ تم الحفظ بنجاح!";
+            globalSurveys.unshift(surveyDataObj);
+            document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+                btn.disabled = false;
+                msg.innerText = "";
+                clearFormForNew();
+            }, 1500);
+        } catch (error) {
+            msg.style.color = "red";
+            msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+            btn.disabled = false;
+        }
+    }
+
+    function generateModernReport() {
+        let fromD = document.getElementById('fromDate').value;
+        let toD = document.getElementById('toDate').value;
+
+        if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
+
+        document.getElementById('printable-report').style.display = 'block';
+        let fd = new Date(fromD);
+        let td = new Date(toD);
+        td.setHours(23, 59, 59, 999);
+
+        let filteredSurveys = globalSurveys.filter(s => {
+            let sd = new Date(s.Date);
+            return sd >= fd && sd <= td;
+        });
+
+        document.getElementById('report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
+
+        let airlinesSet = new Set();
+        let airlinesCount = {};
+        let datesCount = {};
+        let evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+
+        const flightsTbody = document.getElementById('flights-eval-tbody');
+        flightsTbody.innerHTML = "";
+
+        const extraContainer = document.getElementById('additional-tables-container');
+        extraContainer.innerHTML = "";
+
+        if (filteredSurveys.length === 0) {
+            flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+            document.getElementById('stat-total').innerText = "0";
+            document.getElementById('stat-airlines').innerText = "0";
+            document.getElementById('stat-excellent').innerText = "0%";
+            destroyCharts();
+            return;
+        }
+
+        let commentsHTML = ''; let hasComments = false;
+        let poorEvaluationsHTML = ''; let hasPoor = false;
+
+        filteredSurveys.forEach(survey => {
+            if (survey.CAR) {
+                airlinesSet.add(survey.CAR);
+                airlinesCount[survey.CAR] = (airlinesCount[survey.CAR] || 0) + 1;
+            }
+            let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown';
+            datesCount[dStr] = (datesCount[dStr] || 0) + 1;
+
+            let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+            let poorCriteriaForThisFlight = [];
+
+            criteriaList.forEach(crit => {
+                let val = survey[crit] || "Blank";
+                if (fCounts[val] !== undefined) fCounts[val]++;
+                if (evalsCount[val] !== undefined) evalsCount[val]++;
+                if (val === "Poor") { poorCriteriaForThisFlight.push(crit); }
+            });
+
+            let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${survey.CAR || ''}</b></td>
+                <td dir="ltr" style="text-align: right;">${survey.Flight_NO || ''}</td>
+                <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                <td dir="ltr" style="text-align: right;">${survey.REG || ''}</td>
+                <td style="font-weight:bold; color:#28a745;">${fCounts["Excellent"]}</td>
+                <td style="font-weight:bold; color:#ffc107;">${fCounts["Good"]}</td>
+                <td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td>
+                <td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td>
+                <td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>
+            `;
+            flightsTbody.appendChild(tr);
+
+            if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
+                hasComments = true;
+                commentsHTML += `
+                    <tr>
+                        <td><b>${survey.CAR || ''}</b></td>
+                        <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                        <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                        <td dir="ltr" style="text-align: left; color:#333; font-weight:600;">${survey.Captain_Comments}</td>
+                    </tr>
+                `;
+            }
+
+            if (poorCriteriaForThisFlight.length > 0) {
+                hasPoor = true;
+                poorEvaluationsHTML += `
+                    <tr>
+                        <td><b>${survey.CAR || ''}</b></td>
+                        <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                        <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                        <td dir="ltr" style="text-align: right;">${survey.REG || ''}</td>
+                        <td style="color: #dc3545; font-weight: bold; text-align: right; direction: ltr;">${poorCriteriaForThisFlight.join(' <span style="color:#ccc;">|</span> ')}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        let additionalTables = "";
+
+        if (hasPoor) {
+            additionalTables += `
+                <div class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة</h4>
+                    <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
+                        <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
+                        <tbody>${poorEvaluationsHTML}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        additionalTables += `
+            <div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن</h4>
+                <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
+                    <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة</th></tr></thead>
+                    <tbody>`;
+
+        if (hasComments) {
+            additionalTables += commentsHTML;
+        } else {
+            additionalTables += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`;
+        }
+
+        additionalTables += `</tbody></table></div>`;
+        extraContainer.innerHTML = additionalTables;
+
+        document.getElementById('stat-total').innerText = filteredSurveys.length;
+        document.getElementById('stat-airlines').innerText = airlinesSet.size;
+        let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+        let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+        document.getElementById('stat-excellent').innerText = `${excPercent}%`;
+
+        drawCharts(airlinesCount, datesCount, evalsCount);
+    }
+
+    function destroyCharts() {
+        if (chartInstances.air) chartInstances.air.destroy();
+        if (chartInstances.dates) chartInstances.dates.destroy();
+        if (chartInstances.eval) chartInstances.eval.destroy();
+    }
+
+    function drawCharts(airlines, dates, evals) {
+        destroyCharts();
+        Chart.defaults.font.family = "'Cairo', sans-serif";
+        Chart.register(ChartDataLabels);
+
+        const ctxAir = document.getElementById('airlinesChart').getContext('2d');
+        chartInstances.air = new Chart(ctxAir, {
+            type: 'bar',
+            data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Top Airlines' } } }
+        });
+
+        const ctxDates = document.getElementById('datesChart').getContext('2d');
+        let sortedDates = Object.keys(dates).sort();
+        let sortedData = sortedDates.map(d => dates[d]);
+        chartInstances.dates = new Chart(ctxDates, {
+            type: 'line',
+            data: { labels: sortedDates, datasets: [{ label: 'Activity', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Surveys Over Time' } } }
+        });
+
+        const ctxEval = document.getElementById('evalChart').getContext('2d');
+        chartInstances.eval = new Chart(ctxEval, {
+            type: 'doughnut',
+            data: {
+                labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
+                datasets: [{ data: [evals["Excellent"], evals["Good"], evals["Poor"], evals["N/A"], evals["Blank"]], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#a9a9a9', '#1a2a6c'] }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Overall Performance' },
+                    datalabels: {
+                        color: '#fff', font: { weight: 'bold', size: 14 },
+                        formatter: (value, ctx) => {
+                            let sum = 0;
+                            ctx.chart.data.datasets[0].data.map(data => { sum += data; });
+                            if (sum === 0 || value === 0) return '';
+                            return (value * 100 / sum).toFixed(0) + "%";
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function exportModernPDF() {
+        const element = document.getElementById('printable-report');
+        const wrappers = document.querySelectorAll('.report-wrapper, .comments-section');
+        wrappers.forEach(w => w.style.overflowX = 'visible');
+        window.scrollTo(0, 0);
+
+        html2pdf().set({
+            margin: [0.2, 0.2, 0.2, 0.2],
+            filename: 'Safety_Dashboard_Report.pdf',
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 4, useCORS: true, scrollY: 0, y: 0 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(element).save().then(() => {
+            wrappers.forEach(w => w.style.overflowX = 'auto');
+        });
+    }
+
+    // ----------------------------------------------------
+    // دوال الفحص اليومي (Daily Inspection)
+    // ----------------------------------------------------
+    function switchDailyTab(tab) {
+        document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('btn-daily-' + tab).classList.add('active');
+        document.getElementById('tab-daily-' + tab).classList.add('active');
+    }
+
+    function updateStatusColor(sel) {
+        if (sel.value === 'مغلق') {
+            sel.style.backgroundColor = '#28a745';
+            sel.style.color = '#fff';
+        } else {
+            sel.style.backgroundColor = '#dc3545';
+            sel.style.color = '#fff';
+        }
+    }
+
+    function buildDailyChecklist() {
+        const grid = document.getElementById('checklist-container');
+        if (!grid) return;
+        grid.innerHTML = "";
+        let checkIndex = 0;
+
+        Object.keys(dailyChecklistData).forEach(colKey => {
+            let colData = dailyChecklistData[colKey];
+            let colHTML = `<div class="checklist-column">`;
+
+            const renderSection = (title, items) => {
+                colHTML += `<div class="checklist-header">${title}</div>`;
+                items.forEach(item => {
+                    let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join('');
+                    colHTML += `
+                        <div class="check-item">
+                            <div class="check-item-row">
+                                <input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})">
+                                <label for="chk_${checkIndex}">${item}</label>
+                            </div>
+                            <div id="inputs_${checkIndex}" class="check-inputs">
+                                <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
+                                <div style="display:flex; gap:5px;">
+                                    <input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;">
+                                    <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select>
+                                </div>
+                                <div style="display:flex; gap:5px;">
+                                    <input type="text" id="actionTaken_${checkIndex}" placeholder="الإجراء المتخذ..." style="flex:2;">
+                                    <input type="date" id="targetDate_${checkIndex}" title="تاريخ التلافي" style="flex:1;">
+                                    <select id="status_${checkIndex}" class="status-select" style="flex:1; background:#dc3545; color:white;" onchange="updateStatusColor(this)">
+                                        <option value="مفتوح" selected>مفتوح</option>
+                                        <option value="مغلق">مغلق</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>`;
+                    checkIndex++;
+                });
+            };
+
+            renderSection(colData.title, colData.items);
+            if (colData.title2) renderSection(colData.title2, colData.items2);
+            if (colData.title3) renderSection(colData.title3, colData.items3);
+
+            colHTML += `</div>`;
+            grid.innerHTML += colHTML;
+        });
+    }
+
+    window.toggleInputs = function(idx) {
+        const chk = document.getElementById('chk_' + idx);
+        const inputs = document.getElementById('inputs_' + idx);
+        if (chk && chk.checked) {
+            inputs.style.display = 'flex';
+        } else {
+            inputs.style.display = 'none';
+        }
+    }
+
+    function autoFillDailyDateTime() {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(now - offset)).toISOString().slice(0, -1);
+        const dField = document.getElementById('dailyDate');
+        const tField = document.getElementById('dailyTime');
+        if (dField) dField.value = localISOTime.split('T')[0];
+        if (tField) tField.value = localISOTime.split('T')[1].substring(0, 5);
+    }
+
+    function updateDailyNavCounter() {
+        const ctr = document.getElementById('nav-daily-counter');
+        if (ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`;
+    }
+
+    function navDaily(direction) {
+        if (globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة بعد.");
+        if (direction === 'first') currentDailyIndex = 0;
+        else if (direction === 'last') currentDailyIndex = globalDailyInspections.length - 1;
+        else if (direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
+        else if (direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
+
+        if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
+            navDailyTo(currentDailyIndex);
+        }
+    }
+
+    function navDailyTo(idx) {
+        currentDailyIndex = idx;
+        let rep = globalDailyInspections[currentDailyIndex];
+
+        document.getElementById('dailyForm').reset();
+        document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
+
+        document.getElementById('dailyDate').value = rep.date || '';
+        document.getElementById('dailyTime').value = rep.time || '';
+        document.getElementById('dailyShift').value = rep.shift || 'صباحي';
+        document.getElementById('dailyInspector').value = rep.inspector || '';
+
+        document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+            let parts = chk.value.split('|');
+            let found = rep.findings.find(f => f.category === parts[0] && f.item === parts[1]);
+            if (found) {
+                chk.checked = true;
+                document.getElementById(`inputs_${idx}`).style.display = 'flex';
+
+                let fullNote = found.note || "";
+                let nText = "تم الرصد";
+                let aText = "لم يحدد";
+                let tDate = "غير محدد";
+
+                try {
+                    let match = fullNote.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
+                    if (match) {
+                        nText = match[1];
+                        aText = match[2];
+                        tDate = match[3];
+                    } else {
+                        nText = fullNote;
+                    }
+                } catch (e) {}
+
+                document.getElementById(`note_${idx}`).value = nText;
+                document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim() : "";
+
+                let dField = document.getElementById(`targetDate_${idx}`);
+                dField.value = (tDate !== "غير محدد" && tDate.trim() !== "") ? tDate : "";
+
+                document.getElementById(`loc_${idx}`).value = found.location || "";
+                document.getElementById(`resp_${idx}`).value = found.responsible || "";
+
+                let statusSel = document.getElementById(`status_${idx}`);
+                statusSel.value = found.status || "مفتوح";
+                updateStatusColor(statusSel);
+            }
+        });
+
+        updateDailyNavCounter();
+
+        isDailyEditMode = true;
+        currentDailyEditId = rep.id;
+
+        let btn = document.getElementById('submitDailyBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ التعديلات وتحديث الحالة';
+        btn.style.backgroundColor = "#ffc107";
+        btn.style.color = "#000";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function clearDailyFormForNew() {
+        currentDailyIndex = -1;
+        isDailyEditMode = false;
+        currentDailyEditId = null;
+
+        document.getElementById('dailyForm').reset();
+        document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
+
+        document.querySelectorAll('.status-select').forEach(sel => {
+            sel.style.backgroundColor = '#dc3545';
+            sel.style.color = '#fff';
+        });
+
+        autoFillDailyDateTime();
+        updateDailyNavCounter();
+
+        let btn = document.getElementById('submitDailyBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات';
+        btn.style.backgroundColor = "var(--primary)";
+        btn.style.color = "#fff";
+    }
+
+    async function submitDailyInspection(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitDailyBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.disabled = true;
+
+        let findings = [];
+        document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+            if (chk.checked) {
+                let parts = chk.value.split('|');
+                let noteText = document.getElementById(`note_${idx}`).value || "تم الرصد";
+                let actionText = document.getElementById(`actionTaken_${idx}`).value || "لم يحدد";
+                let targetD = document.getElementById(`targetDate_${idx}`).value || "";
+                let st = document.getElementById(`status_${idx}`).value || "مفتوح";
+
+                if (st === "مغلق") {
+                    let closeDate = targetD !== "" ? targetD : new Date().toISOString().split('T')[0];
+                    if (!actionText.includes("تم تلافي الملحوظة")) {
+                        actionText = actionText + ` [تم تلافي الملحوظة بتاريخ ${closeDate}]`;
+                    }
                 }
 
-                const userSelect = document.getElementById('username');
-                if(userSelect) { userSelect.innerHTML = ""; globalUsers.forEach(u => { userSelect.innerHTML += `<option value="${u.Username}">${u.Username} (${u.Role})</option>`; }); if(globalUsers.length === 0) userSelect.innerHTML = '<option value="admin">مدير النظام (Admin)</option>'; }
-                if(document.getElementById('nav-counter')) document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
-                if(typeof renderUsersTable === "function") renderUsersTable();
-                renderSavedDaily(); updateDailyNavCounter(); renderSavedIncidents(); updateIncidentNavCounter(); 
+                let combinedNote = `الملاحظة: ${noteText} - الإجراء: ${actionText} - تاريخ التلافي: ${targetD !== "" ? targetD : "غير محدد"}`;
+
+                findings.push({
+                    category: parts[0],
+                    item: parts[1],
+                    note: combinedNote,
+                    location: document.getElementById(`loc_${idx}`).value || "-",
+                    responsible: document.getElementById(`resp_${idx}`).value || "-",
+                    status: st
+                });
             }
-        } catch(e) { console.log(e); }
-        delete window[callbackName];
-      };
-      const script = document.createElement('script'); script.src = API_URL + "?action=getAppData&callback=" + callbackName; document.body.appendChild(script);
+        });
+
+        let reportId = isDailyEditMode ? currentDailyEditId : Date.now();
+        const report = {
+            id: reportId,
+            date: document.getElementById('dailyDate').value,
+            time: document.getElementById('dailyTime').value,
+            shift: document.getElementById('dailyShift').value,
+            inspector: document.getElementById('dailyInspector').value,
+            findings: findings
+        };
+
+        let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection";
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: actionType, reportData: report }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+
+            if (isDailyEditMode) {
+                globalDailyInspections[currentDailyIndex] = report;
+                document.getElementById('dailyMsg').style.color = "green";
+                document.getElementById('dailyMsg').innerText = "✅ تم تحديث الملاحظات بنجاح!";
+            } else {
+                globalDailyInspections.unshift(report);
+                document.getElementById('dailyMsg').style.color = "green";
+                document.getElementById('dailyMsg').innerText = "✅ تم الحفظ بنجاح!";
+            }
+
+            setTimeout(() => {
+                clearDailyFormForNew();
+                renderSavedDaily();
+                document.getElementById('dailyMsg').innerText = "";
+            }, 2000);
+        } catch (err) {
+            btn.disabled = false;
+            document.getElementById('dailyMsg').style.color = "red";
+            document.getElementById('dailyMsg').innerText = "❌ خطأ في الإتصال.";
+        }
     }
 
-    // ==========================================
-    // 01: Survey Functions
-    // ==========================================
-    function switchTab(tab) { document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#captain-survey-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-' + tab).classList.add('active'); document.getElementById('tab-' + tab).classList.add('active'); }
-    function buildEvaluationForm() { const container = document.getElementById('criteria-container'); if(!container) return; criteriaList.forEach((crit, index) => { container.innerHTML += `<div class="eval-card"><div class="eval-title">${crit}</div><div class="radio-group"><input type="radio" id="c${index}_e" name="${crit}" value="Excellent" checked><label for="c${index}_e" class="lbl-e">E</label><input type="radio" id="c${index}_g" name="${crit}" value="Good"><label for="c${index}_g" class="lbl-g">G</label><input type="radio" id="c${index}_p" name="${crit}" value="Poor"><label for="c${index}_p" class="lbl-p">P</label><input type="radio" id="c${index}_n" name="${crit}" value="N/A"><label for="c${index}_n" class="lbl-n">N/A</label><input type="radio" id="c${index}_b" name="${crit}" value="Blank"><label for="c${index}_b" class="lbl-b">B</label></div></div>`; }); }
-    function navSurveys(direction) { if(globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد."); if(direction === 'first') currentSurveyIndex = 0; else if(direction === 'last') currentSurveyIndex = globalSurveys.length - 1; else if(direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++; else if(direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--; if(currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) { displaySurveyInForm(globalSurveys[currentSurveyIndex]); document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`; document.getElementById('submitSurveyBtn').disabled = true; document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)'; } }
-    function displaySurveyInForm(survey) { document.getElementById('date').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : ''; let timeVal = survey.Time; if (timeVal && timeVal.includes('T')) { let t = new Date(timeVal); document.getElementById('time').value = t.toTimeString().substring(0,5); } else { document.getElementById('time').value = timeVal || ''; } document.getElementById('fltNo').value = survey.Flight_NO || ''; document.getElementById('reg').value = survey.REG || ''; document.getElementById('airline').value = survey.CAR || ''; document.getElementById('acType').value = survey.TYPE || ''; document.getElementById('comments').value = survey.Captain_Comments || ''; document.getElementById('airline').style.backgroundColor = "#e8f5e9"; document.getElementById('acType').style.backgroundColor = "#e8f5e9"; criteriaList.forEach(crit => { let val = survey[crit] || "Blank"; let radio = document.querySelector(`input[name="${crit}"][value="${val}"]`); if(radio) radio.checked = true; }); }
-    function clearFormForNew() { currentSurveyIndex = -1; document.getElementById('surveyForm').reset(); document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`; let btn = document.getElementById('submitSurveyBtn'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان'; document.getElementById('reg').value = ""; document.getElementById('airline').value = ""; document.getElementById('acType').value = ""; document.getElementById('airline').style.backgroundColor = "#f0f0f0"; document.getElementById('acType').style.backgroundColor = "#f0f0f0"; }
-    function openFleetModal() { document.getElementById('newReg').value = ""; document.getElementById('newType').value = ""; document.getElementById('newAirline').value = ""; document.getElementById('newHandling').value = ""; document.getElementById('newCountry').value = ""; document.getElementById('modalMsg').innerText = ""; document.getElementById('addModal').style.display = 'flex'; }
-    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-    async function saveNewAircraft() { const reg = document.getElementById('newReg').value.toUpperCase(); const type = document.getElementById('newType').value.toUpperCase(); const airline = document.getElementById('newAirline').value.toUpperCase(); const handling = document.getElementById('newHandling').value; const country = document.getElementById('newCountry').value; const msg = document.getElementById('modalMsg'); if (!reg || !type || !airline) { msg.style.color = "red"; msg.innerText = "برجاء ملء البيانات الأساسية!"; return; } if(globalFleetData.some(a => String(a.REG).toUpperCase() === reg)) { msg.style.color = "red"; msg.innerText = "هذا التسجيل موجود بالفعل!"; return; } msg.style.color = "blue"; msg.innerText = "جاري الحفظ..."; const payload = { action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country }; try { await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } }); msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!"; globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline }); selectReg(reg); setTimeout(closeAddModal, 1500); } catch (error) { msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!"; } }
-    async function submitSurvey(e) { e.preventDefault(); let regVal = document.getElementById('reg').value; const airline = document.getElementById('airline').value; const msg = document.getElementById('surveyMsg'); if (!airline) { msg.style.color = "red"; msg.innerText = "برجاء التأكد من تسجيل الطائرة (غير موجود في قاعدة البيانات)!"; return; } const btn = document.getElementById('submitSurveyBtn'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...'; let surveyDataObj = { "Date": document.getElementById('date').value, "Time": document.getElementById('time').value, "Flight_NO": document.getElementById('fltNo').value, "REG": document.getElementById('reg').value.toUpperCase(), "CAR": airline, "TYPE": document.getElementById('acType').value, "Captain_Comments": document.getElementById('comments').value }; criteriaList.forEach(crit => { let selectedOption = document.querySelector(`input[name="${crit}"]:checked`); surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank"; }); try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }), headers: { "Content-Type": "text/plain;charset=utf-8" } }); msg.style.color = "green"; msg.innerText = "✅ تم الحفظ بنجاح!"; globalSurveys.unshift(surveyDataObj); document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`; setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان'; btn.disabled = false; msg.innerText = ""; clearFormForNew(); }, 1500); } catch (error) { msg.style.color = "red"; msg.innerText = "❌ حدث خطأ أثناء الإرسال."; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان'; btn.disabled = false; } }
-    function generateModernReport() { let fromD = document.getElementById('fromDate').value; let toD = document.getElementById('toDate').value; if(!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً."); document.getElementById('printable-report').style.display = 'block'; let fd = new Date(fromD); let td = new Date(toD); td.setHours(23, 59, 59, 999); let filteredSurveys = globalSurveys.filter(s => { let sd = new Date(s.Date); return sd >= fd && sd <= td; }); document.getElementById('report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`; let airlinesSet = new Set(); let airlinesCount = {}; let datesCount = {}; let evalsCount = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 }; const flightsTbody = document.getElementById('flights-eval-tbody'); flightsTbody.innerHTML = ""; const extraContainer = document.getElementById('additional-tables-container'); extraContainer.innerHTML = ""; if(filteredSurveys.length === 0) { flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>"; document.getElementById('stat-total').innerText = "0"; document.getElementById('stat-airlines').innerText = "0"; document.getElementById('stat-excellent').innerText = "0%"; destroyCharts(); return; } let commentsHTML = ''; let hasComments = false; let poorEvaluationsHTML = ''; let hasPoor = false; filteredSurveys.forEach(survey => { if(survey.CAR) { airlinesSet.add(survey.CAR); airlinesCount[survey.CAR] = (airlinesCount[survey.CAR] || 0) + 1; } let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown'; datesCount[dStr] = (datesCount[dStr] || 0) + 1; let fCounts = { "Excellent":0, "Good":0, "Poor":0, "N/A":0, "Blank":0 }; let poorCriteriaForThisFlight = []; criteriaList.forEach(crit => { let val = survey[crit] || "Blank"; if(fCounts[val] !== undefined) fCounts[val]++; if(evalsCount[val] !== undefined) evalsCount[val]++; if (val === "Poor") { poorCriteriaForThisFlight.push(crit); } }); let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : ""; let tr = document.createElement('tr'); tr.innerHTML = `<td><b>${survey.CAR || ''}</b></td><td dir="ltr" style="text-align: right;">${survey.Flight_NO || ''}</td><td dir="ltr" style="text-align: right;">${dateDisplay}</td><td dir="ltr" style="text-align: right;">${survey.REG || ''}</td><td style="font-weight:bold; color:#28a745;">${fCounts["Excellent"]}</td><td style="font-weight:bold; color:#ffc107;">${fCounts["Good"]}</td><td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td><td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td><td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>`; flightsTbody.appendChild(tr); if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") { hasComments = true; commentsHTML += `<tr><td><b>${survey.CAR || ''}</b></td><td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td><td dir="ltr" style="text-align: right;">${dateDisplay}</td><td dir="ltr" style="text-align: left; color:#333; font-weight:600;">${survey.Captain_Comments}</td></tr>`; } if (poorCriteriaForThisFlight.length > 0) { hasPoor = true; poorEvaluationsHTML += `<tr><td><b>${survey.CAR || ''}</b></td><td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td><td dir="ltr" style="text-align: right;">${dateDisplay}</td><td dir="ltr" style="text-align: right;">${survey.REG || ''}</td><td style="color: #dc3545; font-weight: bold; text-align: right; direction: ltr;">${poorCriteriaForThisFlight.join(' <span style="color:#ccc;">|</span> ')}</td></tr>`; } }); let additionalTables = ""; if(hasPoor) additionalTables += `<div class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);"><h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة</h4><table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;"><thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead><tbody>${poorEvaluationsHTML}</tbody></table></div>`; additionalTables += `<div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);"><h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن</h4><table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;"><thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة</th></tr></thead><tbody>`; if(hasComments) additionalTables += commentsHTML; else additionalTables += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`; additionalTables += `</tbody></table></div>`; extraContainer.innerHTML = additionalTables; document.getElementById('stat-total').innerText = filteredSurveys.length; document.getElementById('stat-airlines').innerText = airlinesSet.size; let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0); let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0; document.getElementById('stat-excellent').innerText = `${excPercent}%`; drawCharts(airlinesCount, datesCount, evalsCount); }
-    function destroyCharts() { if(chartInstances.air) chartInstances.air.destroy(); if(chartInstances.dates) chartInstances.dates.destroy(); if(chartInstances.eval) chartInstances.eval.destroy(); }
-    function drawCharts(airlines, dates, evals) { destroyCharts(); Chart.defaults.font.family = "'Cairo', sans-serif"; Chart.register(ChartDataLabels); chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Top Airlines' } } } }); let sortedDates = Object.keys(dates).sort(); let sortedData = sortedDates.map(d => dates[d]); chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), { type: 'line', data: { labels: sortedDates, datasets: [{ label: 'Activity', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Surveys Over Time' } } } }); chartInstances.eval = new Chart(document.getElementById('evalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: [evals["Excellent"], evals["Good"], evals["Poor"], evals["N/A"], evals["Blank"]], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#a9a9a9', '#1a2a6c'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Performance' }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: (value, ctx) => { let sum = 0; ctx.chart.data.datasets[0].data.map(data => { sum += data; }); if(sum === 0 || value === 0) return ''; return (value * 100 / sum).toFixed(0) + "%"; } } } } }); }
-    function exportModernPDF() { const element = document.getElementById('printable-report'); const wrappers = document.querySelectorAll('.report-wrapper, .comments-section'); wrappers.forEach(w => w.style.overflowX = 'visible'); window.scrollTo(0, 0); html2pdf().set({ margin: [0.1, 0.2, 0.2, 0.2], filename: 'Safety_Dashboard_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 4, useCORS: true, letterRendering: true, scrollY: 0, y: 0 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { mode: ['css', 'legacy'] } }).from(element).save().then(() => { wrappers.forEach(w => w.style.overflowX = 'auto'); }); }
+    function renderSavedDaily() {
+        const tbody = document.getElementById('saved-daily-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        updateDailyNavCounter();
 
-    // ==========================================
-    // 02: Daily Inspection
-    // ==========================================
-    function switchDailyTab(tab) { document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-daily-' + tab).classList.add('active'); document.getElementById('tab-daily-' + tab).classList.add('active'); }
-    function buildDailyChecklist() { const grid = document.getElementById('checklist-container'); if(!grid) return; grid.innerHTML = ""; let checkIndex = 0; Object.keys(dailyChecklistData).forEach(colKey => { let colData = dailyChecklistData[colKey]; let colHTML = `<div class="checklist-column">`; const renderSection = (title, items) => { colHTML += `<div class="checklist-header">${title}</div>`; items.forEach(item => { let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join(''); colHTML += `<div class="check-item"><div class="check-item-row"><input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})"><label for="chk_${checkIndex}">${item}</label></div><div id="inputs_${checkIndex}" class="check-inputs"><input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة..."><div style="display:flex; gap:5px;"><input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;"><select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select></div><div style="display:flex; gap:5px;"><input type="text" id="actionTaken_${checkIndex}" placeholder="الإجراء المتخذ..." style="flex:2;"><input type="date" id="targetDate_${checkIndex}" title="تاريخ التلافي" style="flex:1;"><select id="status_${checkIndex}" class="status-select" style="flex:1; background:#dc3545; color:white;" onchange="updateStatusColor(this)"><option value="مفتوح" selected>مفتوح</option><option value="مغلق">مغلق</option></select></div></div></div>`; checkIndex++; }); }; renderSection(colData.title, colData.items); if(colData.title2) renderSection(colData.title2, colData.items2); if(colData.title3) renderSection(colData.title3, colData.items3); colHTML += `</div>`; grid.innerHTML += colHTML; }); }
-    window.toggleInputs = function(idx) { const chk = document.getElementById('chk_' + idx); const inputs = document.getElementById('inputs_' + idx); if(chk && chk.checked) inputs.style.display = 'flex'; else inputs.style.display = 'none'; }
-    function autoFillDailyDateTime() { const now = new Date(); const offset = now.getTimezoneOffset() * 60000; const localISOTime = (new Date(now - offset)).toISOString().slice(0, -1); const dField = document.getElementById('dailyDate'); const tField = document.getElementById('dailyTime'); if(dField) dField.value = localISOTime.split('T')[0]; if(tField) tField.value = localISOTime.split('T')[1].substring(0, 5); }
-    function updateDailyNavCounter() { const ctr = document.getElementById('nav-daily-counter'); if(ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`; }
-    function navDaily(direction) { if(globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة بعد."); if(direction === 'first') currentDailyIndex = 0; else if(direction === 'last') currentDailyIndex = globalDailyInspections.length - 1; else if(direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++; else if(direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--; if(currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) { navDailyTo(currentDailyIndex); } }
-    function navDailyTo(idx) { currentDailyIndex = idx; let rep = globalDailyInspections[currentDailyIndex]; document.getElementById('dailyForm').reset(); document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none'); document.getElementById('dailyDate').value = rep.date || ''; document.getElementById('dailyTime').value = rep.time || ''; document.getElementById('dailyShift').value = rep.shift || 'صباحي'; document.getElementById('dailyInspector').value = rep.inspector || ''; document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => { let parts = chk.value.split('|'); let found = rep.findings.find(f => f.category === parts[0] && f.item === parts[1]); if(found) { chk.checked = true; document.getElementById(`inputs_${idx}`).style.display = 'flex'; let fullNote = found.note || ""; let nText = "تم الرصد"; let aText = "لم يحدد"; let tDate = "غير محدد"; try { let match = fullNote.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); if(match) { nText = match[1]; aText = match[2]; tDate = match[3]; } else { nText = fullNote; } } catch(e){} document.getElementById(`note_${idx}`).value = nText; document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim() : ""; document.getElementById(`targetDate_${idx}`).value = (tDate !== "غير محدد" && tDate.trim() !== "") ? tDate : ""; document.getElementById(`loc_${idx}`).value = found.location || ""; document.getElementById(`resp_${idx}`).value = found.responsible || ""; let statusSel = document.getElementById(`status_${idx}`); statusSel.value = found.status || "مفتوح"; updateStatusColor(statusSel); } }); updateDailyNavCounter(); isDailyEditMode = true; currentDailyEditId = rep.id; let btn = document.getElementById('submitDailyBtn'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ التعديلات وتحديث الحالة'; btn.style.backgroundColor = "#ffc107"; btn.style.color = "#000"; window.scrollTo({top: 0, behavior: 'smooth'}); }
-    function clearDailyFormForNew() { currentDailyIndex = -1; isDailyEditMode = false; currentDailyEditId = null; document.getElementById('dailyForm').reset(); document.querySelectorAll('.check-inputs').forEach(el=>el.style.display='none'); document.querySelectorAll('.status-select').forEach(sel => { sel.style.backgroundColor = '#dc3545'; sel.style.color = '#fff'; }); autoFillDailyDateTime(); updateDailyNavCounter(); let btn = document.getElementById('submitDailyBtn'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات'; btn.style.backgroundColor = "var(--primary)"; btn.style.color = "#fff"; }
-    async function submitDailyInspection(e) { e.preventDefault(); const btn=document.getElementById('submitDailyBtn'); btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; btn.disabled=true; let findings = []; document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => { if(chk.checked) { let parts = chk.value.split('|'); let noteText = document.getElementById(`note_${idx}`).value || "تم الرصد"; let actionText = document.getElementById(`actionTaken_${idx}`).value || "لم يحدد"; let targetD = document.getElementById(`targetDate_${idx}`).value || ""; let st = document.getElementById(`status_${idx}`).value || "مفتوح"; if(st === "مغلق") { let closeDate = targetD !== "" ? targetD : new Date().toISOString().split('T')[0]; if(!actionText.includes("تم تلافي الملحوظة")) { actionText = actionText + ` [تم تلافي الملحوظة بتاريخ ${closeDate}]`; } } let combinedNote = `الملاحظة: ${noteText} - الإجراء: ${actionText} - تاريخ التلافي: ${targetD !== "" ? targetD : "غير محدد"}`; findings.push({ category: parts[0], item: parts[1], note: combinedNote, location: document.getElementById(`loc_${idx}`).value || "-", responsible: document.getElementById(`resp_${idx}`).value || "-", status: st }); } }); let reportId = isDailyEditMode ? currentDailyEditId : Date.now(); const report = { id: reportId, date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings }; let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection"; try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: actionType, reportData: report }), headers: { "Content-Type": "text/plain;charset=utf-8" } }); if(isDailyEditMode) { globalDailyInspections[currentDailyIndex] = report; document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم تحديث الملاحظات بنجاح!"; } else { globalDailyInspections.unshift(report); document.getElementById('dailyMsg').style.color="green"; document.getElementById('dailyMsg').innerText="✅ تم الحفظ بنجاح!"; } setTimeout(()=>{ clearDailyFormForNew(); renderSavedDaily(); document.getElementById('dailyMsg').innerText=""; }, 2000); } catch(err) { btn.disabled=false; document.getElementById('dailyMsg').style.color="red"; document.getElementById('dailyMsg').innerText="❌ خطأ في الإتصال."; } }
-    function renderSavedDaily() { const tbody = document.getElementById('saved-daily-tbody'); if(!tbody) return; tbody.innerHTML = ""; updateDailyNavCounter(); if(globalDailyInspections.length === 0) { tbody.innerHTML = "<tr><td colspan='6' style='color:#777; font-weight:bold; text-align:center;'>لا توجد فحوصات محفوظة.</td></tr>"; return; } globalDailyInspections.forEach((rep, idx) => { let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">سليم 100%</span>`; tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i> عرض وتعديل</button></td></tr>`; }); }
-    function generateDailyPrintReport() { let fromD = document.getElementById('dailyFromDate').value; let toD = document.getElementById('dailyToDate').value; if(!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً."); document.getElementById('printable-daily-report').style.display = 'block'; if(globalDailyInspections.length === 0) return alert("لا توجد فحوصات محفوظة للطباعة."); let fd = new Date(fromD); let td = new Date(toD); td.setHours(23, 59, 59, 999); let filteredDailys = globalDailyInspections.filter(r => { let sd = new Date(r.date); return sd >= fd && sd <= td; }); if (filteredDailys.length === 0) { alert("لا توجد فحوصات في هذه الفترة."); document.getElementById('printable-daily-report').style.display = 'none'; return; } let isMultiDay = fromD !== toD; if (isMultiDay) { document.getElementById('printable-checklist-report').style.display = 'none'; document.getElementById('corrective-title').innerText = `أولاً: تقرير بالأخطار التي تم رصدها (الفترة من ${fromD} إلى ${toD}):`; } else { document.getElementById('printable-checklist-report').style.display = 'block'; document.getElementById('corrective-title').innerText = "أولاً: تقرير بالأخطار التي تم رصدها:"; let rep = filteredDailys[0]; document.getElementById('print-date-view').innerText = rep.date; document.getElementById('print-time-view').innerText = rep.time; document.getElementById('print-shift-view').innerText = rep.shift; document.getElementById('print-inspector-view').innerText = rep.inspector; const table = document.getElementById('iso-checklist-table'); table.innerHTML = ""; let trHeader = "<tr>"; Object.keys(dailyChecklistData).reverse().forEach(colKey => { trHeader += `<th>${dailyChecklistData[colKey].title}</th>`; }); trHeader += "</tr>"; table.innerHTML += trHeader; let trBody = "<tr>"; Object.keys(dailyChecklistData).reverse().forEach(colKey => { let colData = dailyChecklistData[colKey]; let cellHtml = "<td>"; const renderItems = (itemsArr, catName) => { itemsArr.forEach(i => { let isChecked = rep.findings.some(f => f.category === catName && f.item === i); let checkClass = isChecked ? "checked" : ""; cellHtml += `<div class="checklist-row-print"><span>${i}</span><span class="checkbox-print ${checkClass}"></span></div>`; }); }; renderItems(colData.items, colData.title); if(colData.title2) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title2}</div>`; renderItems(colData.items2, colData.title2); } if(colData.title3) { cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title3}</div>`; renderItems(colData.items3, colData.title3); } cellHtml += "</td>"; trBody += cellHtml; }); trBody += "</tr>"; table.innerHTML += trBody; } const ctbody = document.getElementById('corrective-tbody'); ctbody.innerHTML = ""; let counter = 1; let statusCounts = { "مغلق": 0, "مفتوح": 0 }; let deptCounts = {}; let allFindingsCount = 0; filteredDailys.forEach(dr => { dr.findings.forEach(f => { allFindingsCount++; let st = f.status || 'مفتوح'; if(st === 'مغلق') statusCounts["مغلق"]++; else statusCounts["مفتوح"]++; deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1; let displayStatus = st === 'مغلق' ? 'انتهى' : 'معلق'; let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545'; let violationText = f.item; let correctiveAction = "لم يحدد"; try { let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/); if(match) { violationText = `<b>${f.item}</b><br><span style="color:#555;font-weight:normal;">${match[1]}</span>`; correctiveAction = match[2]; let tDate = match[3]; if(correctiveAction.includes("[تم تلافي")) { correctiveAction = correctiveAction.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'><br>[$1]</strong>"); } if (tDate !== "غير محدد" && tDate.trim() !== "") { correctiveAction += `<br><span style="color:#777; font-size:8px;">التاريخ المستهدف: ${tDate}</span>`; } } } catch(e){} ctbody.innerHTML += `<tr><td style="text-align:center;">${counter++}</td><td style="text-align:center;">${dr.date}</td><td style="text-align:center;">${dr.time}</td><td style="text-align:center;">${f.location}</td><td style="text-align:right; font-size:10px;">${violationText}</td><td style="text-align:center;">${f.responsible}</td><td style="text-align:right; font-size:10px;">${correctiveAction}</td><td style="background:${statusColor}; color:white; text-align:center; font-weight:bold; font-size:11px;">${displayStatus}</td></tr>`; ctbody.innerHTML += `<tr><td colspan="8" style="text-align:center; background-color:#fafafa; padding: 12px; color: #aaa; border-bottom: 3px solid #000;">صورة المخالفة حالة الرصد (مساحة مخصصة لإرفاق الصور مستقبلاً)</td></tr>`; }); }); if(counter===1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>"; document.getElementById('stat-daily-total').innerText = filteredDailys.length; document.getElementById('stat-daily-findings').innerText = allFindingsCount; let closedPercent = allFindingsCount > 0 ? Math.round((statusCounts["مغلق"] / allFindingsCount) * 100) : 0; document.getElementById('stat-daily-closed').innerText = closedPercent + "%"; if(chartInstancesDaily.dept) chartInstancesDaily.dept.destroy(); if(chartInstancesDaily.status) chartInstancesDaily.status.destroy(); Chart.defaults.font.family = "'Cairo', sans-serif"; Chart.register(ChartDataLabels); chartInstancesDaily.dept = new Chart(document.getElementById('dailyDeptChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(deptCounts), datasets: [{ label: 'المخالفات', data: Object.values(deptCounts), backgroundColor: '#dc3545', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } } }); chartInstancesDaily.status = new Chart(document.getElementById('dailyStatusChart').getContext('2d'), { type: 'pie', data: { labels: ['مغلق', 'مفتوح'], datasets: [{ data: [statusCounts["مغلق"], statusCounts["مفتوح"]], backgroundColor: ['#28a745', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } } }); }
-    function exportDailyPDF() { const el = document.getElementById('printable-daily-report'); if(el.style.display==='none') return alert("برجاء عرض التقرير أولاً."); window.scrollTo(0,0); html2pdf().set({ margin: 0.1, filename: 'Air_Side_Daily_Inspection.pdf', image: {type:'jpeg',quality:1}, html2canvas: {scale:4, useCORS:true, letterRendering: true}, jsPDF: {unit:'in', format:'a4', orientation:'landscape'}, pagebreak: { mode: 'css', avoid: ['.avoid-page-break', 'tr'] } }).from(el).save(); }
-// ==========================================
-    // 03: Incidents & Accidents
-    // ==========================================
+        if (globalDailyInspections.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='color:#777; font-weight:bold; text-align:center;'>لا توجد فحوصات محفوظة.</td></tr>";
+            return;
+        }
+
+        globalDailyInspections.forEach((rep, idx) => {
+            let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">سليم 100%</span>`;
+            tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i> عرض وتعديل</button></td></tr>`;
+        });
+    }
+
+    function generateDailyPrintReport() {
+        let fromD = document.getElementById('dailyFromDate').value;
+        let toD = document.getElementById('dailyToDate').value;
+
+        if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
+
+        document.getElementById('printable-daily-report').style.display = 'block';
+
+        if (globalDailyInspections.length === 0) return alert("لا توجد فحوصات محفوظة للطباعة.");
+
+        let fd = new Date(fromD);
+        let td = new Date(toD);
+        td.setHours(23, 59, 59, 999);
+
+        let filteredDailys = globalDailyInspections.filter(r => {
+            let sd = new Date(r.date);
+            return sd >= fd && sd <= td;
+        });
+
+        if (filteredDailys.length === 0) {
+            alert("لا توجد فحوصات في هذه الفترة.");
+            document.getElementById('printable-daily-report').style.display = 'none';
+            return;
+        }
+
+        let isMultiDay = fromD !== toD;
+
+        if (isMultiDay) {
+            document.getElementById('printable-checklist-report').style.display = 'none';
+            document.getElementById('corrective-title').innerText = `أولاً: تقرير بالأخطار التي تم رصدها (الفترة من ${fromD} إلى ${toD}):`;
+        } else {
+            document.getElementById('printable-checklist-report').style.display = 'block';
+            document.getElementById('corrective-title').innerText = "أولاً: تقرير بالأخطار التي تم رصدها:";
+            let rep = filteredDailys[0];
+            document.getElementById('print-date-view').innerText = rep.date;
+            document.getElementById('print-time-view').innerText = rep.time;
+            document.getElementById('print-shift-view').innerText = rep.shift;
+            document.getElementById('print-inspector-view').innerText = rep.inspector;
+
+            const table = document.getElementById('iso-checklist-table');
+            table.innerHTML = "";
+            let trHeader = "<tr>";
+            Object.keys(dailyChecklistData).reverse().forEach(colKey => {
+                trHeader += `<th>${dailyChecklistData[colKey].title}</th>`;
+            });
+            trHeader += "</tr>";
+            table.innerHTML += trHeader;
+
+            let trBody = "<tr>";
+            Object.keys(dailyChecklistData).reverse().forEach(colKey => {
+                let colData = dailyChecklistData[colKey];
+                let cellHtml = "<td>";
+                const renderItems = (itemsArr, catName) => {
+                    itemsArr.forEach(i => {
+                        let isChecked = rep.findings.some(f => f.category === catName && f.item === i);
+                        let checkClass = isChecked ? "checked" : "";
+                        cellHtml += `<div class="checklist-row-print"><span>${i}</span><span class="checkbox-print ${checkClass}"></span></div>`;
+                    });
+                };
+                renderItems(colData.items, colData.title);
+                if (colData.title2) {
+                    cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title2}</div>`;
+                    renderItems(colData.items2, colData.title2);
+                }
+                if (colData.title3) {
+                    cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title3}</div>`;
+                    renderItems(colData.items3, colData.title3);
+                }
+                cellHtml += "</td>";
+                trBody += cellHtml;
+            });
+            trBody += "</tr>";
+            table.innerHTML += trBody;
+        }
+
+        const ctbody = document.getElementById('corrective-tbody');
+        ctbody.innerHTML = "";
+        let counter = 1;
+        let statusCounts = { "مغلق": 0, "مفتوح": 0 };
+        let deptCounts = {};
+
+        let allFindingsCount = 0;
+        filteredDailys.forEach(dr => {
+            dr.findings.forEach(f => {
+                allFindingsCount++;
+                let st = f.status || 'مفتوح';
+                if (st === 'مغلق') statusCounts["مغلق"]++;
+                else statusCounts["مفتوح"]++;
+                deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1;
+
+                let displayStatus = st === 'مغلق' ? 'انتهى' : 'معلق';
+                let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545';
+
+                let violationText = f.item;
+                let correctiveAction = "لم يحدد";
+
+                try {
+                    let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
+                    if (match) {
+                        violationText = `<b>${f.item}</b><br><span style="color:#555;font-weight:normal;">${match[1]}</span>`;
+                        correctiveAction = match[2];
+                        let tDate = match[3];
+
+                        if (correctiveAction.includes("[تم تلافي")) {
+                            correctiveAction = correctiveAction.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'><br>[$1]</strong>");
+                        }
+                        if (tDate !== "غير محدد" && tDate.trim() !== "") {
+                            correctiveAction += `<br><span style="color:#777; font-size:8px;">التاريخ المستهدف: ${tDate}</span>`;
+                        }
+                    }
+                } catch (e) {}
+
+                ctbody.innerHTML += `
+                <tr>
+                    <td style="text-align:center;">${counter++}</td>
+                    <td style="text-align:center; direction:ltr;">${dr.date}</td>
+                    <td style="text-align:center; direction:ltr;">${dr.time}</td>
+                    <td style="text-align:center;">${f.location}</td>
+                    <td style="text-align:right; font-size:10px;">${violationText}</td>
+                    <td style="text-align:center;">${f.responsible}</td>
+                    <td style="text-align:right; font-size:10px;">${correctiveAction}</td>
+                    <td style="background:${statusColor}; color:white; text-align:center; font-weight:bold; font-size:11px;">${displayStatus}</td>
+                </tr>`;
+
+                ctbody.innerHTML += `
+                <tr>
+                    <td colspan="8" style="text-align:center; background-color:#fafafa; padding: 12px; color: #aaa; border-bottom: 3px solid #000;">
+                        صورة المخالفة حالة الرصد (مساحة مخصصة لإرفاق الصور مستقبلاً)
+                    </td>
+                </tr>`;
+            });
+        });
+
+        if (counter === 1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
+
+        document.getElementById('stat-daily-total').innerText = filteredDailys.length;
+        document.getElementById('stat-daily-findings').innerText = allFindingsCount;
+
+        let closedPercent = allFindingsCount > 0 ? Math.round((statusCounts["مغلق"] / allFindingsCount) * 100) : 0;
+        document.getElementById('stat-daily-closed').innerText = closedPercent + "%";
+
+        if (chartInstancesDaily.dept) chartInstancesDaily.dept.destroy();
+        if (chartInstancesDaily.status) chartInstancesDaily.status.destroy();
+        Chart.defaults.font.family = "'Cairo', sans-serif";
+        Chart.register(ChartDataLabels);
+
+        chartInstancesDaily.dept = new Chart(document.getElementById('dailyDeptChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels: Object.keys(deptCounts), datasets: [{ label: 'المخالفات', data: Object.values(deptCounts), backgroundColor: '#dc3545', borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } }
+        });
+
+        chartInstancesDaily.status = new Chart(document.getElementById('dailyStatusChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: ['مغلق', 'مفتوح'], datasets: [{ data: [statusCounts["مغلق"], statusCounts["مفتوح"]], backgroundColor: ['#28a745', '#dc3545'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+        });
+    }
+
+    function exportDailyPDF() {
+        const el = document.getElementById('printable-daily-report');
+        if (el.style.display === 'none') return alert("برجاء عرض التقرير أولاً قبل الطباعة.");
+        window.scrollTo(0, 0);
+        html2pdf().set({
+            margin: 0.1,
+            filename: 'Air_Side_Daily_Inspection.pdf',
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 4, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: 'css', avoid: ['.avoid-page-break', 'tr'] }
+        }).from(el).save();
+    }
+
+    // ----------------------------------------------------
+    // دوال 03: الحوادث والوقائع (Incidents)
+    // ----------------------------------------------------
     function switchIncidentTab(tab) {
         document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -840,13 +1850,17 @@
         incFileName = file.name;
         incFileType = file.type;
         const reader = new FileReader();
-        reader.onload = function(e) { incFileBase64 = e.target.result.split(',')[1]; };
+        reader.onload = function(e) {
+            incFileBase64 = e.target.result.split(',')[1];
+        };
         reader.readAsDataURL(file);
     }
 
     function updateIncidentNavCounter() {
         const ctr = document.getElementById('nav-incident-counter');
-        if (ctr) ctr.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`;
+        if (ctr) {
+            ctr.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`;
+        }
     }
 
     function clearIncidentForm() {
@@ -864,6 +1878,7 @@
         let now = new Date();
         let offset = now.getTimezoneOffset() * 60000;
         let local = (new Date(now - offset)).toISOString().slice(0, -1);
+        
         document.getElementById('incDate').value = local.split('T')[0];
         document.getElementById('incTime').value = local.split('T')[1].substring(0, 5);
 
@@ -872,6 +1887,7 @@
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
         btn.style.backgroundColor = "#dc3545";
         btn.style.color = "#fff";
+        
         updateIncidentNavCounter();
     }
 
@@ -881,12 +1897,14 @@
         else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1;
         else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++;
         else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
+
         navIncidentTo(currentIncidentIndex);
     }
 
     function navIncidentTo(idx) {
         currentIncidentIndex = idx;
         let inc = globalIncidents[currentIncidentIndex];
+        
         document.getElementById('incidentForm').reset();
 
         document.getElementById('incDate').value = inc.Date ? new Date(inc.Date).toISOString().split('T')[0] : '';
@@ -897,6 +1915,11 @@
         document.getElementById('incDriver').value = inc.Driver_Name || 'NIL';
         document.getElementById('incEqOwner').value = inc.Equipment_Owned || 'NIL';
         document.getElementById('incStatus').value = inc.Status || 'In service';
+        
+        // الخانات الجديدة
+        document.getElementById('incPosition').value = inc.Position || 'NIL';
+        document.getElementById('incInjuryType').value = inc.Injury_Type || 'NIL';
+        document.getElementById('incCausesDetails').value = inc.Causes_Details || '';
 
         let chks = inc.Checkboxes ? inc.Checkboxes.split(',') : [];
         document.getElementById('chkIncPersonnel').checked = chks.includes('Personnel');
@@ -930,6 +1953,7 @@
         }
 
         updateIncidentNavCounter();
+
         isIncidentEditMode = true;
         currentIncidentEditId = inc.ID;
 
@@ -981,7 +2005,10 @@
             description: document.getElementById('incDesc').value,
             actionTaken: document.getElementById('incAction').value,
             recommendation: document.getElementById('incRec').value,
-            Attachment_URL: isIncidentEditMode ? globalIncidents[currentIncidentIndex].Attachment_URL : ""
+            Attachment_URL: isIncidentEditMode ? globalIncidents[currentIncidentIndex].Attachment_URL : "",
+            position: document.getElementById('incPosition').value,
+            injuryType: document.getElementById('incInjuryType').value,
+            causesDetails: document.getElementById('incCausesDetails').value
         };
 
         let postData = {
@@ -1030,7 +2057,10 @@
                 Description: payload.description,
                 Action_Taken: payload.actionTaken,
                 Recommendation: payload.recommendation,
-                Attachment_URL: payload.Attachment_URL
+                Attachment_URL: payload.Attachment_URL,
+                Position: payload.position,
+                Injury_Type: payload.injuryType,
+                Causes_Details: payload.causesDetails
             };
 
             if (isIncidentEditMode) {
@@ -1051,6 +2081,24 @@
             btn.disabled = false;
             document.getElementById('incMsg').style.color = "red";
             document.getElementById('incMsg').innerText = "❌ خطأ في الإرسال.";
+        }
+    }
+
+    async function deleteIncidentRecord(idx) {
+        if (!confirm("هل أنت متأكد من رغبتك في حذف هذه الواقعة تماماً؟")) return;
+        
+        let inc = globalIncidents[idx];
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "deleteIncident", id: inc.ID }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            globalIncidents.splice(idx, 1);
+            renderSavedIncidents();
+            alert("تم الحذف بنجاح!");
+        } catch (err) {
+            alert("خطأ أثناء الحذف!");
         }
     }
 
@@ -1076,8 +2124,9 @@
                 <td>${inc.Prepared_By}</td>
                 <td style="font-size:1.2rem;">${fileIcon}</td>
                 <td>
-                    <button type="button" onclick="navIncidentTo(${idx})" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i></button> 
-                    <button type="button" onclick="prepareIncidentPrint(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-print"></i></button>
+                    <button type="button" onclick="navIncidentTo(${idx})" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button> 
+                    <button type="button" onclick="prepareIncidentPrint(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="طباعة"><i class="fa-solid fa-print"></i></button>
+                    <button type="button" onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>`;
         });
@@ -1097,20 +2146,44 @@
 
         document.getElementById('pIncLoc').innerText = inc.Location || "NIL";
         document.getElementById('pIncInj').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved;
-        document.getElementById('pIncNames').innerText = inc.Driver_Name || "NIL";
+        document.getElementById('pIncInjType').innerText = inc.Injury_Type || "NIL";
+        document.getElementById('pIncNames').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved; 
         document.getElementById('pIncOwner').innerText = inc.Equipment_Owned || "NIL";
-        document.getElementById('pIncTime').innerText = inc.Time || "";
-        document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "";
-        document.getElementById('pIncDriver').innerText = inc.Prepared_By || "NIL";
+        document.getElementById('pIncTime').innerText = inc.Time || "NIL";
+        document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
+        document.getElementById('pIncDriver').innerText = inc.Driver_Name || "NIL";
+        document.getElementById('pIncPosition').innerText = inc.Position || "NIL";
+        document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; // Equipment_No is used as Aircraft Type in our mapping
 
-        let route = ((inc.ORG_VIA || "NIL") + " / " + (inc.VIA_DST || "NIL")).toUpperCase();
-        let fltTxt = `Airline/Agent: ${inc.CAR || 'NIL'}<br>Flight NO: ${inc.Flight_No || 'NIL'}<br>Registration: ${inc.REG || 'NIL'}<br>Route: ${route}`;
-        document.getElementById('pIncFlightDetails').innerHTML = fltTxt;
+        let route = ((inc.ORG_VIA || "NIL") + " - " + (inc.VIA_DST || "NIL")).toUpperCase();
+        document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG || 'NIL'}<br>Route: ${route}`;
+        document.getElementById('pIncAirlineDetails').innerHTML = `Airline: ${inc.CAR || 'NIL'}`;
 
         document.getElementById('pIncDesc').innerText = inc.Description || "NIL";
         document.getElementById('pIncHazard').innerText = inc.Hazard_Description || "NIL";
-        document.getElementById('pIncCauseList').innerHTML = `<div style="margin-bottom:3px;"><span class="checkbox-print checked"></span> ${inc.Occurrence_Causes}</div>`;
-        document.getElementById('pIncCharList').innerHTML = `<div style="margin-bottom:3px;"><span class="checkbox-print checked"></span> ${inc.Characterization}</div>`;
+        document.getElementById('pIncCausesDetails').innerText = inc.Causes_Details || "NIL";
+        
+        let selectedCause = inc.Occurrence_Causes || "";
+        let causesHTML = `
+            <div class="iso-checklist-row">Human Causes / أسباب بشرية <span class="iso-check-box ${selectedCause.includes('Human') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Natural Causes / أسباب طبيعية <span class="iso-check-box ${selectedCause.includes('Natural') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Technical Causes / أسباب فنية <span class="iso-check-box ${selectedCause.includes('Technical') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Legal Causes / أسباب قانونية <span class="iso-check-box ${selectedCause.includes('Legal') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Organizational Causes / أسباب تنظيمية <span class="iso-check-box ${selectedCause.includes('Organizational') ? 'checked' : 'empty'}"></span></div>
+        `;
+        document.getElementById('pIncCauseList').innerHTML = causesHTML;
+
+        let selectedChar = inc.Characterization || "";
+        let charHTML = `
+            <div class="iso-checklist-row">Equipment Accident / حادث معدة <span class="iso-check-box ${selectedChar.includes('Equipment') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Leakage / Spill / تسريب إنسكاب <span class="iso-check-box ${selectedChar.includes('Leakage') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Passengers / ركاب <span class="iso-check-box ${selectedChar.includes('Passengers') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Fire Alarm / إنذار حريق <span class="iso-check-box ${selectedChar.includes('Fire') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Others / أخرى <span class="iso-check-box ${selectedChar.includes('Others') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row">Bird/Animal Strike / اصطدام <span class="iso-check-box ${selectedChar.includes('Bird') ? 'checked' : 'empty'}"></span></div>
+        `;
+        document.getElementById('pIncCharList').innerHTML = charHTML;
+
         document.getElementById('pIncAction').innerText = inc.Action_Taken || "NIL";
         document.getElementById('pIncRec').innerText = inc.Recommendation || "NIL";
         document.getElementById('pIncPreparedBy').innerText = inc.Prepared_By || "";
@@ -1148,6 +2221,7 @@
     function generateMonthlyIncidents() {
         let fromD = document.getElementById('incFromDate').value;
         let toD = document.getElementById('incToDate').value;
+        
         if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
 
         document.getElementById('printable-monthly-incidents').style.display = 'block';
@@ -1161,6 +2235,7 @@
             let sd = new Date(r.Date);
             let inDate = (sd >= fd && sd <= td);
             if (currentIncidentFilter === 'All') return inDate;
+            if (currentIncidentFilter === 'Technical') return inDate && r.Occurrence_Causes.includes('Technical');
             return inDate && r.Characterization.includes(currentIncidentFilter);
         });
 
@@ -1224,9 +2299,9 @@
         }).from(el).save();
     }
 
-    // ==========================================
-    // 04: SPI Functions
-    // ==========================================
+    // ----------------------------------------------------
+    // دوال 04: مؤشرات الأداء (SPI)
+    // ----------------------------------------------------
     function switchSpiTab(tab) {
         document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -1341,9 +2416,9 @@
         container.innerHTML = tableHtml;
     }
 
-    // ==========================================
-    // User Functions
-    // ==========================================
+    // ----------------------------------------------------
+    // إدارة الحسابات
+    // ----------------------------------------------------
     async function addUser(e) {
         e.preventDefault();
         const msg = document.getElementById('userMsg');
