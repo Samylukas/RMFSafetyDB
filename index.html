@@ -110,10 +110,24 @@
     .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
     .iso-row:last-child { border-bottom: none; }
     .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
-.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
-.iso-box-content { padding: 10px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 45px; }    
-.iso-checklist-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
-    .iso-check-box.empty { background: #fff; }
+.iso-box-content { 
+        padding: 2px 5px !important; 
+        font-size: 11px !important; 
+        line-height: 1.2 !important; 
+        min-height: 15px !important; 
+        text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    }
+    
+    .iso-val { 
+        padding: 1px 5px !important; 
+        min-height: 15px !important; 
+        width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; font-size: 11px !important; 
+    }
+    
+    .iso-checklist-row { 
+        padding: 1px 10px !important; 
+        gap: 8px; font-weight: bold; font-size: 10px !important; display: flex; align-items: center; direction: rtl;
+    }
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
