@@ -2278,8 +2278,20 @@
         document.getElementById('pIncInjType').innerText = inc.Injury_Type || "NIL";
         document.getElementById('pIncNames').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved; 
         document.getElementById('pIncOwner').innerText = inc.Equipment_Owned || "NIL";
-        document.getElementById('pIncTime').innerText = inc.Time || "NIL";
-        document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
+let formattedTime = "NIL";
+if (inc.Time && inc.Time !== "NIL") {
+    if (inc.Time.includes('T')) {
+        let dateObj = new Date(inc.Time);
+        if (!isNaN(dateObj)) {
+            let hrs = String(dateObj.getHours()).padStart(2, '0');
+            let mins = String(dateObj.getMinutes()).padStart(2, '0');
+            formattedTime = `${hrs}:${mins}`;
+        }
+    } else {
+        formattedTime = inc.Time;
+    }
+}
+document.getElementById('pIncTime').innerText = formattedTime;        document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
         document.getElementById('pIncDriver').innerText = inc.Driver_Name || "NIL";
         document.getElementById('pIncPosition').innerText = inc.Position || "NIL";
         document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; 
@@ -2395,31 +2407,40 @@
             let firstRow = true;
 
             items.forEach((inc) => {
-                let d = inc.Date ? inc.Date.split('T')[0] : '';
-                let descSafe = inc.Description || '';
-                let actSafe = inc.Action_Taken || '';
-                
-                let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${descSafe}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${actSafe}</span>`;
-                let airlineHtml = `Airline:<br>${inc.CAR || inc.Equipment_Owned || '-'}<br>Agent:<br>-`;
+             let d = inc.Date ? inc.Date.split('T')[0] : '';
+             let descSafe = inc.Description || '';
+             let actSafe = inc.Action_Taken || '';
 
-                let row = `<tr>`;
-                if (firstRow) {
-                    row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${counter < 10 ? '0' + counter : counter}</td><td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${cat}</td>`;
-                }
+             let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${descSafe}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${actSafe}</span>`;
+             let airlineHtml = `<strong>Airline / Agent:</strong> <span style="color:#003366;">${inc.CAR || inc.Equipment_Owned || '-'}</span>`;
 
-                row += `
-                    <td style="text-align:justify; padding:15px; direction:ltr;">${detailsHtml}</td>
-                    <td style="text-align:center; direction:ltr;">${d}</td>
-                    <td style="text-align:center; direction:ltr;">${airlineHtml}</td>
-                `;
+             let row = `<tr>`;
 
-                if (firstRow) {
-                    row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold; font-size:1.2rem;">${items.length < 10 ? '0' + items.length : items.length}</td>`;
-                    firstRow = false;
-                }
-                row += `</tr>`;
-                tbody.innerHTML += row;
-            });
+             // العمود الأول والثاني: التسلسل والتصنيف (بيدمجوا الخلايا)
+             if (firstRow) {
+                 row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${counter < 10 ? '0' + counter : counter}</td>`;
+                 row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${cat}</td>`;
+             }
+
+             // العمود الثالث: التاريخ
+             row += `<td style="text-align:center; direction:ltr; vertical-align:top; padding:10px;">${d}</td>`;
+
+             // العمود الرابع: البيانات والجهة المسببة
+             row += `<td style="text-align:justify; padding:10px; direction:ltr; vertical-align:top;">
+                         ${airlineHtml}
+                         <hr style="border-top:1px dashed #ccc; margin:8px 0;">
+                         ${detailsHtml}
+                     </td>`;
+
+             // العمود الخامس: الإجمالي (بيدمج الخلايا)
+             if (firstRow) {
+                 row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold; font-size:1.2rem; color:#dc3545;">${items.length < 10 ? '0' + items.length : items.length}</td>`;
+                 firstRow = false;
+             }
+
+             row += `</tr>`;
+             tbody.innerHTML += row;
+         });
             counter++;
         });
         tbody.innerHTML += `</tbody>`;
