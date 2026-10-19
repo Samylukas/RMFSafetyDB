@@ -112,8 +112,7 @@
     .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
 .iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
 .iso-box-content { padding: 10px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 45px; }    
-    .iso-checklist-row { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}
-    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
+.iso-checklist-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
     .iso-check-box.empty { background: #fff; }
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -165,7 +164,7 @@
       <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')"><i class="fa-solid fa-dove dept-icon icon-nature"></i><h3 class="dept-title">البيئة والحياة البرية</h3><div class="dept-subtitle">Environment & Wildlife</div></div>
       <div class="dept-card" onclick="openSection('account-management-section')"><i class="fa-solid fa-users-gear dept-icon icon-users"></i><h3 class="dept-title">إدارة الحسابات</h3><div class="dept-subtitle">Account Management</div></div>
       <div class="dept-card" onclick="openSection('directory-section')">
-    <i class="fa-solid fa-address-book dept-icon" style="color: #ff9800;"></i>
+    <i class="fa-solid fa-address-card dept-icon" style="color: #ff9800;"></i>
     <h3 class="dept-title">دليل هواتف المطار</h3>
     <div class="dept-subtitle">Airport Phone Directory</div>
 </div>
@@ -2510,24 +2509,26 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         document.getElementById('pIncHazard').innerText = inc.Hazard_Description || "NIL";
         document.getElementById('pIncCausesDetails').innerText = inc.Causes_Details || "NIL";
         
-        let selectedCause = inc.Occurrence_Causes || "";
+      let selectedCause = inc.Occurrence_Causes || "";
+        // المربع اليمين: التشيك بوكس على اليمين والنص على الشمال (محاذاة لليمين)
         let causesHTML = `
-            <div class="iso-checklist-row">Human Causes / أسباب بشرية <span class="iso-check-box ${selectedCause.includes('Human') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Natural Causes / أسباب طبيعية <span class="iso-check-box ${selectedCause.includes('Natural') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Technical Causes / أسباب فنية <span class="iso-check-box ${selectedCause.includes('Technical') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Legal Causes / أسباب قانونية <span class="iso-check-box ${selectedCause.includes('Legal') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Organizational Causes / أسباب تنظيمية <span class="iso-check-box ${selectedCause.includes('Organizational') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Human') ? 'checked' : 'empty'}"></span> أسباب بشرية / Human Causes</div>
+            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Natural') ? 'checked' : 'empty'}"></span> أسباب طبيعية / Natural Causes</div>
+            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Technical') ? 'checked' : 'empty'}"></span> أسباب فنية / Technical Causes</div>
+            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Legal') ? 'checked' : 'empty'}"></span> أسباب قانونية / Legal Causes</div>
+            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Organizational') ? 'checked' : 'empty'}"></span> أسباب تنظيمية / Organizational Causes</div>
         `;
         document.getElementById('pIncCauseList').innerHTML = causesHTML;
 
         let selectedChar = inc.Characterization || "";
+        // المربع الشمال: التشيك بوكس على الشمال والنص على اليمين (محاذاة لليمين)
         let charHTML = `
-            <div class="iso-checklist-row">Equipment Accident / حادث معدة <span class="iso-check-box ${selectedChar.includes('Equipment') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Leakage / Spill / تسريب إنسكاب <span class="iso-check-box ${selectedChar.includes('Leakage') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Passengers / ركاب <span class="iso-check-box ${selectedChar.includes('Passengers') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Fire Alarm / إنذار حريق <span class="iso-check-box ${selectedChar.includes('Fire') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Others / أخرى <span class="iso-check-box ${selectedChar.includes('Others') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row">Bird/Animal Strike / اصطدام <span class="iso-check-box ${selectedChar.includes('Bird') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>حادث معدة / Equipment Accident</span><span class="iso-check-box ${selectedChar.includes('Equipment') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>تسريب إنسكاب / Leakage / Spill</span><span class="iso-check-box ${selectedChar.includes('Leakage') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>ركاب / Passengers</span><span class="iso-check-box ${selectedChar.includes('Passengers') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>إنذار حريق / Fire Alarm</span><span class="iso-check-box ${selectedChar.includes('Fire') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>أخرى / Others</span><span class="iso-check-box ${selectedChar.includes('Others') ? 'checked' : 'empty'}"></span></div>
+            <div class="iso-checklist-row" style="justify-content: space-between;"><span>اصطدام / Bird/Animal Strike</span><span class="iso-check-box ${selectedChar.includes('Bird') ? 'checked' : 'empty'}"></span></div>
         `;
         document.getElementById('pIncCharList').innerHTML = charHTML;
 
