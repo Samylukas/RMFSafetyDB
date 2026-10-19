@@ -110,9 +110,7 @@
     .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
     .iso-row:last-child { border-bottom: none; }
     .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
-.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
-.iso-box-content { padding: 10px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 45px; }    
-.iso-checklist-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
+.iso-val { padding: 2px 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; font-size: 11px; }.iso-box-content { padding: 5px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 20px; }.iso-checklist-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
     .iso-check-box.empty { background: #fff; }
 
     @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -164,8 +162,7 @@
       <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')"><i class="fa-solid fa-dove dept-icon icon-nature"></i><h3 class="dept-title">البيئة والحياة البرية</h3><div class="dept-subtitle">Environment & Wildlife</div></div>
       <div class="dept-card" onclick="openSection('account-management-section')"><i class="fa-solid fa-users-gear dept-icon icon-users"></i><h3 class="dept-title">إدارة الحسابات</h3><div class="dept-subtitle">Account Management</div></div>
      <div class="dept-card" onclick="openSection('directory-section')">
-    <i class="fa-solid fa-address-card dept-icon" style="color: #ff9800;"></i>
-    <h3 class="dept-title">دليل هواتف المطار</h3>
+<i class="fa-solid fa-phone" style="color: #ff9800; font-size: 3rem;"></i>    <h3 class="dept-title">دليل هواتف المطار</h3>
     <div class="dept-subtitle">Airport Phone Directory</div>
 </div>
 </div>
@@ -2452,8 +2449,8 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         const el = document.getElementById('printable-incident-report');
         if (el.style.display === 'none') return alert("برجاء اختيار واقعة للطباعة أولاً.");
         html2pdf().set({
-            margin: 0.1,
-            filename: 'Incident_Safety_Report.pdf',
+margin: [0.05, 0.05, 0.05, 0.05],
+          filename: 'Incident_Safety_Report.pdf',
             image: { type: 'jpeg', quality: 1 },
             html2canvas: { scale: 4, useCORS: true, letterRendering: true },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -2515,12 +2512,15 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         let counter = 1;
         Object.keys(grouped).forEach(cat => {
             let items = grouped[cat];
+          items.sort((a, b) => new Date(a.Date) - new Date(b.Date));
             let firstRow = true;
 
-            items.forEach((inc) => {
-                let d = inc.Date ? inc.Date.split('T')[0] : '';
-                let descSafe = inc.Description || '';
-                let actSafe = inc.Action_Taken || '';
+           let d = inc.Date ? inc.Date.split('T')[0] : '';
+                // قراءة الوصف والإجراء سواء كان اسم الخانة كابيتال أو سمول
+                let descSafe = inc.Description || inc.description || 'لا يوجد وصف';
+                let actSafe = inc.Action_Taken || inc.action_Taken || inc.actionTaken || 'لا يوجد إجراء';
+                
+                let detailsHtml = `<strong style="font-size:12px;">Description:</strong><br><span style="color:#555; font-size:11px;">${descSafe}</span><br><br><strong style="font-size:12px;">Action Taken:</strong><br><span style="color:#28a745; font-size:11px;">${actSafe}</span>`;
                 
                 let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${descSafe}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${actSafe}</span>`;
                 let airlineHtml = `<strong>Airline / Agent:</strong> <span style="color:#003366;">${inc.CAR || inc.Equipment_Owned || '-'}</span>`;
@@ -2875,4 +2875,3 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
 </script>
 </body>
 </html>
-
