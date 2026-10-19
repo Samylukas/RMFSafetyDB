@@ -14,7 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
-   *:not(i):not([class^="fa-"]):not([class*=" fa-"]) {
+ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, label, input, button, select, textarea {
     font-family: 'Cairo', sans-serif !important;
 }
     /* إخفاء علامات المتصفح الافتراضية للبحث */
@@ -163,10 +163,11 @@
       <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')"><i class="fa-solid fa-hard-hat dept-icon icon-health"></i><h3 class="dept-title">السلامة والصحة المهنية</h3><div class="dept-subtitle">Occupational Safety & Health</div></div>
       <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')"><i class="fa-solid fa-dove dept-icon icon-nature"></i><h3 class="dept-title">البيئة والحياة البرية</h3><div class="dept-subtitle">Environment & Wildlife</div></div>
       <div class="dept-card" onclick="openSection('account-management-section')"><i class="fa-solid fa-users-gear dept-icon icon-users"></i><h3 class="dept-title">إدارة الحسابات</h3><div class="dept-subtitle">Account Management</div></div>
-      <div class="dept-card" onclick="openSection('directory-section')">
+     <div class="dept-card" onclick="openSection('directory-section')">
     <i class="fa-solid fa-address-card dept-icon" style="color: #ff9800;"></i>
     <h3 class="dept-title">دليل هواتف المطار</h3>
     <div class="dept-subtitle">Airport Phone Directory</div>
+</div>
 </div>
     </div>
   </div>
@@ -894,7 +895,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbypvOyiqVNAEDxz__bkJRYmBDyPHCuw5XV0-nYdDspg6gNOKYUL4ZAomnYFYZBQeTJK/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
 
     const criteriaList = [
         "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
@@ -952,105 +953,7 @@
     let globalSpiData = []; 
     let globalDailyInspections = []; 
     let globalIncidents = [];
-let globalDirectory = [
-        // الإدارة العليا وممثلي الوزارة
-        { ID: "DIR-1", Department: "الإدارة العليا", Name: "الكابتن / هشام القشاط", Role: "مدير عام المطار", Ext: "1001", Mobile: "0100 3434 688" },
-        { ID: "DIR-2", Department: "الإدارة العليا", Name: "لواء / أيمن شريف", Role: "نائب مدير المطار", Ext: "1002", Mobile: "0101 245 5555" },
-        { ID: "DIR-3", Department: "الإدارة العليا", Name: "أ / عبد السلام السيد", Role: "مدير مكتب مدير المطار", Ext: "1003", Mobile: "0100 3434 688" },
-        { ID: "DIR-4", Department: "ممثل وزارة الطيران", Name: "اللواء / ممدوح دنيا", Role: "ممثل الطيران المدني بالمطار", Ext: "5900", Mobile: "0100 6099 305" },
-        
-        // العلاقات العامة والتجاري والعوائق
-        { ID: "DIR-5", Department: "العلاقات العامة والإعلام", Name: "أ/ حاتم محمود كامل", Role: "مدير عام إدارة العلاقات العامة", Ext: "4300", Mobile: "0100 6720 015" },
-        { ID: "DIR-6", Department: "العلاقات العامة والإعلام", Name: "أ/ مارينا مجدي وليم", Role: "أخصائي علاقات عامة وإعلام", Ext: "4302", Mobile: "0120 1741 728" },
-        { ID: "DIR-7", Department: "الأنشطة التجارية", Name: "أ/ محمد صالح", Role: "مسئول أول أصول تجارية", Ext: "4301", Mobile: "0109 1705 379" },
-        { ID: "DIR-8", Department: "الأنشطة التجارية", Name: "أ/ أحمد مصطفى", Role: "مسئول أصول تجارية", Ext: "4301", Mobile: "0106 7442 299" },
-        { ID: "DIR-9", Department: "إدارة العوائق", Name: "م/ حازم كمال حمدي", Role: "مراقب العوائق", Ext: "2222", Mobile: "0100 3434 619" },
-
-        // القطاع الهندسي
-        { ID: "DIR-10", Department: "الإدارة العامة للهندسة", Name: "م / هيثم محمد جمال", Role: "مدير عام الإدارة الهندسية", Ext: "3000", Mobile: "0100 240 9001" },
-        { ID: "DIR-11", Department: "الإدارة العامة للهندسة", Name: "أ/ أيمن على محمد أحمد", Role: "رئيس قسم المتابعة بالإدارة الهندسية", Ext: "3001", Mobile: "0100 630 7878" },
-        { ID: "DIR-12", Department: "الهندسة الميكانيكية", Name: "م / محمد على", Role: "نائب مدير إدارة الهندسة الميكانيكية", Ext: "3040", Mobile: "0101 458 0932" },
-        { ID: "DIR-13", Department: "الهندسة الميكانيكية", Name: "أ/ عادل عبد العزيز", Role: "رئيس قسم ميكانيكا الورش والمحطات", Ext: "3011", Mobile: "0100 601 3483" },
-        { ID: "DIR-14", Department: "الهندسة الميكانيكية", Name: "أ/ بلال عيد", Role: "رئيس قسم صيانة السيارات والمعدات", Ext: "3013", Mobile: "0122 732 0497" },
-        { ID: "DIR-15", Department: "الهندسة الكهربائية", Name: "م / يوسف صلاح", Role: "مهندس كهرباء", Ext: "3020", Mobile: "0109 5394 221" },
-        { ID: "DIR-16", Department: "الهندسة المدنية", Name: "م / بهاء الدين كمال", Role: "مدير إدارة الهندسة المدنية", Ext: "3030", Mobile: "0102 227 0657" },
-        { ID: "DIR-17", Department: "الهندسة المدنية", Name: "م / مصطفى الليثي", Role: "مهندس مدنی", Ext: "3034", Mobile: "0103 3391 351" },
-        { ID: "DIR-18", Department: "الهندسة المدنية", Name: "أ/ عبيد حسن", Role: "قسم الأعمال المدنية", Ext: "3031", Mobile: "0102 6070 785" },
-        
-        // الاتصالات وتكنولوجيا المعلومات
-        { ID: "DIR-19", Department: "الإتصالات وتكنولوجيا المعلومات", Name: "م / إسلام أحمد", Role: "رئيس قسم تيار خفيف", Ext: "3200", Mobile: "0100 5548 725" },
-        { ID: "DIR-20", Department: "الإتصالات وتكنولوجيا المعلومات", Name: "أ/ أحمد كامل", Role: "رئيس قسم المساعدات الملاحية", Ext: "3110", Mobile: "0100 8524 676" },
-
-        // العمليات
-        { ID: "DIR-21", Department: "الإدارة العامة للعمليات", Name: "ك / محمد صالح", Role: "مدير الإدارة العامة للعمليات", Ext: "4000", Mobile: "0100 1070 758" },
-        { ID: "DIR-22", Department: "الإدارة العامة للعمليات", Name: "ك/ عبد الرحمن النوبيري", Role: "مدير إدارة التشغيل وخدمة العملاء", Ext: "4010", Mobile: "0100 3888 950" },
-        { ID: "DIR-23", Department: "الإدارة العامة للعمليات", Name: "ك / محمد سمير", Role: "مدير إدارة الانظمة والازمات", Ext: "4020", Mobile: "0102 099 3996" },
-        { ID: "DIR-24", Department: "الإدارة العامة للعمليات", Name: "ك/ علاء محمود", Role: "مدير إدارة المهبط", Ext: "4030", Mobile: "0122 0985 225" },
-        { ID: "DIR-25", Department: "الإدارة العامة للعمليات", Name: "ك/ أحمد كليب", Role: "مدير إدارة شئون العمليات", Ext: "4040", Mobile: "0122 577 7347" },
-
-        // الأمن والمطابقة والجودة
-        { ID: "DIR-26", Department: "الأمن والأنظمة الأمنية", Name: "لواء / إيهاب مصطفى سلام", Role: "مدير الإدارة العامة للأمن", Ext: "1030", Mobile: "0100 6622 266" },
-        { ID: "DIR-27", Department: "الأمن والأنظمة الأمنية", Name: "أ/ إسلام المغربي", Role: "مراقب أمن طيران", Ext: "1033", Mobile: "0100 4626 360" },
-        { ID: "DIR-28", Department: "الأمن والأنظمة الأمنية", Name: "أ/ مؤمن حسين", Role: "رئيس قسم التصاريح", Ext: "1034", Mobile: "0101 1968 821" },
-        { ID: "DIR-29", Department: "المطابقة والسلامة", Name: "أ/ محمد مرسى", Role: "مدير إدارة السلامة والمطابقة", Ext: "4201", Mobile: "0100 7225 309" },
-        { ID: "DIR-30", Department: "المطابقة والسلامة", Name: "أ/ أحمد عبد الحميد", Role: "مدير السلامة والصحة المهنية", Ext: "4202", Mobile: "0102 6070 766" },
-        { ID: "DIR-31", Department: "المطابقة والسلامة", Name: "أ/ سامي أبسخرون", Role: "مدیر سلامة المطارات", Ext: "4203", Mobile: "0122 4861 947" },
-        { ID: "DIR-32", Department: "المطابقة والسلامة", Name: "أ/ أحمد إسماعيل", Role: "رئيس قسم البيئة ومكافحة مخاطر الحياة البرية", Ext: "4205", Mobile: "0100 173 6395" },
-        { ID: "DIR-33", Department: "المطابقة والسلامة", Name: "أ/ إسلام خالد", Role: "مسئول سلامة الحماية المدنية", Ext: "4206", Mobile: "0106 244 6474" },
-        { ID: "DIR-34", Department: "المطابقة والسلامة", Name: "أ/ حسن جاد الرب", Role: "مسئول سلامة جوية", Ext: "-", Mobile: "0106 078 6886" },
-        { ID: "DIR-35", Department: "المطابقة والسلامة", Name: "أ/ عبد الرحمن عامر", Role: "مسئول سلامة جوية", Ext: "-", Mobile: "0106 428 0876" },
-        { ID: "DIR-36", Department: "الجودة الشاملة", Name: "أ/ عصام سيد عباس", Role: "مدير إدارة الجودة الشاملة", Ext: "3300", Mobile: "0102 238 8497" },
-        { ID: "DIR-37", Department: "الجودة الشاملة", Name: "أ/ عبد الله أحمد سعد", Role: "رئيس قسم تأكيد الجودة", Ext: "3302", Mobile: "0109 003 0335" },
-        { ID: "DIR-38", Department: "الجودة الشاملة", Name: "أ/ أحمد رمضان", Role: "رئيس قسم رقابة الجودة", Ext: "-", Mobile: "0102 555 4445" },
-
-        // الشئون المالية والإدارية والمخازن
-        { ID: "DIR-39", Department: "الشئون المالية والإدارية", Name: "أ/ أيمن عفيفي", Role: "مدير عام الشئون المالية والإدارية", Ext: "-", Mobile: "-" },
-        { ID: "DIR-40", Department: "الإدارة المالية", Name: "أ/ رامى عبد الحكيم", Role: "المدير المالي", Ext: "1021", Mobile: "0100 393 0055" },
-        { ID: "DIR-41", Department: "الإدارة المالية", Name: "أ/ عمر أنور", Role: "مدير الحسابات", Ext: "1022", Mobile: "0102 605 1050" },
-        { ID: "DIR-42", Department: "الإدارة المالية", Name: "أ/ محمد عبده", Role: "مدير الحسابات", Ext: "1023", Mobile: "0122 450 9575" },
-        { ID: "DIR-43", Department: "الإدارة المالية", Name: "أ/ خالد عبد الظاهر", Role: "رئيس الحسابات", Ext: "1024", Mobile: "0122 9042 076" },
-        { ID: "DIR-44", Department: "الإدارة المالية", Name: "أ/ محمود عبد المنعم", Role: "رئيس المدفوعات", Ext: "1025", Mobile: "0109 5392 148" },
-        { ID: "DIR-45", Department: "المخازن", Name: "أ/ محمد شفيق", Role: "مدير المخزن", Ext: "1026", Mobile: "0102 555 0778" },
-        { ID: "DIR-46", Department: "المخازن", Name: "أ/ إبراهيم محمد", Role: "رئيس مخزن", Ext: "1027", Mobile: "0100 6486 358" },
-        { ID: "DIR-47", Department: "المخازن", Name: "أ/ الحسن سعيد", Role: "مساعد أمين مخزن", Ext: "1027", Mobile: "0107 0946 522" },
-        { ID: "DIR-48", Department: "إدارة المشتريات", Name: "أ/ مصطفى ذكى", Role: "مدير إدارة المشتريات", Ext: "3400", Mobile: "0102 113 5134" },
-        { ID: "DIR-49", Department: "إدارة المشتريات", Name: "أ / يحيى نصر", Role: "رئيس قسم المشتريات", Ext: "3400", Mobile: "0100 9515 101" },
-        { ID: "DIR-50", Department: "إدارة المشتريات", Name: "أ / زكريا أحمد", Role: "رئيس قسم المشتريات", Ext: "3401", Mobile: "0103 2805 585" },
-        { ID: "DIR-51", Department: "إدارة المشتريات", Name: "أ/ مصطفى كمال", Role: "مسئول أول مشتريات", Ext: "3402", Mobile: "0106 399 2515" },
-        { ID: "DIR-52", Department: "إدارة المشتريات", Name: "أ/ عبد الغنى أحمد", Role: "مسئول أول مشتريات", Ext: "3400", Mobile: "0102 9283 334" },
-        { ID: "DIR-53", Department: "إداريات مبنى الركاب", Name: "أ/ محمد فؤاد", Role: "مدير إداري مبنى الركاب", Ext: "1019", Mobile: "0100 8105 004" },
-        { ID: "DIR-54", Department: "إداريات مبنى الركاب", Name: "أ/ محمد مبارك", Role: "مشرف صالة بمبنى الركاب", Ext: "1019", Mobile: "0106 664 5278" },
-        { ID: "DIR-55", Department: "إداريات مبنى الركاب", Name: "أ/ مصطفى صابرين", Role: "مساعد إداري أول", Ext: "1019", Mobile: "0106 720 2984" },
-
-        // الجهات السيادية والشرطية
-        { ID: "DIR-56", Department: "شرطة أمن الموانئ", Name: "عقيد / طارق حسن", Role: "مدير أمن الموانى", Ext: "5100", Mobile: "0102 8284 383" },
-        { ID: "DIR-57", Department: "شرطة أمن الموانئ", Name: "عقيد مينا هانی فهمی", Role: "رئيس العمليات", Ext: "5101", Mobile: "0106 3212 163" },
-        { ID: "DIR-58", Department: "شرطة أمن الموانئ", Name: "مقدم / رامي محمد صلاح", Role: "رئيس المباحث", Ext: "5102", Mobile: "0101 5135 555" },
-        { ID: "DIR-59", Department: "شرطة أمن الموانئ", Name: "مقدم / أحمد محمد النجمي", Role: "نائب رئيس المباحث", Ext: "5103", Mobile: "0106 3212 163" },
-        { ID: "DIR-60", Department: "شرطة أمن الموانئ", Name: "رائد / طارق عبد الحميد", Role: "رئيس قسم الشئون المالية والادارية", Ext: "5104", Mobile: "0101 2724 975" },
-        { ID: "DIR-61", Department: "وحدة الإطفاء والإنقاذ", Name: "الرائد / حمادة عبد اللطيف", Role: "رئيس وحدة الحماية المدنية", Ext: "5000", Mobile: "0100 904 8636" },
-        { ID: "DIR-62", Department: "وحدة الإطفاء والإنقاذ", Name: "الرائد / أحمد حمدي", Role: "رئيس وحدة الحماية المدنية", Ext: "5000", Mobile: "0100 6700 738" },
-        { ID: "DIR-63", Department: "وحدة الإطفاء والإنقاذ", Name: "الرائد / إبراهيم عقل", Role: "رئيس وحدة الحماية المدنية", Ext: "5000", Mobile: "0100 6728 215" },
-        { ID: "DIR-64", Department: "الأمن الوطني", Name: "مقدم / عبد الرحمن فاروق", Role: "رئيس مكتب الأمن الوطنى", Ext: "5200", Mobile: "0106 6229 793" },
-        { ID: "DIR-65", Department: "الجوازات والهجرة", Name: "عقيد / عمرو نوار", Role: "مدير إدارة الجوازات", Ext: "5300", Mobile: "0109 444 0010" },
-        { ID: "DIR-66", Department: "الجوازات والهجرة", Name: "عقيد / عمرو هانی", Role: "نائب مدير إدارة الجوازات", Ext: "5301", Mobile: "0102 126 7640" },
-        { ID: "DIR-67", Department: "الجوازات والهجرة", Name: "عقيد / باهي عبد الستار", Role: "رئيس وحدة شرطة السياحة", Ext: "5302", Mobile: "0106 777 7732" },
-        { ID: "DIR-68", Department: "الجوازات والهجرة", Name: "رائد / إسلام عاشور", Role: "رئيس شرطة السياحة", Ext: "5302", Mobile: "0111 1668 839" },
-        { ID: "DIR-69", Department: "الجمارك", Name: "أستاذ / محمد عبد المنعم", Role: "الصالة", Ext: "5400", Mobile: "0109 3775 518" },
-        { ID: "DIR-70", Department: "الجمارك", Name: "أ / شحاتة عبد الحميد", Role: "بوابة المهبط", Ext: "5401", Mobile: "0100 5818 378" },
-        { ID: "DIR-71", Department: "الحجر الصحي", Name: "د / يوسف أحمد", Role: "طبيب الحجر الصحي", Ext: "5500", Mobile: "0112 076 2625" },
-        { ID: "DIR-72", Department: "الحجر الصحي", Name: "د / أحمد عبد العظيم", Role: "طبيب الحجر الصحى", Ext: "5500", Mobile: "0102 221 1757" },
-        { ID: "DIR-73", Department: "الحجر الصحي", Name: "أ/ محمود العماري", Role: "ممرض بالصالة", Ext: "5500", Mobile: "0103 045 3235" },
-        
-        // الشركات
-        { ID: "DIR-74", Department: "مصر للطيران للأسواق الحرة", Name: "أ / نيفين بديع", Role: "الصالة", Ext: "5600", Mobile: "0100 6011 426" },
-        { ID: "DIR-75", Department: "مصر للطيران للأسواق الحرة", Name: "أ / محمد على", Role: "الصالة", Ext: "5601", Mobile: "0122 376 6575" },
-        { ID: "DIR-76", Department: "توتال لتموين الطائرات", Name: "م / محمد سعيد", Role: "مدير محطة توتال", Ext: "5700", Mobile: "0128 1800 031" },
-        { ID: "DIR-77", Department: "توتال لتموين الطائرات", Name: "م / شريف المهدي", Role: "نائب مدير محطة توتال", Ext: "5700", Mobile: "0120 517 7518" },
-        { ID: "DIR-78", Department: "المصرية للخدمات الأرضية EMAAS", Name: "أ / حسام عبد الفتاح", Role: "مدیر عمليات", Ext: "5800", Mobile: "0122 244 6821" },
-        { ID: "DIR-79", Department: "المصرية للخدمات الأرضية EMAAS", Name: "أ / هيثم هاني", Role: "مدیر مناوب عملیات", Ext: "5801", Mobile: "0100 614 8446" },
-        { ID: "DIR-80", Department: "المصرية للخدمات الأرضية EMAAS", Name: "أ / محمد عبد المنصف", Role: "مدیر مناوب عملیات", Ext: "5802", Mobile: "0100 020 2225" }
-    ];
+let globalDirectory = [];
     let currentSurveyIndex = -1; 
     let currentDailyIndex = -1; 
     let currentIncidentIndex = -1;
