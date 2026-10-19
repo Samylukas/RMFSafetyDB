@@ -249,12 +249,18 @@
         <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;">
     </div>
 
-    <div class="report-filters" style="background:#f4f8fc; border:1px solid #cce5ff; display: flex; justify-content: space-between; align-items: center;">
-        <div style="flex: 1; position: relative; margin-left: 20px;">
+    <div class="report-filters" style="background:#f4f8fc; border:1px solid #cce5ff; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
+        
+        <div style="flex: 1; min-width: 250px; position: relative;">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary);"></i>
-            <input type="text" id="dirSearch" placeholder="ابحث بالاسم، الوظيفة، الإدارة، أو رقم التليفون..." onkeyup="filterDirectory()" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid var(--primary); border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; outline: none;">
+            <input type="text" id="dirSearch" placeholder="ابحث بالاسم، الوظيفة، الإدارة، أو رقم التليفون..." onkeyup="filterDirectory()" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid var(--primary); border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; outline: none; box-sizing: border-box;">
         </div>
-        <button onclick="exportDirectoryPDF()" class="pdf-export-btn" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family: 'Cairo'; font-size: 1rem;"><i class="fa-solid fa-print"></i> طباعة الدليل</button>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="openDirModal()" style="background:#28a745; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family: 'Cairo'; font-size: 1rem;"><i class="fa-solid fa-plus"></i> إضافة رقم جديد</button>
+            
+            <button onclick="exportDirectoryPDF()" class="pdf-export-btn" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family: 'Cairo'; font-size: 1rem;"><i class="fa-solid fa-print"></i> طباعة الدليل</button>
+        </div>
     </div>
 
     <div id="printable-directory" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px;">
@@ -944,8 +950,22 @@
     let globalSpiData = []; 
     let globalDailyInspections = []; 
     let globalIncidents = [];
-    let globalDirectory = [];
-    
+let globalDirectory = [
+        { ID: "DIR-1", Department: "الإدارة العليا", Name: "الكابتن / هشام القشاط", Role: "مدير عام المطار", Ext: "1001", Mobile: "0100 3434 688" },
+        { ID: "DIR-2", Department: "الإدارة العليا", Name: "لواء / أيمن شريف", Role: "نائب مدير المطار", Ext: "1002", Mobile: "0101 245 5555" },
+        { ID: "DIR-3", Department: "الإدارة العليا", Name: "أ / عبد السلام السيد", Role: "مدير مكتب مدير المطار", Ext: "1003", Mobile: "0100 3434 688" },
+        { ID: "DIR-4", Department: "ممثل وزارة الطيران", Name: "اللواء / ممدوح دنيا", Role: "ممثل الطيران المدني بالمطار", Ext: "5900", Mobile: "0100 6099 305" },
+        { ID: "DIR-5", Department: "العلاقات العامة والإعلام", Name: "أ/ حاتم محمود كامل", Role: "مدير عام إدارة العلاقات العامة", Ext: "4300", Mobile: "0100 6720 015" },
+        { ID: "DIR-6", Department: "العلاقات العامة والإعلام", Name: "أ/ مارينا مجدي وليم", Role: "أخصائي علاقات عامة وإعلام", Ext: "4302", Mobile: "0120 1741 728" },
+        { ID: "DIR-7", Department: "الإدارة العامة للهندسة", Name: "م / هيثم محمد جمال", Role: "مدير عام الإدارة الهندسية", Ext: "3000", Mobile: "0100 240 9001" },
+        { ID: "DIR-8", Department: "الهندسة المدنية", Name: "م / بهاء الدين كمال", Role: "مدير إدارة الهندسة المدنية", Ext: "3030", Mobile: "0102 227 0657" },
+        { ID: "DIR-9", Department: "الإدارة العامة للعمليات", Name: "ك / محمد صالح", Role: "مدير الإدارة العامة للعمليات", Ext: "4000", Mobile: "0100 1070 758" },
+        { ID: "DIR-10", Department: "الأمن والأنظمة الأمنية", Name: "لواء / إيهاب مصطفى سلام", Role: "مدير الإدارة العامة للأمن", Ext: "1030", Mobile: "0100 6622 266" },
+        { ID: "DIR-11", Department: "المطابقة والسلامة", Name: "أ/ محمد مرسى", Role: "مدير إدارة السلامة والمطابقة", Ext: "4201", Mobile: "0100 7225 309" },
+        { ID: "DIR-12", Department: "المطابقة والسلامة", Name: "أ/ سامي أبسخرون", Role: "مدير سلامة المطارات", Ext: "4203", Mobile: "0122 4861 947" },
+        { ID: "DIR-13", Department: "شرطة أمن الموانئ", Name: "عقيد / طارق حسن", Role: "مدير أمن الموانى", Ext: "5100", Mobile: "0102 8284 383" },
+        { ID: "DIR-14", Department: "وحدة الإطفاء والإنقاذ", Name: "الرائد / حمادة عبد اللطيف", Role: "رئيس وحدة الحماية المدنية", Ext: "5000", Mobile: "0100 904 8636" }
+    ];    
     let currentSurveyIndex = -1; 
     let currentDailyIndex = -1; 
     let currentIncidentIndex = -1;
@@ -1035,8 +1055,10 @@
                     globalUsers = data.users || [];
                     globalSpiData = data.spi || [];
                     globalIncidents = data.incidents ? data.incidents.reverse() : [];
-                  globalDirectory = data.directory || [];
-if(typeof renderDirectory === "function") renderDirectory(globalDirectory);
+if(data.directory && data.directory.length > 0) {
+    globalDirectory = data.directory;
+}
+if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(typeof renderDirectory === "function") renderDirectory(globalDirectory);
 
                     if (data.daily && data.daily.length > 0) {
                         let reportsMap = {};
