@@ -107,10 +107,8 @@
     .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
     .iso-row:last-child { border-bottom: none; }
     .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
-.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }    
-.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
-    .iso-box-content { padding: 10px; font-size: 10px; text-align: left; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; }
-    
+.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
+.iso-box-content { padding: 10px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 45px; }    
     .iso-checklist-row { display: flex; align-items: center; padding: 4px 10px; font-weight: bold; font-size: 10px; justify-content: flex-end; direction: ltr;}
     .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; margin-left: 8px; }
     .iso-check-box.empty { background: #fff; }
@@ -551,11 +549,10 @@
       <div id="tab-inc-report" class="tab-content">
         <div class="report-filters" style="background:#fff5f5; border:1px solid #ffcccc;">
           <button onclick="exportIncidentPDF()" class="pdf-export-btn" style="background:#dc3545; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> تصدير التقرير (PDF)</button>
-          <p style="text-align:center; font-weight:bold; color:#dc3545; margin:0; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي مطابق للآيزو (AS-F-01-05).</p>
+          <p style="text-align:center; font-weight:bold; color:#dc3545;margin: [0.05, 0.1, 0.1, 0.1]; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي مطابق للآيزو (AS-F-01-05).</p>
         </div>
         
-        <div id="printable-incident-report" style="background: #fff; padding: 0; margin-top: 20px; direction: rtl; display: none;">
-            
+<div id="printable-incident-report" style="background: #fff; padding: 0; direction: rtl; display: none;">            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="text-align:right; font-weight:bold;">
                     <h3 style="margin:0; font-size:1.1rem; color:#777;">الإدارة العامة للمطابقة والسلامة</h3>
