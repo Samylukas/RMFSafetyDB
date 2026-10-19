@@ -14,6 +14,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <style>
+    * {
+    font-family: 'Cairo', sans-serif !important;
+}
     /* إخفاء علامات المتصفح الافتراضية للبحث */
     input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
     input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
@@ -265,14 +268,14 @@
 
     <div id="printable-directory" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px;">
         <table class="report-table rtl-table" style="width: 100%; border: 2px solid #003366;">
-            <thead>
+          <thead>
                 <tr style="background: #003366; color: #fff;">
                     <th style="width: 5%; text-align: center;">م</th>
-                    <th style="width: 25%;">الإدارة / القسم</th>
                     <th style="width: 30%;">الإسم</th>
-                    <th style="width: 20%;">الوظيفة</th>
-                    <th style="width: 10%; text-align: center; direction: ltr;">رقم أرضي</th>
-                    <th style="width: 10%; text-align: center; direction: ltr;">موبايل</th>
+                    <th style="width: 25%;">الوظيفة</th>
+                    <th style="width: 15%; text-align: center; direction: ltr;">رقم أرضي</th>
+                    <th style="width: 15%; text-align: center; direction: ltr;">موبايل</th>
+                    <th style="width: 10%; text-align: center;" class="dir-actions">إجراء</th>
                 </tr>
             </thead>
             <tbody id="directory-tbody">
@@ -2817,40 +2820,50 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
     // ==========================================
     // دوال دليل هواتف المطار (متصلة بجوجل شيت)
     // ==========================================
-    function renderDirectory(dataList) {
+   function renderDirectory(dataList) {
         const tbody = document.getElementById('directory-tbody');
         if (!tbody) return;
-        tbody.innerHTML = "";
         
         if (dataList.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; padding:20px; font-weight:bold; color:#dc3545;'>لا توجد بيانات</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px; font-weight:bold; color:#dc3545;'>لا توجد نتائج مطابقة للبحث</td></tr>";
             return;
         }
 
+        // ترتيب البيانات أوتوماتيكياً حسب الإدارة عشان التبويب يطلع مظبوط
+        dataList.sort((a, b) => (a.Department || "").localeCompare(b.Department || ""));
+
         let currentDept = "";
         let counter = 1;
+        let tableHTML = ""; // استخدام المتغير النصي بيمنع أي Crash في الزراير
 
         dataList.forEach((item) => {
-            if (item.Department !== currentDept) {
-                tbody.innerHTML += `<tr><td colspan="7" style="background: #e9ecef; color: var(--primary); font-weight: 900; text-align: center; padding: 10px; border-top: 3px solid #003366;">${item.Department}</td></tr>`;
-                currentDept = item.Department;
+            let deptName = item.Department || "أخرى";
+            
+            // إضافة تبويب الإدارة مرة واحدة فقط كعنوان رئيسي
+            if (deptName !== currentDept) {
+                tableHTML += `<tr><td colspan="6" style="background: #e9ecef; color: var(--primary); font-weight: 900; text-align: center; padding: 12px; border-top: 3px solid #003366; font-size: 1.1rem;">${deptName}</td></tr>`;
+                currentDept = deptName;
             }
 
-            tbody.innerHTML += `
+            let safeID = item.ID ? String(item.ID) : "";
+
+            // إزالة عمود الإدارة من الصفوف الفردية وإضافة الأزرار بشكل آمن
+            tableHTML += `
                 <tr style="background: #fff;">
                     <td style="text-align: center; font-weight: bold;">${counter++}</td>
-                    <td style="font-weight: 600; color: #555;">${item.Department}</td>
-                    <td style="font-weight: bold; color: #003366;">${item.Name}</td>
-                    <td>${item.Role}</td>
+                    <td style="font-weight: bold; color: #003366;">${item.Name || '-'}</td>
+                    <td>${item.Role || '-'}</td>
                     <td style="text-align: center; font-weight: 900; direction: ltr; color: #dc3545;">${item.Ext || '-'}</td>
                     <td style="text-align: center; font-weight: bold; direction: ltr;">${item.Mobile || '-'}</td>
                     <td style="text-align: center;" class="dir-actions">
-                        <button onclick="openDirModal('${item.ID}')" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteDirEntry('${item.ID}')" style="background:#dc3545; color:#fff; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button" onclick="openDirModal('${safeID}')" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="deleteDirEntry('${safeID}')" style="background:#dc3545; color:#fff; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         });
+        
+        tbody.innerHTML = tableHTML;
     }
 
     function filterDirectory() {
@@ -2865,11 +2878,10 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         renderDirectory(filtered);
     }
 
-   function openDirModal(id = null) {
+  function openDirModal(id) {
         document.getElementById('dirMsg').innerText = "";
-        if (id) {
-            // بحث آمن عن العنصر المطابق
-            let item = globalDirectory.find(g => g.ID == id);
+        if (id && id !== 'undefined' && id !== '') {
+            let item = globalDirectory.find(g => String(g.ID) === String(id));
             if (item) {
                 document.getElementById('dirId').value = item.ID || "";
                 document.getElementById('dirDept').value = item.Department || "";
@@ -2886,7 +2898,6 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         }
         document.getElementById('dirModal').style.display = 'flex';
     }
-
     function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
 
     async function saveDirEntry(e) {
