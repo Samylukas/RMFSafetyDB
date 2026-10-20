@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>General Department of Safety and Compliance</title>
+  <title>General Department of Safety and Compliance - Marsa Alam Airport</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,112 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-  <style>
- body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, label, input, button, select, textarea {
-    font-family: 'Cairo', sans-serif !important;
-}
-    /* إخفاء علامات المتصفح الافتراضية للبحث */
-    input[type="text"]::-ms-clear, input[type="text"]::-ms-reveal { display: none; width: 0; height: 0; }
-    input[type="search"]::-webkit-search-decoration, input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-results-button, input[type="search"]::-webkit-search-results-decoration { display: none; }
-
-    /* حماية إجبارية لإخفاء شاشة البداية بعد 2.5 ثانية حتى لو تعطل الجافاسكريبت */
-    #splash-screen {
-        animation: forceHideSplash 0.5s ease-out forwards;
-        animation-delay: 2.5s;
-    }
-    @keyframes forceHideSplash {
-        to { opacity: 0; visibility: hidden; z-index: -100; }
-    }
-
-    /* CSS للقائمة المنسدلة المخصصة والقابلة للبحث */
-    .custom-dropdown-container { position: relative; width: 100%; flex: 1; font-family: 'Cairo', sans-serif; }
-    .custom-dropdown-input {
-        width: 100%; padding: 7px 30px 7px 8px; border: 1px solid #ccc; border-radius: 5px;
-        font-size: 0.85rem; box-sizing: border-box; background: #fff; text-transform: uppercase;
-        font-family: inherit; font-weight: bold; color: #003366; cursor: text; height: 38px;
-    }
-    .custom-dropdown-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(0,51,102,0.3); }
-    .custom-dropdown-arrow {
-        position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-        color: var(--primary); cursor: pointer; font-size: 0.85rem; padding: 5px; z-index: 10;
-    }
-    .custom-dropdown-list {
-        position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc;
-        border-top: none; border-radius: 0 0 5px 5px; max-height: 200px; overflow-y: auto; z-index: 1000;
-        display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .custom-dropdown-list.show { display: block; }
-    .custom-dropdown-item { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: left; direction: ltr; font-weight: bold; font-size: 0.85rem;}
-    .custom-dropdown-item:hover { background-color: #e8f5e9; color: var(--primary); }
-    .custom-dropdown-empty { padding: 10px; text-align: center; color: #dc3545; font-size: 0.8rem; font-weight: bold; background: #fdfdfd; }
-
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-
-    /* تنسيقات الفحص اليومي والطباعة */
-    .checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-    .checklist-column { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-    .checklist-header { background: #e9ecef; padding: 8px; text-align: center; font-weight: 900; color: var(--primary); border-radius: 5px; font-size: 0.95rem; margin-bottom: 5px; }
-    .check-item { background: #fff; border: 1px solid #eee; border-radius: 5px; padding: 6px; display: flex; flex-direction: column;}
-    .check-item-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-    .check-item-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-    .check-item-row label { font-size: 0.85rem; font-weight: 700; color: #333; cursor: pointer; flex: 1; margin:0;}
-    .check-inputs { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 10px; background: #fdfdfd; border-right: 4px solid #dc3545; border-radius: 4px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);}
-    
-    .check-inputs input, .check-inputs select { 
-        width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; 
-        font-family: 'Cairo'; font-size: 0.75rem; font-weight: bold; box-sizing: border-box; 
-    }
-    select.status-select { cursor: pointer; border: none; }
-
-    .iso-report-container { background: #fff; padding: 10px 15px; direction: rtl; font-family: 'Cairo', sans-serif; display: none; box-sizing: border-box; width: 100%; height: auto;}
-    .iso-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 5px; margin-bottom: 15px; }
-    .iso-title h2 { font-size: 1.1rem; margin: 0; color: var(--primary); font-weight: 900;}
-    
-    .iso-table { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 10px; margin-bottom: 10px; background: #fff;}
-    .iso-table th, .iso-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; }
-    .iso-table th { background-color: #f2f2f2; color: #003366; font-size: 10px; font-weight: 900; }
-    
-    .checkbox-print { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; margin-left: 5px; position: relative;}
-    .checkbox-print.checked::after { content: '✔'; position: absolute; top: -6px; right: -1px; font-size: 14px; font-weight: bold;}
-    .checklist-row-print { display: flex; justify-content: space-between; margin-bottom: 3px; border-bottom: 1px dashed #eee; padding-bottom: 2px; font-size: 9px; font-weight: bold;}
-    
-    #printable-charts-report { page-break-inside: avoid !important; }
-    .charts-grid canvas { max-height: 220px !important; width: 100% !important; object-fit: contain; }
-    
-    .spi-matrix-table th, .spi-matrix-table td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 0.85rem; }
-    .spi-matrix-table th { background-color: #28a745; color: white; }
-    .spi-matrix-table td:first-child { text-align: left; direction: ltr; font-weight: 600; width: 300px; background: #fdfdfd;}
-
-    .avoid-page-break { page-break-inside: avoid; }
-    .corrective-table tr { page-break-inside: avoid; }
-
-    /* تنسيقات نموذج الوقائع */
-    .inc-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-    .inc-section-title { font-size: 1rem; color: #003366; font-weight: bold; border-bottom: 2px solid #003366; padding-bottom: 5px; margin-bottom: 15px; margin-top: 0;}
-    .inc-textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: 'Cairo'; resize: vertical; box-sizing: border-box; }
-    .inc-checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;}
-    .inc-checkbox-group label { display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 0.85rem; cursor: pointer;}
-    .inc-file-upload { border: 2px dashed #ccc; padding: 20px; text-align: center; background: #fff; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-    .inc-file-upload:hover { border-color: var(--primary); background: #f0f8ff; }
-
-    .cat-btn { padding: 8px 15px; border: 1px solid #003366; background: #fff; color: #003366; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-    .cat-btn:hover, .cat-btn.active { background: #003366; color: #fff; }
-
-    /* تنسيقات نموذج الـ ISO الجديد للطباعة */
-    .iso-grid-box { display: flex; border: 2px solid #000; margin-bottom: 8px; font-size: 10px; }
-    .iso-grid-col { flex: 1; display: flex; flex-direction: column; }
-    .iso-row { display: flex; border-bottom: 1px solid #000; min-height: 25px;}
-    .iso-row:last-child { border-bottom: none; }
-    .iso-label { background: #f2f2f2; font-weight: bold; padding: 5px; width: 40%; display: flex; align-items: center; justify-content: center; text-align: center; border-left: 1px solid #000; line-height: 1.2;}
-.iso-val { padding: 5px; width: 60%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; flex-direction: column; }.iso-full-box { border: 2px solid #000; margin-bottom: 8px; page-break-inside: avoid !important; }    .iso-box-title { background: #f2f2f2; font-weight: bold; text-align: center; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; }
-.iso-box-content { padding: 10px; font-size: 11px; text-align: center; direction: ltr; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 45px; }    
-.iso-checklist-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; font-weight: bold; font-size: 11px; direction: rtl;}    .iso-check-box { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; background: #000; flex-shrink: 0; }
-    .iso-check-box.empty { background: #fff; }
-
-    @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
-  </style>
 </head>
 <body>
 
@@ -154,59 +48,60 @@
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
-  <!-- لوحة القيادة -->
+  <!-- لوحة القيادة الرئيسية -->
   <div id="main-dashboard" class="content-area" style="display:none;">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
-  <div class="departments-grid">
-  <!-- 1. سلامة المطارات -->
-  <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
-    <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
-    <h3 class="dept-title">إدارة سلامة المطارات</h3>
-    <div class="dept-subtitle">Airport Safety Department</div>
-  </div>
-  
-  <!-- 2. السلامة والصحة المهنية -->
-  <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')">
-    <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
-    <h3 class="dept-title">السلامة والصحة المهنية</h3>
-    <div class="dept-subtitle">Occupational Safety & Health</div>
-  </div>
-  
-  <!-- 3. البيئة ومكافحة الحياة البرية -->
-  <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')">
-    <i class="fa-solid fa-dove dept-icon icon-nature"></i>
-    <h3 class="dept-title">البيئة والحياة البرية</h3>
-    <div class="dept-subtitle">Environment & Wildlife</div>
-  </div>
-  
-  <!-- 4. الحماية المدنية -->
-  <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')">
-    <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
-    <h3 class="dept-title">الحماية المدنية</h3>
-    <div class="dept-subtitle">Civil Defense</div>
-  </div>
+    <div class="departments-grid">
+      <!-- 1. سلامة المطارات -->
+      <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
+        <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
+        <h3 class="dept-title">إدارة سلامة المطارات</h3>
+        <div class="dept-subtitle">Airport Safety Department</div>
+      </div>
+      
+      <!-- 2. السلامة والصحة المهنية -->
+      <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')">
+        <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
+        <h3 class="dept-title">السلامة والصحة المهنية</h3>
+        <div class="dept-subtitle">Occupational Safety & Health</div>
+      </div>
+      
+      <!-- 3. البيئة ومكافحة الحياة البرية -->
+      <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')">
+        <i class="fa-solid fa-dove dept-icon icon-nature"></i>
+        <h3 class="dept-title">البيئة والحياة البرية</h3>
+        <div class="dept-subtitle">Environment & Wildlife</div>
+      </div>
+      
+      <!-- 4. الحماية المدنية -->
+      <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')">
+        <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
+        <h3 class="dept-title">الحماية المدنية</h3>
+        <div class="dept-subtitle">Civil Defense</div>
+      </div>
 
-  <!-- 5. إدارة الجودة -->
-  <div class="dept-card" onclick="openGenericDoc('إدارة الجودة الشاملة')">
-    <i class="fa-solid fa-medal dept-icon icon-quality"></i>
-    <h3 class="dept-title">إدارة الجودة الشاملة</h3>
-    <div class="dept-subtitle">Quality Management</div>
-  </div>
-  
-  <!-- 6. دليل هواتف المطار (تم إرجاع الأيقونة المتناسقة) -->
-  <div class="dept-card" onclick="openSection('directory-section')">
-    <i class="fa-solid fa-address-book dept-icon icon-directory"></i>
-    <h3 class="dept-title">دليل هواتف المطار</h3>
-    <div class="dept-subtitle">Airport Phone Directory</div>
-  </div>
+      <!-- 5. إدارة الجودة الشاملة -->
+      <div class="dept-card" onclick="openGenericDoc('إدارة الجودة الشاملة')">
+        <i class="fa-solid fa-medal dept-icon icon-quality"></i>
+        <h3 class="dept-title">إدارة الجودة الشاملة</h3>
+        <div class="dept-subtitle">Quality Management</div>
+      </div>
+      
+      <!-- 6. دليل هواتف المطار -->
+      <div class="dept-card" onclick="openSection('directory-section')">
+        <i class="fa-solid fa-address-book dept-icon icon-directory"></i>
+        <h3 class="dept-title">دليل هواتف المطار</h3>
+        <div class="dept-subtitle">Airport Phone Directory</div>
+      </div>
 
-  <!-- 7. إدارة الحسابات (مربوطة بباسورد الأدمن) -->
-  <div class="dept-card" onclick="openAdminSection('account-management-section')">
-    <i class="fa-solid fa-users-gear dept-icon icon-users"></i>
-    <h3 class="dept-title">إدارة الحسابات</h3>
-    <div class="dept-subtitle">Account Management</div>
+      <!-- 7. إدارة الحسابات (مخصصة للأدمن) -->
+      <div class="dept-card" onclick="openAdminSection('account-management-section')">
+        <i class="fa-solid fa-users-gear dept-icon icon-users"></i>
+        <h3 class="dept-title">إدارة الحسابات</h3>
+        <div class="dept-subtitle">Account Management</div>
+      </div>
+    </div>
   </div>
-</div>
 
   <!-- إدارة الحسابات -->
   <div id="account-management-section" class="content-area" style="display:none;">
@@ -276,7 +171,8 @@
       <p style="color: #777; font-size: 1rem; font-weight: 600;">هذا القسم قيد التجهيز ضمن مراحل التطوير القادمة لرفع وعرض التقارير.</p>
     </div>
   </div>
-<!-- ==================== دليل هواتف المطار ==================== -->
+
+  <!-- دليل هواتف المطار -->
   <div id="directory-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     
@@ -289,7 +185,6 @@
     </div>
 
     <div class="report-filters" style="background:#f4f8fc; border:1px solid #cce5ff; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
-        
         <div style="flex: 1; min-width: 250px; position: relative;">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary);"></i>
             <input type="text" id="dirSearch" placeholder="ابحث بالاسم، الوظيفة، الإدارة، أو رقم التليفون..." onkeyup="filterDirectory()" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid var(--primary); border-radius: 8px; font-family: 'Cairo'; font-weight: bold; font-size: 1rem; outline: none; box-sizing: border-box;">
@@ -297,7 +192,6 @@
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="openDirModal()" style="background:#28a745; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family: 'Cairo'; font-size: 1rem;"><i class="fa-solid fa-plus"></i> إضافة رقم جديد</button>
-            
             <button onclick="exportDirectoryPDF()" class="pdf-export-btn" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family: 'Cairo'; font-size: 1rem;"><i class="fa-solid fa-print"></i> طباعة الدليل</button>
         </div>
     </div>
@@ -314,53 +208,12 @@
                     <th style="width: 10%; text-align: center;" class="dir-actions">إجراء</th>
                 </tr>
             </thead>
-            <tbody id="directory-tbody">
-                <!-- سيتم الملء برمجياً -->
-            </tbody>
-        </table>
-    </div>
-  </div>
-  <!-- ==================== دليل هواتف المطار ==================== -->
-  <div id="directory-section" class="content-area" style="display:none;">
-    <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
-        <div>
-            <h1 style="color: var(--primary); margin: 0; font-weight: 900; font-size: 2rem;">دليل هواتف مطار مرسى علم</h1>
-            <span style="font-size: 1rem; color:#777; font-family: sans-serif;">Marsa Alam Airport Phone Directory</span>
-        </div>
-        <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;">
-    </div>
-
-    <div class="report-filters" style="background:#f4f8fc; border:1px solid #cce5ff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div style="flex: 1; position: relative; min-width: 250px;">
-            <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary);"></i>
-            <input type="text" id="dirSearch" placeholder="ابحث بالاسم، الوظيفة، الإدارة..." onkeyup="filterDirectory()" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid var(--primary); border-radius: 8px; font-family: 'Cairo'; font-weight: bold; outline: none;">
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="openDirModal()" style="background:#28a745; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:'Cairo';"><i class="fa-solid fa-plus"></i> إضافة رقم</button>
-            <button onclick="exportDirectoryPDF()" class="pdf-export-btn" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-family:'Cairo';"><i class="fa-solid fa-print"></i> طباعة</button>
-        </div>
-    </div>
-
-    <div id="printable-directory" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px;">
-        <table class="report-table rtl-table" style="width: 100%; border: 2px solid #003366;">
-            <thead>
-                <tr style="background: #003366; color: #fff;">
-                    <th style="width: 5%; text-align: center;">م</th>
-                    <th style="width: 20%;">الإدارة / القسم</th>
-                    <th style="width: 25%;">الإسم</th>
-                    <th style="width: 20%;">الوظيفة</th>
-                    <th style="width: 10%; text-align: center; direction: ltr;">رقم أرضي</th>
-                    <th style="width: 10%; text-align: center; direction: ltr;">موبايل</th>
-                    <th style="width: 10%; text-align: center;" class="dir-actions">إجراء</th>
-                </tr>
-            </thead>
             <tbody id="directory-tbody"></tbody>
         </table>
     </div>
   </div>
-  <!-- ==================== وحدة 01: استبيان الكابتن ==================== -->
+
+  <!-- وحدة 01: استبيان الكابتن -->
   <div id="captain-survey-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">01 - استبيان الكابتن <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Safety Captain Survey</span></h1>
@@ -445,8 +298,7 @@
     </div>
   </div>
 
-
-  <!-- ==================== وحدة 02: الفحص اليومي للساحة ==================== -->
+  <!-- وحدة 02: الفحص اليومي للساحة -->
   <div id="daily-inspection-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">02 - الفحص اليومي لساحة الطيران <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Air-side Daily Inspection</span></h1>
@@ -507,7 +359,6 @@
         <p style="text-align:center; font-weight:bold; color:#0056b3; font-size:0.85rem; margin-top:-10px;">ملحوظة: اختيار (نفس اليوم) يُصدر تقرير فحص يومي شامل. اختيار (فترة) يُصدر تقرير إحصائي للمخالفات فقط.</p>
         
         <div id="printable-daily-report" style="display: none; background: #fff; border-radius: 10px; direction: rtl; width: 100%;">
-            
             <div class="iso-report-container avoid-page-break" id="printable-checklist-report" style="display: block;">
                 <div class="iso-header">
                     <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 35px;">
@@ -552,7 +403,7 @@
     </div>
   </div>
 
-  <!-- ==================== وحدة 03: سجل الحوادث والوقائع (الجديدة كلياً بناءً على طلبك) ==================== -->
+  <!-- وحدة 03: سجل الحوادث والوقائع -->
   <div id="incident-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #dc3545; text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">سجل الحوادث والوقائع <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Accident / Incident Safety Report</span></h1>
@@ -576,7 +427,6 @@
       <!-- نموذج الإدخال -->
       <div id="tab-inc-entry" class="tab-content active">
         <form id="incidentForm" onsubmit="submitIncident(event)">
-          
           <div class="inc-section">
             <h3 class="inc-section-title">البيانات الأساسية للواقعة (General Info)</h3>
             <div class="form-grid">
@@ -584,7 +434,6 @@
               <div class="form-group"><label>الوقت (Time)</label><input type="time" id="incTime" required></div>
               <div class="form-group"><label>المكان (Location)</label><input type="text" id="incLocation" required placeholder="مثال: Stand No 19"></div>
               
-              <!-- خانات جديدة للآيزو -->
               <div class="form-group"><label>الوظيفة (Position)</label><input type="text" id="incPosition" value="NIL"></div>
               <div class="form-group"><label>نوع الإصابات (Type of Injury)</label><input type="text" id="incInjuryType" value="NIL"></div>
               
@@ -630,13 +479,12 @@
           </div>
 
           <div class="inc-section">
-            <h3 class="inc-section-title">الوصف والإجراءات (Narrative) - يرجى الكتابة باللغة الإنجليزية إن أمكن</h3>
+            <h3 class="inc-section-title">الوصف والإجراءات (Narrative)</h3>
             <label style="font-weight:bold; font-size:0.85rem;">الوصف (Description)</label>
             <textarea id="incDesc" class="inc-textarea" style="height:120px;" placeholder="Describe the incident..."></textarea><br><br>
             <label style="font-weight:bold; font-size:0.85rem;">المخاطر (Hazards)</label>
             <textarea id="incHazardDesc" class="inc-textarea" style="background:#fff5f5; border-color:#dc3545;" placeholder="Primary Hazard..."></textarea><br><br>
             
-            <!-- خانة أوجه القصور الجديدة -->
             <label style="font-weight:bold; font-size:0.85rem;">أوجه القصور (Causes / Contributing Factors)</label>
             <textarea id="incCausesDetails" class="inc-textarea" style="height:80px; background:#fdfdfd; border-color:#003366;" placeholder="Root causes or contributing factors..."></textarea><br><br>
 
@@ -672,14 +520,14 @@
         </div>
       </div>
 
-      <!-- تقرير الواقعة الفردية للطباعة (تصميم الـ ISO الجديد المطابق للصورة) -->
+      <!-- تقرير الواقعة الفردية للطباعة ISO -->
       <div id="tab-inc-report" class="tab-content">
         <div class="report-filters" style="background:#fff5f5; border:1px solid #ffcccc;">
           <button onclick="exportIncidentPDF()" class="pdf-export-btn" style="background:#dc3545; color:#fff; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> تصدير التقرير (PDF)</button>
-          <p style="text-align:center; font-weight:bold; color:#dc3545;margin: [0.05, 0.1, 0.1, 0.1]; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي مطابق للآيزو (AS-F-01-05).</p>
+          <p style="text-align:center; font-weight:bold; color:#dc3545; margin: 0; flex:1;">اختر واقعة من قائمة السجل أولاً ثم اضغط طباعة لاستخراج تقرير رسمي مطابق للآيزو (AS-F-01-05).</p>
         </div>
         
-<div id="printable-incident-report" style="background: #fff; padding: 0; direction: rtl; display: none;">            
+        <div id="printable-incident-report" style="background: #fff; padding: 0; direction: rtl; display: none;">            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="text-align:right; font-weight:bold;">
                     <h3 style="margin:0; font-size:1.1rem; color:#777;">الإدارة العامة للمطابقة والسلامة</h3>
@@ -693,10 +541,8 @@
                 </div>
             </div>
 
-            <!-- حاوية التقرير الرئيسية بإطار سميك -->
+            <!-- حاوية التقرير الرئيسية -->
             <div style="border: 3px solid #000; padding: 5px;">
-                
-                <!-- عنوان التقرير -->
                 <div style="text-align:center; font-weight:bold; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 5px;">
                     <h2 style="margin:0; font-size:1.1rem;">نموذج تقرير حادثة / واقعة</h2>
                     <h3 style="margin:0; font-size:0.95rem;">Accident / Incident Safety Report Form</h3>
@@ -710,9 +556,7 @@
                     <label><span id="pChkPe" class="checkbox-print"></span> Personnel</label>
                 </div>
 
-                <!-- جدول البيانات الأساسية (مقسم لعمودين حسب الصورة) -->
                 <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                    <!-- العمود الأيمن في الصورة (المكان، الإصابات، الشركة) -->
                     <div style="flex:1;">
                         <div class="iso-grid-box">
                             <div class="iso-label">المكان<br>Location</div>
@@ -736,7 +580,6 @@
                         </div>
                     </div>
                     
-                    <!-- العمود الأيسر في الصورة (التاريخ، الوقت، المتسبب، الرحلة) -->
                     <div style="flex:1;">
                         <div style="display:flex; gap:5px;">
                             <div class="iso-grid-box" style="flex:1;">
@@ -762,32 +605,28 @@
                         </div>
                         <div class="iso-grid-box" style="flex-direction: column;">
                             <div style="display:flex; width:100%; border-bottom:1px solid #000;">
-                                <div style="display:flex; width:100%; border-bottom:1px solid #000;"><div class="iso-label" style="width:30%;">رقم الرحلة<br>Flight Number</div><div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncFlightDetails" dir="ltr"></div></div>
-<div style="display:flex; width:100%;"><div class="iso-label" style="width:30%;">الشركة / الوكيل<br>Airline / Agent</div><div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncAirlineDetails" dir="ltr"></div></div>
+                                <div class="iso-label" style="width:30%;">رقم الرحلة<br>Flight Number</div>
+                                <div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncFlightDetails" dir="ltr"></div>
                             </div>
                             <div style="display:flex; width:100%;">
                                 <div class="iso-label" style="width:30%;">الشركة / الوكيل<br>Airline / Agent</div>
-                                <div class="iso-val" style="width:70%; justify-content:flex-start; text-align:left;" id="pIncAirlineDetails" dir="ltr"></div>
+                                <div class="iso-val" style="width:70%; justify-content:center; text-align:center;" id="pIncAirlineDetails" dir="ltr"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- المسببات والتوصيف (Checkboxes) -->
                 <div style="display:flex; gap:5px; margin-bottom:8px;">
-                    <!-- المسببات -->
                     <div style="flex:1;" class="iso-full-box">
                         <div class="iso-box-title">مسببات الحادث / Occurrence Causes</div>
                         <div style="padding:5px;" id="pIncCauseList"></div>
                     </div>
-                    <!-- التوصيف -->
                     <div style="flex:1;" class="iso-full-box">
                         <div class="iso-box-title">توصيف الحادث / Occurrence Characterization</div>
                         <div style="padding:5px;" id="pIncCharList"></div>
                     </div>
                 </div>
 
-                <!-- النصوص المتتالية (موسّطة العناوين ومضبوطة المسافات) -->
                 <div class="iso-full-box avoid-page-break">
                     <div class="iso-box-title">الوصف / Description</div>
                     <div class="iso-box-content" id="pIncDesc"></div>
@@ -822,11 +661,11 @@
                     <div>Prepared By: <span id="pIncPreparedBy" style="color:#003366;"></span></div>
                     <div style="color:#777;">AS-F-01-05</div>
                 </div>
-            </div> <!-- نهاية الإطار الخارجي -->
+            </div>
         </div>
       </div>
 
-      <!-- التقرير الشهري المجمع للوقائع -->
+      <!-- التقرير الشهري المجمع -->
       <div id="tab-inc-monthly" class="tab-content">
         <div class="report-filters">
           <div style="display:flex; gap:10px; margin-bottom:10px; justify-content:center; flex-wrap:wrap;" id="inc-filter-buttons">
@@ -849,17 +688,13 @@
                 <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 40px;">
                 <h2 style="color:#003366; font-size:1.3rem; margin:0;">سجل الحوادث والوقائع المجمعة <br><span style="font-size:0.9rem; color:#777;" id="inc-monthly-period"></span></h2>
             </div>
-            <table class="report-table rtl-table" style="width:100%; font-size:11px; border:2px solid #000;" id="inc-monthly-table">
-                <!-- يُملأ بالسكريبت -->
-            </table>
+            <table class="report-table rtl-table" style="width:100%; font-size:11px; border:2px solid #000;" id="inc-monthly-table"></table>
         </div>
       </div>
-
     </div>
   </div>
 
-
-  <!-- ==================== وحدة 04: مؤشرات الأداء ECAA SPI ==================== -->
+  <!-- وحدة 04: مؤشرات الأداء ECAA SPI -->
   <div id="spi-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #28a745; text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">مؤشرات الأداء التشغيلية <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Operational SPIs 2026</span></h1>
@@ -899,9 +734,8 @@
     </div>
   </div>
 
-  <!-- المودال (لإضافة طائرة) -->
-  <div id="addModal" class="modal">
-    <div id="dirModal" class="modal">
+  <!-- مودال إضافة/تعديل دليل الهاتف -->
+  <div id="dirModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeDirModal()">&times;</span>
       <h3 id="dirModalTitle" style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة جهة إتصال</h3>
@@ -917,6 +751,9 @@
       </form>
     </div>
   </div>
+
+  <!-- مودال إضافة طائرة جديدة -->
+  <div id="addModal" class="modal">
     <div class="modal-content" style="text-align: right;">
       <span class="close-modal" onclick="closeAddModal()">&times;</span>
       <h3 style="color: var(--primary); margin-top: 0; text-align: center; font-size: 1.2rem;">إضافة طائرة جديدة</h3>
@@ -930,6 +767,7 @@
     </div>
   </div>
 
+  <!-- البرمجة كاملة بدون أية نواقص -->
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
 
@@ -989,7 +827,7 @@
     let globalSpiData = []; 
     let globalDailyInspections = []; 
     let globalIncidents = [];
-let globalDirectory = [];
+    let globalDirectory = [];
     let currentSurveyIndex = -1; 
     let currentDailyIndex = -1; 
     let currentIncidentIndex = -1;
@@ -1008,9 +846,6 @@ let globalDirectory = [];
 
     let currentIncidentFilter = 'All';
 
-    // ----------------------------------------------------
-    // الدوال الأساسية للتحميل
-    // ----------------------------------------------------
     function finishLoading() {
         try {
             const splash = document.getElementById('splash-screen');
@@ -1064,6 +899,15 @@ let globalDirectory = [];
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function openAdminSection(sectionId) {
+        let pass = prompt("🔒 هذه الصفحة مخصصة لمدير النظام فقط.\nبرجاء إدخال كلمة المرور:");
+        if (pass === "1234") { 
+            openSection(sectionId);
+        } else if (pass !== null) {
+            alert("❌ كلمة المرور غير صحيحة! غير مصرح لك بالدخول.");
+        }
+    }
+
     function openGenericDoc(title) {
         document.getElementById('generic-doc-title').innerText = title;
         openSection('generic-doc-section');
@@ -1079,10 +923,10 @@ let globalDirectory = [];
                     globalUsers = data.users || [];
                     globalSpiData = data.spi || [];
                     globalIncidents = data.incidents ? data.incidents.reverse() : [];
-if(data.directory && data.directory.length > 0) {
-    globalDirectory = data.directory;
-}
-if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(typeof renderDirectory === "function") renderDirectory(globalDirectory);
+                    if(data.directory && data.directory.length > 0) {
+                        globalDirectory = data.directory;
+                    }
+                    if(typeof renderDirectory === "function") renderDirectory(globalDirectory);
 
                     if (data.daily && data.daily.length > 0) {
                         let reportsMap = {};
@@ -1149,9 +993,161 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         document.body.appendChild(script);
     }
 
-    // ----------------------------------------------------
-    // دوال الاستبيان والقائمة المنسدلة (Survey)
-    // ----------------------------------------------------
+    // --- دليل هواتف المطار ---
+    function renderDirectory(dataList) {
+        const tbody = document.getElementById('directory-tbody');
+        if (!tbody) return;
+        
+        if (dataList.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px; font-weight:bold; color:#dc3545;'>لا توجد نتائج مطابقة للبحث</td></tr>";
+            return;
+        }
+
+        dataList.sort((a, b) => {
+            let numA = parseInt((a.ID || "0").replace("DIR-", "")) || 0;
+            let numB = parseInt((b.ID || "0").replace("DIR-", "")) || 0;
+            return numA - numB;
+        });
+
+        let currentDept = "";
+        let counter = 1;
+        let tableHTML = "";
+
+        dataList.forEach((item) => {
+            let deptName = item.Department || "أخرى";
+            
+            if (deptName !== currentDept) {
+                tableHTML += `<tr><td colspan="6" style="background: #e9ecef; color: var(--primary); font-weight: 900; text-align: center; padding: 12px; border-top: 3px solid #003366; font-size: 1.1rem;">${deptName}</td></tr>`;
+                currentDept = deptName;
+            }
+
+            let safeID = item.ID ? String(item.ID) : "";
+
+            tableHTML += `
+                <tr style="background: #fff;">
+                    <td style="text-align: center; font-weight: bold;">${counter++}</td>
+                    <td style="font-weight: bold; color: #003366;">${item.Name || '-'}</td>
+                    <td>${item.Role || '-'}</td>
+                    <td style="text-align: center; font-weight: 900; direction: ltr; color: #dc3545;">${item.Ext || '-'}</td>
+                    <td style="text-align: center; font-weight: bold; direction: ltr;">${item.Mobile || '-'}</td>
+                    <td style="text-align: center;" class="dir-actions">
+                        <button type="button" onclick="openDirModal('${safeID}')" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="deleteDirEntry('${safeID}')" style="background:#dc3545; color:#fff; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = tableHTML;
+    }
+
+    function filterDirectory() {
+        let query = document.getElementById('dirSearch').value.toLowerCase();
+        let filtered = globalDirectory.filter(item => {
+            return (item.Name && item.Name.toLowerCase().includes(query)) || 
+                   (item.Role && item.Role.toLowerCase().includes(query)) || 
+                   (item.Department && item.Department.toLowerCase().includes(query)) || 
+                   (item.Ext && String(item.Ext).includes(query)) || 
+                   (item.Mobile && String(item.Mobile).includes(query));
+        });
+        renderDirectory(filtered);
+    }
+
+    function openDirModal(id) {
+        document.getElementById('dirMsg').innerText = "";
+        if (id && id !== 'undefined' && id !== '') {
+            let item = globalDirectory.find(g => String(g.ID) === String(id));
+            if (item) {
+                document.getElementById('dirId').value = item.ID || "";
+                document.getElementById('dirDept').value = item.Department || "";
+                document.getElementById('dirName').value = item.Name || "";
+                document.getElementById('dirRole').value = item.Role || "";
+                document.getElementById('dirExt').value = item.Ext || "";
+                document.getElementById('dirMobile').value = item.Mobile || "";
+                document.getElementById('dirModalTitle').innerText = "تعديل بيانات جهة الاتصال";
+            }
+        } else {
+            document.getElementById('dirForm').reset();
+            document.getElementById('dirId').value = "";
+            document.getElementById('dirModalTitle').innerText = "إضافة جهة اتصال جديدة";
+        }
+        document.getElementById('dirModal').style.display = 'flex';
+    }
+
+    function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
+
+    async function saveDirEntry(e) {
+        e.preventDefault();
+        const btn = document.getElementById('dirSubmitBtn');
+        const msg = document.getElementById('dirMsg');
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+        let id = document.getElementById('dirId').value || "DIR-" + Date.now();
+        let isEdit = document.getElementById('dirId').value !== "";
+
+        let payload = {
+            id: id, dept: document.getElementById('dirDept').value, name: document.getElementById('dirName').value,
+            role: document.getElementById('dirRole').value, ext: document.getElementById('dirExt').value, mobile: document.getElementById('dirMobile').value
+        };
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "manageDirectory", subAction: isEdit ? "edit" : "add", dirData: payload }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+
+            let newObj = { ID: payload.id, Department: payload.dept, Name: payload.name, Role: payload.role, Ext: payload.ext, Mobile: payload.mobile };
+            if (isEdit) {
+                let idx = globalDirectory.findIndex(g => String(g.ID) === String(payload.id));
+                if (idx !== -1) globalDirectory[idx] = newObj;
+            } else {
+                globalDirectory.push(newObj);
+            }
+            
+            globalDirectory.sort((a, b) => {
+                let numA = parseInt((a.ID || "0").replace("DIR-", "")) || 0;
+                let numB = parseInt((b.ID || "0").replace("DIR-", "")) || 0;
+                return numA - numB;
+            });
+            renderDirectory(globalDirectory);
+            
+            msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
+            setTimeout(() => { closeDirModal(); btn.disabled = false; btn.innerHTML = 'حفظ في الدليل'; }, 1000);
+        } catch (err) {
+            msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!";
+            btn.disabled = false; btn.innerHTML = 'حفظ في الدليل';
+        }
+    }
+
+    async function deleteDirEntry(id) {
+        if (!confirm("هل أنت متأكد من حذف هذا الرقم من الدليل؟")) return;
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "manageDirectory", subAction: "delete", dirData: { id: id } }),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            });
+            globalDirectory = globalDirectory.filter(g => String(g.ID) !== String(id));
+            renderDirectory(globalDirectory);
+        } catch(err) { alert("فشل الحذف!"); }
+    }
+
+function exportDirectoryPDF() {
+        document.getElementById('dirSearch').style.display = 'none';
+        document.querySelectorAll('.dir-actions').forEach(el => el.style.display = 'none'); 
+
+        const el = document.getElementById('printable-directory');
+        html2pdf().set({
+            margin: 0.2, filename: 'Marsa_Alam_Directory.pdf', image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 3, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        }).from(el).save().then(() => {
+            document.getElementById('dirSearch').style.display = 'block';
+            document.querySelectorAll('.dir-actions').forEach(el => el.style.display = ''); 
+        });
+    }
+
+    // --- باقي دوال الوظائف المختلفة (الاستبيان، الفحص، الحوادث، الـ SPI) ---
     function switchTab(tab) {
         document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#captain-survey-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -1646,9 +1642,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         });
     }
 
-    // ----------------------------------------------------
-    // دوال الفحص اليومي (Daily Inspection)
-    // ----------------------------------------------------
     function switchDailyTab(tab) {
         document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -2104,9 +2097,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         }).from(el).save();
     }
 
-    // ----------------------------------------------------
-    // دوال 03: الحوادث والوقائع (Incidents)
-    // ----------------------------------------------------
     function switchIncidentTab(tab) {
         document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -2208,7 +2198,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         document.getElementById('incCar').value = inc.CAR || '';
         document.getElementById('incFlightNo').value = inc.Flight_No || '';
         document.getElementById('incReg').value = inc.REG || '';
-        // دمج خط السير
         document.getElementById('incOrgVia').value = (inc.ORG_VIA || '') + (inc.VIA_DST ? ' - ' + inc.VIA_DST : '');
 
         document.getElementById('incCauses').value = inc.Occurrence_Causes || '';
@@ -2223,7 +2212,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         document.getElementById('incRec').value = inc.Recommendation || '';
 
         if (inc.Attachment_URL && inc.Attachment_URL.includes("http")) {
-            // محاولة استخراج كود الملف من رابط جوجل درايف لعمل رابط صورة مباشر
             let fileIdMatch = inc.Attachment_URL.match(/\/d\/(.+?)\//);
             if (fileIdMatch && fileIdMatch[1]) {
                 let fileId = fileIdMatch[1];
@@ -2271,7 +2259,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
 
             let incId = isIncidentEditMode ? currentIncidentEditId : "INC-" + Date.now();
 
-            // قراءة البيانات بشكل آمن
             let payload = {
                 id: incId,
                 date: document.getElementById('incDate').value,
@@ -2291,7 +2278,7 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
                 flightNo: document.getElementById('incFlightNo').value,
                 reg: document.getElementById('incReg').value,
                 orgVia: document.getElementById('incOrgVia').value,
-                viaDst: "", // تم إلغاء هذه الخانة في الواجهة
+                viaDst: "",
                 preparedBy: document.getElementById('incPreparedBy').value,
                 hazardDesc: document.getElementById('incHazardDesc').value,
                 description: document.getElementById('incDesc').value,
@@ -2355,6 +2342,7 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
             document.getElementById('incMsg').innerText = "❌ حدث خطأ. تأكد من جودة الاتصال وتصاريح جوجل.";
         }
     }
+
     async function deleteIncidentRecord(idx) {
         if (!confirm("هل أنت متأكد من رغبتك في حذف هذه الواقعة تماماً؟")) return;
         
@@ -2405,97 +2393,6 @@ if(typeof renderDirectory === "function") renderDirectory(globalDirectory);if(ty
         });
     }
 
-    function prepareIncidentPrint(idx) {
-        let inc = globalIncidents[idx];
-        document.getElementById('printable-incident-report').style.display = 'block';
-        switchIncidentTab('report');
-
-        let chks = (inc.Checkboxes && typeof inc.Checkboxes === 'string') ? inc.Checkboxes.split(',') : [];
-        document.getElementById('pChkOG').className = chks.includes('OnGround') ? "checkbox-print checked" : "checkbox-print";
-        document.getElementById('pChkIF').className = chks.includes('InFlight') ? "checkbox-print checked" : "checkbox-print";
-        document.getElementById('pChkAc').className = chks.includes('Aircraft') ? "checkbox-print checked" : "checkbox-print";
-        document.getElementById('pChkEq').className = chks.includes('Equipment') ? "checkbox-print checked" : "checkbox-print";
-        document.getElementById('pChkPe').className = chks.includes('Personnel') ? "checkbox-print checked" : "checkbox-print";
-
-        document.getElementById('pIncLoc').innerText = inc.Location || "NIL";
-        document.getElementById('pIncInj').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved;
-        document.getElementById('pIncInjType').innerText = inc.Injury_Type || "NIL";
-        document.getElementById('pIncNames').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved; 
-        document.getElementById('pIncOwner').innerText = inc.Equipment_Owned || "NIL";
-let formattedTime = "NIL";
-if (inc.Time && inc.Time !== "NIL") {
-    if (inc.Time.includes('T')) {
-        let dateObj = new Date(inc.Time);
-        if (!isNaN(dateObj)) {
-            let hrs = String(dateObj.getHours()).padStart(2, '0');
-            let mins = String(dateObj.getMinutes()).padStart(2, '0');
-            formattedTime = `${hrs}:${mins}`;
-        }
-    } else {
-        formattedTime = inc.Time;
-    }
-}
-document.getElementById('pIncTime').innerText = formattedTime;        document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
-        document.getElementById('pIncDriver').innerText = inc.Driver_Name || "NIL";
-        document.getElementById('pIncPosition').innerText = inc.Position || "NIL";
-        document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; 
-
-        let route = ((inc.ORG_VIA || "NIL") + " - " + (inc.VIA_DST || "NIL")).toUpperCase();
-        document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG || 'NIL'}<br>Route: ${route}`;
-        document.getElementById('pIncAirlineDetails').innerHTML = `Airline: ${inc.CAR || 'NIL'}`;
-
-        document.getElementById('pIncDesc').innerText = inc.Description || "NIL";
-        document.getElementById('pIncHazard').innerText = inc.Hazard_Description || "NIL";
-        document.getElementById('pIncCausesDetails').innerText = inc.Causes_Details || "NIL";
-        
-      let selectedCause = inc.Occurrence_Causes || "";
-        // المربع اليمين: التشيك بوكس على اليمين والنص على الشمال (محاذاة لليمين)
-        let causesHTML = `
-            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Human') ? 'checked' : 'empty'}"></span> أسباب بشرية / Human Causes</div>
-            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Natural') ? 'checked' : 'empty'}"></span> أسباب طبيعية / Natural Causes</div>
-            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Technical') ? 'checked' : 'empty'}"></span> أسباب فنية / Technical Causes</div>
-            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Legal') ? 'checked' : 'empty'}"></span> أسباب قانونية / Legal Causes</div>
-            <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Organizational') ? 'checked' : 'empty'}"></span> أسباب تنظيمية / Organizational Causes</div>
-        `;
-        document.getElementById('pIncCauseList').innerHTML = causesHTML;
-
-        let selectedChar = inc.Characterization || "";
-        // المربع الشمال: التشيك بوكس على الشمال والنص على اليمين (محاذاة لليمين)
-        let charHTML = `
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>حادث معدة / Equipment Accident</span><span class="iso-check-box ${selectedChar.includes('Equipment') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>تسريب إنسكاب / Leakage / Spill</span><span class="iso-check-box ${selectedChar.includes('Leakage') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>ركاب / Passengers</span><span class="iso-check-box ${selectedChar.includes('Passengers') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>إنذار حريق / Fire Alarm</span><span class="iso-check-box ${selectedChar.includes('Fire') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>أخرى / Others</span><span class="iso-check-box ${selectedChar.includes('Others') ? 'checked' : 'empty'}"></span></div>
-            <div class="iso-checklist-row" style="justify-content: space-between;"><span>اصطدام / Bird/Animal Strike</span><span class="iso-check-box ${selectedChar.includes('Bird') ? 'checked' : 'empty'}"></span></div>
-        `;
-        document.getElementById('pIncCharList').innerHTML = charHTML;
-
-        document.getElementById('pIncAction').innerText = inc.Action_Taken || "NIL";
-        document.getElementById('pIncRec').innerText = inc.Recommendation || "NIL";
-        document.getElementById('pIncPreparedBy').innerText = inc.Prepared_By || "";
-
-        if (inc.Attachment_URL && inc.Attachment_URL.includes("http")) {
-            document.getElementById('pIncAttach').innerHTML = `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none;">Attached Documentations - Available via Link</a>`;
-        } else {
-            document.getElementById('pIncAttach').innerText = "NIL";
-        }
-
-        window.scrollTo(0, document.getElementById('printable-incident-report').offsetTop);
-    }
-
-    function exportIncidentPDF() {
-        const el = document.getElementById('printable-incident-report');
-        if (el.style.display === 'none') return alert("برجاء اختيار واقعة للطباعة أولاً.");
-        html2pdf().set({
-            margin: 0.1,
-            filename: 'Incident_Safety_Report.pdf',
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 4, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-        }).from(el).save();
-    }
-
     function setIncFilter(cat) {
         currentIncidentFilter = cat;
         document.querySelectorAll('#inc-filter-buttons .cat-btn').forEach(btn => btn.classList.remove('active'));
@@ -2505,7 +2402,7 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         }
     }
 
-   function generateMonthlyIncidents() {
+    function generateMonthlyIncidents() {
         let fromD = document.getElementById('incFromDate').value;
         let toD = document.getElementById('incToDate').value;
         
@@ -2533,7 +2430,6 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         });
 
         const tbody = document.getElementById('inc-monthly-table');
-        // نجمع الجدول كله في المتغير ده الأول
         let tableHTML = `<thead><tr style="background:#e6e6e6; color:#003366;"><th style="padding:10px;">التسلسل</th><th>تصنيف الواقعة</th><th>التاريخ</th><th>البيانات / الجهة المسببة</th><th>الإجمالي</th></tr></thead><tbody>`;
 
         if (filteredInc.length === 0) {
@@ -2576,13 +2472,13 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
                 }
                 row += `</tr>`;
                 
-                tableHTML += row; // الإضافة للمتغير النصي
+                tableHTML += row;
             });
             counter++;
         });
         
         tableHTML += `</tbody>`;
-        tbody.innerHTML = tableHTML; // إدخال الجدول للمتصفح دفعة واحدة
+        tbody.innerHTML = tableHTML;
     }
 
     function exportMonthlyIncidentsPDF() {
@@ -2593,14 +2489,11 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
             filename: 'Monthly_Incidents_Summary.pdf',
             image: { type: 'jpeg', quality: 1 },
             html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, // الصفحة بالعرض
-            pagebreak: { mode: ['css', 'legacy'] } // منع القص
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: ['css', 'legacy'] }
         }).from(el).save();
     }
 
-    // ==========================================
-    // 04: SPI Functions
-    // ==========================================
     function switchSpiTab(tab) {
         document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -2715,9 +2608,6 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
         container.innerHTML = tableHtml;
     }
 
-    // ==========================================
-    // User Functions
-    // ==========================================
     async function addUser(e) {
         e.preventDefault();
         const msg = document.getElementById('userMsg');
@@ -2757,157 +2647,6 @@ document.getElementById('pIncTime').innerText = formattedTime;        document.g
             tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
         });
     }
-    // ==========================================
-    // دوال دليل هواتف المطار (متصلة بجوجل شيت)
-    // ==========================================
-   function renderDirectory(dataList) {
-        const tbody = document.getElementById('directory-tbody');
-        if (!tbody) return;
-        
-        if (dataList.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px; font-weight:bold; color:#dc3545;'>لا توجد نتائج مطابقة للبحث</td></tr>";
-            return;
-        }
-
-        // ترتيب البيانات أوتوماتيكياً حسب الإدارة عشان التبويب يطلع مظبوط
-        dataList.sort((a, b) => (a.Department || "").localeCompare(b.Department || ""));
-
-        let currentDept = "";
-        let counter = 1;
-        let tableHTML = ""; // استخدام المتغير النصي بيمنع أي Crash في الزراير
-
-        dataList.forEach((item) => {
-            let deptName = item.Department || "أخرى";
-            
-            // إضافة تبويب الإدارة مرة واحدة فقط كعنوان رئيسي
-            if (deptName !== currentDept) {
-                tableHTML += `<tr><td colspan="6" style="background: #e9ecef; color: var(--primary); font-weight: 900; text-align: center; padding: 12px; border-top: 3px solid #003366; font-size: 1.1rem;">${deptName}</td></tr>`;
-                currentDept = deptName;
-            }
-
-            let safeID = item.ID ? String(item.ID) : "";
-
-            // إزالة عمود الإدارة من الصفوف الفردية وإضافة الأزرار بشكل آمن
-            tableHTML += `
-                <tr style="background: #fff;">
-                    <td style="text-align: center; font-weight: bold;">${counter++}</td>
-                    <td style="font-weight: bold; color: #003366;">${item.Name || '-'}</td>
-                    <td>${item.Role || '-'}</td>
-                    <td style="text-align: center; font-weight: 900; direction: ltr; color: #dc3545;">${item.Ext || '-'}</td>
-                    <td style="text-align: center; font-weight: bold; direction: ltr;">${item.Mobile || '-'}</td>
-                    <td style="text-align: center;" class="dir-actions">
-                        <button type="button" onclick="openDirModal('${safeID}')" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deleteDirEntry('${safeID}')" style="background:#dc3545; color:#fff; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        tbody.innerHTML = tableHTML;
-    }
-
-    function filterDirectory() {
-        let query = document.getElementById('dirSearch').value.toLowerCase();
-        let filtered = globalDirectory.filter(item => {
-            return (item.Name && item.Name.toLowerCase().includes(query)) || 
-                   (item.Role && item.Role.toLowerCase().includes(query)) || 
-                   (item.Department && item.Department.toLowerCase().includes(query)) || 
-                   (item.Ext && String(item.Ext).includes(query)) || 
-                   (item.Mobile && String(item.Mobile).includes(query));
-        });
-        renderDirectory(filtered);
-    }
-
-  function openDirModal(id) {
-        document.getElementById('dirMsg').innerText = "";
-        if (id && id !== 'undefined' && id !== '') {
-            let item = globalDirectory.find(g => String(g.ID) === String(id));
-            if (item) {
-                document.getElementById('dirId').value = item.ID || "";
-                document.getElementById('dirDept').value = item.Department || "";
-                document.getElementById('dirName').value = item.Name || "";
-                document.getElementById('dirRole').value = item.Role || "";
-                document.getElementById('dirExt').value = item.Ext || "";
-                document.getElementById('dirMobile').value = item.Mobile || "";
-                document.getElementById('dirModalTitle').innerText = "تعديل بيانات جهة الاتصال";
-            }
-        } else {
-            document.getElementById('dirForm').reset();
-            document.getElementById('dirId').value = "";
-            document.getElementById('dirModalTitle').innerText = "إضافة جهة اتصال جديدة";
-        }
-        document.getElementById('dirModal').style.display = 'flex';
-    }
-    function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
-
-    async function saveDirEntry(e) {
-        e.preventDefault();
-        const btn = document.getElementById('dirSubmitBtn');
-        const msg = document.getElementById('dirMsg');
-        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-
-        let id = document.getElementById('dirId').value || "DIR-" + Date.now();
-        let isEdit = document.getElementById('dirId').value !== "";
-
-        let payload = {
-            id: id, dept: document.getElementById('dirDept').value, name: document.getElementById('dirName').value,
-            role: document.getElementById('dirRole').value, ext: document.getElementById('dirExt').value, mobile: document.getElementById('dirMobile').value
-        };
-
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "manageDirectory", subAction: isEdit ? "edit" : "add", dirData: payload }),
-                headers: { "Content-Type": "text/plain;charset=utf-8" }
-            });
-
-            let newObj = { ID: payload.id, Department: payload.dept, Name: payload.name, Role: payload.role, Ext: payload.ext, Mobile: payload.mobile };
-            if (isEdit) {
-                let idx = globalDirectory.findIndex(g => g.ID === payload.id);
-                if (idx !== -1) globalDirectory[idx] = newObj;
-            } else {
-                globalDirectory.push(newObj);
-            }
-            
-            // ترتيب الأقسام أوتوماتيكياً
-            globalDirectory.sort((a, b) => a.Department.localeCompare(b.Department));
-            renderDirectory(globalDirectory);
-            
-            msg.style.color = "green"; msg.innerText = "تم الحفظ بنجاح!";
-            setTimeout(() => { closeDirModal(); btn.disabled = false; btn.innerHTML = 'حفظ في الدليل'; }, 1000);
-        } catch (err) {
-            msg.style.color = "red"; msg.innerText = "فشل الاتصال بالسيرفر!";
-            btn.disabled = false; btn.innerHTML = 'حفظ في الدليل';
-        }
-    }
-
-    async function deleteDirEntry(id) {
-        if (!confirm("هل أنت متأكد من حذف هذا الرقم من الدليل؟")) return;
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "manageDirectory", subAction: "delete", dirData: { id: id } }),
-                headers: { "Content-Type": "text/plain;charset=utf-8" }
-            });
-            globalDirectory = globalDirectory.filter(g => g.ID !== id);
-            renderDirectory(globalDirectory);
-        } catch(err) { alert("فشل الحذف!"); }
-    }
-
-    function exportDirectoryPDF() {
-        document.getElementById('dirSearch').style.display = 'none';
-        // إخفاء عمود الإجراءات عند الطباعة عشان التقرير يبقى شيك
-        document.querySelectorAll('.dir-actions').forEach(el => el.style.display = 'none'); 
-
-        const el = document.getElementById('printable-directory');
-        html2pdf().set({
-            margin: 0.2, filename: 'Marsa_Alam_Directory.pdf', image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-        }).from(el).save().then(() => {
-            document.getElementById('dirSearch').style.display = 'block';
-            document.querySelectorAll('.dir-actions').forEach(el => el.style.display = ''); 
-        });
-    }
-</script>
+  </script>
 </body>
 </html>
