@@ -176,3 +176,19 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 
 @media (max-width: 992px) { .departments-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .departments-grid { grid-template-columns: 1fr; } }
+/* إصلاح جداول دليل الهواتف والطباعة */
+#printable-directory {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.report-table.rtl-table {
+    width: 100% !important;
+    table-layout: auto;
+}
+
+/* تحسين جودة ألوان الطباعة للـ PDF */
+@media print {
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .iso-report-container, .iso-full-box, .iso-table { background-color: #ffffff !important; color: #000000 !important; }
+}
