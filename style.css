@@ -46,10 +46,14 @@ body { font-family: 'Cairo', sans-serif; margin: 0; background-color: var(--bg-c
 .dept-card { background: var(--card-bg); border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: 0.4s; cursor: pointer; border-bottom: 5px solid transparent; }
 .dept-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-bottom: 5px solid var(--secondary); }
 .dept-icon { font-size: 4.5rem; margin-bottom: 20px; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.icon-safety { background-image: linear-gradient(45deg, #007bff, #00d2ff); }
-.icon-fire { background-image: linear-gradient(45deg, #ff416c, #ff4b2b); }
-.icon-health { background-image: linear-gradient(45deg, #11998e, #38ef7d); }
-.icon-nature { background-image: linear-gradient(45deg, #8E2DE2, #4A00E0); }
+/* ألوان الأيقونات لتطابق السيمترية */
+.icon-safety   { color: #0088ff; } /* أزرق */
+.icon-health   { color: #28a745; } /* أخضر */
+.icon-nature   { color: #5a189a; } /* بنفسجي */
+.icon-fire     { color: #dc3545; } /* أحمر */
+.icon-quality  { color: #ffc107; } /* ذهبي/أصفر للجودة */
+.icon-directory{ color: #fd7e14; } /* برتقالي للدليل */
+.icon-users    { color: #495057; } /* رمادي للحسابات */
 .icon-users { background-image: linear-gradient(45deg, #333333, #777777); }
 .dept-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 0; }
 .dept-subtitle { font-size: 1.1rem; color: #777; margin-top: 5px; font-weight: 600; }
