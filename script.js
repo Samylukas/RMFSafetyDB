@@ -206,8 +206,14 @@ function renderDirectory(dataList) {
     dataList.forEach((item) => {
         let deptName = item.Department || "أخرى";
         
+        // إضافة كلاس dept-header-row لمنع نزول العنوان في آخر الصفحة منفرداً
         if (deptName !== currentDept) {
-            tableHTML += `<tr><td colspan="6" style="background: #e9ecef; color: #003366; font-weight: 900; text-align: center; padding: 10px; border-top: 2px solid #003366; font-size: 1rem;">${deptName}</td></tr>`;
+            tableHTML += `
+                <tr class="dept-header-row">
+                    <td colspan="6" style="background: #e9ecef; color: #003366; font-weight: 900; text-align: center; padding: 10px; border-top: 3px solid #003366; font-size: 1rem;">
+                        ${deptName}
+                    </td>
+                </tr>`;
             currentDept = deptName;
         }
 
@@ -322,9 +328,15 @@ function exportDirectoryPDF() {
     document.querySelectorAll('.dir-actions').forEach(el => el.style.display = 'none'); 
 
     const el = document.getElementById('printable-directory');
+    window.scrollTo(0, 0);
+
     html2pdf().set({
-        margin: 0.2, filename: 'Marsa_Alam_Directory.pdf', image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        margin: [0.3, 0.2, 0.3, 0.2],
+        filename: 'Marsa_Alam_Airport_Directory.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.dept-header-row'] }
     }).from(el).save().then(() => {
         document.getElementById('dirSearch').style.display = 'block';
         document.querySelectorAll('.dir-actions').forEach(el => el.style.display = ''); 
