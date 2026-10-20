@@ -157,17 +157,19 @@
   <!-- لوحة القيادة -->
   <div id="main-dashboard" class="content-area" style="display:none;">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
-    <div class="departments-grid">
+   <div class="departments-grid">
       <div class="dept-card" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i><h3 class="dept-title">إدارة سلامة المطارات</h3><div class="dept-subtitle">Airport Safety Department</div></div>
       <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')"><i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i><h3 class="dept-title">الحماية المدنية</h3><div class="dept-subtitle">Civil Defense</div></div>
       <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')"><i class="fa-solid fa-hard-hat dept-icon icon-health"></i><h3 class="dept-title">السلامة والصحة المهنية</h3><div class="dept-subtitle">Occupational Safety & Health</div></div>
       <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')"><i class="fa-solid fa-dove dept-icon icon-nature"></i><h3 class="dept-title">البيئة والحياة البرية</h3><div class="dept-subtitle">Environment & Wildlife</div></div>
       <div class="dept-card" onclick="openSection('account-management-section')"><i class="fa-solid fa-users-gear dept-icon icon-users"></i><h3 class="dept-title">إدارة الحسابات</h3><div class="dept-subtitle">Account Management</div></div>
-     <div class="dept-card" onclick="openSection('directory-section')">
-    <i class="fa-solid fa-address-card dept-icon" style="color: #ff9800;"></i>
-    <h3 class="dept-title">دليل هواتف المطار</h3>
-    <div class="dept-subtitle">Airport Phone Directory</div>
-</div>
+      
+      <!-- كارت دليل الهاتف بالصورة الجديدة -->
+      <div class="dept-card" onclick="openSection('directory-section')">
+        <img src="dir-icon.png" alt="Directory" class="dept-img-icon">
+        <h3 class="dept-title">دليل هواتف المطار</h3>
+        <div class="dept-subtitle">Airport Phone Directory</div>
+      </div>
 </div>
     </div>
   </div>
