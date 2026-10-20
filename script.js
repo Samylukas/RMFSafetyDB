@@ -452,7 +452,7 @@ function navSurveys(direction) {
 
     if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
         displaySurveyInForm(globalSurveys[currentSurveyIndex]);
-        document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} /${globalSurveys.length}`;
+        document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`;
         document.getElementById('submitSurveyBtn').disabled = true;
         document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
     }
@@ -916,7 +916,7 @@ function autoFillDailyDateTime() {
 
 function updateDailyNavCounter() {
     const ctr = document.getElementById('nav-daily-counter');
-    if (ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} /${globalDailyInspections.length}` : `0 / 0`;
+    if (ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`;
 }
 
 function navDaily(direction) {
@@ -1311,7 +1311,7 @@ function handleIncFile(input) {
 function updateIncidentNavCounter() {
     const ctr = document.getElementById('nav-incident-counter');
     if (ctr) {
-        ctr.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} /${globalIncidents.length}` : `0 / 0`;
+        ctr.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`;
     }
 }
 
@@ -1617,7 +1617,7 @@ function prepareIncidentPrint(idx) {
     document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; 
 
     let route = ((inc.ORG_VIA || "NIL") + " - " + (inc.VIA_DST || "NIL")).toUpperCase();
-    document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG \vert{}\vert{} 'NIL'}<br>Route:${route}`;
+    document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG || 'NIL'}<br>Route: ${route}`;
     document.getElementById('pIncAirlineDetails').innerHTML = `Airline: ${inc.CAR || 'NIL'}`;
 
     document.getElementById('pIncDesc').innerText = inc.Description || "NIL";
@@ -1692,7 +1692,7 @@ function generateMonthlyIncidents() {
     if (fd > td) return alert("التاريخ 'إلى' يجب أن يكون أكبر من أو يساوي التاريخ 'من'");
 
     document.getElementById('printable-monthly-incidents').style.display = 'block';
-    document.getElementById('inc-monthly-period').innerText = `الفترة: ${fromD} إلى ${toD} \vert{} فلتر: ${currentIncidentFilter}`;
+    document.getElementById('inc-monthly-period').innerText = `الفترة: ${fromD} إلى ${toD} | فلتر: ${currentIncidentFilter}`;
 
     let filteredInc = globalIncidents.filter(r => {
         if (!r.Date) return false;
@@ -1743,4 +1743,186 @@ function generateMonthlyIncidents() {
             }
 
             row += `<td style="text-align:center; direction:ltr; vertical-align:top; padding:10px;">${d}</td>`;
-            row += `<td style="text-align:justify; padding:10px; direction:ltr; vertical
+            row += `<td style="text-align:justify; padding:10px; direction:ltr; vertical-align:top;">${airlineHtml}<hr style="border-top:1px dashed #ccc; margin:8px 0;">${detailsHtml}</td>`;
+
+            if (firstRow) {
+                row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold; font-size:1.2rem; color:#dc3545;">${items.length < 10 ? '0' + items.length : items.length}</td>`;
+                firstRow = false;
+            }
+            row += `</tr>`;
+            
+            tableHTML += row;
+        });
+        counter++;
+    });
+    
+    tableHTML += `</tbody>`;
+    tbody.innerHTML = tableHTML;
+}
+
+function exportMonthlyIncidentsPDF() {
+    const el = document.getElementById('printable-monthly-incidents');
+    if (el.style.display === 'none') return alert("برجاء تجهيز التقرير أولاً.");
+    html2pdf().set({
+        margin: 0.2,
+        filename: 'Monthly_Incidents_Summary.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: ['css', 'legacy'] }
+    }).from(el).save();
+}
+
+function switchSpiTab(tab) {
+    document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-spi-' + tab).classList.add('active');
+    document.getElementById('tab-spi-' + tab).classList.add('active');
+    if (tab === 'report') generateSpiReport();
+}
+
+function buildSpiEntryForm() {
+    const container = document.getElementById('spi-dynamic-inputs');
+    container.innerHTML = '';
+    spiCategories.forEach(cat => {
+        let catHtml = `<h4 style="color: #28a745; margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${cat.name}</h4><div class="form-grid">`;
+        cat.items.forEach((spi) => {
+            let safeId = "spi_" + spi.replace(/[^a-zA-Z0-9]/g, '');
+            catHtml += `<div class="form-group"><label style="font-size:0.8rem; direction:ltr; text-align:left;">${spi}</label><input type="number" id="${safeId}" data-spi="${spi}" value="0" min="0" required></div>`;
+        });
+        catHtml += `</div>`;
+        container.innerHTML += catHtml;
+    });
+}
+
+async function submitSPI(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitSpiBtn');
+    const msg = document.getElementById('spiMsg');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0;
+    let monthData = { "Movements": movementsVal };
+
+    document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(input => {
+        monthData[input.getAttribute('data-spi')] = parseInt(input.value) || 0;
+    });
+
+    let spiDataObj = {
+        id: "SPI-" + Date.now(),
+        year: document.getElementById('spiYear').value,
+        month: document.getElementById('spiMonth').value,
+        group: "ECAA_SPI_Matrix",
+        name: "OperationalSPI",
+        target: "0",
+        actual: JSON.stringify(monthData),
+        status: "Submitted",
+        actionPlan: movementsVal.toString(),
+        preparedBy: "Safety Officer"
+    };
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        msg.style.color = "green";
+        msg.innerText = "✅ تم حفظ بيانات مؤشرات الشهر بنجاح!";
+        globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual });
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتسجيل بيانات الشهر';
+            btn.disabled = false;
+            msg.innerText = "";
+            document.getElementById('spiForm').reset();
+        }, 2000);
+    } catch (error) {
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتسجيل بيانات الشهر';
+        btn.disabled = false;
+    }
+}
+
+function generateSpiReport() {
+    const container = document.getElementById('spi-matrix-container');
+    let selectedYear = document.getElementById('spiReportYear').value;
+    let monthlySpiParsed = {};
+
+    globalSpiData.forEach(row => {
+        if (row.Indicator_Name === "OperationalSPI" && String(row.Year) === selectedYear) {
+            try { monthlySpiParsed[row.Month] = JSON.parse(row.Actual_Value); } catch (e) {}
+        }
+    });
+
+    let tableHtml = `<table class="report-table spi-matrix-table"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366; color:#fff;">Total Events</th><th style="background:#dc3545; color:#fff;">Rate (per 1000)</th></tr></thead><tbody>`;
+    let totalMov = 0;
+    
+    tableHtml += `<tr><td>Number of aircraft movements in the month</td>`;
+    for (let i = 1; i <= 12; i++) {
+        let m = monthlySpiParsed[i] ? monthlySpiParsed[i].Movements || 0 : 0;
+        totalMov += m;
+        tableHtml += `<td style="font-weight:bold; background:#e8f5e9;">${m || '-'}</td>`;
+    }
+    tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td><td style="background:#dc3545; color:#fff;">-</td></tr>`;
+
+    spiCategories.forEach(cat => {
+        tableHtml += `<tr><td colspan="15" style="background:#f4fcf6; color:#28a745; font-weight:bold; text-align:right;">${cat.name}</td></tr>`;
+        cat.items.forEach(spi => {
+            let totalSpi = 0;
+            let rowHtml = `<tr><td>${spi}</td>`;
+            for (let i = 1; i <= 12; i++) {
+                let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
+                totalSpi += val;
+                rowHtml += `<td>${val || '-'}</td>`;
+            }
+            let rate = totalMov > 0 ? ((totalSpi / totalMov) * 1000).toFixed(2) : 0;
+            rowHtml += `<td style="font-weight:bold; color:#003366;">${totalSpi}</td><td style="font-weight:bold; color:#dc3545;">${rate}</td></tr>`;
+            tableHtml += rowHtml;
+        });
+    });
+
+    tableHtml += `</tbody></table>`;
+    container.innerHTML = tableHtml;
+}
+
+async function addUser(e) {
+    e.preventDefault();
+    const msg = document.getElementById('userMsg');
+    const role = document.getElementById('newUserRole').value;
+    const username = document.getElementById('newUsername').value;
+    const password = document.getElementById('newUserPass').value;
+
+    msg.style.color = "blue";
+    msg.innerText = "جاري الإضافة...";
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "addUser", role: role, username: username, password: password }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        msg.style.color = "green";
+        msg.innerText = "تمت الإضافة بنجاح!";
+        globalUsers.push({ Role: role, Username: username, Password: password });
+        renderUsersTable();
+        document.getElementById('username').innerHTML += `<option value="${username}">${username} (${role})</option>`;
+        setTimeout(() => {
+            msg.innerText = "";
+            document.getElementById('newUsername').value = "";
+            document.getElementById('newUserPass').value = "";
+        }, 1500);
+    } catch (error) {
+        msg.style.color = "red";
+        msg.innerText = "فشل الاتصال!";
+    }
+}
+
+function renderUsersTable() {
+    const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    globalUsers.forEach((u, i) => {
+        tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
+    });
+}
