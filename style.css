@@ -260,3 +260,67 @@ select.status-select { cursor: pointer; border: none; }
 
 @media (max-width: 992px) { .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .checklist-grid { grid-template-columns: 1fr; } }
+/* تنسيقات شبكة الإدارات (لضمان سيمترية 3 كروت في الصف) */
+.departments-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* إجبار الشبكة على 3 أعمدة متساوية */
+    gap: 25px;
+    max-width: 1100px;
+    margin: 0 auto; /* توسيط الشبكة في منتصف الشاشة */
+    padding: 20px;
+}
+
+/* تنسيق الكارت نفسه */
+.dept-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* ظل خفيف وناعم */
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dept-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.dept-icon {
+    font-size: 4rem; /* تكبير الأيقونات لتطابق الصورة */
+    margin-bottom: 15px;
+}
+
+/* ألوان الأيقونات لتطابق الصورة بالضبط */
+.icon-safety   { color: #0088ff; } /* أزرق */
+.icon-fire     { color: #dc3545; } /* أحمر */
+.icon-health   { color: #28a745; } /* أخضر */
+.icon-nature   { color: #5a189a; } /* بنفسجي */
+.icon-users    { color: #495057; } /* رمادي غامق */
+.icon-directory{ color: #fd7e14; } /* برتقالي */
+
+/* تنسيق النصوص داخل الكروت */
+.dept-title {
+    color: #003366;
+    font-weight: 900;
+    font-size: 1.25rem;
+    margin: 10px 0 5px;
+}
+
+.dept-subtitle {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* التوافق مع الشاشات الصغيرة (التابلت والموبايل) */
+@media (max-width: 992px) {
+    .departments-grid { grid-template-columns: repeat(2, 1fr); } /* كارتين في الصف للتابلت */
+}
+@media (max-width: 576px) {
+    .departments-grid { grid-template-columns: 1fr; } /* كارت واحد في الصف للموبايل */
+}
