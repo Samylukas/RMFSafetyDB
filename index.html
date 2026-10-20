@@ -142,13 +142,26 @@
             <button onclick="exportDirectoryPDF()" class="pdf-export-btn" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer;"><i class="fa-solid fa-print"></i> طباعة الدليل</button>
         </div>
     </div>
-    <div id="printable-directory" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px;">
+    <div id="printable-directory" style="background: #fff; padding: 15px; border-radius: 10px; direction: rtl; margin-top: 20px;">
+        <!-- ترويسة التقرير الخاصة بالطباعة واللوجو -->
+        <div class="dir-print-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #003366; padding-bottom: 12px; margin-bottom: 15px;">
+            <div style="text-align: right;">
+                <h2 style="margin: 0; color: #003366; font-size: 1.15rem; font-weight: 900;">مطار مرسى علم الدولي</h2>
+                <h3 style="margin: 3px 0 0; color: #555; font-size: 0.9rem;">الإدارة العامة للمطابقة والسلامة</h3>
+            </div>
+            <div style="text-align: center;">
+                <h1 style="margin: 0; color: #003366; font-size: 1.3rem; font-weight: 900;">دليل هواتف المطار</h1>
+                <span style="font-size: 0.85rem; color: #777; font-family: sans-serif;">Airport Phone Directory</span>
+            </div>
+            <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 48px; object-fit: contain;">
+        </div>
+
         <table class="report-table rtl-table" style="width: 100%; border: 2px solid #003366;">
           <thead>
                 <tr style="background: #003366; color: #fff;">
-                    <th style="width: 5%; text-align: center;">م</th>
-                    <th style="width: 30%;">الإسم</th>
-                    <th style="width: 25%;">الوظيفة</th>
+                    <th style="width: 6%; text-align: center;">م</th>
+                    <th style="width: 28%;">الإسم</th>
+                    <th style="width: 26%;">الوظيفة</th>
                     <th style="width: 15%; text-align: center; direction: ltr;">رقم أرضي</th>
                     <th style="width: 15%; text-align: center; direction: ltr;">موبايل</th>
                     <th style="width: 10%; text-align: center;" class="dir-actions">إجراء</th>
