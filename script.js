@@ -171,6 +171,8 @@ function loadAppDataInit() {
 
                 renderSavedDaily();
                 renderSavedIncidents();
+                updateDailyNavCounter();
+                updateIncidentNavCounter();
             }
         } catch (e) { console.error(e); }
         delete window[callbackName];
@@ -328,3 +330,1417 @@ function exportDirectoryPDF() {
         document.querySelectorAll('.dir-actions').forEach(el => el.style.display = ''); 
     });
 }
+
+function switchTab(tab) {
+    document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#captain-survey-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-' + tab).classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function buildEvaluationForm() {
+    const container = document.getElementById('criteria-container');
+    if (!container) return;
+    criteriaList.forEach((crit, index) => {
+        let html = `<div class="eval-card">
+                        <div class="eval-title">${crit}</div>
+                        <div class="radio-group">
+                            <input type="radio" id="c${index}_e" name="${crit}" value="Excellent" checked><label for="c${index}_e" class="lbl-e">E</label>
+                            <input type="radio" id="c${index}_g" name="${crit}" value="Good"><label for="c${index}_g" class="lbl-g">G</label>
+                            <input type="radio" id="c${index}_p" name="${crit}" value="Poor"><label for="c${index}_p" class="lbl-p">P</label>
+                            <input type="radio" id="c${index}_n" name="${crit}" value="N/A"><label for="c${index}_n" class="lbl-n">N/A</label>
+                            <input type="radio" id="c${index}_b" name="${crit}" value="Blank"><label for="c${index}_b" class="lbl-b">B</label>
+                        </div>
+                    </div>`;
+        container.innerHTML += html;
+    });
+}
+
+function setupCustomDropdown() {
+    const input = document.getElementById('reg');
+    const arrow = document.getElementById('regArrowBtn');
+    const list = document.getElementById('regDropdownList');
+
+    arrow.addEventListener('click', function(e) {
+        e.stopPropagation();
+        list.classList.toggle('show');
+        if (list.classList.contains('show')) {
+            input.focus();
+            filterRegOptions(true);
+        }
+    });
+
+    input.addEventListener('input', function() {
+        list.classList.add('show');
+        filterRegOptions(false);
+    });
+
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        list.classList.add('show');
+        filterRegOptions(false);
+    });
+
+    document.addEventListener('click', function() {
+        list.classList.remove('show');
+    });
+}
+
+function filterRegOptions(showAll = false) {
+    const input = document.getElementById('reg');
+    const list = document.getElementById('regDropdownList');
+    const airlineInput = document.getElementById('airline');
+    const typeInput = document.getElementById('acType');
+    
+    let rawInput = input.value;
+    const filter = rawInput.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    list.innerHTML = '';
+    
+    let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(filter));
+    let exactMatch = globalFleetData.find(a => String(a.REG).toUpperCase().replace(/[^A-Z0-9]/g, '') === filter);
+
+    if (exactMatch) {
+        airlineInput.value = exactMatch.CAR || "";
+        typeInput.value = exactMatch.TYPE || "";
+        airlineInput.style.backgroundColor = "#e8f5e9";
+        typeInput.style.backgroundColor = "#e8f5e9";
+        list.innerHTML = `<div class="custom-dropdown-item" onclick="selectReg('${exactMatch.REG}')">${exactMatch.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${exactMatch.CAR}</span></div>`;
+    } else {
+        airlineInput.value = "";
+        typeInput.value = "";
+        airlineInput.style.backgroundColor = "#f0f0f0";
+        typeInput.style.backgroundColor = "#f0f0f0";
+
+        if (globalFleetData.length === 0) {
+            list.innerHTML = `<div class="custom-dropdown-empty" style="color: #666;">جاري تحميل البيانات من السيرفر...</div>`;
+        } else if (matched.length === 0) {
+            list.innerHTML = `<div class="custom-dropdown-empty">لا توجد طائرة بهذا التسجيل. يمكنك الضغط على (+) لإضافتها.</div>`;
+        } else {
+            matched.forEach(a => {
+                let div = document.createElement('div');
+                div.className = 'custom-dropdown-item';
+                div.innerHTML = `${a.REG} <span style="font-size: 0.75rem; color: #777; float: right;">${a.CAR}</span>`;
+                div.onclick = function(e) { e.stopPropagation(); selectReg(a.REG); };
+                list.appendChild(div);
+            });
+        }
+    }
+}
+
+function selectReg(selectedReg) {
+    const input = document.getElementById('reg');
+    const list = document.getElementById('regDropdownList');
+    input.value = selectedReg;
+    list.classList.remove('show');
+    
+    let exactMatch = globalFleetData.find(a => String(a.REG) === selectedReg);
+    if (exactMatch) {
+        document.getElementById('airline').value = exactMatch.CAR || "";
+        document.getElementById('acType').value = exactMatch.TYPE || "";
+        document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+        document.getElementById('acType').style.backgroundColor = "#e8f5e9";
+    }
+}
+
+function navSurveys(direction) {
+    if (globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
+    if (direction === 'first') currentSurveyIndex = 0;
+    else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1;
+    else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
+    else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
+
+    if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
+        displaySurveyInForm(globalSurveys[currentSurveyIndex]);
+        document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} /${globalSurveys.length}`;
+        document.getElementById('submitSurveyBtn').disabled = true;
+        document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+    }
+}
+
+function displaySurveyInForm(survey) {
+    document.getElementById('date').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
+    let timeVal = survey.Time;
+    if (timeVal && timeVal.includes('T')) {
+        let t = new Date(timeVal);
+        document.getElementById('time').value = t.toTimeString().substring(0, 5);
+    } else {
+        document.getElementById('time').value = timeVal || '';
+    }
+
+    document.getElementById('fltNo').value = survey.Flight_NO || '';
+    document.getElementById('reg').value = survey.REG || '';
+    document.getElementById('airline').value = survey.CAR || '';
+    document.getElementById('acType').value = survey.TYPE || '';
+    document.getElementById('comments').value = survey.Captain_Comments || '';
+
+    document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+    document.getElementById('acType').style.backgroundColor = "#e8f5e9";
+
+    criteriaList.forEach(crit => {
+        let val = survey[crit] || "Blank";
+        let radio = document.querySelector(`input[name="${crit}"][value="${val}"]`);
+        if (radio) radio.checked = true;
+    });
+}
+
+function clearFormForNew() {
+    currentSurveyIndex = -1;
+    document.getElementById('surveyForm').reset();
+    document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+    let btn = document.getElementById('submitSurveyBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+    document.getElementById('reg').value = "";
+    document.getElementById('airline').value = "";
+    document.getElementById('acType').value = "";
+    document.getElementById('airline').style.backgroundColor = "#f0f0f0";
+    document.getElementById('acType').style.backgroundColor = "#f0f0f0";
+}
+
+function openFleetModal() {
+    document.getElementById('newReg').value = "";
+    document.getElementById('newType').value = "";
+    document.getElementById('newAirline').value = "";
+    document.getElementById('newHandling').value = "";
+    document.getElementById('newCountry').value = "";
+    document.getElementById('modalMsg').innerText = "";
+    document.getElementById('addModal').style.display = 'flex';
+}
+
+function closeAddModal() {
+    document.getElementById('addModal').style.display = 'none';
+}
+
+async function saveNewAircraft() {
+    const reg = document.getElementById('newReg').value.toUpperCase();
+    const type = document.getElementById('newType').value.toUpperCase();
+    const airline = document.getElementById('newAirline').value.toUpperCase();
+    const handling = document.getElementById('newHandling').value;
+    const country = document.getElementById('newCountry').value;
+    const msg = document.getElementById('modalMsg');
+
+    if (!reg || !type || !airline) {
+        msg.style.color = "red";
+        msg.innerText = "برجاء ملء البيانات الأساسية!";
+        return;
+    }
+
+    if (globalFleetData.some(a => String(a.REG).toUpperCase() === reg)) {
+        msg.style.color = "red";
+        msg.innerText = "هذا التسجيل موجود بالفعل!";
+        return;
+    }
+
+    msg.style.color = "blue";
+    msg.innerText = "جاري الحفظ...";
+
+    const payload = {
+        action: "addNewAircraft",
+        reg: reg,
+        acType: type,
+        airline: airline,
+        handling: handling,
+        country: country
+    };
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        msg.style.color = "green";
+        msg.innerText = "تم الحفظ بنجاح!";
+        globalFleetData.unshift({ "REG": reg, "TYPE": type, "CAR": airline });
+        selectReg(reg);
+        setTimeout(closeAddModal, 1500);
+    } catch (error) {
+        msg.style.color = "red";
+        msg.innerText = "فشل الاتصال بالسيرفر!";
+    }
+}
+
+async function submitSurvey(e) {
+    e.preventDefault();
+    const airline = document.getElementById('airline').value;
+    const msg = document.getElementById('surveyMsg');
+
+    if (!airline) {
+        msg.style.color = "red";
+        msg.innerText = "برجاء التأكد من تسجيل الطائرة (غير موجود في قاعدة البيانات)!";
+        return;
+    }
+
+    const btn = document.getElementById('submitSurveyBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
+
+    let surveyDataObj = {
+        "Date": document.getElementById('date').value,
+        "Time": document.getElementById('time').value,
+        "Flight_NO": document.getElementById('fltNo').value,
+        "REG": document.getElementById('reg').value.toUpperCase(),
+        "CAR": airline,
+        "TYPE": document.getElementById('acType').value,
+        "Captain_Comments": document.getElementById('comments').value
+    };
+
+    criteriaList.forEach(crit => {
+        let selectedOption = document.querySelector(`input[name="${crit}"]:checked`);
+        surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank";
+    });
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        msg.style.color = "green";
+        msg.innerText = "✅ تم الحفظ بنجاح!";
+        globalSurveys.unshift(surveyDataObj);
+        document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+            btn.disabled = false;
+            msg.innerText = "";
+            clearFormForNew();
+        }, 1500);
+    } catch (error) {
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        btn.disabled = false;
+    }
+}
+
+function generateModernReport() {
+    let fromD = document.getElementById('fromDate').value;
+    let toD = document.getElementById('toDate').value;
+
+    if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
+
+    let fd = new Date(fromD);
+    let td = new Date(toD);
+    td.setHours(23, 59, 59, 999);
+
+    if (fd > td) return alert("التاريخ 'إلى' يجب أن يكون أكبر من أو يساوي التاريخ 'من'");
+
+    document.getElementById('printable-report').style.display = 'block';
+    
+    let filteredSurveys = globalSurveys.filter(s => {
+        let sd = new Date(s.Date);
+        return sd >= fd && sd <= td;
+    });
+
+    document.getElementById('report-date-range').innerHTML = `الفترة: <span style="display:inline-block; direction:ltr;">${fromD}</span> إلى <span style="display:inline-block; direction:ltr;">${toD}</span>`;
+
+    let airlinesSet = new Set();
+    let airlinesCount = {};
+    let datesCount = {};
+    let evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+
+    const flightsTbody = document.getElementById('flights-eval-tbody');
+    flightsTbody.innerHTML = "";
+
+    const extraContainer = document.getElementById('additional-tables-container');
+    extraContainer.innerHTML = "";
+
+    if (filteredSurveys.length === 0) {
+        flightsTbody.innerHTML = "<tr><td colspan='9' style='padding: 20px; font-weight: bold; text-align:center;'>لا توجد بيانات مسجلة في هذه الفترة</td></tr>";
+        document.getElementById('stat-total').innerText = "0";
+        document.getElementById('stat-airlines').innerText = "0";
+        document.getElementById('stat-excellent').innerText = "0%";
+        destroyCharts();
+        return;
+    }
+
+    let commentsHTML = ''; let hasComments = false;
+    let poorEvaluationsHTML = ''; let hasPoor = false;
+
+    filteredSurveys.forEach(survey => {
+        if (survey.CAR) {
+            airlinesSet.add(survey.CAR);
+            airlinesCount[survey.CAR] = (airlinesCount[survey.CAR] || 0) + 1;
+        }
+        let dStr = survey.Date ? survey.Date.split('T')[0] : 'Unknown';
+        datesCount[dStr] = (datesCount[dStr] || 0) + 1;
+
+        let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+        let poorCriteriaForThisFlight = [];
+
+        criteriaList.forEach(crit => {
+            let val = survey[crit] || "Blank";
+            if (fCounts[val] !== undefined) fCounts[val]++;
+            if (evalsCount[val] !== undefined) evalsCount[val]++;
+            if (val === "Poor") { poorCriteriaForThisFlight.push(crit); }
+        });
+
+        let dateDisplay = survey.Date ? new Date(survey.Date).toLocaleDateString('en-GB') : "";
+
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><b>${survey.CAR || ''}</b></td>
+            <td dir="ltr" style="text-align: right;">${survey.Flight_NO || ''}</td>
+            <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+            <td dir="ltr" style="text-align: right;">${survey.REG || ''}</td>
+            <td style="font-weight:bold; color:#28a745;">${fCounts["Excellent"]}</td>
+            <td style="font-weight:bold; color:#ffc107;">${fCounts["Good"]}</td>
+            <td style="font-weight:bold; color:#dc3545;">${fCounts["Poor"]}</td>
+            <td style="font-weight:bold; color:#6c757d;">${fCounts["N/A"]}</td>
+            <td style="font-weight:bold; color:#1a2a6c;">${fCounts["Blank"]}</td>
+        `;
+        flightsTbody.appendChild(tr);
+
+        if (survey.Captain_Comments && survey.Captain_Comments.trim() !== "") {
+            hasComments = true;
+            commentsHTML += `
+                <tr>
+                    <td><b>${survey.CAR || ''}</b></td>
+                    <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                    <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                    <td dir="ltr" style="text-align: left; color:#333; font-weight:600;">${survey.Captain_Comments}</td>
+                </tr>
+            `;
+        }
+
+        if (poorCriteriaForThisFlight.length > 0) {
+            hasPoor = true;
+            poorEvaluationsHTML += `
+                <tr>
+                    <td><b>${survey.CAR || ''}</b></td>
+                    <td dir="ltr" style="text-align: right; font-weight: bold;">${survey.Flight_NO || ''}</td>
+                    <td dir="ltr" style="text-align: right;">${dateDisplay}</td>
+                    <td dir="ltr" style="text-align: right;">${survey.REG || ''}</td>
+                    <td style="color: #dc3545; font-weight: bold; text-align: right; direction: ltr;">${poorCriteriaForThisFlight.join(' <span style="color:#ccc;">|</span> ')}</td>
+                </tr>
+            `;
+        }
+    });
+
+    let additionalTables = "";
+
+    if (hasPoor) {
+        additionalTables += `
+            <div class="report-wrapper avoid-page-break" style="margin-top: 30px; background: #fffafb; border-right: 5px solid #dc3545; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h4 style="color: #dc3545; margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #f5c6cb; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-triangle-exclamation"></i> تفاصيل التقييمات الضعيفة</h4>
+                <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
+                    <thead><tr style="background-color: #fceceb;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th>الخانات التي حصلت على (Poor)</th></tr></thead>
+                    <tbody>${poorEvaluationsHTML}</tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    additionalTables += `
+        <div class="comments-section avoid-page-break" style="background: #f0f8ff; border-right: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h4 style="color: var(--primary); margin-top:0; margin-bottom: 15px; border-bottom: 2px solid #cce5ff; padding-bottom: 5px; text-align: right;"><i class="fa-solid fa-comments"></i> ملاحظات الكابتن</h4>
+            <table class="report-table rtl-table" dir="rtl" style="margin-bottom: 0;">
+                <thead><tr style="background-color: #e6f2ff;"><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th style="width: 50%;">الملاحظة</th></tr></thead>
+                <tbody>`;
+
+    if (hasComments) {
+        additionalTables += commentsHTML;
+    } else {
+        additionalTables += `<tr><td colspan="4" style="text-align:center; color: #777; font-weight:bold;">لا توجد ملاحظات مسجلة في هذه الفترة</td></tr>`;
+    }
+
+    additionalTables += `</tbody></table></div>`;
+    extraContainer.innerHTML = additionalTables;
+
+    document.getElementById('stat-total').innerText = filteredSurveys.length;
+    document.getElementById('stat-airlines').innerText = airlinesSet.size;
+    let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+    let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+    document.getElementById('stat-excellent').innerText = `${excPercent}%`;
+
+    drawCharts(airlinesCount, datesCount, evalsCount);
+}
+
+function destroyCharts() {
+    if (chartInstances.air) chartInstances.air.destroy();
+    if (chartInstances.dates) chartInstances.dates.destroy();
+    if (chartInstances.eval) chartInstances.eval.destroy();
+}
+
+function drawCharts(airlines, dates, evals) {
+    destroyCharts();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+    Chart.register(ChartDataLabels);
+
+    const ctxAir = document.getElementById('airlinesChart').getContext('2d');
+    chartInstances.air = new Chart(ctxAir, {
+        type: 'bar',
+        data: { labels: Object.keys(airlines), datasets: [{ label: 'Surveys', data: Object.values(airlines), backgroundColor: '#003366', borderRadius: 5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Top Airlines' } } }
+    });
+
+    const ctxDates = document.getElementById('datesChart').getContext('2d');
+    let sortedDates = Object.keys(dates).sort();
+    let sortedData = sortedDates.map(d => dates[d]);
+    chartInstances.dates = new Chart(ctxDates, {
+        type: 'line',
+        data: { labels: sortedDates, datasets: [{ label: 'Activity', data: sortedData, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, title: { display: true, text: 'Surveys Over Time' } } }
+    });
+
+    const ctxEval = document.getElementById('evalChart').getContext('2d');
+    chartInstances.eval = new Chart(ctxEval, {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
+            datasets: [{ data: [evals["Excellent"], evals["Good"], evals["Poor"], evals["N/A"], evals["Blank"]], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#a9a9a9', '#1a2a6c'] }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: 'Overall Performance' },
+                datalabels: {
+                    color: '#fff', font: { weight: 'bold', size: 14 },
+                    formatter: (value, ctx) => {
+                        let sum = 0;
+                        ctx.chart.data.datasets[0].data.map(data => { sum += data; });
+                        if (sum === 0 || value === 0) return '';
+                        return (value * 100 / sum).toFixed(0) + "%";
+                    }
+                }
+            }
+        }
+    });
+}
+
+function exportModernPDF() {
+    const element = document.getElementById('printable-report');
+    const wrappers = document.querySelectorAll('.report-wrapper, .comments-section');
+    wrappers.forEach(w => w.style.overflowX = 'visible');
+    window.scrollTo(0, 0);
+
+    html2pdf().set({
+        margin: [0.2, 0.2, 0.2, 0.2],
+        filename: 'Safety_Dashboard_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 4, useCORS: true, scrollY: 0, y: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: ['css', 'legacy'] }
+    }).from(element).save().then(() => {
+        wrappers.forEach(w => w.style.overflowX = 'auto');
+    });
+}
+
+function switchDailyTab(tab) {
+    document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-daily-' + tab).classList.add('active');
+    document.getElementById('tab-daily-' + tab).classList.add('active');
+}
+
+function updateStatusColor(sel) {
+    if (sel.value === 'مغلق') {
+        sel.style.backgroundColor = '#28a745';
+        sel.style.color = '#fff';
+    } else {
+        sel.style.backgroundColor = '#dc3545';
+        sel.style.color = '#fff';
+    }
+}
+
+function buildDailyChecklist() {
+    const grid = document.getElementById('checklist-container');
+    if (!grid) return;
+    grid.innerHTML = "";
+    let checkIndex = 0;
+
+    Object.keys(dailyChecklistData).forEach(colKey => {
+        let colData = dailyChecklistData[colKey];
+        let colHTML = `<div class="checklist-column">`;
+
+        const renderSection = (title, items) => {
+            colHTML += `<div class="checklist-header">${title}</div>`;
+            items.forEach(item => {
+                let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join('');
+                colHTML += `
+                    <div class="check-item">
+                        <div class="check-item-row">
+                            <input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})">
+                            <label for="chk_${checkIndex}">${item}</label>
+                        </div>
+                        <div id="inputs_${checkIndex}" class="check-inputs">
+                            <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;">
+                                <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="actionTaken_${checkIndex}" placeholder="الإجراء المتخذ..." style="flex:2;">
+                                <input type="date" id="targetDate_${checkIndex}" title="تاريخ التلافي" style="flex:1;">
+                                <select id="status_${checkIndex}" class="status-select" style="flex:1; background:#dc3545; color:white;" onchange="updateStatusColor(this)">
+                                    <option value="مفتوح" selected>مفتوح</option>
+                                    <option value="مغلق">مغلق</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
+                checkIndex++;
+            });
+        };
+
+        renderSection(colData.title, colData.items);
+        if (colData.title2) renderSection(colData.title2, colData.items2);
+        if (colData.title3) renderSection(colData.title3, colData.items3);
+
+        colHTML += `</div>`;
+        grid.innerHTML += colHTML;
+    });
+}
+
+window.toggleInputs = function(idx) {
+    const chk = document.getElementById('chk_' + idx);
+    const inputs = document.getElementById('inputs_' + idx);
+    if (chk && chk.checked) {
+        inputs.style.display = 'flex';
+    } else {
+        inputs.style.display = 'none';
+    }
+}
+
+function autoFillDailyDateTime() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - offset)).toISOString().slice(0, -1);
+    const dField = document.getElementById('dailyDate');
+    const tField = document.getElementById('dailyTime');
+    if (dField) dField.value = localISOTime.split('T')[0];
+    if (tField) tField.value = localISOTime.split('T')[1].substring(0, 5);
+}
+
+function updateDailyNavCounter() {
+    const ctr = document.getElementById('nav-daily-counter');
+    if (ctr) ctr.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} /${globalDailyInspections.length}` : `0 / 0`;
+}
+
+function navDaily(direction) {
+    if (globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة بعد.");
+    if (direction === 'first') currentDailyIndex = 0;
+    else if (direction === 'last') currentDailyIndex = globalDailyInspections.length - 1;
+    else if (direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
+    else if (direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
+
+    if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
+        navDailyTo(currentDailyIndex);
+    }
+}
+
+function navDailyTo(idx) {
+    currentDailyIndex = idx;
+    let rep = globalDailyInspections[currentDailyIndex];
+
+    document.getElementById('dailyForm').reset();
+    document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
+
+    document.getElementById('dailyDate').value = rep.date || '';
+    document.getElementById('dailyTime').value = rep.time || '';
+    document.getElementById('dailyShift').value = rep.shift || 'صباحي';
+    document.getElementById('dailyInspector').value = rep.inspector || '';
+
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+        let parts = chk.value.split('|');
+        let found = rep.findings.find(f => f.category === parts[0] && f.item === parts[1]);
+        if (found) {
+            chk.checked = true;
+            document.getElementById(`inputs_${idx}`).style.display = 'flex';
+
+            let fullNote = found.note || "";
+            let nText = "تم الرصد";
+            let aText = "لم يحدد";
+            let tDate = "غير محدد";
+
+            try {
+                let match = fullNote.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
+                if (match) {
+                    nText = match[1];
+                    aText = match[2];
+                    tDate = match[3];
+                } else {
+                    nText = fullNote;
+                }
+            } catch (e) {}
+
+            document.getElementById(`note_${idx}`).value = nText;
+            document.getElementById(`actionTaken_${idx}`).value = aText !== "لم يحدد" ? aText.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim() : "";
+
+            let dField = document.getElementById(`targetDate_${idx}`);
+            dField.value = (tDate !== "غير محدد" && tDate.trim() !== "") ? tDate : "";
+
+            document.getElementById(`loc_${idx}`).value = found.location || "";
+            document.getElementById(`resp_${idx}`).value = found.responsible || "";
+
+            let statusSel = document.getElementById(`status_${idx}`);
+            statusSel.value = found.status || "مفتوح";
+            updateStatusColor(statusSel);
+        }
+    });
+
+    updateDailyNavCounter();
+
+    isDailyEditMode = true;
+    currentDailyEditId = rep.id;
+
+    let btn = document.getElementById('submitDailyBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ التعديلات وتحديث الحالة';
+    btn.style.backgroundColor = "#ffc107";
+    btn.style.color = "#000";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearDailyFormForNew() {
+    currentDailyIndex = -1;
+    isDailyEditMode = false;
+    currentDailyEditId = null;
+
+    document.getElementById('dailyForm').reset();
+    document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
+
+    document.querySelectorAll('.status-select').forEach(sel => {
+        sel.style.backgroundColor = '#dc3545';
+        sel.style.color = '#fff';
+    });
+
+    autoFillDailyDateTime();
+    updateDailyNavCounter();
+
+    let btn = document.getElementById('submitDailyBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية في قاعدة البيانات';
+    btn.style.backgroundColor = "var(--primary)";
+    btn.style.color = "#fff";
+}
+
+async function submitDailyInspection(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitDailyBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+    btn.disabled = true;
+
+    let findings = [];
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+        if (chk.checked) {
+            let parts = chk.value.split('|');
+            let noteText = document.getElementById(`note_${idx}`).value || "تم الرصد";
+            let actionText = document.getElementById(`actionTaken_${idx}`).value || "لم يحدد";
+            let targetD = document.getElementById(`targetDate_${idx}`).value || "";
+            let st = document.getElementById(`status_${idx}`).value || "مفتوح";
+
+            if (st === "مغلق") {
+                let closeDate = targetD !== "" ? targetD : new Date().toISOString().split('T')[0];
+                if (!actionText.includes("تم تلافي الملحوظة")) {
+                    actionText = actionText + ` [تم تلافي الملحوظة بتاريخ ${closeDate}]`;
+                }
+            }
+
+            let combinedNote = `الملاحظة: ${noteText} - الإجراء: ${actionText} - تاريخ التلافي: ${targetD !== "" ? targetD : "غير محدد"}`;
+
+            findings.push({
+                category: parts[0],
+                item: parts[1],
+                note: combinedNote,
+                location: document.getElementById(`loc_${idx}`).value || "-",
+                responsible: document.getElementById(`resp_${idx}`).value || "-",
+                status: st
+            });
+        }
+    });
+
+    let reportId = isDailyEditMode ? currentDailyEditId : Date.now();
+    const report = {
+        id: reportId,
+        date: document.getElementById('dailyDate').value,
+        time: document.getElementById('dailyTime').value,
+        shift: document.getElementById('dailyShift').value,
+        inspector: document.getElementById('dailyInspector').value,
+        findings: findings
+    };
+
+    let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection";
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: actionType, reportData: report }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        if (isDailyEditMode) {
+            globalDailyInspections[currentDailyIndex] = report;
+            document.getElementById('dailyMsg').style.color = "green";
+            document.getElementById('dailyMsg').innerText = "✅ تم تحديث الملاحظات بنجاح!";
+        } else {
+            globalDailyInspections.unshift(report);
+            document.getElementById('dailyMsg').style.color = "green";
+            document.getElementById('dailyMsg').innerText = "✅ تم الحفظ بنجاح!";
+        }
+
+        setTimeout(() => {
+            clearDailyFormForNew();
+            renderSavedDaily();
+            document.getElementById('dailyMsg').innerText = "";
+        }, 2000);
+    } catch (err) {
+        btn.disabled = false;
+        document.getElementById('dailyMsg').style.color = "red";
+        document.getElementById('dailyMsg').innerText = "❌ خطأ في الإتصال.";
+    }
+}
+
+function renderSavedDaily() {
+    const tbody = document.getElementById('saved-daily-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    updateDailyNavCounter();
+
+    if (globalDailyInspections.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6' style='color:#777; font-weight:bold; text-align:center;'>لا توجد فحوصات محفوظة.</td></tr>";
+        return;
+    }
+
+    globalDailyInspections.forEach((rep, idx) => {
+        let badge = rep.findings.length > 0 ? `<span style="background:red;color:white;padding:2px 8px;border-radius:10px;">${rep.findings.length} مخالفة</span>` : `<span style="background:green;color:white;padding:2px 8px;border-radius:10px;">سليم 100%</span>`;
+        tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td style="font-weight:bold;">${badge}</td><td><button type="button" onclick="navDailyTo(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-pen"></i> عرض وتعديل</button></td></tr>`;
+    });
+}
+
+function generateDailyPrintReport() {
+    let fromD = document.getElementById('dailyFromDate').value;
+    let toD = document.getElementById('dailyToDate').value;
+
+    if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
+
+    let fd = new Date(fromD);
+    let td = new Date(toD);
+    td.setHours(23, 59, 59, 999);
+
+    if (fd > td) return alert("التاريخ 'إلى' يجب أن يكون أكبر من أو يساوي التاريخ 'من'");
+
+    document.getElementById('printable-daily-report').style.display = 'block';
+
+    let filteredDailys = globalDailyInspections.filter(r => {
+        let sd = new Date(r.date);
+        return sd >= fd && sd <= td;
+    });
+
+    if (filteredDailys.length === 0) {
+        alert("لا توجد فحوصات في هذه الفترة.");
+        document.getElementById('printable-daily-report').style.display = 'none';
+        return;
+    }
+
+    let isMultiDay = fromD !== toD;
+
+    if (isMultiDay) {
+        document.getElementById('printable-checklist-report').style.display = 'none';
+        document.getElementById('corrective-title').innerText = `أولاً: تقرير بالأخطار التي تم رصدها (الفترة من ${fromD} إلى ${toD}):`;
+    } else {
+        document.getElementById('printable-checklist-report').style.display = 'block';
+        document.getElementById('corrective-title').innerText = "أولاً: تقرير بالأخطار التي تم رصدها:";
+        let rep = filteredDailys[0];
+        document.getElementById('print-date-view').innerText = rep.date;
+        document.getElementById('print-time-view').innerText = rep.time;
+        document.getElementById('print-shift-view').innerText = rep.shift;
+        document.getElementById('print-inspector-view').innerText = rep.inspector;
+
+        const table = document.getElementById('iso-checklist-table');
+        table.innerHTML = "";
+        let trHeader = "<tr>";
+        Object.keys(dailyChecklistData).reverse().forEach(colKey => {
+            trHeader += `<th>${dailyChecklistData[colKey].title}</th>`;
+        });
+        trHeader += "</tr>";
+        table.innerHTML += trHeader;
+
+        let trBody = "<tr>";
+        Object.keys(dailyChecklistData).reverse().forEach(colKey => {
+            let colData = dailyChecklistData[colKey];
+            let cellHtml = "<td>";
+            const renderItems = (itemsArr, catName) => {
+                itemsArr.forEach(i => {
+                    let isChecked = rep.findings.some(f => f.category === catName && f.item === i);
+                    let checkClass = isChecked ? "checked" : "";
+                    cellHtml += `<div class="checklist-row-print"><span>${i}</span><span class="checkbox-print ${checkClass}"></span></div>`;
+                });
+            };
+            renderItems(colData.items, colData.title);
+            if (colData.title2) {
+                cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title2}</div>`;
+                renderItems(colData.items2, colData.title2);
+            }
+            if (colData.title3) {
+                cellHtml += `<div style="text-align:center; font-weight:bold; background:#e6e6e6; margin: 4px -3px 2px; padding:2px;">${colData.title3}</div>`;
+                renderItems(colData.items3, colData.title3);
+            }
+            cellHtml += "</td>";
+            trBody += cellHtml;
+        });
+        trBody += "</tr>";
+        table.innerHTML += trBody;
+    }
+
+    const ctbody = document.getElementById('corrective-tbody');
+    ctbody.innerHTML = "";
+    let counter = 1;
+    let statusCounts = { "مغلق": 0, "مفتوح": 0 };
+    let deptCounts = {};
+
+    let allFindingsCount = 0;
+    filteredDailys.forEach(dr => {
+        dr.findings.forEach(f => {
+            allFindingsCount++;
+            let st = f.status || 'مفتوح';
+            if (st === 'مغلق') statusCounts["مغلق"]++;
+            else statusCounts["مفتوح"]++;
+            deptCounts[f.responsible] = (deptCounts[f.responsible] || 0) + 1;
+
+            let displayStatus = st === 'مغلق' ? 'انتهى' : 'معلق';
+            let statusColor = st === 'مغلق' ? '#28a745' : '#dc3545';
+
+            let violationText = f.item;
+            let correctiveAction = "لم يحدد";
+
+            try {
+                let match = f.note.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
+                if (match) {
+                    violationText = `<b>${f.item}</b><br><span style="color:#555;font-weight:normal;">${match[1]}</span>`;
+                    correctiveAction = match[2];
+                    let tDate = match[3];
+
+                    if (correctiveAction.includes("[تم تلافي")) {
+                        correctiveAction = correctiveAction.replace(/\[(تم تلافي.*?)\]/, "<strong style='color:#28a745;'><br>[$1]</strong>");
+                    }
+                    if (tDate !== "غير محدد" && tDate.trim() !== "") {
+                        correctiveAction += `<br><span style="color:#777; font-size:8px;">التاريخ المستهدف: ${tDate}</span>`;
+                    }
+                }
+            } catch (e) {}
+
+            ctbody.innerHTML += `
+            <tr>
+                <td style="text-align:center;">${counter++}</td>
+                <td style="text-align:center; direction:ltr;">${dr.date}</td>
+                <td style="text-align:center; direction:ltr;">${dr.time}</td>
+                <td style="text-align:center;">${f.location}</td>
+                <td style="text-align:right; font-size:10px;">${violationText}</td>
+                <td style="text-align:center;">${f.responsible}</td>
+                <td style="text-align:right; font-size:10px;">${correctiveAction}</td>
+                <td style="background:${statusColor}; color:white; text-align:center; font-weight:bold; font-size:11px;">${displayStatus}</td>
+            </tr>`;
+
+            ctbody.innerHTML += `
+            <tr>
+                <td colspan="8" style="text-align:center; background-color:#fafafa; padding: 12px; color: #aaa; border-bottom: 3px solid #000;">
+                    صورة المخالفة حالة الرصد (مساحة مخصصة لإرفاق الصور مستقبلاً)
+                </td>
+            </tr>`;
+        });
+    });
+
+    if (counter === 1) ctbody.innerHTML = "<tr><td colspan='8' style='text-align:center;font-weight:bold;padding:20px;'>سليم 100% ولا توجد ملاحظات في هذه الفترة</td></tr>";
+
+    document.getElementById('stat-daily-total').innerText = filteredDailys.length;
+    document.getElementById('stat-daily-findings').innerText = allFindingsCount;
+
+    let closedPercent = allFindingsCount > 0 ? Math.round((statusCounts["مغلق"] / allFindingsCount) * 100) : 0;
+    document.getElementById('stat-daily-closed').innerText = closedPercent + "%";
+
+    if (chartInstancesDaily.dept) chartInstancesDaily.dept.destroy();
+    if (chartInstancesDaily.status) chartInstancesDaily.status.destroy();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+    Chart.register(ChartDataLabels);
+
+    chartInstancesDaily.dept = new Chart(document.getElementById('dailyDeptChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(deptCounts), datasets: [{ label: 'المخالفات', data: Object.values(deptCounts), backgroundColor: '#dc3545', borderRadius: 5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } } }
+    });
+
+    chartInstancesDaily.status = new Chart(document.getElementById('dailyStatusChart').getContext('2d'), {
+        type: 'pie',
+        data: { labels: ['مغلق', 'مفتوح'], datasets: [{ data: [statusCounts["مغلق"], statusCounts["مفتوح"]], backgroundColor: ['#28a745', '#dc3545'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
+    });
+}
+
+function exportDailyPDF() {
+    const el = document.getElementById('printable-daily-report');
+    if (el.style.display === 'none') return alert("برجاء عرض التقرير أولاً قبل الطباعة.");
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: 0.1,
+        filename: 'Air_Side_Daily_Inspection.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 4, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: 'css', avoid: ['.avoid-page-break', 'tr'] }
+    }).from(el).save();
+}
+
+function switchIncidentTab(tab) {
+    document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-inc-' + tab).classList.add('active');
+    document.getElementById('tab-inc-' + tab).classList.add('active');
+}
+
+function handleIncFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+        alert("حجم الملف يجب ألا يتعدى 3 ميجابايت!");
+        input.value = "";
+        return;
+    }
+    document.getElementById('incFileLabel').innerText = file.name;
+    incFileName = file.name;
+    incFileType = file.type;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        incFileBase64 = e.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+}
+
+function updateIncidentNavCounter() {
+    const ctr = document.getElementById('nav-incident-counter');
+    if (ctr) {
+        ctr.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} /${globalIncidents.length}` : `0 / 0`;
+    }
+}
+
+function clearIncidentForm() {
+    currentIncidentIndex = -1;
+    isIncidentEditMode = false;
+    currentIncidentEditId = null;
+
+    document.getElementById('incidentForm').reset();
+    document.getElementById('incFileLabel').innerText = "اضغط لاختيار ملف المرفقات";
+    document.getElementById('incAttachedLink').style.display = "none";
+    incFileBase64 = null;
+    incFileName = null;
+    incFileType = null;
+
+    let now = new Date();
+    let offset = now.getTimezoneOffset() * 60000;
+    let local = (new Date(now - offset)).toISOString().slice(0, -1);
+    
+    document.getElementById('incDate').value = local.split('T')[0];
+    document.getElementById('incTime').value = local.split('T')[1].substring(0, 5);
+
+    let btn = document.getElementById('submitIncBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
+    btn.style.backgroundColor = "#dc3545";
+    btn.style.color = "#fff";
+    
+    updateIncidentNavCounter();
+}
+
+function navIncidents(direction) {
+    if (globalIncidents.length === 0) return alert("لا توجد وقائع مسجلة.");
+    if (direction === 'first') currentIncidentIndex = 0;
+    else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1;
+    else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++;
+    else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
+
+    navIncidentTo(currentIncidentIndex);
+}
+
+function navIncidentTo(idx) {
+    currentIncidentIndex = idx;
+    let inc = globalIncidents[currentIncidentIndex];
+    if (!inc) return;
+
+    switchIncidentTab('entry');
+    document.getElementById('incidentForm').reset();
+
+    document.getElementById('incDate').value = inc.Date ? inc.Date.split('T')[0] : '';
+    document.getElementById('incTime').value = inc.Time || '';
+    document.getElementById('incLocation').value = inc.Location || '';
+    document.getElementById('incPersonnel').value = inc.Personnel_Involved || 'NIL';
+    document.getElementById('incEqNo').value = inc.Equipment_No || 'NIL';
+    document.getElementById('incDriver').value = inc.Driver_Name || 'NIL';
+    document.getElementById('incEqOwner').value = inc.Equipment_Owned || 'NIL';
+    document.getElementById('incStatus').value = inc.Status || 'In service';
+    
+    document.getElementById('incPosition').value = inc.Position || 'NIL';
+    document.getElementById('incInjuryType').value = inc.Injury_Type || 'NIL';
+    document.getElementById('incCausesDetails').value = inc.Causes_Details || '';
+
+    let chks = (inc.Checkboxes && typeof inc.Checkboxes === 'string') ? inc.Checkboxes.split(',') : [];
+    document.getElementById('chkIncPersonnel').checked = chks.includes('Personnel');
+    document.getElementById('chkIncEq').checked = chks.includes('Equipment');
+    document.getElementById('chkIncAc').checked = chks.includes('Aircraft');
+    document.getElementById('chkIncInFlight').checked = chks.includes('InFlight');
+    document.getElementById('chkIncOnGround').checked = chks.includes('OnGround');
+
+    document.getElementById('incCar').value = inc.CAR || '';
+    document.getElementById('incFlightNo').value = inc.Flight_No || '';
+    document.getElementById('incReg').value = inc.REG || '';
+    document.getElementById('incOrgVia').value = (inc.ORG_VIA || '') + (inc.VIA_DST ? ' - ' + inc.VIA_DST : '');
+
+    document.getElementById('incCauses').value = inc.Occurrence_Causes || '';
+    document.getElementById('incChar').value = inc.Characterization || '';
+    document.getElementById('incRiskSev').value = inc.Risk_Severity || '';
+    document.getElementById('incRiskProb').value = inc.Risk_Probability || '';
+    document.getElementById('incPreparedBy').value = inc.Prepared_By || '';
+
+    document.getElementById('incHazardDesc').value = inc.Hazard_Description || '';
+    document.getElementById('incDesc').value = inc.Description || '';
+    document.getElementById('incAction').value = inc.Action_Taken || '';
+    document.getElementById('incRec').value = inc.Recommendation || '';
+
+    if (inc.Attachment_URL && inc.Attachment_URL.includes("http")) {
+        let fileIdMatch = inc.Attachment_URL.match(/\/d\/(.+?)\//);
+        if (fileIdMatch && fileIdMatch[1]) {
+            let fileId = fileIdMatch[1];
+            let directImgUrl = "https://drive.google.com/uc?id=" + fileId;
+            
+            document.getElementById('pIncAttach').innerHTML = `
+                <a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none; display:block; margin-bottom:10px;">🔗 Click here to view original attachment</a>
+                <img src="${directImgUrl}" style="max-width:100%; max-height:300px; object-fit:contain; border:1px solid #ccc; padding:5px; margin:auto; display:block;" onerror="this.style.display='none';">
+            `;
+        } else {
+            document.getElementById('pIncAttach').innerHTML = `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none;">🔗 Attached Documentations - Available via Link</a>`;
+        }
+    } else {
+        document.getElementById('pIncAttach').innerText = "NIL";
+    }
+    updateIncidentNavCounter();
+
+    isIncidentEditMode = true;
+    currentIncidentEditId = inc.ID;
+
+    let btn = document.getElementById('submitIncBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الواقعة';
+    btn.style.backgroundColor = "#ffc107";
+    btn.style.color = "#000";
+    window.scrollTo({ top: document.getElementById('incidentForm').offsetTop - 20, behavior: 'smooth' });
+}
+
+async function submitIncident(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitIncBtn');
+    const originalBtnText = isIncidentEditMode ? '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الواقعة' : '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة في قاعدة البيانات';
+    
+    try {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والتسجيل...';
+        btn.disabled = true;
+        document.getElementById('incMsg').innerText = "";
+
+        let chks = [];
+        if (document.getElementById('chkIncPersonnel').checked) chks.push('Personnel');
+        if (document.getElementById('chkIncEq').checked) chks.push('Equipment');
+        if (document.getElementById('chkIncAc').checked) chks.push('Aircraft');
+        if (document.getElementById('chkIncInFlight').checked) chks.push('InFlight');
+        if (document.getElementById('chkIncOnGround').checked) chks.push('OnGround');
+
+        let incId = isIncidentEditMode ? currentIncidentEditId : "INC-" + Date.now();
+
+        let payload = {
+            id: incId,
+            date: document.getElementById('incDate').value,
+            time: document.getElementById('incTime').value,
+            location: document.getElementById('incLocation').value,
+            personnel: document.getElementById('incPersonnel').value,
+            equipmentNo: document.getElementById('incEqNo').value,
+            driver: document.getElementById('incDriver').value,
+            eqOwner: document.getElementById('incEqOwner').value,
+            status: document.getElementById('incStatus').value,
+            causes: document.getElementById('incCauses').value,
+            charaterization: document.getElementById('incChar').value,
+            riskSeverity: document.getElementById('incRiskSev').value,
+            riskProb: document.getElementById('incRiskProb').value,
+            checkboxes: chks.join(','),
+            car: document.getElementById('incCar').value,
+            flightNo: document.getElementById('incFlightNo').value,
+            reg: document.getElementById('incReg').value,
+            orgVia: document.getElementById('incOrgVia').value,
+            viaDst: "",
+            preparedBy: document.getElementById('incPreparedBy').value,
+            hazardDesc: document.getElementById('incHazardDesc').value,
+            description: document.getElementById('incDesc').value,
+            actionTaken: document.getElementById('incAction').value,
+            recommendation: document.getElementById('incRec').value,
+            Attachment_URL: isIncidentEditMode ? globalIncidents[currentIncidentIndex].Attachment_URL : "",
+            position: document.getElementById('incPosition').value,
+            injuryType: document.getElementById('incInjuryType').value,
+            causesDetails: document.getElementById('incCausesDetails').value
+        };
+
+        let postData = {
+            action: isIncidentEditMode ? "updateIncident" : "submitIncident",
+            incidentData: payload
+        };
+
+        if (incFileBase64) {
+            postData.fileData = incFileBase64;
+            postData.fileName = incFileName;
+            postData.fileMimeType = incFileType;
+        }
+
+        let res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(postData),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        
+        let result = await res.json();
+        
+        if (result.status === "error") {
+            throw new Error(result.message);
+        }
+        
+        if (result.fileUrl) payload.Attachment_URL = result.fileUrl;
+
+        let updatedObj = {
+            ID: payload.id, Date: payload.date, Time: payload.time, Location: payload.location, Personnel_Involved: payload.personnel, Equipment_No: payload.equipmentNo, Driver_Name: payload.driver, Equipment_Owned: payload.eqOwner, Status: payload.status, Occurrence_Causes: payload.causes, Characterization: payload.charaterization, Risk_Severity: payload.riskSeverity, Risk_Probability: payload.riskProb, Checkboxes: payload.checkboxes, CAR: payload.car, Flight_No: payload.flightNo, REG: payload.reg, ORG_VIA: payload.orgVia, VIA_DST: payload.viaDst, Prepared_By: payload.preparedBy, Hazard_Description: payload.hazardDesc, Description: payload.description, Action_Taken: payload.actionTaken, Recommendation: payload.recommendation, Attachment_URL: payload.Attachment_URL, Position: payload.position, Injury_Type: payload.injuryType, Causes_Details: payload.causesDetails
+        };
+
+        if (isIncidentEditMode) {
+            globalIncidents[currentIncidentIndex] = updatedObj;
+        } else {
+            globalIncidents.unshift(updatedObj);
+        }
+
+        document.getElementById('incMsg').style.color = "green";
+        document.getElementById('incMsg').innerText = "✅ تم حفظ الواقعة بنجاح!";
+        
+        setTimeout(() => {
+            clearIncidentForm();
+            renderSavedIncidents();
+            document.getElementById('incMsg').innerText = "";
+        }, 2000);
+
+    } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = originalBtnText;
+        document.getElementById('incMsg').style.color = "red";
+        document.getElementById('incMsg').innerText = "❌ حدث خطأ. تأكد من جودة الاتصال وتصاريح جوجل.";
+    }
+}
+
+async function deleteIncidentRecord(idx) {
+    if (!confirm("هل أنت متأكد من رغبتك في حذف هذه الواقعة تماماً؟")) return;
+    
+    let inc = globalIncidents[idx];
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "deleteIncident", id: inc.ID }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        globalIncidents.splice(idx, 1);
+        renderSavedIncidents();
+        alert("تم الحذف بنجاح!");
+    } catch (err) {
+        alert("خطأ أثناء الحذف!");
+    }
+}
+
+function renderSavedIncidents() {
+    const tbody = document.getElementById('saved-inc-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    updateIncidentNavCounter();
+
+    if (globalIncidents.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>لا توجد وقائع مسجلة.</td></tr>";
+        return;
+    }
+
+    globalIncidents.forEach((inc, idx) => {
+        let d = inc.Date ? inc.Date.split('T')[0] : '';
+        let charText = inc.Characterization ? inc.Characterization.split('/')[0] : '';
+        let fileIcon = (inc.Attachment_URL && inc.Attachment_URL !== "") ? `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary);"><i class="fa-solid fa-file-pdf"></i></a>` : "-";
+        
+        tbody.innerHTML += `
+        <tr>
+            <td dir="ltr">${d}</td>
+            <td>${inc.Flight_No || inc.Location || ''}</td>
+            <td>${charText}</td>
+            <td>${inc.Prepared_By || ''}</td>
+            <td style="font-size:1.2rem;">${fileIcon}</td>
+            <td>
+                <button type="button" onclick="navIncidentTo(${idx})" style="background:#ffc107; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="تعديل"><i class="fa-solid fa-pen"></i></button> 
+                <button type="button" onclick="prepareIncidentPrint(${idx})" style="background:var(--primary); color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="طباعة"><i class="fa-solid fa-print"></i></button>
+                <button type="button" onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+}
+
+function prepareIncidentPrint(idx) {
+    let inc = globalIncidents[idx];
+    document.getElementById('printable-incident-report').style.display = 'block';
+    switchIncidentTab('report');
+
+    let chks = (inc.Checkboxes && typeof inc.Checkboxes === 'string') ? inc.Checkboxes.split(',') : [];
+    document.getElementById('pChkOG').className = chks.includes('OnGround') ? "checkbox-print checked" : "checkbox-print";
+    document.getElementById('pChkIF').className = chks.includes('InFlight') ? "checkbox-print checked" : "checkbox-print";
+    document.getElementById('pChkAc').className = chks.includes('Aircraft') ? "checkbox-print checked" : "checkbox-print";
+    document.getElementById('pChkEq').className = chks.includes('Equipment') ? "checkbox-print checked" : "checkbox-print";
+    document.getElementById('pChkPe').className = chks.includes('Personnel') ? "checkbox-print checked" : "checkbox-print";
+
+    document.getElementById('pIncLoc').innerText = inc.Location || "NIL";
+    document.getElementById('pIncInj').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved;
+    document.getElementById('pIncInjType').innerText = inc.Injury_Type || "NIL";
+    document.getElementById('pIncNames').innerText = inc.Personnel_Involved === "NIL" ? "NIL" : inc.Personnel_Involved; 
+    document.getElementById('pIncOwner').innerText = inc.Equipment_Owned || "NIL";
+
+    let formattedTime = "NIL";
+    if (inc.Time && inc.Time !== "NIL") {
+        if (inc.Time.includes('T')) {
+            let dateObj = new Date(inc.Time);
+            if (!isNaN(dateObj)) {
+                let hrs = String(dateObj.getHours()).padStart(2, '0');
+                let mins = String(dateObj.getMinutes()).padStart(2, '0');
+                formattedTime = `${hrs}:${mins}`;
+            }
+        } else {
+            formattedTime = inc.Time;
+        }
+    }
+    document.getElementById('pIncTime').innerText = formattedTime;
+    document.getElementById('pIncDate').innerText = inc.Date ? inc.Date.split('T')[0] : "NIL";
+    document.getElementById('pIncDriver').innerText = inc.Driver_Name || "NIL";
+    document.getElementById('pIncPosition').innerText = inc.Position || "NIL";
+    document.getElementById('pIncAcType').innerText = inc.Equipment_No || "NIL"; 
+
+    let route = ((inc.ORG_VIA || "NIL") + " - " + (inc.VIA_DST || "NIL")).toUpperCase();
+    document.getElementById('pIncFlightDetails').innerHTML = `${inc.Flight_No || 'NIL'}<br>Reg: ${inc.REG \vert{}\vert{} 'NIL'}<br>Route:${route}`;
+    document.getElementById('pIncAirlineDetails').innerHTML = `Airline: ${inc.CAR || 'NIL'}`;
+
+    document.getElementById('pIncDesc').innerText = inc.Description || "NIL";
+    document.getElementById('pIncHazard').innerText = inc.Hazard_Description || "NIL";
+    document.getElementById('pIncCausesDetails').innerText = inc.Causes_Details || "NIL";
+    
+    let selectedCause = inc.Occurrence_Causes || "";
+    let causesHTML = `
+        <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Human') ? 'checked' : 'empty'}"></span> أسباب بشرية / Human Causes</div>
+        <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Natural') ? 'checked' : 'empty'}"></span> أسباب طبيعية / Natural Causes</div>
+        <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Technical') ? 'checked' : 'empty'}"></span> أسباب فنية / Technical Causes</div>
+        <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Legal') ? 'checked' : 'empty'}"></span> أسباب قانونية / Legal Causes</div>
+        <div class="iso-checklist-row" style="justify-content: flex-start;"><span class="iso-check-box ${selectedCause.includes('Organizational') ? 'checked' : 'empty'}"></span> أسباب تنظيمية / Organizational Causes</div>
+    `;
+    document.getElementById('pIncCauseList').innerHTML = causesHTML;
+
+    let selectedChar = inc.Characterization || "";
+    let charHTML = `
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>حادث معدة / Equipment Accident</span><span class="iso-check-box ${selectedChar.includes('Equipment') ? 'checked' : 'empty'}"></span></div>
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>تسريب إنسكاب / Leakage / Spill</span><span class="iso-check-box ${selectedChar.includes('Leakage') ? 'checked' : 'empty'}"></span></div>
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>ركاب / Passengers</span><span class="iso-check-box ${selectedChar.includes('Passengers') ? 'checked' : 'empty'}"></span></div>
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>إنذار حريق / Fire Alarm</span><span class="iso-check-box ${selectedChar.includes('Fire') ? 'checked' : 'empty'}"></span></div>
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>أخرى / Others</span><span class="iso-check-box ${selectedChar.includes('Others') ? 'checked' : 'empty'}"></span></div>
+        <div class="iso-checklist-row" style="justify-content: space-between;"><span>اصطدام / Bird/Animal Strike</span><span class="iso-check-box ${selectedChar.includes('Bird') ? 'checked' : 'empty'}"></span></div>
+    `;
+    document.getElementById('pIncCharList').innerHTML = charHTML;
+
+    document.getElementById('pIncAction').innerText = inc.Action_Taken || "NIL";
+    document.getElementById('pIncRec').innerText = inc.Recommendation || "NIL";
+    document.getElementById('pIncPreparedBy').innerText = inc.Prepared_By || "";
+
+    if (inc.Attachment_URL && inc.Attachment_URL.includes("http")) {
+        document.getElementById('pIncAttach').innerHTML = `<a href="${inc.Attachment_URL}" target="_blank" style="color:var(--primary); text-decoration:none;">Attached Documentations - Available via Link</a>`;
+    } else {
+        document.getElementById('pIncAttach').innerText = "NIL";
+    }
+
+    window.scrollTo(0, document.getElementById('printable-incident-report').offsetTop);
+}
+
+function exportIncidentPDF() {
+    const el = document.getElementById('printable-incident-report');
+    if (el.style.display === 'none') return alert("برجاء اختيار واقعة للطباعة أولاً.");
+    html2pdf().set({
+        margin: 0.1,
+        filename: 'Incident_Safety_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 4, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+}
+
+function setIncFilter(cat) {
+    currentIncidentFilter = cat;
+    document.querySelectorAll('#inc-filter-buttons .cat-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    if(document.getElementById('incFromDate').value && document.getElementById('incToDate').value) {
+        generateMonthlyIncidents();
+    }
+}
+
+function generateMonthlyIncidents() {
+    let fromD = document.getElementById('incFromDate').value;
+    let toD = document.getElementById('incToDate').value;
+    
+    if (!fromD || !toD) return alert("برجاء اختيار فترة التاريخ أولاً.");
+
+    let fd = new Date(fromD);
+    let td = new Date(toD);
+    td.setHours(23, 59, 59, 999);
+
+    if (fd > td) return alert("التاريخ 'إلى' يجب أن يكون أكبر من أو يساوي التاريخ 'من'");
+
+    document.getElementById('printable-monthly-incidents').style.display = 'block';
+    document.getElementById('inc-monthly-period').innerText = `الفترة: ${fromD} إلى ${toD} \vert{} فلتر: ${currentIncidentFilter}`;
+
+    let filteredInc = globalIncidents.filter(r => {
+        if (!r.Date) return false;
+        let sd = new Date(r.Date);
+        let inDate = (sd >= fd && sd <= td);
+        
+        if (!inDate) return false;
+        
+        if (currentIncidentFilter === 'All') return true;
+        if (currentIncidentFilter === 'Technical') {
+            return r.Occurrence_Causes && r.Occurrence_Causes.includes('Technical');
+        }
+        return r.Characterization && r.Characterization.includes(currentIncidentFilter);
+    });
+
+    const tbody = document.getElementById('inc-monthly-table');
+    let tableHTML = `<thead><tr style="background:#e6e6e6; color:#003366;"><th style="padding:10px;">التسلسل</th><th>تصنيف الواقعة</th><th>التاريخ</th><th>البيانات / الجهة المسببة</th><th>الإجمالي</th></tr></thead><tbody>`;
+
+    if (filteredInc.length === 0) {
+        tbody.innerHTML = tableHTML + "<tr><td colspan='5' style='text-align:center; padding:20px;'>لا توجد وقائع مسجلة تطابق الفلتر في هذه الفترة</td></tr></tbody>";
+        return;
+    }
+
+    let grouped = {};
+    filteredInc.forEach(inc => {
+        let c = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Unknown';
+        if (!grouped[c]) grouped[c] = [];
+        grouped[c].push(inc);
+    });
+
+    let counter = 1;
+    Object.keys(grouped).forEach(cat => {
+        let items = grouped[cat];
+        let firstRow = true;
+
+        items.forEach((inc) => {
+            let d = inc.Date ? inc.Date.split('T')[0] : '';
+            let descSafe = inc.Description || '';
+            let actSafe = inc.Action_Taken || '';
+            
+            let detailsHtml = `<strong>Description:</strong><br><span style="color:#555;">${descSafe}</span><br><br><strong>Action Taken:</strong><br><span style="color:#28a745;">${actSafe}</span>`;
+            let airlineHtml = `<strong>Airline / Agent:</strong> <span style="color:#003366;">${inc.CAR || inc.Equipment_Owned || '-'}</span>`;
+
+            let row = `<tr>`;
+            if (firstRow) {
+                row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${counter < 10 ? '0' + counter : counter}</td>`;
+                row += `<td rowspan="${items.length}" style="text-align:center; font-weight:bold;">${cat}</td>`;
+            }
+
+            row += `<td style="text-align:center; direction:ltr; vertical-align:top; padding:10px;">${d}</td>`;
+            row += `<td style="text-align:justify; padding:10px; direction:ltr; vertical
