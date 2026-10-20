@@ -179,3 +179,25 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 
 @media (max-width: 992px) { .departments-grid, .checklist-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .departments-grid, .checklist-grid { grid-template-columns: 1fr; } }
+/* منع قص صفوف الجداول في الطباعة والـ PDF */
+#printable-directory table {
+    page-break-inside: auto;
+    border-collapse: collapse;
+}
+
+#printable-directory tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
+
+/* منع انفصال رأس عنوان الإدارة عن صفوفها */
+.dept-header-row {
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+}
+
+@media print {
+    .dir-print-header { display: flex !important; }
+    .dir-actions { display: none !important; }
+}
