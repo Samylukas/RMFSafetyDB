@@ -465,8 +465,13 @@ function navSurveys(direction) {
     if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
         displaySurveyInForm(globalSurveys[currentSurveyIndex]);
         document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`;
-        document.getElementById('submitSurveyBtn').disabled = true;
-        document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+        
+        // تعديل الزر ليسمح بالتعديل بدلاً من "وضع العرض فقط"
+        let btn = document.getElementById('submitSurveyBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الاستبيان';
+        btn.style.backgroundColor = "#ffc107";
+        btn.style.color = "#000";
     }
 }
 
@@ -500,16 +505,20 @@ function clearFormForNew() {
     currentSurveyIndex = -1;
     document.getElementById('surveyForm').reset();
     document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+    
+    // إعادة الزر لشكله ولونه الأصلي الخاص بالإضافة
     let btn = document.getElementById('submitSurveyBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+    btn.style.backgroundColor = "var(--primary)";
+    btn.style.color = "#fff";
+    
     document.getElementById('reg').value = "";
     document.getElementById('airline').value = "";
     document.getElementById('acType').value = "";
     document.getElementById('airline').style.backgroundColor = "#f0f0f0";
     document.getElementById('acType').style.backgroundColor = "#f0f0f0";
 }
-
 function openFleetModal() {
     document.getElementById('newReg').value = "";
     document.getElementById('newType').value = "";
@@ -583,6 +592,68 @@ async function submitSurvey(e) {
         msg.innerText = "برجاء التأكد من تسجيل الطائرة (غير موجود في قاعدة البيانات)!";
         return;
     }
+
+    const btn = document.getElementById('submitSurveyBtn');
+    const isEditMode = currentSurveyIndex !== -1;
+    const originalBtnHTML = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    let surveyDataObj = {
+        "Date": document.getElementById('date').value,
+        "Time": document.getElementById('time').value,
+        "Flight_NO": document.getElementById('fltNo').value,
+        "REG": document.getElementById('reg').value.toUpperCase(),
+        "CAR": airline,
+        "TYPE": document.getElementById('acType').value,
+        "Captain_Comments": document.getElementById('comments').value
+    };
+
+    // الاحتفاظ بمعرف الاستبيان (ID) إذا كان موجوداً في وضع التعديل
+    if (isEditMode && globalSurveys[currentSurveyIndex].ID) {
+        surveyDataObj.ID = globalSurveys[currentSurveyIndex].ID;
+    }
+
+    criteriaList.forEach(crit => {
+        let selectedOption = document.querySelector(`input[name="${crit}"]:checked`);
+        surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank";
+    });
+
+    // تحديد نوع العملية المطلوبة من جوجل سكريبت (إضافة أو تعديل)
+    let actionType = isEditMode ? "updateSurvey" : "submitSurvey";
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: actionType, surveyData: surveyDataObj }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        
+        msg.style.color = "green";
+        msg.innerText = isEditMode ? "✅ تم تعديل وتحديث الاستبيان بنجاح!" : "✅ تم الحفظ بنجاح!";
+        
+        // تحديث المصفوفة محلياً
+        if (isEditMode) {
+            globalSurveys[currentSurveyIndex] = surveyDataObj;
+        } else {
+            globalSurveys.unshift(surveyDataObj);
+        }
+        
+        document.getElementById('nav-counter').innerText = isEditMode ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / ${globalSurveys.length}`;
+        
+        setTimeout(() => {
+            msg.innerText = "";
+            clearFormForNew();
+        }, 1500);
+        
+    } catch (error) {
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ أثناء الاتصال بالسيرفر.";
+        btn.innerHTML = originalBtnHTML;
+        btn.disabled = false;
+    }
+}
 
     const btn = document.getElementById('submitSurveyBtn');
     btn.disabled = true;
