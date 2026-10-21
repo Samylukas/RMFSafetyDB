@@ -86,7 +86,39 @@ function finishLoading() {
         }
     } catch (e) { console.error(e); }
 }
+function handleLogin(e) {
+    if(e) e.preventDefault(); 
 
+    const userField = document.getElementById('username').value.trim();
+    const passField = document.getElementById('password').value.trim();
+
+    if (!passField) {
+        alert("برجاء إدخال كلمة المرور");
+        return;
+    }
+
+    // الدخول المباشر برقم 1234
+    if (passField === "1234") {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-header').style.display = 'flex';
+        openSection('main-dashboard');
+        return; 
+    }
+
+    let validUser = globalUsers && globalUsers.find(u => 
+        String(u.Username).trim() === userField && 
+        String(u.Password).trim() === passField
+    );
+
+    if (validUser) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-header').style.display = 'flex';
+        openSection('main-dashboard');
+    } else {
+        alert("كلمة المرور غير صحيحة!");
+        document.getElementById('password').value = "";
+    }
+}
 // تشغيل الشاشة الافتتاحية بمجرد تحميل الصفحة بالكامل
 window.addEventListener('load', finishLoading);
 
