@@ -65,17 +65,27 @@ function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
         if (splash) {
-            splash.style.opacity = '0';
+            // ننتظر 3.5 ثوانٍ (مدة الأنيميشن) ثم نخفي الشاشة
             setTimeout(() => {
-                splash.style.display = 'none';
-                const loginScreen = document.getElementById('login-screen');
-                if (loginScreen) loginScreen.style.display = 'flex';
-            }, 500);
+                splash.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    const loginScreen = document.getElementById('login-screen');
+                    if (loginScreen) {
+                        loginScreen.style.display = 'flex';
+                        // تأثير دخول ناعم لشاشة اللوجن
+                        loginScreen.style.animation = "fadeIn 1s ease-in-out"; 
+                    }
+                }, 1000); // وقت إضافي للإخفاء النهائي
+
+            }, 3500);
         }
     } catch (e) { console.error(e); }
 }
 
-setTimeout(finishLoading, 2000);
+// ابحث عن هذا السطر وعدله ليكون 0 (لأن الـ setTimeout بداخل الدالة)
+setTimeout(finishLoading, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
