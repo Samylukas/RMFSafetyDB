@@ -74,9 +74,7 @@ function finishLoading() {
         }
     } catch (e) { console.error(e); }
 }
-
 setTimeout(finishLoading, 2000);
-
 document.addEventListener('DOMContentLoaded', () => {
     try {
         buildEvaluationForm();
