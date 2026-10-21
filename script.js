@@ -92,89 +92,22 @@ function handleLogin(e) {
     const userField = document.getElementById('username').value.trim();
     const passField = document.getElementById('password').value.trim();
 
-    if (!passField) {
-        alert("برجاء إدخال كلمة المرور");
-        return;
-    }
-
-    // التحقق يتم فقط من خلال المصفوفة globalUsers القادمة من جوجل شيت
+    // البحث في البيانات اللي جاية من جوجل شيت
     let validUser = globalUsers && globalUsers.find(u => 
         String(u.Username).trim() === userField && 
         String(u.Password).trim() === passField
     );
 
-    if (validUser) {
+    // الشرط الأصلي بتاعك اللي بيرجع البرنامج يشتغل فوراً
+    if (validUser || (globalUsers.length === 0 && passField === "1234")) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
     } else {
-        alert("كلمة المرور غير صحيحة!");
+        alert("كلمة المرور غير صحيحة، أو جاري الاتصال بالسيرفر. حاول مرة أخرى.");
         document.getElementById('password').value = "";
     }
 }
-// تشغيل الشاشة الافتتاحية بمجرد تحميل الصفحة بالكامل
-window.addEventListener('load', finishLoading);
-
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        buildEvaluationForm();
-        buildDailyChecklist();
-        autoFillDailyDateTime();
-        setupCustomDropdown();
-        loadAppDataInit();
-    } catch (e) { console.error(e); }
-});
-
-window.handleLogin = function(e) {
-    if(e) e.preventDefault(); 
-
-    const userField = document.getElementById('username').value.trim();
-    const passField = document.getElementById('password').value.trim();
-
-    if (!passField) {
-        alert("برجاء إدخال كلمة المرور");
-        return;
-    }
-
-    // الدخول المباشر برقم 1234
-    if (passField === "1234") {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-        return; 
-    }
-
-    // التحقق من قاعدة البيانات
-    let validUser = globalUsers && globalUsers.find(u => 
-        String(u.Username).trim() === userField && 
-        String(u.Password).trim() === passField
-    );
-
-    if (validUser) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-    } else {
-        alert("كلمة المرور غير صحيحة!");
-        document.getElementById('password').value = "";
-    }
-};
-    // التحقق من المستخدمين القادمين من جوجل شيت (مع تجاهل المسافات الزائدة)
-    let validUser = globalUsers.find(u => 
-        String(u.Username).trim() === userField && 
-        String(u.Password).trim() === passField
-    );
-
-    if (validUser) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-    } else {
-        alert("كلمة المرور غير صحيحة!");
-        document.getElementById('password').value = "";
-    }
-};
-
 function openSection(sectionId) {
     document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
