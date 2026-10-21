@@ -690,6 +690,20 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+<script>
+    // هذا الكود يضمن انتقال الشاشة بعد 3.5 ثانية (مدة الأنيميشن)
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            var splash = document.getElementById('splash-screen');
+            var login = document.getElementById('login-screen');
+            if (splash) {
+                splash.style.display = 'none';
+            }
+            if (login) {
+                login.style.display = 'flex';
+            }
+        }, 3500); // 3500 ملي ثانية = 3.5 ثانية
+    });
+</script>
 </body>
 </html>
