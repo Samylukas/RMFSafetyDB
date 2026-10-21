@@ -24,10 +24,117 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 #scrollTop { bottom: 80px; }
 #scrollBottom { bottom: 25px; }
 
-/* شاشة البدء (Splash) */
-#splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; z-index: 10000; transition: opacity 0.5s ease-out; }
-.splash-logo { max-width: 250px; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+/* --- Splash Screen Cinematic Effects --- */
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000; /* خلفية داكنة للمشهد السينمائي */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    overflow: hidden;
+    transition: opacity 1s ease-in-out, filter 1s ease-in-out;
+}
+
+/* خلفية الدخان */
+.smoke-bg {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,1) 60%);
+    animation: smokeMove 6s linear infinite;
+    opacity: 0.5;
+    z-index: 1;
+}
+
+@keyframes smokeMove {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-2%, 2%) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+.splash-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* تأثير الظهور والتبخر */
+    animation: cinematicEnter 3.5s ease-in-out forwards; 
+}
+
+/* تأثير اللوجو: تكبير وظهور من الظلام */
+.splash-logo {
+    max-width: 250px;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+}
+
+/* شريط التحميل */
+.loading-bar-container {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin-top: 30px;
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in 1.5s forwards; /* يظهر بعد 1.5 ثانية */
+}
+
+.loading-bar {
+    width: 0%;
+    height: 100%;
+    background: #f39c12;
+    box-shadow: 0 0 10px #f39c12;
+    animation: loadProgress 1.5s ease-in-out 1.5s forwards; /* مدة التحميل */
+}
+
+/* حركة الأنيميشن الأساسية */
+@keyframes cinematicEnter {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+        filter: blur(20px) brightness(0);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.1);
+        filter: blur(0px) brightness(1.2);
+    }
+    50% {
+        transform: scale(1);
+    }
+    85% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5); /* يكبر قليلاً وهو يختفي */
+        filter: blur(15px); /* يتبخر */
+    }
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes loadProgress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* الكلاس الذي سيتم إضافته لاحقاً لاختفاء الشاشة بالكامل */
+.fade-out {
+    opacity: 0 !important;
+    pointer-events: none;
+}
 
 /* شاشة تسجيل الدخول */
 #login-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #003366 0%, #001f3f 100%); }
