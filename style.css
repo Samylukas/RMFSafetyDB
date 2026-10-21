@@ -194,7 +194,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 .custom-dropdown-container { position: relative; width: 100%; flex: 1; }
 .custom-dropdown-input { 
     width: 100%; 
-    padding: 7px 10px 7px 35px; /* 35px تترك مسافة آمنة للسهم على اليسار */
+    padding: 7px 10px 7px 35px; /* 35px تترك مسافة كافية للسهم على اليسار */
     border: 1px solid #ccc; 
     border-radius: 5px; 
     font-size: 0.85rem; 
