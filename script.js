@@ -97,14 +97,7 @@ function handleLogin(e) {
         return;
     }
 
-    // الدخول المباشر برقم 1234
-    if (passField === "1234") {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-        return; 
-    }
-
+    // التحقق يتم فقط من خلال المصفوفة globalUsers القادمة من جوجل شيت
     let validUser = globalUsers && globalUsers.find(u => 
         String(u.Username).trim() === userField && 
         String(u.Password).trim() === passField
