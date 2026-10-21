@@ -100,13 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { console.error(e); }
 });
 
-function handleLogin(e) {
-    e.preventDefault(); // يمنع إعادة تحميل الصفحة نهائياً
-    const userField = document.getElementById('username').value;
-    const passField = document.getElementById('password').value;
-    let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
-    
-    if (validUser || (globalUsers.length === 0 && passField === "1234")) {
+window.handleLogin = function(e) {
+    if(e) e.preventDefault(); // تأكيد منع أي إعادة تحميل
+
+    const userField = document.getElementById('username').value.trim();
+    const passField = document.getElementById('password').value.trim();
+
+    // 🚀 كود طوارئ: يضمن لك الدخول المباشر بكلمة مرور 1234 متجاهلاً أي أخطاء في السيرفر
+    if (passField === "1234") {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-header').style.display = 'flex';
+        openSection('main-dashboard');
+        return; 
+    }
+
+    // التحقق من المستخدمين القادمين من جوجل شيت (مع تجاهل المسافات الزائدة)
+    let validUser = globalUsers.find(u => 
+        String(u.Username).trim() === userField && 
+        String(u.Password).trim() === passField
+    );
+
+    if (validUser) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
@@ -114,7 +128,7 @@ function handleLogin(e) {
         alert("كلمة المرور غير صحيحة!");
         document.getElementById('password').value = "";
     }
-}
+};
 
 function openSection(sectionId) {
     document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
