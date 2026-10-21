@@ -32,12 +32,21 @@
     <div class="login-box">
       <img src="LOGO-removebg-preview (1).png" alt="Logo">
       <h3 style="margin-top:0; color: var(--primary); font-weight: 900;">تسجيل الدخول</h3>
-<form id="loginForm" onsubmit="event.preventDefault(); handleLogin(event);">        <div class="input-group">
+<!-- تم إلغاء <form> واستبداله بـ <div> لمنع الـ Loop نهائياً -->
+      <div id="loginForm">
+        <div class="input-group">
           <i class="fa-solid fa-user"></i>
           <select id="username" required>
             <option value="admin" selected>مدير النظام (Admin)</option>
           </select>
         </div>
+        <div class="input-group">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="password" required>
+        </div>
+        <!-- تم تغيير type="submit" إلى type="button" وربطه بالدالة مباشرة -->
+        <button type="button" class="login-btn" onclick="handleLogin(event)">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+      </div>
         <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="password" required></div>
         <button type="submit" class="login-btn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
       </form>
