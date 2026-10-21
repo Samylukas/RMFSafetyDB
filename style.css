@@ -94,8 +94,26 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 
 /* القائمة المنسدلة للبحث (Dropdown) */
 .custom-dropdown-container { position: relative; width: 100%; flex: 1; }
-.custom-dropdown-input { width: 100%; padding: 7px 30px 7px 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; box-sizing: border-box; background: #fff; font-weight: bold; color: #003366; }
-.custom-dropdown-arrow { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--primary); cursor: pointer; }
+.custom-dropdown-input { 
+    width: 100%; 
+    padding: 7px 10px 7px 35px; /* 35px تترك مسافة آمنة للسهم على اليسار */
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    font-size: 0.85rem; 
+    box-sizing: border-box; 
+    background: #fff; 
+    font-weight: bold; 
+    color: #003366; 
+}
+
+.custom-dropdown-arrow { 
+    position: absolute; 
+    left: 12px; /* ضبط موضع السهم ليتناسب مع الـ padding الجديد */
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: var(--primary); 
+    cursor: pointer; 
+}
 .custom-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 0 0 5px 5px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .custom-dropdown-list.show { display: block; }
 .custom-dropdown-item { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: left; direction: ltr; font-weight: bold; font-size: 0.85rem; }
@@ -108,8 +126,20 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 .eval-title { font-weight: bold; font-size: 0.9rem; color: #003366; flex: 1; text-align: left; direction: ltr; }
 .radio-group { display: flex; gap: 5px; }
 .radio-group input[type="radio"] { display: none; }
-.radio-group label { width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-weight: bold; font-size: 0.8rem; cursor: pointer; transition: 0.3s; background: #f0f0f0; color: #555; }
-.radio-group input[type="radio"]:checked + .lbl-e { background: #28a745; color: #fff; }
+.radio-group label { 
+    width: 30px; 
+    height: 30px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 8px; /* تم التغيير هنا لتصبح مربعات دائرية */
+    font-weight: bold; 
+    font-size: 0.8rem; 
+    cursor: pointer; 
+    transition: 0.3s; 
+    background: #f0f0f0; 
+    color: #555; 
+}.radio-group input[type="radio"]:checked + .lbl-e { background: #28a745; color: #fff; }
 .radio-group input[type="radio"]:checked + .lbl-g { background: #ffc107; color: #000; }
 .radio-group input[type="radio"]:checked + .lbl-p { background: #dc3545; color: #fff; }
 .radio-group input[type="radio"]:checked + .lbl-n { background: #6c757d; color: #fff; }
