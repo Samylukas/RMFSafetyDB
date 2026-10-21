@@ -31,23 +31,22 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     left: 0;
     width: 100%;
     height: 100%;
-    background: #000; /* خلفية داكنة للمشهد السينمائي */
+    background: #ffffff; /* خلفية بيضاء */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10000;
     overflow: hidden;
-    transition: opacity 1s ease-in-out, filter 1s ease-in-out;
 }
 
-/* خلفية الدخان */
+/* تأثير الدخان الخفيف المناسب للخلفية البيضاء */
 .smoke-bg {
     position: absolute;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,1) 60%);
+    background: radial-gradient(circle, rgba(0, 51, 102, 0.05) 0%, rgba(255, 255, 255, 1) 60%);
     animation: smokeMove 6s linear infinite;
-    opacity: 0.5;
+    opacity: 0.8;
     z-index: 1;
 }
 
@@ -63,61 +62,59 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* تأثير الظهور والتبخر */
+    /* مدة المشهد 3.5 ثانية */
     animation: cinematicEnter 3.5s ease-in-out forwards; 
 }
 
-/* تأثير اللوجو: تكبير وظهور من الظلام */
+/* تكبير اللوجو 3 أضعاف (كان 250px أصبح 750px) */
 .splash-logo {
-    max-width: 250px;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+    width: 750px; 
+    max-width: 85vw; /* لضمان عدم خروجه من الشاشة في الموبايل */
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1)); /* ظل خفيف */
 }
 
-/* شريط التحميل */
+/* شريط التحميل (أزرق ليتناسب مع الخلفية البيضاء) */
 .loading-bar-container {
-    width: 200px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    margin-top: 30px;
+    width: 300px;
+    max-width: 80vw;
+    height: 6px;
+    background: rgba(0, 51, 102, 0.1);
+    border-radius: 3px;
+    margin-top: 40px;
     overflow: hidden;
     position: relative;
     opacity: 0;
-    animation: fadeIn 0.5s ease-in 1.5s forwards; /* يظهر بعد 1.5 ثانية */
+    animation: fadeIn 0.5s ease-in 1.5s forwards; 
 }
 
 .loading-bar {
     width: 0%;
     height: 100%;
-    background: #f39c12;
-    box-shadow: 0 0 10px #f39c12;
-    animation: loadProgress 1.5s ease-in-out 1.5s forwards; /* مدة التحميل */
+    background: #003366; /* لون اللوجو الأساسي */
+    box-shadow: 0 0 10px rgba(0, 51, 102, 0.4);
+    animation: loadProgress 1.5s ease-in-out 1.5s forwards; 
 }
 
-/* حركة الأنيميشن الأساسية */
 @keyframes cinematicEnter {
     0% {
         opacity: 0;
-        transform: scale(0.5);
-        filter: blur(20px) brightness(0);
+        transform: scale(0.8);
+        filter: blur(15px);
     }
-    30% {
+    25% {
         opacity: 1;
-        transform: scale(1.1);
-        filter: blur(0px) brightness(1.2);
-    }
-    50% {
         transform: scale(1);
+        filter: blur(0px);
     }
-    85% {
+    75% {
         opacity: 1;
         transform: scale(1);
         filter: blur(0px);
     }
     100% {
         opacity: 0;
-        transform: scale(1.5); /* يكبر قليلاً وهو يختفي */
-        filter: blur(15px); /* يتبخر */
+        transform: scale(1.3); /* تكبير قبل التبخر */
+        filter: blur(20px); /* تأثير التبخر السينمائي */
     }
 }
 
@@ -128,12 +125,6 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 @keyframes loadProgress {
     0% { width: 0%; }
     100% { width: 100%; }
-}
-
-/* الكلاس الذي سيتم إضافته لاحقاً لاختفاء الشاشة بالكامل */
-.fade-out {
-    opacity: 0 !important;
-    pointer-events: none;
 }
 
 /* شاشة تسجيل الدخول */
