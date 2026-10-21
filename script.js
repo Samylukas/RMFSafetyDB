@@ -42,11 +42,6 @@ const dailyChecklistData = {
 
 const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
 
-// تعريف مبدئي لتصنيفات SPI لتجنب أي أخطاء في حال عدم وجودها
-const spiCategories = window.spiCategories || [
-    { name: "Safety Performance Indicators", items: ["Bird Strike", "FOD", "Runway Incursion", "Spill/Leakage"] }
-];
-
 let globalFleetData = []; 
 let globalSurveys = []; 
 let globalUsers = []; 
@@ -66,48 +61,47 @@ let currentIncidentEditId = null;
 let chartInstances = {}; 
 let chartInstancesDaily = {};
 
-// --- دالة التحكم في الشاشة السينمائية الافتتاحية ---
 function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
-        const loginScreen = document.getElementById('login-screen');
         if (splash) {
-            // ننتظر 3.5 ثوانٍ (مدة الأنيميشن) ثم نخفي الشاشة
+            splash.style.opacity = '0';
             setTimeout(() => {
-                splash.classList.add('fade-out');
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    if (loginScreen) {
-                        loginScreen.style.display = 'flex';
-                        loginScreen.style.animation = "fadeIn 1s ease-in-out"; 
-                    }
-                }, 1000); // وقت إضافي للإخفاء النهائي
-            }, 3500);
+                splash.style.display = 'none';
+                const loginScreen = document.getElementById('login-screen');
+                if (loginScreen) loginScreen.style.display = 'flex';
+            }, 500);
         }
     } catch (e) { console.error(e); }
 }
+
+setTimeout(finishLoading, 2000);
+
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        buildEvaluationForm();
+        buildDailyChecklist();
+        autoFillDailyDateTime();
+        setupCustomDropdown();
+        loadAppDataInit();
+    } catch (e) { console.error(e); }
+});
+
 function handleLogin(e) {
-    if(e) e.preventDefault(); 
-
-    const userField = document.getElementById('username').value.trim();
-    const passField = document.getElementById('password').value.trim();
-
-    // البحث في البيانات اللي جاية من جوجل شيت
-    let validUser = globalUsers && globalUsers.find(u => 
-        String(u.Username).trim() === userField && 
-        String(u.Password).trim() === passField
-    );
-
-    // الشرط الأصلي بتاعك اللي بيرجع البرنامج يشتغل فوراً
+    e.preventDefault();
+    const userField = document.getElementById('username').value;
+    const passField = document.getElementById('password').value;
+    let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
     if (validUser || (globalUsers.length === 0 && passField === "1234")) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
     } else {
-        alert("كلمة المرور غير صحيحة، أو جاري الاتصال بالسيرفر. حاول مرة أخرى.");
+        alert("كلمة المرور غير صحيحة!");
         document.getElementById('password').value = "";
     }
 }
+
 function openSection(sectionId) {
     document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -189,6 +183,7 @@ function loadAppDataInit() {
     document.body.appendChild(script);
 }
 
+/* --- عرض دليل الهواتف المصلح بتنسيق الإكسل --- */
 function renderDirectory(dataList) {
     const tbody = document.getElementById('directory-tbody');
     if (!tbody) return;
@@ -211,6 +206,7 @@ function renderDirectory(dataList) {
     dataList.forEach((item) => {
         let deptName = item.Department || "أخرى";
         
+        // إضافة كلاس dept-header-row لمنع نزول العنوان في آخر الصفحة منفرداً
         if (deptName !== currentDept) {
             tableHTML += `
                 <tr class="dept-header-row">
@@ -469,12 +465,8 @@ function navSurveys(direction) {
     if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
         displaySurveyInForm(globalSurveys[currentSurveyIndex]);
         document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`;
-        
-        let btn = document.getElementById('submitSurveyBtn');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الاستبيان';
-        btn.style.backgroundColor = "#ffc107";
-        btn.style.color = "#000";
+        document.getElementById('submitSurveyBtn').disabled = true;
+        document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
     }
 }
 
@@ -508,13 +500,9 @@ function clearFormForNew() {
     currentSurveyIndex = -1;
     document.getElementById('surveyForm').reset();
     document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
-    
     let btn = document.getElementById('submitSurveyBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
-    btn.style.backgroundColor = "var(--primary)";
-    btn.style.color = "#fff";
-    
     document.getElementById('reg').value = "";
     document.getElementById('airline').value = "";
     document.getElementById('acType').value = "";
@@ -597,11 +585,8 @@ async function submitSurvey(e) {
     }
 
     const btn = document.getElementById('submitSurveyBtn');
-    const isEditMode = currentSurveyIndex !== -1;
-    const originalBtnHTML = btn.innerHTML;
-    
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
 
     let surveyDataObj = {
         "Date": document.getElementById('date').value,
@@ -613,47 +598,31 @@ async function submitSurvey(e) {
         "Captain_Comments": document.getElementById('comments').value
     };
 
-    // الاحتفاظ بمعرف الاستبيان (ID) إذا كان موجوداً في وضع التعديل
-    if (isEditMode && globalSurveys[currentSurveyIndex].ID) {
-        surveyDataObj.ID = globalSurveys[currentSurveyIndex].ID;
-    }
-
     criteriaList.forEach(crit => {
         let selectedOption = document.querySelector(`input[name="${crit}"]:checked`);
         surveyDataObj[crit] = selectedOption ? selectedOption.value : "Blank";
     });
 
-    // تحديد نوع العملية المطلوبة من جوجل سكريبت (إضافة أو تعديل)
-    let actionType = isEditMode ? "updateSurvey" : "submitSurvey";
-
     try {
         await fetch(API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: actionType, surveyData: surveyDataObj }),
+            body: JSON.stringify({ action: "submitSurvey", surveyData: surveyDataObj }),
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
-        
         msg.style.color = "green";
-        msg.innerText = isEditMode ? "✅ تم تعديل وتحديث الاستبيان بنجاح!" : "✅ تم الحفظ بنجاح!";
-        
-        // تحديث المصفوفة محلياً
-        if (isEditMode) {
-            globalSurveys[currentSurveyIndex] = surveyDataObj;
-        } else {
-            globalSurveys.unshift(surveyDataObj);
-        }
-        
-        document.getElementById('nav-counter').innerText = isEditMode ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / ${globalSurveys.length}`;
-        
+        msg.innerText = "✅ تم الحفظ بنجاح!";
+        globalSurveys.unshift(surveyDataObj);
+        document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
         setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+            btn.disabled = false;
             msg.innerText = "";
             clearFormForNew();
         }, 1500);
-        
     } catch (error) {
         msg.style.color = "red";
-        msg.innerText = "❌ حدث خطأ أثناء الاتصال بالسيرفر.";
-        btn.innerHTML = originalBtnHTML;
+        msg.innerText = "❌ حدث خطأ أثناء الإرسال.";
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
         btn.disabled = false;
     }
 }
@@ -1333,10 +1302,6 @@ function switchIncidentTab(tab) {
     document.getElementById('tab-inc-' + tab).classList.add('active');
 }
 
-let incFileName = null;
-let incFileType = null;
-let incFileBase64 = null;
-
 function handleIncFile(input) {
     const file = input.files[0];
     if (!file) return;
@@ -1716,8 +1681,6 @@ function exportIncidentPDF() {
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     }).from(el).save();
 }
-
-let currentIncidentFilter = 'All';
 
 function setIncFilter(cat) {
     currentIncidentFilter = cat;
