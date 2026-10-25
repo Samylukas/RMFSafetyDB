@@ -94,6 +94,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 
 @keyframes fadeIn { to { opacity: 1; } }
 @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+
 /* ========================================================
    شاشة تسجيل الدخول
    ======================================================== */
@@ -453,7 +454,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 }
 
 /* ========================================================
-   القائمة المنسدلة للبحث وضبط السهم
+   القائمة المنسدلة للبحث وضبط السهم (التحسينات الأخيرة)
    ======================================================== */
 .custom-dropdown-container {
     position: relative;
@@ -489,17 +490,16 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     pointer-events: auto;
 }
 
+/* إصلاح أولوية ظهور القائمة المنسدلة */
 .custom-dropdown-list {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 0 0 5px 5px;
+    width: 100%;
     max-height: 200px;
     overflow-y: auto;
-    z-index: 1000;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    z-index: 99999 !important; /* أولوية قصوى */
     display: none;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -770,7 +770,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 }
 
 /* ========================================================
-   المودال (النوافذ المنبثقة)
+   المودال (النوافذ المنبثقة) وتنسيقات الطباعة (التحسينات الأخيرة)
    ======================================================== */
 .modal {
     position: fixed;
@@ -780,23 +780,13 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     height: 100%;
     background: rgba(0,0,0,0.5);
     display: none;
+    align-items: center;
     justify-content: center;
-    /* إصلاح أولوية ظهور القائمة المنسدلة والنوافذ المنبثقة */
-.custom-dropdown-list {
-    position: absolute;
-    width: 100%;
-    max-height: 200px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: none;
-    z-index: 99999 !important; /* أولوية قصوى */
-    display: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 100000 !important; /* أولوية قصوى للمودال */
 }
-.custom-dropdown-list.show {
-    display: block;
-}
-.modal {
-    z-index: 100000 !important;
+
+/* تنسيقات طباعة التقرير الشهري */
+@media print {
+    .avoid-page-break { page-break-inside: avoid; }
+    button, .back-btn, .tabs-header { display: none !important; }
 }
