@@ -740,50 +740,43 @@
           <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-file-contract"></i> التقرير الشهري (ISO)</button>
         </div>
 
-        <!-- تبويب 1: الإدخال المجمع -->
-        <div id="tab-fod-entry" class="tab-content active">
-          <form id="fodBulkForm" onsubmit="submitBulkFOD(event)">
-            <div class="form-group" style="max-width: 300px; margin: 0 auto 20px;">
-              <label>تاريخ الفحص (Date)</label>
-              <input type="date" id="fodBulkDate" required>
-            </div>
-            
-            <table class="report-table rtl-table" style="width: 100%; margin-bottom: 20px;">
+            <table class="report-table rtl-table" style="width: 100%; margin-bottom: 20px; text-align:center;">
               <thead>
                 <tr>
-                  <th>الموقع (Location)</th>
-                  <th>المساحة (Area m²)</th>
-                  <th>بلاستيك (Plastic kg)</th>
-                  <th>معدن (Metal kg)</th>
+                  <th style="text-align:center;">الموقع (Location)</th>
+                  <th style="text-align:center;">المساحة (Area m²)</th>
+                  <th style="text-align:center;">بلاستيك (Plastic kg)</th>
+                  <th style="text-align:center;">معدن (Metal kg)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Aircraft Stands Area<input type="hidden" class="fod-loc" value="Aircraft Stands Area"></td>
-                  <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+                  <td><input type="text" class="fod-area" value="53.125" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.170" required style="text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required style="text-align:center;"></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">GSE Area<input type="hidden" class="fod-loc" value="GSE Area"></td>
-                  <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+                  <td><input type="text" class="fod-area" value="4152" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.130" required style="text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required style="text-align:center;"></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Arrival & Departures Gates<input type="hidden" class="fod-loc" value="Arrival & Departures Gates"></td>
-                  <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+                  <td><input type="text" class="fod-area" value="2420" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.160" required style="text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.140" required style="text-align:center;"></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Around Aprons Gas station<input type="hidden" class="fod-loc" value="Around Aprons Gas station"></td>
-                  <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+                  <td><input type="text" class="fod-area" value="2539" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.120" required style="text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.130" required style="text-align:center;"></td>
                 </tr>
               </tbody>
             </table>
+
             <button type="submit" class="submit-btn" id="submitFodBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل</button>
             <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
           </form>
@@ -820,7 +813,24 @@
           </div>
 
           <div id="printable-fod-report" style="display:none; background:#fff; padding:25px; border:2px solid #000; margin-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #000; padding-bottom:10px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #000; padding-bottom:10px; margin-bottom:20px; direction:ltr;">
+              
+              <!-- القسم الأيسر: الإنجليزي -->
+              <div style="text-align:left; font-size:11px; font-weight:bold; color:#333; line-height:1.4;">
+                EMAK Marsa Alam<br><span style="font-size:9px; font-weight:normal;">For Management and operation of Airports (S.A.E)</span>
+              </div>
+              
+              <!-- المنتصف: اللوجو -->
+              <div style="text-align:center;">
+                <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:48px;">
+              </div>
+              
+              <!-- القسم الأيمن: العربي -->
+              <div style="text-align:right; font-size:11px; font-weight:bold; color:#333; line-height:1.4; direction:rtl;">
+                إيماك مرسى علم <br><span style="font-size:9px; font-weight:normal;">لتشغيل وإدارة المطارات (ش.م.م)</span>
+              </div>
+              
+            </div>
               <div style="text-align:left; font-size:11px; font-weight:bold; color:#333; line-height:1.4;">EMAK Marsa Alam<br><span style="font-size:9px; font-weight:normal;">For Management and operation of Airports (S.A.E)</span></div>
               <div style="text-align:center;"><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:48px;"></div>
               <div style="text-align:right; font-size:11px; font-weight:bold; color:#333; line-height:1.4; direction:rtl;">إيماك مرسى علم <br><span style="font-size:9px; font-weight:normal;">لتشغيل وإدارة المطارات (ش.م.م)</span></div>
