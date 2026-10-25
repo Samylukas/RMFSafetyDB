@@ -1963,40 +1963,55 @@ function switchFodTab(tab) {
     document.getElementById('tab-fod-' + tab).classList.add('active');
 }
 
-async function submitFOD(e) {
+async function submitBulkFOD(e) {
     e.preventDefault();
     const btn = document.getElementById('submitFodBtn');
     const msg = document.getElementById('fodMsg');
     btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
-    let payload = {
-        id: "FOD-" + Date.now(),
-        date: document.getElementById('fodDate').value,
-        location: document.getElementById('fodLocation').value,
-        area: document.getElementById('fodArea').value,
-        plastic: parseFloat(document.getElementById('fodPlastic').value).toFixed(3),
-        metal: parseFloat(document.getElementById('fodMetal').value).toFixed(3)
-    };
+    const dateVal = document.getElementById('fodBulkDate').value;
+    const rows = document.querySelectorAll('#fodBulkForm tbody tr');
+    let payloadArr = [];
+
+    // تجميع بيانات كل المواقع
+    rows.forEach((row, index) => {
+        let loc = row.querySelector('.fod-loc').value;
+        let area = row.querySelector('.fod-area').value;
+        let plas = parseFloat(row.querySelector('.fod-plas').value || 0).toFixed(3);
+        let met = parseFloat(row.querySelector('.fod-met').value || 0).toFixed(3);
+        
+        payloadArr.push({
+            id: "FOD-" + Date.now() + "-" + index, // ID فريد لكل موقع
+            date: dateVal,
+            location: loc,
+            area: area,
+            plastic: plas,
+            metal: met
+        });
+    });
 
     try {
         await fetch(API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: "submitFOD", fodData: payload }),
+            body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: payloadArr }),
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
 
-        globalFodData.unshift({ ID: payload.id, Date: payload.date, Location: payload.location, Area: payload.area, Plastic: payload.plastic, Metal: payload.metal });
-        msg.style.color = "green"; msg.innerText = "✅ تم حفظ سجل FOD بنجاح!";
-        document.getElementById('fodForm').reset();
+        // إضافة البيانات محلياً وعرضها
+        payloadArr.forEach(item => {
+            globalFodData.unshift({ ID: item.id, Date: item.date, Location: item.location, Area: item.area, Plastic: item.plastic, Metal: item.metal });
+        });
+
+        msg.style.color = "green"; msg.innerText = "✅ تم حفظ سجلات اليوم بنجاح!";
+        document.getElementById('fodBulkForm').reset();
         renderSavedFOD();
 
-        setTimeout(() => { msg.innerText = ""; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل'; }, 1500);
+        setTimeout(() => { msg.innerText = ""; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل'; }, 2000);
     } catch (err) {
         msg.style.color = "red"; msg.innerText = "❌ فشل الاتصال بالسيرفر.";
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل';
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل';
     }
 }
-
 function renderSavedFOD() {
     const tbody = document.getElementById('saved-fod-tbody');
     if (!tbody) return;
