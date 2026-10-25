@@ -19,23 +19,12 @@
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
 <div id="splash-screen">
-    <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-  </div>
-
-  <div id="login-screen" style="display:none; position: relative; z-index: 1000;">
-    <div class="login-box">
-      <img src="LOGO-removebg-preview (1).png" alt="Logo">
-      <h3 style="margin-top:0; color: var(--primary); font-weight: 900;">تسجيل الدخول</h3>
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="input-group">
-          <i class="fa-solid fa-user"></i>
-          <select id="username" required>
-            <option value="admin" selected>مدير النظام (Admin)</option>
-          </select>
-        </div>
-        <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="password" required></div>
-        <button type="submit" class="login-btn">دخول <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-      </form>
+    <div class="smoke-bg"></div>
+    <div class="splash-content">
+      <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
+      <div class="loading-bar-container">
+        <div class="loading-bar"></div>
+      </div>
     </div>
   </div>
 
