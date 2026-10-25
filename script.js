@@ -83,26 +83,26 @@ function finishLoading() {
 // ==========================================
 // التحكم في شاشة البداية (Splash Screen)
 // ==========================================
-window.addEventListener('load', () => {
-    // الانتظار 3.5 ثانية لتكتمل حركة التبخر والتحميل في الـ CSS
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        const loginScreen = document.getElementById('login-screen');
+// ==========================================
+// التحكم في شاشة البداية (Splash Screen)
+// ==========================================
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    const loginScreen = document.getElementById('login-screen');
+    
+    if (splash) {
+        splash.style.opacity = '0'; // بدء تلاشي الخلفية البيضاء
         
-        if (splash) {
-            splash.style.opacity = '0'; // التلاشي
+        setTimeout(() => {
+            splash.style.display = 'none'; // إخفاء حاوية البداية بالكامل
             
-            setTimeout(() => {
-                splash.style.display = 'none'; // إخفاء السبلاش تماماً
-                
-                if (loginScreen) {
-                    loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
-                    window.scrollTo(0, 0); // رفع الصفحة لأعلى لضمان رؤية المربع
-                }
-            }, 500); // نصف ثانية للتلاشي قبل الإخفاء
-        }
-    }, 3500); // 3500 مللي ثانية = 3.5 ثانية
-});
+            if (loginScreen) {
+                loginScreen.style.display = 'flex'; // إظهار شاشة تسجيل الدخول
+                window.scrollTo(0, 0);
+            }
+        }, 500); // نصف ثانية لتأكيد التلاشي
+    }
+}, 3500); // 3.5 ثانية (تطابق مدة أنيميشن الدخان بالمللي)
 
 function handleLogin(e) {
     e.preventDefault();
