@@ -193,7 +193,7 @@
 <div class="sub-card" onclick="openSection('fod-section')" style="border: 2px solid #28a745; background-color: #f4fff4;">
     <i class="fa-solid fa-circle-exclamation sub-icon" style="color: #28a745;"></i>
     <h3 class="sub-title">04 - الأجسام الغريبة</h3>
-    <div class="sub-subtitle">FOD (AS-F-01-07)</div>
+    <div class="sub-subtitle">FOD</div>
 </div>      
       <div class="sub-card" onclick="openGenericDoc('التقرير الشهري')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
 <div class="sub-card" onclick="openSection('spi-section')">
@@ -718,66 +718,80 @@
     }, 3500); // 3.5 ثانية (تتطابق مع وقت تبخر اللوجو)
   </script>
 
-    <!-- ======================= وحدة الأجسام الغريبة (FOD) ======================= -->
+   <!-- ========================================== وحدة الأجسام الغريبة (FOD) ========================================== -->
     <div id="fod-section" class="content-area" style="display:none;">
       <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة السلامة</button>
-      <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة (FOD) <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Foreign Object Debris Monitoring</span></h1>
-
-      <!-- أزرار النافيجيشن -->
-      <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin: 20px 0; flex-wrap: wrap;">
-        <button type="button" class="nav-btn" onclick="navFOD('first')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-right"></i></button>
-        <button type="button" class="nav-btn" onclick="navFOD('prev')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-right"></i></button>
-        <div id="nav-fod-counter" style="background:#fff; padding:5px 20px; border:2px solid #003366; border-radius:4px; font-weight:bold; color:#003366; direction:ltr;">0 / 0</div>
-        <button type="button" class="nav-btn" onclick="navFOD('next')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-left"></i></button>
-        <button type="button" class="nav-btn" onclick="navFOD('last')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-left"></i></button>
-        <button type="button" onclick="clearFODFormForNew()" style="background:#28a745; border:none; padding:8px 15px; border-radius:4px; color:#fff; cursor:pointer; width: max-content; font-weight: bold;"><i class="fa-solid fa-plus"></i> إضافة يوم جديد</button>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <h1 style="color: var(--primary); font-weight: 900; font-size: 2rem; margin: 0;">الأجسام الغريبة (FOD)</h1>
+          <span style="font-size: 1rem; color:#777; font-family: sans-serif;">Foreign Object Debris Monitoring</span>
       </div>
 
       <div class="survey-container" style="margin-top: 20px;">
-        <!-- التبويبات -->
         <div class="tabs-header">
           <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
           <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-file-contract"></i> التقرير الشهري (ISO)</button>
         </div>
 
-            <table class="report-table rtl-table" style="width: 100%; margin-bottom: 20px; text-align:center;">
+        <!-- تبويب الإدخال -->
+        <div id="tab-fod-entry" class="tab-content active">
+          
+          <!-- أزرار النافيجيشن وإضافة يوم جديد بجوار بعضهم -->
+          <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin: 20px 0; flex-wrap: wrap;">
+            <button type="button" class="submit-btn" style="background:#28a745; border:none; padding:8px 20px; border-radius:4px; color:#fff; cursor:pointer; width:auto; margin:0;" onclick="clearFODFormForNew()"><i class="fa-solid fa-plus"></i> إضافة يوم جديد</button>
+            <div style="display:flex; gap:5px; align-items:center;">
+                <button type="button" class="nav-btn" onclick="navFOD('first')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-right"></i></button>
+                <button type="button" class="nav-btn" onclick="navFOD('prev')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-right"></i></button>
+                <div id="nav-fod-counter" style="background:#fff; padding:5px 20px; border:2px solid #003366; border-radius:4px; font-weight:bold; color:#003366; min-width: 60px; text-align: center;">0 / 0</div>
+                <button type="button" class="nav-btn" onclick="navFOD('next')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-left"></i></button>
+                <button type="button" class="nav-btn" onclick="navFOD('last')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-left"></i></button>
+            </div>
+          </div>
+
+          <form id="fodBulkForm" onsubmit="submitBulkFOD(event)">
+            <div class="form-group" style="max-width: 300px; margin: 0 auto 20px;">
+              <label>تاريخ الفحص (Date)</label>
+              <input type="date" id="fodBulkDate" required>
+            </div>
+            
+            <table class="report-table rtl-table" style="width: 100%; margin-bottom: 20px;">
               <thead>
                 <tr>
-                  <th style="text-align:center;">الموقع (Location)</th>
-                  <th style="text-align:center;">المساحة (Area m²)</th>
-                  <th style="text-align:center;">بلاستيك (Plastic kg)</th>
-                  <th style="text-align:center;">معدن (Metal kg)</th>
+                  <th>الموقع (Location)</th>
+                  <th>المساحة (Area m²)</th>
+                  <th>بلاستيك (Plastic kg)</th>
+                  <th>معدن (Metal kg)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Aircraft Stands Area<input type="hidden" class="fod-loc" value="Aircraft Stands Area"></td>
-                  <td><input type="text" class="fod-area" value="53.125" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.170" required style="text-align:center;"></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required style="text-align:center;"></td>
+                  <!-- تم تثبيت المساحات وجعلها Readonly بلون رمادي، وتم وضع أرقام استرشادية -->
+                  <td><input type="text" class="fod-area" value="53.125" readonly style="background:#eee; text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.170" required></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">GSE Area<input type="hidden" class="fod-loc" value="GSE Area"></td>
-                  <td><input type="text" class="fod-area" value="4152" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.130" required style="text-align:center;"></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required style="text-align:center;"></td>
+                  <td><input type="text" class="fod-area" value="4152" readonly style="background:#eee; text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.130" required></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.170" required></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Arrival & Departures Gates<input type="hidden" class="fod-loc" value="Arrival & Departures Gates"></td>
-                  <td><input type="text" class="fod-area" value="2420" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.160" required style="text-align:center;"></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.140" required style="text-align:center;"></td>
+                  <td><input type="text" class="fod-area" value="2420" readonly style="background:#eee; text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.160" required></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.140" required></td>
                 </tr>
                 <tr>
                   <td style="font-weight:bold; text-align:left;" dir="ltr">Around Aprons Gas station<input type="hidden" class="fod-loc" value="Around Aprons Gas station"></td>
-                  <td><input type="text" class="fod-area" value="2539" readonly style="background:#e9ecef; text-align:center; font-weight:bold; border:1px solid #ccc; color:#333;"></td>
-                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.120" required style="text-align:center;"></td>
-                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.130" required style="text-align:center;"></td>
+                  <td><input type="text" class="fod-area" value="2539" readonly style="background:#eee; text-align:center;"></td>
+                  <td><input type="number" step="0.001" class="fod-plas" placeholder="مثال: 0.120" required></td>
+                  <td><input type="number" step="0.001" class="fod-met" placeholder="مثال: 0.130" required></td>
                 </tr>
               </tbody>
             </table>
-
-            <button type="submit" class="submit-btn" id="submitFodBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل</button>
+            <button type="submit" class="submit-btn" id="submitFodBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل</button>
             <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
           </form>
 
@@ -790,76 +804,71 @@
           </div>
         </div>
 
-        <!-- تبويب 2: التقرير الشهري للطباعة -->
+        <!-- تبويب التقرير الشهري -->
         <div id="tab-fod-report" class="tab-content">
-          <div class="report-controls" style="display:flex; justify-content:center; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end;">
-            <div class="form-group" style="margin-bottom:0; width:150px;">
+          <div class="form-grid" style="align-items: end; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <div class="form-group">
               <label>السنة:</label>
               <select id="fodReportYear">
-                <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                  <option value="2026" selected>2026</option>
+                  <option value="2027">2027</option>
               </select>
             </div>
-            <div class="form-group" style="margin-bottom:0; width:150px;">
+            <div class="form-group">
               <label>الشهر:</label>
               <select id="fodReportMonth">
-                <option value="1">January</option><option value="2">February</option><option value="3">March</option>
-                <option value="4">April</option><option value="5">May</option><option value="6">June</option>
-                <option value="7">July</option><option value="8">August</option><option value="9">September</option>
-                <option value="10" selected>October</option><option value="11">November</option><option value="12">December</option>
+                  <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                  <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                  <option value="10" selected>October</option><option value="11">November</option><option value="12">December</option>
               </select>
             </div>
-            <button onclick="generateFodReport()" class="submit-btn" style="flex:1; max-width:200px;"><i class="fa-solid fa-sync"></i> تجهيز التقرير</button>
-            <button onclick="exportFodPDF()" class="submit-btn" style="flex:1; max-width:200px; background:#d9534f;"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
+            <div class="form-group" style="display: flex; gap: 10px;">
+              <button type="button" class="submit-btn" onclick="generateFodReport()" style="flex: 1; margin: 0;"><i class="fa-solid fa-rotate"></i> تجهيز التقرير</button>
+              <button type="button" onclick="exportFodPDF()" style="flex: 1; background: #d9534f; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
+            </div>
           </div>
-
-          <div id="printable-fod-report" style="display:none; background:#fff; padding:25px; border:2px solid #000; margin-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #000; padding-bottom:10px; margin-bottom:20px; direction:ltr;">
-              
-              <!-- القسم الأيسر: الإنجليزي -->
-              <div style="text-align:left; font-size:11px; font-weight:bold; color:#333; line-height:1.4;">
-                EMAK Marsa Alam<br><span style="font-size:9px; font-weight:normal;">For Management and operation of Airports (S.A.E)</span>
+          
+          <div id="printable-fod-report" style="display:none; background:#fff; padding:20px; border:1px solid #ccc;">
+              <!-- الترويسة المظبوطة للطباعة: العربي يمين والإنجليزي يسار -->
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:20px;">
+                  <div style="text-align:right; line-height:1.2;">
+                      <strong>إيماك مرسى علم</strong><br>
+                      <span style="font-size:0.8rem; color:#555;">لتشغيل وإدارة المطارات (ش.م.م)</span>
+                  </div>
+                  <div>
+                      <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:60px;">
+                  </div>
+                  <div style="text-align:left; line-height:1.2; direction:ltr;">
+                      <strong>EMAK Marsa Alam</strong><br>
+                      <span style="font-size:0.8rem; color:#555;">For Management and operation of Airports (S.A.E)</span>
+                  </div>
               </div>
               
-              <!-- المنتصف: اللوجو -->
-              <div style="text-align:center;">
-                <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:48px;">
-              </div>
+              <h2 id="fod-report-title" style="text-align:center; color:#333; margin-bottom:20px;">F.O.D Collected and Classifications for October 2026</h2>
               
-              <!-- القسم الأيمن: العربي -->
-              <div style="text-align:right; font-size:11px; font-weight:bold; color:#333; line-height:1.4; direction:rtl;">
-                إيماك مرسى علم <br><span style="font-size:9px; font-weight:normal;">لتشغيل وإدارة المطارات (ش.م.م)</span>
-              </div>
-              
-            </div>
-              <div style="text-align:left; font-size:11px; font-weight:bold; color:#333; line-height:1.4;">EMAK Marsa Alam<br><span style="font-size:9px; font-weight:normal;">For Management and operation of Airports (S.A.E)</span></div>
-              <div style="text-align:center;"><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:48px;"></div>
-              <div style="text-align:right; font-size:11px; font-weight:bold; color:#333; line-height:1.4; direction:rtl;">إيماك مرسى علم <br><span style="font-size:9px; font-weight:normal;">لتشغيل وإدارة المطارات (ش.م.م)</span></div>
-            </div>
-
-            <h2 id="fod-report-title" style="text-align:center; font-family:'Times New Roman', serif; font-size:1.4rem; margin:15px 0 25px; font-weight:normal;">F.O.D Collected and Classifications for October 2026</h2>
-            
-            <table class="report-table" style="width:100%; border:1px solid #000; direction:ltr; border-collapse:collapse; font-size:12px;">
-              <thead>
-                <tr style="background:#fff; color:#000;">
-                  <th rowspan="2" style="border:1px solid #000; padding:10px; font-weight:normal;">Day</th>
-                  <th rowspan="2" style="border:1px solid #000; padding:10px; font-weight:normal;">Location</th>
-                  <th rowspan="2" style="border:1px solid #000; padding:10px; font-weight:normal;">Area in<br>square meter</th>
-                  <th colspan="2" style="border:1px solid #000; padding:8px; font-weight:normal;">FOD quantity</th>
-                  <th rowspan="2" style="border:1px solid #000; padding:10px; font-weight:normal;">Total</th>
-                </tr>
-                <tr style="background:#fff; color:#000;">
-                  <th style="border:1px solid #000; padding:6px; font-weight:normal;">Plastic</th>
-                  <th style="border:1px solid #000; padding:6px; font-weight:normal;">Metal</th>
-                </tr>
-              </thead>
-              <tbody id="fod-iso-tbody" style="text-align:center;"></tbody>
-            </table>
-            <div style="margin-top:30px; font-size:10px; font-weight:bold; text-align:left;">AS-F-01-07</div>
+              <table style="width:100%; border-collapse:collapse; text-align:center; font-size:14px; margin-bottom:40px;">
+                  <thead>
+                      <tr style="background-color:#003366; color:#fff;">
+                          <th rowspan="2" style="border:1px solid #000; padding:10px;">Day</th>
+                          <th rowspan="2" style="border:1px solid #000; padding:10px;">Location</th>
+                          <th rowspan="2" style="border:1px solid #000; padding:10px;">Area in<br>square meter</th>
+                          <th colspan="2" style="border:1px solid #000; padding:5px;">FOD quantity</th>
+                          <th rowspan="2" style="border:1px solid #000; padding:10px;">Others</th>
+                      </tr>
+                      <tr style="background-color:#003366; color:#fff;">
+                          <th style="border:1px solid #000; padding:5px;">Plastic</th>
+                          <th style="border:1px solid #000; padding:5px;">Metal</th>
+                      </tr>
+                  </thead>
+                  <tbody id="fod-iso-tbody">
+                  </tbody>
+              </table>
+              <div style="font-size:0.7rem; color:#333; text-align:left; direction:ltr; margin-top:20px;">AS-F-01-07</div>
           </div>
         </div>
       </div>
-    </div> <!-- نهاية قسم الـ FOD -->
-
+    </div>
 
     <!-- ======================================================= -->
     <!-- النوافذ المنبثقة (Modals) -->
