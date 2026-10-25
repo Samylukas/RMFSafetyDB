@@ -195,8 +195,11 @@
     <h3 class="sub-title">04 - الأجسام الغريبة</h3>
     <div class="sub-subtitle">FOD</div>
 </div>      
-      <div class="sub-card" onclick="openGenericDoc('التقرير الشهري')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-<div class="sub-card" onclick="openSection('spi-section')">
+<div class="dashboard-card" onclick="openSection('monthly-report-section')">
+            <i class="fa-solid fa-file-pdf" style="color: #d9534f;"></i>
+            <h3>التقرير الشهري المجمع</h3>
+            <p>إصدار التقرير الشامل لمنطقة التحركات</p>
+        </div><div class="sub-card" onclick="openSection('spi-section')">
     <i class="fa-solid fa-chart-line sub-icon"></i>
     <h3 class="sub-title">مؤشرات الأداء</h3>
     <div class="sub-subtitle">Operational SPIs 2026</div>
@@ -889,7 +892,129 @@
         </form>
       </div>
     </div>
+<!-- ========================================== قسم التقرير الشهري المجمع ========================================== -->
+    <div id="monthly-report-section" class="content-area" style="display:none;">
+        <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة السلامة</button>
+        
+        <div class="form-grid" style="align-items: end; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-top: 4px solid var(--primary);">
+            <div class="form-group">
+                <label>السنة:</label>
+                <select id="reportTargetYear">
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الشهر:</label>
+                <select id="reportTargetMonth">
+                    <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                    <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                    <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                    <option value="10" selected>October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+            </div>
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <button type="button" class="submit-btn" onclick="generateFullMonthlyReport()" style="flex: 1; margin: 0; background:#003366;"><i class="fa-solid fa-gears"></i> تجميع بيانات الشهر</button>
+                <button type="button" onclick="exportFullMonthlyReportPDF()" style="flex: 1; background: #d9534f; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-file-pdf"></i> تصدير التقرير PDF</button>
+            </div>
+        </div>
+        
+        <p style="text-align:center; color:#dc3545; font-weight:bold; font-size:0.9rem;">* ملحوظة: يمكنك الضغط على الأرقام داخل الجدول الأول لتعديلها يدوياً قبل الطباعة.</p>
 
+        <!-- التقرير القابل للطباعة -->
+        <div id="printable-full-monthly" style="display:none; background:#fff; padding:30px; border:1px solid #ccc; font-family: 'Arial', sans-serif;">
+            
+            <!-- الهيدر -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #003366; padding-bottom:15px; margin-bottom:20px;">
+                <div style="text-align:right; line-height:1.4;">
+                    <strong style="font-size:1.1rem; color:#003366;">إيماك مرسى علم</strong><br>
+                    <span style="font-size:0.9rem; color:#555;">لتشغيل وإدارة المطارات (ش.م.م)</span><br>
+                    <strong style="font-size:1.1rem; color:#003366;">إدارة المطابقة والسلامة</strong>
+                </div>
+                <div>
+                    <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:70px;">
+                </div>
+                <div style="text-align:left; line-height:1.4; direction:ltr;">
+                    <strong style="font-size:1.1rem; color:#003366;">EMAK Marsa Alam</strong><br>
+                    <span style="font-size:0.9rem; color:#555;">For Management and operation of Airports (S.A.E)</span><br>
+                    <strong style="font-size:1.1rem; color:#003366;">Safety & Compliance Dept.</strong>
+                </div>
+            </div>
+
+            <!-- العنوان والتاريخ -->
+            <h2 style="text-align:center; color:#003366; margin-bottom:5px;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
+            <h3 id="m_report_date_title" style="text-align:center; color:#777; direction:ltr; margin-top:0; margin-bottom:30px;">September - 2026</h3>
+
+            <!-- أولاً: عام -->
+            <h3 style="color:#003366; border-bottom:2px solid #eee; padding-bottom:5px;">أولاً: عـــــــــــام</h3>
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:15px; margin-bottom:30px; direction:rtl;">
+                <thead>
+                    <tr style="background-color:#003366; color:#fff;">
+                        <th style="border:1px solid #000; padding:10px; width:40%;">البيان</th>
+                        <th style="border:1px solid #000; padding:10px;">إحصائية الشهر الحالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">1- عدد التحركات الجوية</td><td style="border:1px solid #000; padding:8px;" contenteditable="true" id="m_stat_mov">اضغط لتعديل الرقم</td></tr>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">2- عدد الحوادث (Accidents)</td><td style="border:1px solid #000; padding:8px;" contenteditable="true">00</td></tr>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">3- عدد الوقائع (Incidents)</td><td style="border:1px solid #000; padding:8px; font-weight:bold; color:#d9534f;" id="m_stat_incidents">0</td></tr>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">4- حالات عدم المطابقة المكتشفة</td><td style="border:1px solid #000; padding:8px;" contenteditable="true" id="m_stat_findings">0</td></tr>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">5- استبيان الطيارين</td><td style="border:1px solid #000; padding:8px; font-weight:bold; color:#003366;" id="m_stat_surveys">0</td></tr>
+                    <tr><td style="border:1px solid #000; padding:8px; font-weight:bold; text-align:right;">6- كمية F.O.D المجمعة</td><td style="border:1px solid #000; padding:8px; font-weight:bold; color:#003366; direction:ltr;" id="m_stat_fod">0.000 KG</td></tr>
+                </tbody>
+            </table>
+
+            <!-- ثانياً: الوقائع -->
+            <div class="avoid-page-break">
+                <h3 style="color:#003366; border-bottom:2px solid #eee; padding-bottom:5px;">ثانياً: الحصــــــــــــر التفصيلي (الوقائع والمخالفات)</h3>
+                <table style="width:100%; border-collapse:collapse; font-size:14px; margin-bottom:30px; direction:rtl;">
+                    <thead>
+                        <tr style="background-color:#e6e6e6; color:#000;">
+                            <th style="border:1px solid #000; padding:8px; width:5%;">م</th>
+                            <th style="border:1px solid #000; padding:8px; width:20%;">تصنيف الواقعة</th>
+                            <th style="border:1px solid #000; padding:8px; width:15%;">التاريخ</th>
+                            <th style="border:1px solid #000; padding:8px;">التفاصيل والإجراء المتخذ (Description & Action)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="m_incidents_tbody">
+                        <!-- تملأ برمجيا -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ثالثاً: استبيان الطيارين -->
+            <div class="avoid-page-break">
+                <h3 style="color:#003366; border-bottom:2px solid #eee; padding-bottom:5px;">ثالثاً: استبيان الطيارين (Captain Survey)</h3>
+                <p style="font-weight:bold; margin-bottom:10px;">إجمالي الاستبيانات التي تحتوي على ملاحظات هذا الشهر: <span id="m_surveys_count" style="color:#d9534f;">0</span></p>
+                <table style="width:100%; border-collapse:collapse; text-align:center; font-size:13px; margin-bottom:30px; direction:rtl;">
+                    <thead>
+                        <tr style="background-color:#f8f9fa; color:#003366;">
+                            <th style="border:1px solid #000; padding:8px;">Airline NAME</th>
+                            <th style="border:1px solid #000; padding:8px;">FLT NO</th>
+                            <th style="border:1px solid #000; padding:8px;">Type</th>
+                            <th style="border:1px solid #000; padding:8px;">Date</th>
+                            <th style="border:1px solid #000; padding:8px;">REG</th>
+                            <th style="border:1px solid #000; padding:8px; width:35%;">Captain Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="m_surveys_tbody">
+                        <!-- تملأ برمجيا -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- التوقيع -->
+            <div class="avoid-page-break" style="margin-top: 50px; display:flex; justify-content:space-between;">
+                <div></div>
+                <div style="text-align:center; line-height:1.5;">
+                    <strong>Prepared by:</strong><br>
+                    <span contenteditable="true" style="font-weight:bold; color:#003366; font-size:1.2rem; border-bottom:1px dashed #ccc; display:inline-block; min-width:150px;">Samy Lukas</span><br>
+                    <em>Airport Safety Manager</em>
+                </div>
+            </div>
+
+        </div>
+    </div>
     <!-- استدعاء ملف الجافاسكريبت الرئيسي (مهم جداً) -->
     <script src="script.js"></script>
   </body>
