@@ -2121,3 +2121,68 @@ function exportFodPDF() {
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(el).save();
 }
+// ==========================================
+// نظام التقليب (Navigation) الخاص بالـ FOD
+// ==========================================
+let groupedFodDates = [];
+let currentFodGroupIndex = -1;
+
+function updateFodNav() {
+    let datesSet = new Set(globalFodData.map(f => f.Date ? f.Date.split('T')[0] : ''));
+    datesSet.delete('');
+    groupedFodDates = Array.from(datesSet).sort((a,b) => new Date(b) - new Date(a)); // الأحدث أولاً
+
+    const ctr = document.getElementById('nav-fod-counter');
+    if (ctr) {
+        ctr.innerText = groupedFodDates.length > 0 ? `${currentFodGroupIndex + 1} / ${groupedFodDates.length}` : `0 / 0`;
+    }
+}
+
+function navFOD(direction) {
+    if (groupedFodDates.length === 0) return alert("لا توجد سجلات FOD محفوظة بعد.");
+    if (direction === 'first') currentFodGroupIndex = 0;
+    else if (direction === 'last') currentFodGroupIndex = groupedFodDates.length - 1;
+    else if (direction === 'next' && currentFodGroupIndex < groupedFodDates.length - 1) currentFodGroupIndex++;
+    else if (direction === 'prev' && currentFodGroupIndex > 0) currentFodGroupIndex--;
+
+    displayFodGroup(currentFodGroupIndex);
+}
+
+function displayFodGroup(idx) {
+    currentFodGroupIndex = idx;
+    let targetDate = groupedFodDates[idx];
+    document.getElementById('fodBulkDate').value = targetDate;
+    
+    // تصفير الخانات
+    document.querySelectorAll('#fodBulkForm .fod-area, #fodBulkForm .fod-plas, #fodBulkForm .fod-met').forEach(inp => inp.value = '');
+
+    // تعبئة البيانات الخاصة بهذا اليوم
+    let records = globalFodData.filter(f => f.Date && f.Date.startsWith(targetDate));
+    const rows = document.querySelectorAll('#fodBulkForm tbody tr');
+    rows.forEach(row => {
+        let loc = row.querySelector('.fod-loc').value;
+        let match = records.find(r => r.Location === loc);
+        if (match) {
+            row.querySelector('.fod-area').value = match.Area || '';
+            row.querySelector('.fod-plas').value = match.Plastic || '';
+            row.querySelector('.fod-met').value = match.Metal || '';
+        }
+    });
+    
+    updateFodNav();
+    let btn = document.getElementById('submitFodBtn');
+    btn.innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+    btn.disabled = true;
+}
+
+function clearFODFormForNew() {
+    currentFodGroupIndex = -1;
+    document.getElementById('fodBulkForm').reset();
+    let btn = document.getElementById('submitFodBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل';
+    updateFodNav();
+}
+
+// ابحث في كودك عن دالة renderSavedFOD وأضف في نهايتها استدعاء updateFodNav()
+// وبذلك يتحدث العداد فور تحميل البيانات من السيرفر
