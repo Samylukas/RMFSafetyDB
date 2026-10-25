@@ -810,5 +810,29 @@
       </div>
     </div>
   </div>
-</body>
+  </div> <!-- نهاية قسم الـ FOD -->
+
+    <!-- ======================================================= -->
+    <!-- النوافذ المنبثقة (Modals) -->
+    <!-- ======================================================= -->
+    
+    <!-- نافذة إضافة طائرة جديدة -->
+    <div id="new-aircraft-modal" class="modal" style="display:none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+      <div class="modal-content" style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 10px;">
+        <span class="close-btn" onclick="document.getElementById('new-aircraft-modal').style.display='none'" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3 style="color: var(--primary); text-align: center;">إضافة طائرة جديدة</h3>
+        <form id="newAircraftForm" onsubmit="submitNewAircraft(event)">
+          <div class="form-group"><label>Registration (REG):</label><input type="text" id="newReg" required></div>
+          <div class="form-group"><label>Aircraft Type:</label><input type="text" id="newType" required></div>
+          <div class="form-group"><label>Airline NAME (CAR):</label><input type="text" id="newAirline" required></div>
+          <div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div>
+          <div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div>
+          <button type="submit" class="submit-btn" style="width: 100%; margin-top: 15px;">حفظ الطائرة</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- استدعاء ملف الجافاسكريبت الرئيسي (مهم جداً) -->
+    <script src="script.js"></script>
+  </body>
 </html>
