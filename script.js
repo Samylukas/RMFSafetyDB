@@ -96,10 +96,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (loginScreen) {
                     loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
                 }
-            }, 500);
+            }, 3500); // 3.5 ثانية تتطابق مع وقت تبخر اللوجو
         }
-    }, 3500); // 3.5 ثانية تتطابق مع وقت تبخر اللوجو
+    }, 3500);
 });
+
 function handleLogin(e) {
     e.preventDefault();
     const userField = document.getElementById('username').value;
@@ -146,20 +147,23 @@ function loadAppDataInit() {
                 globalSpiData = data.spi || [];
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
                 globalFodData = data.fod ? data.fod.reverse() : [];
-renderSavedFOD();
                 if(data.directory) globalDirectory = data.directory;
                 
                 renderDirectory(globalDirectory);
+                renderSavedFOD();
 
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
                         let repId = row.Report_ID;
-                        let timeStr = row.Time;
+                        let timeStr = row.Time || "";
                         if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) {
-                            let d = new Date(timeStr);
-                            if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                            try {
+                                let d = new Date(timeStr);
+                                if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                            } catch(e) {}
                         }
+
                         if (!reportsMap[repId]) {
                             reportsMap[repId] = {
                                 id: repId,
@@ -188,8 +192,13 @@ renderSavedFOD();
                 renderSavedIncidents();
                 updateDailyNavCounter();
                 updateIncidentNavCounter();
+
+                if (globalSurveys.length > 0) {
+                    let ctr = document.getElementById('nav-counter');
+                    if(ctr) ctr.innerText = `0 / ${globalSurveys.length}`;
+                }
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Error parsing API data:", e); }
         delete window[callbackName];
     };
 
@@ -221,7 +230,6 @@ function renderDirectory(dataList) {
     dataList.forEach((item) => {
         let deptName = item.Department || "أخرى";
         
-        // إضافة كلاس dept-header-row لمنع نزول العنوان في آخر الصفحة منفرداً
         if (deptName !== currentDept) {
             tableHTML += `
                 <tr class="dept-header-row">
@@ -823,7 +831,7 @@ function drawCharts(airlines, dates, evals) {
             responsive: true, maintainAspectRatio: false,
             plugins: {
                 title: { display: true, text: 'Overall Performance' },
-                datalabels: {
+                datallabels: {
                     color: '#fff', font: { weight: 'bold', size: 14 },
                     formatter: (value, ctx) => {
                         let sum = 0;
@@ -1953,6 +1961,7 @@ function renderUsersTable() {
         tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
     });
 }
+
 // ==========================================
 // دوال إدارة الأجسام الغريبة FOD (AS-F-01-07)
 // ==========================================
@@ -2012,6 +2021,7 @@ async function submitBulkFOD(e) {
         btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل';
     }
 }
+
 function renderSavedFOD() {
     const tbody = document.getElementById('saved-fod-tbody');
     if (!tbody) return;
