@@ -60,6 +60,7 @@ let currentIncidentEditId = null;
 
 let chartInstances = {}; 
 let chartInstancesDaily = {};
+let globalFodData = [];
 
 function finishLoading() {
     try {
@@ -144,6 +145,8 @@ function loadAppDataInit() {
                 globalUsers = data.users || [];
                 globalSpiData = data.spi || [];
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
+                globalFodData = data.fod ? data.fod.reverse() : [];
+renderSavedFOD();
                 if(data.directory) globalDirectory = data.directory;
                 
                 renderDirectory(globalDirectory);
@@ -1949,4 +1952,146 @@ function renderUsersTable() {
     globalUsers.forEach((u, i) => {
         tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
     });
+}
+// ==========================================
+// دوال إدارة الأجسام الغريبة FOD (AS-F-01-07)
+// ==========================================
+function switchFodTab(tab) {
+    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-fod-' + tab).classList.add('active');
+    document.getElementById('tab-fod-' + tab).classList.add('active');
+}
+
+async function submitFOD(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitFodBtn');
+    const msg = document.getElementById('fodMsg');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    let payload = {
+        id: "FOD-" + Date.now(),
+        date: document.getElementById('fodDate').value,
+        location: document.getElementById('fodLocation').value,
+        area: document.getElementById('fodArea').value,
+        plastic: parseFloat(document.getElementById('fodPlastic').value).toFixed(3),
+        metal: parseFloat(document.getElementById('fodMetal').value).toFixed(3)
+    };
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "submitFOD", fodData: payload }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        globalFodData.unshift({ ID: payload.id, Date: payload.date, Location: payload.location, Area: payload.area, Plastic: payload.plastic, Metal: payload.metal });
+        msg.style.color = "green"; msg.innerText = "✅ تم حفظ سجل FOD بنجاح!";
+        document.getElementById('fodForm').reset();
+        renderSavedFOD();
+
+        setTimeout(() => { msg.innerText = ""; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل'; }, 1500);
+    } catch (err) {
+        msg.style.color = "red"; msg.innerText = "❌ فشل الاتصال بالسيرفر.";
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل';
+    }
+}
+
+function renderSavedFOD() {
+    const tbody = document.getElementById('saved-fod-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (globalFodData.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>لا توجد سجلات FOD محفوظة.</td></tr>";
+        return;
+    }
+
+    globalFodData.forEach(item => {
+        let p = parseFloat(item.Plastic) || 0;
+        let m = parseFloat(item.Metal) || 0;
+        tbody.innerHTML += `<tr>
+            <td dir="ltr">${item.Date ? item.Date.split('T')[0] : ''}</td>
+            <td style="font-weight:bold;">${item.Location}</td>
+            <td dir="ltr">${item.Area}</td>
+            <td dir="ltr">${p.toFixed(3)} kg</td>
+            <td dir="ltr">${m.toFixed(3)} kg</td>
+            <td dir="ltr" style="font-weight:bold; color:var(--primary);">${(p + m).toFixed(3)} kg</td>
+            <td><button type="button" onclick="deleteFodRecord('${item.ID}')" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`;
+    });
+}
+
+async function deleteFodRecord(id) {
+    if (!confirm("هل أنت متأكد من حذف هذا السجل؟")) return;
+    try {
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "deleteFOD", id: id }), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        globalFodData = globalFodData.filter(f => String(f.ID) !== String(id));
+        renderSavedFOD();
+    } catch (err) { alert("فشل الحذف من السيرفر!"); }
+}
+
+function generateFodReport() {
+    let year = document.getElementById('fodReportYear').value;
+    let month = parseInt(document.getElementById('fodReportMonth').value);
+    let monthName = document.getElementById('fodReportMonth').options[document.getElementById('fodReportMonth').selectedIndex].text.split(' ')[0];
+
+    document.getElementById('fod-report-title').innerText = `F.O.D Collected and Classifications for ${monthName} ${year}`;
+
+    let filtered = globalFodData.filter(item => {
+        if (!item.Date) return false;
+        let d = new Date(item.Date);
+        return d.getFullYear() === parseInt(year) && (d.getMonth() + 1) === month;
+    }).sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+    const tbody = document.getElementById('fod-iso-tbody');
+    tbody.innerHTML = "";
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:20px; font-weight:bold;">No FOD records found for this period.</td></tr>`;
+        document.getElementById('printable-fod-report').style.display = 'block';
+        return;
+    }
+
+    let sumPlastic = 0, sumMetal = 0;
+
+    filtered.forEach(row => {
+        let p = parseFloat(row.Plastic) || 0;
+        let m = parseFloat(row.Metal) || 0;
+        sumPlastic += p; sumMetal += m;
+
+        let dObj = new Date(row.Date);
+        let dayStr = String(dObj.getDate()).padStart(2, '0') + "/" + String(dObj.getMonth() + 1).padStart(2, '0') + "/" + dObj.getFullYear();
+
+        tbody.innerHTML += `<tr style="height:35px;">
+            <td style="border:1px solid #000; padding:8px;">${dayStr}</td>
+            <td style="border:1px solid #000; padding:8px; text-align:left;">${row.Location}</td>
+            <td style="border:1px solid #000; padding:8px;">${row.Area}</td>
+            <td style="border:1px solid #000; padding:8px;">${p.toFixed(3)} kg</td>
+            <td style="border:1px solid #000; padding:8px;">${m.toFixed(3)} kg</td>
+            <td style="border:1px solid #000; padding:8px;">---</td>
+        </tr>`;
+    });
+
+    tbody.innerHTML += `<tr style="height:40px; font-weight:bold;">
+        <td colspan="3" style="border:1px solid #000; padding:10px; font-size:14px;">Total</td>
+        <td style="border:1px solid #000; padding:10px;">${sumPlastic.toFixed(3)} kg</td>
+        <td style="border:1px solid #000; padding:10px;">${sumMetal.toFixed(3)} kg</td>
+        <td style="border:1px solid #000; padding:10px;">${(sumPlastic + sumMetal).toFixed(3)} kg</td>
+    </tr>`;
+
+    document.getElementById('printable-fod-report').style.display = 'block';
+}
+
+function exportFodPDF() {
+    const el = document.getElementById('printable-fod-report');
+    if (el.style.display === 'none') return alert("برجاء تجهيز التقرير أولاً!");
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: [0.4, 0.4, 0.4, 0.4],
+        filename: 'FOD_Report_AS-F-01-07.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+    }).from(el).save();
 }
