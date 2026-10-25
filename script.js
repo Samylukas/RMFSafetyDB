@@ -489,8 +489,7 @@ function navSurveys(direction) {
 
     if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
         displaySurveyInForm(globalSurveys[currentSurveyIndex]);
-        document.getElementById('nav-counter').innerText = `${currentSurveyIndex + 1} / ${globalSurveys.length}`;
-        document.getElementById('submitSurveyBtn').disabled = true;
+document.getElementById('nav-counter').innerHTML = `<span dir="ltr">${currentSurveyIndex + 1} / ${globalSurveys.length}</span>`;        document.getElementById('submitSurveyBtn').disabled = true;
         document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
     }
 }
