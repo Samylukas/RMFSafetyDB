@@ -64,18 +64,23 @@ let chartInstancesDaily = {};
 function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
+        const loginScreen = document.getElementById('login-screen');
+        
         if (splash) {
             splash.style.opacity = '0';
             setTimeout(() => {
                 splash.style.display = 'none';
-                const loginScreen = document.getElementById('login-screen');
-                if (loginScreen) loginScreen.style.display = 'flex';
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                }
             }, 500);
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
-// مدة عرض الشاشة بالمللي ثانية (2000 تعني ثانيتين، ويمكن زيادتها إلى 3500 لتتناسب مع الأنيميشن)
+// تشغيل الانتقال بعد 2 ثانية (فور امتلاء الشريط مباشرة)
 setTimeout(finishLoading, 2000);
 document.addEventListener('DOMContentLoaded', () => {
     try {
