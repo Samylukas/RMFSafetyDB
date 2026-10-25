@@ -80,16 +80,28 @@ function finishLoading() {
     }
 }
 
-// تشغيل الانتقال بعد 2 ثانية (فور امتلاء الشريط مباشرة)
-setTimeout(finishLoading, 2000);
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        buildEvaluationForm();
-        buildDailyChecklist();
-        autoFillDailyDateTime();
-        setupCustomDropdown();
-        loadAppDataInit();
-    } catch (e) { console.error(e); }
+// ==========================================
+// التحكم في شاشة البداية (Splash Screen)
+// ==========================================
+window.addEventListener('load', () => {
+    // الانتظار 3.5 ثانية لتكتمل حركة التبخر والتحميل في الـ CSS
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        const loginScreen = document.getElementById('login-screen');
+        
+        if (splash) {
+            splash.style.opacity = '0'; // التلاشي
+            
+            setTimeout(() => {
+                splash.style.display = 'none'; // إخفاء السبلاش تماماً
+                
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
+                    window.scrollTo(0, 0); // رفع الصفحة لأعلى لضمان رؤية المربع
+                }
+            }, 500); // نصف ثانية للتلاشي قبل الإخفاء
+        }
+    }, 3500); // 3500 مللي ثانية = 3.5 ثانية
 });
 
 function handleLogin(e) {
