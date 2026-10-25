@@ -1,4 +1,4 @@
-const CACHE_NAME = 'safety-ms-v1';
+const CACHE_NAME = 'safety-ms-v2';
 const urlsToCache = [
   './',
   './index.html',
