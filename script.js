@@ -194,8 +194,7 @@ function loadAppDataInit() {
                 updateIncidentNavCounter();
 
                 if (globalSurveys.length > 0) {
-                    let ctr = document.getElementById('nav-counter');
-                    if(ctr) ctr.innerText = `0 / ${globalSurveys.length}`;
+                    navSurveys('first');
                 }
             }
         } catch (e) { console.error("Error parsing API data:", e); }
