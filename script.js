@@ -81,29 +81,24 @@ function finishLoading() {
 }
 
 // ==========================================
-// التحكم في شاشة البداية (Splash Screen)
+// توقيت شاشة البداية والانتقال لتسجيل الدخول
 // ==========================================
-// ==========================================
-// التحكم في شاشة البداية (Splash Screen)
-// ==========================================
-setTimeout(() => {
-    const splash = document.getElementById('splash-screen');
-    const loginScreen = document.getElementById('login-screen');
-    
-    if (splash) {
-        splash.style.opacity = '0'; // بدء تلاشي الخلفية البيضاء
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        const loginScreen = document.getElementById('login-screen');
         
-        setTimeout(() => {
-            splash.style.display = 'none'; // إخفاء حاوية البداية بالكامل
-            
-            if (loginScreen) {
-                loginScreen.style.display = 'flex'; // إظهار شاشة تسجيل الدخول
-                window.scrollTo(0, 0);
-            }
-        }, 500); // نصف ثانية لتأكيد التلاشي
-    }
-}, 3500); // 3.5 ثانية (تطابق مدة أنيميشن الدخان بالمللي)
-
+        if (splash) {
+            splash.style.opacity = '0'; // بدء التلاشي
+            setTimeout(() => {
+                splash.style.display = 'none'; // إخفاء السبلاش
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
+                }
+            }, 500);
+        }
+    }, 3500); // 3.5 ثانية تتطابق مع وقت تبخر اللوجو
+});
 function handleLogin(e) {
     e.preventDefault();
     const userField = document.getElementById('username').value;
