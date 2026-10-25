@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwJgBl4t0E6tLW4zREIMw3YLSi6j1kJ3mKZXcLCo3Nsh9sMqBEk-FCBjUEqbNRbMbuk/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
 const criteriaList = [
     "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
