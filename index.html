@@ -722,7 +722,15 @@
   <div id="fod-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة السلامة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة (FOD) <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">Foreign Object Debris Monitoring</span></h1>
-
+<!-- أزرار النافيجيشن الجديدة للـ FOD -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin: 20px 0;">
+      <button type="button" class="nav-btn" onclick="navFOD('first')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-right"></i></button>
+      <button type="button" class="nav-btn" onclick="navFOD('prev')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-right"></i></button>
+      <div id="nav-fod-counter" style="background:#fff; padding:5px 20px; border:2px solid #003366; border-radius:4px; font-weight:bold; color:#003366;">0 / 0</div>
+      <button type="button" class="nav-btn" onclick="navFOD('next')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angle-left"></i></button>
+      <button type="button" class="nav-btn" onclick="navFOD('last')" style="background:#003366; color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-angles-left"></i></button>
+      <button type="button" class="submit-btn" style="background:#28a745; border:none; padding:8px 15px; border-radius:4px; color:#fff; cursor:pointer; margin-right:20px;" onclick="clearFODFormForNew()"><i class="fa-solid fa-plus"></i> إضافة يوم جديد</button>
+    </div>
     <div class="survey-container" style="margin-top: 20px;">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
