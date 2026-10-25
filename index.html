@@ -729,25 +729,62 @@
         <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-file-contract"></i> التقرير الشهري (ISO)</button>
       </div>
 
-      <!-- تبويب الإدخال -->
+      <!-- تبويب الإدخال المجمع -->
       <div id="tab-fod-entry" class="tab-content active">
-        <form id="fodForm" onsubmit="submitFOD(event)">
-          <div class="form-grid">
-            <div class="form-group"><label>التاريخ (Day)</label><input type="date" id="fodDate" required></div>
-            <div class="form-group">
-              <label>الموقع (Location)</label>
-              <input type="text" id="fodLocation" list="fodLocationsList" required placeholder="اكتب أو اختر الموقع...">
-              <datalist id="fodLocationsList">
-                <option value="Aircraft Stands Area">
-                <option value="GSE Area">
-                <option value="Arrival & Departures Gates">
-                <option value="Around Aprons Gas station">
-              </datalist>
-            </div>
-            <div class="form-group"><label>المساحة (Area in m²)</label><input type="text" id="fodArea" required placeholder="مثال: 53.125M²"></div>
-            <div class="form-group"><label>بلاستيك (Plastic kg)</label><input type="number" step="0.001" id="fodPlastic" required placeholder="مثال: 0.210"></div>
-            <div class="form-group"><label>معدن (Metal kg)</label><input type="number" step="0.001" id="fodMetal" required placeholder="مثال: 0.220"></div>
+        <form id="fodBulkForm" onsubmit="submitBulkFOD(event)">
+          <div class="form-group" style="max-width: 300px; margin: 0 auto 20px;">
+            <label>تاريخ الفحص (Date)</label>
+            <input type="date" id="fodBulkDate" required>
           </div>
+          
+          <table class="report-table rtl-table" style="width: 100%; margin-bottom: 20px;">
+            <thead>
+              <tr>
+                <th>الموقع (Location)</th>
+                <th>المساحة (Area m²)</th>
+                <th>بلاستيك (Plastic kg)</th>
+                <th>معدن (Metal kg)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:bold; text-align:left;" dir="ltr">Aircraft Stands Area<input type="hidden" class="fod-loc" value="Aircraft Stands Area"></td>
+                <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
+                <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
+                <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; text-align:left;" dir="ltr">GSE Area<input type="hidden" class="fod-loc" value="GSE Area"></td>
+                <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
+                <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
+                <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; text-align:left;" dir="ltr">Arrival & Departures Gates<input type="hidden" class="fod-loc" value="Arrival & Departures Gates"></td>
+                <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
+                <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
+                <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold; text-align:left;" dir="ltr">Around Aprons Gas station<input type="hidden" class="fod-loc" value="Around Aprons Gas station"></td>
+                <td><input type="text" class="fod-area" placeholder="مثال: 53.125" required></td>
+                <td><input type="number" step="0.001" class="fod-plas" placeholder="0" required></td>
+                <td><input type="number" step="0.001" class="fod-met" placeholder="0" required></td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="submit" class="submit-btn" id="submitFodBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل</button>
+          <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
+
+        <div class="report-wrapper" style="margin-top: 30px; border-top: 3px solid #eee; padding-top: 20px;">
+          <h4 style="color: var(--primary);"><i class="fa-solid fa-history"></i> السجلات المحفوظة</h4>
+          <table class="report-table rtl-table" dir="rtl">
+            <thead><tr><th>التاريخ</th><th>الموقع</th><th>المساحة</th><th>بلاستيك (kg)</th><th>معدن (kg)</th><th>الإجمالي</th><th>إجراء</th></tr></thead>
+            <tbody id="saved-fod-tbody"></tbody>
+          </table>
+        </div>
+      </div>
           <button type="submit" class="submit-btn" id="submitFodBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ السجل</button>
           <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
