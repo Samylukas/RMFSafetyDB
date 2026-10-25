@@ -74,6 +74,8 @@ function finishLoading() {
         }
     } catch (e) { console.error(e); }
 }
+
+// مدة عرض الشاشة بالمللي ثانية (2000 تعني ثانيتين، ويمكن زيادتها إلى 3500 لتتناسب مع الأنيميشن)
 setTimeout(finishLoading, 2000);
 document.addEventListener('DOMContentLoaded', () => {
     try {
