@@ -84,9 +84,9 @@ function finishLoading() {
 // ==========================================
 // توقيت شاشة البداية والانتقال لتسجيل الدخول
 // ==========================================
-// توقيت شاشة البداية والانتقال لتسجيل الدخول
 window.addEventListener('DOMContentLoaded', () => {
-    loadAppDataInit(); // <--- هذا هو السطر السحري المفقود الذي سيعيد الحياة للبرنامج!
+    loadAppDataInit();  // <--- حط السطر ده هناااااا 
+    
     setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         const loginScreen = document.getElementById('login-screen');
