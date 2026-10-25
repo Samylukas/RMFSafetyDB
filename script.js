@@ -194,13 +194,14 @@ function loadAppDataInit() {
                 renderSavedIncidents();
                 updateDailyNavCounter();
                 updateIncidentNavCounter();
-
+updateFodNav();
                 if (globalSurveys.length > 0) {
                     navSurveys('first');
                 }
             }
         } catch (e) { console.error("Error parsing API data:", e); }
         delete window[callbackName];
+        
     };
 
     const script = document.createElement('script');
