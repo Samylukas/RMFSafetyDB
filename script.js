@@ -523,7 +523,7 @@ function displaySurveyInForm(survey) {
 function clearFormForNew() {
     currentSurveyIndex = -1;
     document.getElementById('surveyForm').reset();
-    document.getElementById('nav-counter').innerText = `0 / ${globalSurveys.length}`;
+document.getElementById('nav-counter').innerHTML = `<span dir="ltr">0 / ${globalSurveys.length}</span>`;
     let btn = document.getElementById('submitSurveyBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
