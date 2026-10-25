@@ -2186,3 +2186,95 @@ function clearFODFormForNew() {
 
 // ابحث في كودك عن دالة renderSavedFOD وأضف في نهايتها استدعاء updateFodNav()
 // وبذلك يتحدث العداد فور تحميل البيانات من السيرفر
+// ==========================================
+// دوال التقرير الشهري المجمع (Monthly Report)
+// ==========================================
+function generateFullMonthlyReport() {
+    let year = document.getElementById('reportTargetYear').value;
+    let month = parseInt(document.getElementById('reportTargetMonth').value);
+    let monthName = document.getElementById('reportTargetMonth').options[document.getElementById('reportTargetMonth').selectedIndex].text;
+
+    // فلترة بيانات الشهر
+    let mSurveys = globalSurveys.filter(s => s.Date && new Date(s.Date).getFullYear() == year && (new Date(s.Date).getMonth() + 1) == month);
+    let mIncidents = globalIncidents.filter(i => i.Date && new Date(i.Date).getFullYear() == year && (new Date(i.Date).getMonth() + 1) == month);
+    let mFod = globalFodData.filter(f => f.Date && new Date(f.Date).getFullYear() == year && (new Date(f.Date).getMonth() + 1) == month);
+    
+    // حساب مخالفات الفحص اليومي في هذا الشهر
+    let mDailyFindingsCount = 0;
+    globalDailyInspections.forEach(d => {
+        if (d.date && new Date(d.date).getFullYear() == year && (new Date(d.date).getMonth() + 1) == month) {
+            mDailyFindingsCount += d.findings.length;
+        }
+    });
+
+    // 1. الإحصائيات العامة
+    document.getElementById('m_stat_incidents').innerText = mIncidents.length;
+    document.getElementById('m_stat_surveys').innerText = mSurveys.length;
+    document.getElementById('m_stat_findings').innerText = mDailyFindingsCount;
+    
+    let totalFod = mFod.reduce((sum, f) => sum + (parseFloat(f.Plastic)||0) + (parseFloat(f.Metal)||0), 0);
+    document.getElementById('m_stat_fod').innerText = totalFod.toFixed(3) + " KG";
+
+    // 2. جدول الوقائع
+    let incHtml = '';
+    if(mIncidents.length > 0) {
+        mIncidents.forEach((inc, idx) => {
+            let cat = inc.Characterization ? inc.Characterization.split('/')[0] : 'Unknown';
+            let desc = inc.Description || '';
+            let action = inc.Action_Taken || '';
+            incHtml += `<tr>
+                <td style="border:1px solid #000; padding:8px; text-align:center;">${idx+1}</td>
+                <td style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">${cat}</td>
+                <td style="border:1px solid #000; padding:8px; text-align:center; direction:ltr;">${inc.Date.split('T')[0]}</td>
+                <td style="border:1px solid #000; padding:8px; text-align:left; direction:ltr; font-size:12px;">
+                    <strong>Desc:</strong> ${desc}<br><br>
+                    <strong style="color:#003366;">Action:</strong> ${action}
+                </td>
+            </tr>`;
+        });
+    } else {
+        incHtml = `<tr><td colspan="4" style="border:1px solid #000; padding:15px; text-align:center; font-weight:bold;">لا توجد وقائع مسجلة هذا الشهر</td></tr>`;
+    }
+    document.getElementById('m_incidents_tbody').innerHTML = incHtml;
+
+    // 3. جدول الاستبيانات
+    let surveyCommentsHtml = '';
+    let sWithComments = mSurveys.filter(s => s.Captain_Comments && s.Captain_Comments.trim() !== '');
+    if(sWithComments.length > 0) {
+        sWithComments.forEach(s => {
+            surveyCommentsHtml += `<tr>
+                <td style="border:1px solid #000; padding:8px; font-weight:bold;">${s.CAR || ''}</td>
+                <td style="border:1px solid #000; padding:8px; direction:ltr;">${s.Flight_NO || ''}</td>
+                <td style="border:1px solid #000; padding:8px; direction:ltr;">${s.TYPE || ''}</td>
+                <td style="border:1px solid #000; padding:8px; direction:ltr;">${s.Date.split('T')[0]}</td>
+                <td style="border:1px solid #000; padding:8px; direction:ltr; font-weight:bold;">${s.REG || ''}</td>
+                <td style="border:1px solid #000; padding:8px; text-align:left; direction:ltr; color:#d9534f; font-weight:bold;">${s.Captain_Comments || ''}</td>
+            </tr>`;
+        });
+    } else {
+        surveyCommentsHtml = `<tr><td colspan="6" style="border:1px solid #000; padding:15px; text-align:center; font-weight:bold;">لا توجد ملاحظات سلبية من الطيارين هذا الشهر</td></tr>`;
+    }
+    document.getElementById('m_surveys_tbody').innerHTML = surveyCommentsHtml;
+    document.getElementById('m_surveys_count').innerText = sWithComments.length;
+
+    // تحديث التواريخ وإظهار التقرير
+    document.getElementById('m_report_date_title').innerText = `${monthName} - ${year}`;
+    document.getElementById('printable-full-monthly').style.display = 'block';
+}
+
+function exportFullMonthlyReportPDF() {
+    const el = document.getElementById('printable-full-monthly');
+    if (el.style.display === 'none') return alert("برجاء تجهيز التقرير أولاً!");
+    
+    // تجهيز لطباعة أفضل
+    window.scrollTo(0, 0);
+    
+    html2pdf().set({
+        margin: [0.5, 0.4, 0.5, 0.4],
+        filename: `Monthly_Safety_Report_${document.getElementById('m_report_date_title').innerText.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr'] }
+    }).from(el).save();
+}
