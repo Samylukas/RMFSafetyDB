@@ -86,7 +86,7 @@ function finishLoading() {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     loadAppDataInit();  // <--- حط السطر ده هناااااا 
-    
+    setupCustomDropdown();
     setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         const loginScreen = document.getElementById('login-screen');
