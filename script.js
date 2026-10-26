@@ -64,7 +64,6 @@ let currentDailyEditId = null;
 let isIncidentEditMode = false; 
 let currentIncidentEditId = null;
 
-// تحديث: إضافة متغيرات الملفات للحوادث
 let incFileName = null;
 let incFileType = null;
 let incFileBase64 = null;
@@ -91,7 +90,7 @@ function finishLoading() {
     }
 }
 
-// تحديث: دالة تسجيل الدخول متوافقة مع الـ HTML 
+// دالة تسجيل الدخول
 function login() {
     const userField = document.getElementById('loginUser').value;
     const passField = document.getElementById('loginPass').value;
@@ -143,6 +142,10 @@ function loadAppDataInit() {
                 
                 renderDirectory(globalDirectory);
 
+                // --- التعديل هنا: تعبئة قائمة المستخدمين المنسدلة في شاشة الدخول ---
+                populateUsersDropdown(globalUsers);
+                // -----------------------------------------------------------
+
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
@@ -181,7 +184,6 @@ function loadAppDataInit() {
                 updateDailyNavCounter();
                 updateIncidentNavCounter();
                 
-                // تحديث: إنهاء الـ Loading بعد نجاح جلب البيانات
                 finishLoading(); 
             }
         } catch (e) { console.error(e); }
@@ -193,7 +195,6 @@ function loadAppDataInit() {
     document.body.appendChild(script);
 }
 
-// استدعاء جلب البيانات عند بدء تحميل الصفحة
 loadAppDataInit();
 
 /* --- عرض دليل الهواتف --- */
@@ -379,7 +380,6 @@ function buildEvaluationForm() {
         container.innerHTML += html;
     });
 }
-// بناء قائمة التقييم عند البداية
 buildEvaluationForm();
 
 function setupCustomDropdown() {
@@ -487,7 +487,6 @@ function navSurveys(direction) {
     }
 }
 
-// تحديث: دالة التحديث للعرض
 function displaySurveyInForm(survey) {
     document.getElementById('capDate').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
     let timeVal = survey.Time;
@@ -591,7 +590,6 @@ async function saveNewAircraft() {
     }
 }
 
-// تحديث: دالة الحفظ
 async function submitSurvey(e) {
     e.preventDefault();
     const airline = document.getElementById('airline').value;
@@ -1941,7 +1939,6 @@ async function addUser(e) {
         msg.innerText = "تمت الإضافة بنجاح!";
         globalUsers.push({ Role: role, Username: username, Password: password });
         renderUsersTable();
-        // تم مسح السطر الخاص بـ username.innerHTML لتجنب الخطأ
         setTimeout(() => {
             msg.innerText = "";
             document.getElementById('newUsername').value = "";
@@ -1961,15 +1958,15 @@ function renderUsersTable() {
         tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
     });
 }
+
 // دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول
 function populateUsersDropdown(usersArray) {
     const datalist = document.getElementById('usersList');
     if (!datalist) return;
     
-    datalist.innerHTML = ''; // تفريغ القائمة
+    datalist.innerHTML = ''; 
     usersArray.forEach(user => {
         let option = document.createElement('option');
-        // تأكد أن "Username" تتطابق مع المتغير العائد من جوجل سكربت
         option.value = user.Username; 
         datalist.appendChild(option);
     });
