@@ -672,30 +672,7 @@
       </form>
     </div>
   </div>
-<!-- كود تشغيل ونقل السبلاش سكرين (مستقل لضمان العمل) -->
-  <script>
-    setTimeout(function() {
-      var splash = document.getElementById('splash-screen');
-      var loginScreen = document.getElementById('login-screen');
-      
-      if (splash) {
-        splash.style.opacity = '0'; // بدء التلاشي
-        
-        setTimeout(function() {
-          splash.style.display = 'none'; // إخفاء الشاشة تماماً
-          
-          if (loginScreen) {
-            loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
-          }
-        }, 500); // 500 مللي ثانية للتلاشي
-      }
-    }, 3500); // 3.5 ثانية (تتطابق مع وقت تبخر اللوجو)
-  </script>
 
-  <!-- استدعاء ملف الجافاسكريبت الرئيسي -->
-  <script src="script.js"></script>
-</body>
-</html>
   <script src="script.js"></script>
 </body>
 </html>
