@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
 const criteriaList = [
     "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
@@ -60,6 +60,7 @@ let currentIncidentEditId = null;
 
 let chartInstances = {}; 
 let chartInstancesDaily = {};
+let globalFodData = [];
 
 function finishLoading() {
     try {
@@ -80,16 +81,26 @@ function finishLoading() {
     }
 }
 
-// تشغيل الانتقال بعد 2 ثانية (فور امتلاء الشريط مباشرة)
-setTimeout(finishLoading, 2000);
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        buildEvaluationForm();
-        buildDailyChecklist();
-        autoFillDailyDateTime();
-        setupCustomDropdown();
-        loadAppDataInit();
-    } catch (e) { console.error(e); }
+// ==========================================
+// توقيت شاشة البداية والانتقال لتسجيل الدخول
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    loadAppDataInit();  // <--- حط السطر ده هناااااا 
+    
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        const loginScreen = document.getElementById('login-screen');
+        
+        if (splash) {
+            splash.style.opacity = '0'; // بدء التلاشي
+            setTimeout(() => {
+                splash.style.display = 'none'; // إخفاء السبلاش
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
+                }
+            }, 3500); // 3.5 ثانية تتطابق مع وقت تبخر اللوجو
+        }
+    }, 3500);
 });
 
 function handleLogin(e) {
@@ -137,19 +148,24 @@ function loadAppDataInit() {
                 globalUsers = data.users || [];
                 globalSpiData = data.spi || [];
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
+                globalFodData = data.fod ? data.fod.reverse() : [];
                 if(data.directory) globalDirectory = data.directory;
                 
                 renderDirectory(globalDirectory);
+                renderSavedFOD();
 
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
                         let repId = row.Report_ID;
-                        let timeStr = row.Time;
+                        let timeStr = row.Time || "";
                         if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) {
-                            let d = new Date(timeStr);
-                            if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                            try {
+                                let d = new Date(timeStr);
+                                if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16);
+                            } catch(e) {}
                         }
+
                         if (!reportsMap[repId]) {
                             reportsMap[repId] = {
                                 id: repId,
@@ -178,9 +194,14 @@ function loadAppDataInit() {
                 renderSavedIncidents();
                 updateDailyNavCounter();
                 updateIncidentNavCounter();
+updateFodNav();
+                if (globalSurveys.length > 0) {
+                    navSurveys('first');
+                }
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Error parsing API data:", e); }
         delete window[callbackName];
+        
     };
 
     const script = document.createElement('script');
@@ -211,7 +232,6 @@ function renderDirectory(dataList) {
     dataList.forEach((item) => {
         let deptName = item.Department || "أخرى";
         
-        // إضافة كلاس dept-header-row لمنع نزول العنوان في آخر الصفحة منفرداً
         if (deptName !== currentDept) {
             tableHTML += `
                 <tr class="dept-header-row">
@@ -813,7 +833,7 @@ function drawCharts(airlines, dates, evals) {
             responsive: true, maintainAspectRatio: false,
             plugins: {
                 title: { display: true, text: 'Overall Performance' },
-                datalabels: {
+                datallabels: {
                     color: '#fff', font: { weight: 'bold', size: 14 },
                     formatter: (value, ctx) => {
                         let sum = 0;
@@ -1943,3 +1963,227 @@ function renderUsersTable() {
         tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
     });
 }
+
+// ==========================================
+// دوال إدارة الأجسام الغريبة FOD (AS-F-01-07)
+// ==========================================
+function switchFodTab(tab) {
+    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-fod-' + tab).classList.add('active');
+    document.getElementById('tab-fod-' + tab).classList.add('active');
+}
+
+async function submitBulkFOD(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitFodBtn');
+    const msg = document.getElementById('fodMsg');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    const dateVal = document.getElementById('fodBulkDate').value;
+    const rows = document.querySelectorAll('#fodBulkForm tbody tr');
+    let payloadArr = [];
+
+    // تجميع بيانات كل المواقع
+    rows.forEach((row, index) => {
+        let loc = row.querySelector('.fod-loc').value;
+        let area = row.querySelector('.fod-area').value;
+        let plas = parseFloat(row.querySelector('.fod-plas').value || 0).toFixed(3);
+        let met = parseFloat(row.querySelector('.fod-met').value || 0).toFixed(3);
+        
+        payloadArr.push({
+            id: "FOD-" + Date.now() + "-" + index, // ID فريد لكل موقع
+            date: dateVal,
+            location: loc,
+            area: area,
+            plastic: plas,
+            metal: met
+        });
+    });
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: payloadArr }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        // إضافة البيانات محلياً وعرضها
+        payloadArr.forEach(item => {
+            globalFodData.unshift({ ID: item.id, Date: item.date, Location: item.location, Area: item.area, Plastic: item.plastic, Metal: item.metal });
+        });
+
+        msg.style.color = "green"; msg.innerText = "✅ تم حفظ سجلات اليوم بنجاح!";
+        document.getElementById('fodBulkForm').reset();
+        renderSavedFOD();
+
+        setTimeout(() => { msg.innerText = ""; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل'; }, 2000);
+    } catch (err) {
+        msg.style.color = "red"; msg.innerText = "❌ فشل الاتصال بالسيرفر.";
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل';
+    }
+}
+
+function renderSavedFOD() {
+    const tbody = document.getElementById('saved-fod-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (globalFodData.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>لا توجد سجلات FOD محفوظة.</td></tr>";
+        return;
+    }
+
+    globalFodData.forEach(item => {
+        let p = parseFloat(item.Plastic) || 0;
+        let m = parseFloat(item.Metal) || 0;
+        tbody.innerHTML += `<tr>
+            <td dir="ltr">${item.Date ? item.Date.split('T')[0] : ''}</td>
+            <td style="font-weight:bold;">${item.Location}</td>
+            <td dir="ltr">${item.Area}</td>
+            <td dir="ltr">${p.toFixed(3)} kg</td>
+            <td dir="ltr">${m.toFixed(3)} kg</td>
+            <td dir="ltr" style="font-weight:bold; color:var(--primary);">${(p + m).toFixed(3)} kg</td>
+            <td><button type="button" onclick="deleteFodRecord('${item.ID}')" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`;
+    });
+}
+
+async function deleteFodRecord(id) {
+    if (!confirm("هل أنت متأكد من حذف هذا السجل؟")) return;
+    try {
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "deleteFOD", id: id }), headers: { "Content-Type": "text/plain;charset=utf-8" } });
+        globalFodData = globalFodData.filter(f => String(f.ID) !== String(id));
+        renderSavedFOD();
+    } catch (err) { alert("فشل الحذف من السيرفر!"); }
+}
+
+function generateFodReport() {
+    let year = document.getElementById('fodReportYear').value;
+    let month = parseInt(document.getElementById('fodReportMonth').value);
+    let monthName = document.getElementById('fodReportMonth').options[document.getElementById('fodReportMonth').selectedIndex].text.split(' ')[0];
+
+    document.getElementById('fod-report-title').innerText = `F.O.D Collected and Classifications for ${monthName} ${year}`;
+
+    let filtered = globalFodData.filter(item => {
+        if (!item.Date) return false;
+        let d = new Date(item.Date);
+        return d.getFullYear() === parseInt(year) && (d.getMonth() + 1) === month;
+    }).sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+    const tbody = document.getElementById('fod-iso-tbody');
+    tbody.innerHTML = "";
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:20px; font-weight:bold;">No FOD records found for this period.</td></tr>`;
+        document.getElementById('printable-fod-report').style.display = 'block';
+        return;
+    }
+
+    let sumPlastic = 0, sumMetal = 0;
+
+    filtered.forEach(row => {
+        let p = parseFloat(row.Plastic) || 0;
+        let m = parseFloat(row.Metal) || 0;
+        sumPlastic += p; sumMetal += m;
+
+        let dObj = new Date(row.Date);
+        let dayStr = String(dObj.getDate()).padStart(2, '0') + "/" + String(dObj.getMonth() + 1).padStart(2, '0') + "/" + dObj.getFullYear();
+
+        tbody.innerHTML += `<tr style="height:35px;">
+            <td style="border:1px solid #000; padding:8px;">${dayStr}</td>
+            <td style="border:1px solid #000; padding:8px; text-align:left;">${row.Location}</td>
+            <td style="border:1px solid #000; padding:8px;">${row.Area}</td>
+            <td style="border:1px solid #000; padding:8px;">${p.toFixed(3)} kg</td>
+            <td style="border:1px solid #000; padding:8px;">${m.toFixed(3)} kg</td>
+            <td style="border:1px solid #000; padding:8px;">---</td>
+        </tr>`;
+    });
+
+    tbody.innerHTML += `<tr style="height:40px; font-weight:bold;">
+        <td colspan="3" style="border:1px solid #000; padding:10px; font-size:14px;">Total</td>
+        <td style="border:1px solid #000; padding:10px;">${sumPlastic.toFixed(3)} kg</td>
+        <td style="border:1px solid #000; padding:10px;">${sumMetal.toFixed(3)} kg</td>
+        <td style="border:1px solid #000; padding:10px;">${(sumPlastic + sumMetal).toFixed(3)} kg</td>
+    </tr>`;
+
+    document.getElementById('printable-fod-report').style.display = 'block';
+}
+
+function exportFodPDF() {
+    const el = document.getElementById('printable-fod-report');
+    if (el.style.display === 'none') return alert("برجاء تجهيز التقرير أولاً!");
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: [0.4, 0.4, 0.4, 0.4],
+        filename: 'FOD_Report_AS-F-01-07.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+    }).from(el).save();
+}
+// ==========================================
+// نظام التقليب (Navigation) الخاص بالـ FOD
+// ==========================================
+let groupedFodDates = [];
+let currentFodGroupIndex = -1;
+
+function updateFodNav() {
+    let datesSet = new Set(globalFodData.map(f => f.Date ? f.Date.split('T')[0] : ''));
+    datesSet.delete('');
+    groupedFodDates = Array.from(datesSet).sort((a,b) => new Date(b) - new Date(a)); // الأحدث أولاً
+
+    const ctr = document.getElementById('nav-fod-counter');
+    if (ctr) {
+        ctr.innerText = groupedFodDates.length > 0 ? `${currentFodGroupIndex + 1} / ${groupedFodDates.length}` : `0 / 0`;
+    }
+}
+
+function navFOD(direction) {
+    if (groupedFodDates.length === 0) return alert("لا توجد سجلات FOD محفوظة بعد.");
+    if (direction === 'first') currentFodGroupIndex = 0;
+    else if (direction === 'last') currentFodGroupIndex = groupedFodDates.length - 1;
+    else if (direction === 'next' && currentFodGroupIndex < groupedFodDates.length - 1) currentFodGroupIndex++;
+    else if (direction === 'prev' && currentFodGroupIndex > 0) currentFodGroupIndex--;
+
+    displayFodGroup(currentFodGroupIndex);
+}
+
+function displayFodGroup(idx) {
+    currentFodGroupIndex = idx;
+    let targetDate = groupedFodDates[idx];
+    document.getElementById('fodBulkDate').value = targetDate;
+    
+    // تصفير الخانات
+    document.querySelectorAll('#fodBulkForm .fod-area, #fodBulkForm .fod-plas, #fodBulkForm .fod-met').forEach(inp => inp.value = '');
+
+    // تعبئة البيانات الخاصة بهذا اليوم
+    let records = globalFodData.filter(f => f.Date && f.Date.startsWith(targetDate));
+    const rows = document.querySelectorAll('#fodBulkForm tbody tr');
+    rows.forEach(row => {
+        let loc = row.querySelector('.fod-loc').value;
+        let match = records.find(r => r.Location === loc);
+        if (match) {
+            row.querySelector('.fod-area').value = match.Area || '';
+            row.querySelector('.fod-plas').value = match.Plastic || '';
+            row.querySelector('.fod-met').value = match.Metal || '';
+        }
+    });
+    
+    updateFodNav();
+    let btn = document.getElementById('submitFodBtn');
+    btn.innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+    btn.disabled = true;
+}
+
+function clearFODFormForNew() {
+    currentFodGroupIndex = -1;
+    document.getElementById('fodBulkForm').reset();
+    let btn = document.getElementById('submitFodBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ تقرير اليوم بالكامل';
+    updateFodNav();
+}
+
+// ابحث في كودك عن دالة renderSavedFOD وأضف في نهايتها استدعاء updateFodNav()
+// وبذلك يتحدث العداد فور تحميل البيانات من السيرفر
