@@ -1,5 +1,11 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
 
+// تحديث: إضافة قائمة مؤشرات الأداء المطلوبة (كمثال)
+const spiCategories = [
+    { name: "السلامة التشغيلية", items: ["معدل الحوادث", "معدل الأخطار"] },
+    { name: "السلامة الأرضية", items: ["FOD", "تسرب الوقود"] }
+];
+
 const criteriaList = [
     "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
     "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", 
@@ -58,6 +64,11 @@ let currentDailyEditId = null;
 let isIncidentEditMode = false; 
 let currentIncidentEditId = null;
 
+// تحديث: إضافة متغيرات الملفات للحوادث
+let incFileName = null;
+let incFileType = null;
+let incFileBase64 = null;
+
 let chartInstances = {}; 
 let chartInstancesDaily = {};
 
@@ -80,42 +91,21 @@ function finishLoading() {
     }
 }
 
-// ==========================================
-// التحكم في شاشة البداية (Splash Screen)
-// ==========================================
-// ==========================================
-// التحكم في شاشة البداية (Splash Screen)
-// ==========================================
-setTimeout(() => {
-    const splash = document.getElementById('splash-screen');
-    const loginScreen = document.getElementById('login-screen');
-    
-    if (splash) {
-        splash.style.opacity = '0'; // بدء تلاشي الخلفية البيضاء
-        
-        setTimeout(() => {
-            splash.style.display = 'none'; // إخفاء حاوية البداية بالكامل
-            
-            if (loginScreen) {
-                loginScreen.style.display = 'flex'; // إظهار شاشة تسجيل الدخول
-                window.scrollTo(0, 0);
-            }
-        }, 500); // نصف ثانية لتأكيد التلاشي
-    }
-}, 3500); // 3.5 ثانية (تطابق مدة أنيميشن الدخان بالمللي)
+// تحديث: دالة تسجيل الدخول متوافقة مع الـ HTML 
+function login() {
+    const userField = document.getElementById('loginUser').value;
+    const passField = document.getElementById('loginPass').value;
+    const errorMsg = document.getElementById('loginError');
 
-function handleLogin(e) {
-    e.preventDefault();
-    const userField = document.getElementById('username').value;
-    const passField = document.getElementById('password').value;
     let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
+    
     if (validUser || (globalUsers.length === 0 && passField === "1234")) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
     } else {
-        alert("كلمة المرور غير صحيحة!");
-        document.getElementById('password').value = "";
+        errorMsg.style.display = 'block';
+        document.getElementById('loginPass').value = "";
     }
 }
 
@@ -190,6 +180,9 @@ function loadAppDataInit() {
                 renderSavedIncidents();
                 updateDailyNavCounter();
                 updateIncidentNavCounter();
+                
+                // تحديث: إنهاء الـ Loading بعد نجاح جلب البيانات
+                finishLoading(); 
             }
         } catch (e) { console.error(e); }
         delete window[callbackName];
@@ -200,7 +193,10 @@ function loadAppDataInit() {
     document.body.appendChild(script);
 }
 
-/* --- عرض دليل الهواتف المصلح بتنسيق الإكسل --- */
+// استدعاء جلب البيانات عند بدء تحميل الصفحة
+loadAppDataInit();
+
+/* --- عرض دليل الهواتف --- */
 function renderDirectory(dataList) {
     const tbody = document.getElementById('directory-tbody');
     if (!tbody) return;
@@ -223,7 +219,6 @@ function renderDirectory(dataList) {
     dataList.forEach((item) => {
         let deptName = item.Department || "أخرى";
         
-        // إضافة كلاس dept-header-row لمنع نزول العنوان في آخر الصفحة منفرداً
         if (deptName !== currentDept) {
             tableHTML += `
                 <tr class="dept-header-row">
@@ -384,36 +379,41 @@ function buildEvaluationForm() {
         container.innerHTML += html;
     });
 }
+// بناء قائمة التقييم عند البداية
+buildEvaluationForm();
 
 function setupCustomDropdown() {
     const input = document.getElementById('reg');
     const arrow = document.getElementById('regArrowBtn');
     const list = document.getElementById('regDropdownList');
 
-    arrow.addEventListener('click', function(e) {
-        e.stopPropagation();
-        list.classList.toggle('show');
-        if (list.classList.contains('show')) {
-            input.focus();
-            filterRegOptions(true);
-        }
-    });
+    if(input && arrow && list) {
+        arrow.addEventListener('click', function(e) {
+            e.stopPropagation();
+            list.classList.toggle('show');
+            if (list.classList.contains('show')) {
+                input.focus();
+                filterRegOptions(true);
+            }
+        });
 
-    input.addEventListener('input', function() {
-        list.classList.add('show');
-        filterRegOptions(false);
-    });
+        input.addEventListener('input', function() {
+            list.classList.add('show');
+            filterRegOptions(false);
+        });
 
-    input.addEventListener('click', function(e) {
-        e.stopPropagation();
-        list.classList.add('show');
-        filterRegOptions(false);
-    });
+        input.addEventListener('click', function(e) {
+            e.stopPropagation();
+            list.classList.add('show');
+            filterRegOptions(false);
+        });
 
-    document.addEventListener('click', function() {
-        list.classList.remove('show');
-    });
+        document.addEventListener('click', function() {
+            list.classList.remove('show');
+        });
+    }
 }
+setupCustomDropdown();
 
 function filterRegOptions(showAll = false) {
     const input = document.getElementById('reg');
@@ -487,14 +487,15 @@ function navSurveys(direction) {
     }
 }
 
+// تحديث: دالة التحديث للعرض
 function displaySurveyInForm(survey) {
-    document.getElementById('date').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
+    document.getElementById('capDate').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
     let timeVal = survey.Time;
     if (timeVal && timeVal.includes('T')) {
         let t = new Date(timeVal);
-        document.getElementById('time').value = t.toTimeString().substring(0, 5);
+        document.getElementById('capTime').value = t.toTimeString().substring(0, 5);
     } else {
-        document.getElementById('time').value = timeVal || '';
+        document.getElementById('capTime').value = timeVal || '';
     }
 
     document.getElementById('fltNo').value = survey.Flight_NO || '';
@@ -590,6 +591,7 @@ async function saveNewAircraft() {
     }
 }
 
+// تحديث: دالة الحفظ
 async function submitSurvey(e) {
     e.preventDefault();
     const airline = document.getElementById('airline').value;
@@ -606,8 +608,8 @@ async function submitSurvey(e) {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال...';
 
     let surveyDataObj = {
-        "Date": document.getElementById('date').value,
-        "Time": document.getElementById('time').value,
+        "Date": document.getElementById('capDate').value,
+        "Time": document.getElementById('capTime').value,
         "Flight_NO": document.getElementById('fltNo').value,
         "REG": document.getElementById('reg').value.toUpperCase(),
         "CAR": airline,
@@ -922,6 +924,7 @@ function buildDailyChecklist() {
         grid.innerHTML += colHTML;
     });
 }
+buildDailyChecklist();
 
 window.toggleInputs = function(idx) {
     const chk = document.getElementById('chk_' + idx);
@@ -942,6 +945,7 @@ function autoFillDailyDateTime() {
     if (dField) dField.value = localISOTime.split('T')[0];
     if (tField) tField.value = localISOTime.split('T')[1].substring(0, 5);
 }
+autoFillDailyDateTime();
 
 function updateDailyNavCounter() {
     const ctr = document.getElementById('nav-daily-counter');
@@ -1812,6 +1816,7 @@ function switchSpiTab(tab) {
 
 function buildSpiEntryForm() {
     const container = document.getElementById('spi-dynamic-inputs');
+    if(!container) return;
     container.innerHTML = '';
     spiCategories.forEach(cat => {
         let catHtml = `<h4 style="color: #28a745; margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${cat.name}</h4><div class="form-grid">`;
@@ -1823,6 +1828,7 @@ function buildSpiEntryForm() {
         container.innerHTML += catHtml;
     });
 }
+buildSpiEntryForm();
 
 async function submitSPI(e) {
     e.preventDefault();
@@ -1935,7 +1941,7 @@ async function addUser(e) {
         msg.innerText = "تمت الإضافة بنجاح!";
         globalUsers.push({ Role: role, Username: username, Password: password });
         renderUsersTable();
-        document.getElementById('username').innerHTML += `<option value="${username}">${username} (${role})</option>`;
+        // تم مسح السطر الخاص بـ username.innerHTML لتجنب الخطأ
         setTimeout(() => {
             msg.innerText = "";
             document.getElementById('newUsername').value = "";
