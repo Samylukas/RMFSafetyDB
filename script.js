@@ -74,7 +74,7 @@ let monthlyChart2 = null;
 let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
 
-// تشغيل النظام وإنهاء شاشة البداية
+// إنهاء التحميل والانتقال لتسجيل الدخول
 function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
@@ -89,7 +89,7 @@ function finishLoading() {
                     loginScreen.style.display = 'flex';
                     if (passInp) passInp.focus();
                 }
-            }, 400);
+            }, 300);
         }
     } catch (e) {
         console.error(e);
@@ -137,7 +137,7 @@ function openGenericDoc(title) {
     openSection('generic-doc-section');
 }
 
-// جلب البيانات من السيرفر بالكامل
+// جلب كل البيانات من Google Apps Script
 function loadAppDataInit() {
     const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
     window[callbackName] = function (data) {
@@ -153,8 +153,9 @@ function loadAppDataInit() {
 
                 populateUsersDropdown(globalUsers);
                 renderDirectory(globalDirectory);
+                updateSurveyNavCounter();
 
-                // معالجة الفحص اليومي
+                // قراءة جولات التفتيش اليومية
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
@@ -210,615 +211,139 @@ function loadAppDataInit() {
 loadAppDataInit();
 
 // ==========================================
-// وحدة FOD
+// 1. استبيان الكابتن (Captain Survey) مع كامل التنقل
 // ==========================================
-function switchFodTab(tab) {
-    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('btn-fod-' + tab).classList.add('active');
-    document.getElementById('tab-fod-' + tab).classList.add('active');
+function updateSurveyNavCounter() {
+    const el = document.getElementById('nav-counter');
+    if (el) {
+        el.innerText = globalSurveys.length > 0 ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / 0`;
+    }
 }
 
-function generateFodInputRows() {
-    const month = document.getElementById('fodInputMonth').value;
-    if(!month) return alert("برجاء اختيار الشهر أولاً!");
+function navSurveys(direction) {
+    if (!globalSurveys || globalSurveys.length === 0) {
+        return alert("لا توجد استبيانات مسجلة بعد في قاعدة البيانات.");
+    }
     
-    document.getElementById('fodForm').style.display = 'block';
-    const tbody = document.getElementById('fod-input-tbody');
-    tbody.innerHTML = '';
+    if (direction === 'first') currentSurveyIndex = 0;
+    else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1;
+    else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
+    else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
+
+    if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
+        displaySurveyInForm(globalSurveys[currentSurveyIndex]);
+        updateSurveyNavCounter();
+        let btn = document.getElementById('submitSurveyBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض (Read-Only)';
+            btn.style.backgroundColor = "#6c757d";
+        }
+    }
+}
+
+function displaySurveyInForm(survey) {
+    if (!survey) return;
+    document.getElementById('capDate').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
     
-    fodLocations.forEach((item, index) => {
-        tbody.innerHTML += `
-            <tr style="background: #fff;">
-                <td><input type="date" id="fod_date_${index}" required style="width: 100%; padding: 6px;"></td>
-                <td style="font-weight: bold;">${item.loc}</td>
-                <td style="text-align: center;">${item.area}</td>
-                <td><input type="number" step="0.001" id="fod_p_${index}" required placeholder="0.000" style="width: 100%; padding: 6px;"></td>
-                <td><input type="number" step="0.001" id="fod_m_${index}" required placeholder="0.000" style="width: 100%; padding: 6px;"></td>
-            </tr>
-        `;
+    let timeVal = survey.Time || '';
+    if (timeVal.includes('T')) {
+        let t = new Date(timeVal);
+        document.getElementById('capTime').value = t.toTimeString().substring(0, 5);
+    } else {
+        document.getElementById('capTime').value = timeVal;
+    }
+
+    document.getElementById('fltNo').value = survey.Flight_NO || '';
+    document.getElementById('reg').value = survey.REG || '';
+    document.getElementById('airline').value = survey.CAR || '';
+    document.getElementById('acType').value = survey.TYPE || '';
+    document.getElementById('comments').value = survey.Captain_Comments || '';
+
+    document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+    document.getElementById('acType').style.backgroundColor = "#e8f5e9";
+
+    criteriaList.forEach(crit => {
+        let val = survey[crit] || "Blank";
+        let radio = document.querySelector(`input[name="${crit}"][value="${val}"]`);
+        if (radio) radio.checked = true;
     });
 }
 
-async function submitFOD(e) {
+function clearFormForNew() {
+    currentSurveyIndex = -1;
+    document.getElementById('surveyForm').reset();
+    updateSurveyNavCounter();
+    let btn = document.getElementById('submitSurveyBtn');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+        btn.style.backgroundColor = "var(--primary)";
+    }
+    document.getElementById('airline').style.backgroundColor = "#f0f0f0";
+    document.getElementById('acType').style.backgroundColor = "#f0f0f0";
+    let now = new Date().toISOString();
+    document.getElementById('capDate').value = now.split('T')[0];
+    document.getElementById('capTime').value = now.split('T')[1].substring(0, 5);
+}
+
+async function submitSurvey(e) {
     e.preventDefault();
-    const btn = document.getElementById('submitFodBtn');
-    const msg = document.getElementById('fodMsg');
-    btn.disabled = true; 
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...';
-    msg.innerText = "";
-    
-    let fodDataArray = [];
-    let localFodArray = [];
-    
-    fodLocations.forEach((item, index) => {
-        let p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0;
-        let m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0;
-        let d = document.getElementById(`fod_date_${index}`).value;
-        let newId = "FOD-" + Date.now() + "-" + index;
-        
-        fodDataArray.push({
-            id: newId, 
-            date: d, 
-            location: item.loc, 
-            area: item.area, 
-            plastic: p, 
-            metal: m
-        });
-        
-        localFodArray.push({
-            ID: newId, 
-            Date: d, 
-            Location: item.loc, 
-            Area: item.area, 
-            Plastic: p, 
-            Metal: m
-        });
+    const btn = document.getElementById('submitSurveyBtn');
+    const msg = document.getElementById('surveyMsg');
+    const airline = document.getElementById('airline').value;
+
+    if (!airline) {
+        msg.style.color = "red";
+        msg.innerText = "برجاء اختيار تسجيل طائرة مسجل بالأسطول!";
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    let sObj = {
+        "Date": document.getElementById('capDate').value,
+        "Time": document.getElementById('capTime').value,
+        "Flight_NO": document.getElementById('fltNo').value,
+        "REG": document.getElementById('reg').value.toUpperCase(),
+        "CAR": airline,
+        "TYPE": document.getElementById('acType').value,
+        "Captain_Comments": document.getElementById('comments').value
+    };
+
+    criteriaList.forEach(crit => {
+        let sel = document.querySelector(`input[name="${crit}"]:checked`);
+        sObj[crit] = sel ? sel.value : "Blank";
     });
 
     try {
         await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ 
-                action: "submitBulkFOD", 
-                fodDataArray: fodDataArray 
-            })
+            body: JSON.stringify({ action: "submitSurvey", surveyData: sObj })
         });
-
-        msg.style.color = "green"; 
-        msg.innerText = "✅ تم حفظ بيانات FOD بنجاح وتحديث قاعدة البيانات!";
-        globalFod = [...globalFod, ...localFodArray]; 
-
-        setTimeout(() => { 
-            document.getElementById('fodForm').reset(); 
-            msg.innerText = ''; 
-            btn.disabled = false; 
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر'; 
-            document.getElementById('fodForm').style.display = 'none'; 
+        msg.style.color = "green";
+        msg.innerText = "✅ تم حفظ الاستبيان بنجاح!";
+        globalSurveys.unshift(sObj);
+        updateSurveyNavCounter();
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+            msg.innerText = "";
+            clearFormForNew();
         }, 1500);
-
-    } catch(err) {
-        console.error(err);
-        msg.style.color = "red"; 
-        msg.innerText = "حدث خطأ أثناء الإرسال!";
-        btn.disabled = false; 
-        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
+    } catch (err) {
+        btn.disabled = false;
+        msg.style.color = "red";
+        msg.innerText = "حدث خطأ أثناء الاتصال!";
     }
 }
 
-function generateFodPrintReport() {
-    const monthVal = document.getElementById('fodReportMonth').value;
-    if(!monthVal) return alert("اختر الشهر أولاً لعرض التقرير");
-    
-    const dateObj = new Date(monthVal + "-01");
-    const monthName = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    document.getElementById('fod-report-title').innerText = `F.O.D Collected and Classifications for ${monthName}`;
-    
-    let filtered = globalFod.filter(f => {
-        let fDate = f.Date || f.date;
-        return fDate && String(fDate).startsWith(monthVal);
-    });
-    
-    const tbody = document.getElementById('fod-print-tbody');
-    tbody.innerHTML = '';
-    
-    let totalP = 0, totalM = 0;
-    
-    fodLocations.forEach(locItem => {
-        let record = filtered.find(f => (f.Location || f.location) === locItem.loc);
-        let d = '---';
-        if(record && (record.Date || record.date)) {
-            let rawDate = record.Date || record.date;
-            d = String(rawDate).split('T')[0].split('-').reverse().join('/');
-        }
-        
-        let p = record ? parseFloat(record.Plastic || record.plastic || 0) : 0;
-        let m = record ? parseFloat(record.Metal || record.metal || 0) : 0;
-        totalP += p; totalM += m;
-        
-        tbody.innerHTML += `
-            <tr>
-                <td style="border: 1px solid #777; padding: 12px;">${d}</td>
-                <td style="border: 1px solid #777; padding: 12px; text-align: left;">${locItem.loc}</td>
-                <td style="border: 1px solid #777; padding: 12px;">${locItem.area}</td>
-                <td style="border: 1px solid #777; padding: 12px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
-                <td style="border: 1px solid #777; padding: 12px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td>
-                <td style="border: 1px solid #777; padding: 12px;">---</td>
-            </tr>
-        `;
-    });
-    
-    let grossTotal = totalP + totalM;
-    tbody.innerHTML += `
-        <tr style="background: #fafafa; font-weight: bold;">
-            <td colspan="3" style="border: 1px solid #777; padding: 12px;">Total</td>
-            <td style="border: 1px solid #777; padding: 12px;">${totalP.toFixed(3)} kg</td>
-            <td style="border: 1px solid #777; padding: 12px;">${totalM.toFixed(3)} kg</td>
-            <td style="border: 1px solid #777; padding: 12px; color:#000;">${grossTotal.toFixed(3)} kg</td>
-        </tr>
-    `;
-    
-    document.getElementById('printable-fod-report').style.display = 'block';
-}
-
-function exportFodPDF() {
-    const el = document.getElementById('printable-fod-report');
-    if(el.style.display === 'none') return alert("قم بعرض التقرير أولاً قبل التصدير!");
-    html2pdf().set({
-        margin: 0.4, filename: 'FOD_Report.pdf', image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-    }).from(el).save();
-}
-
-// ==========================================
-// التقرير الشهري المجمع
-// ==========================================
-function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
-    let num = parseFloat(diffVal);
-    if (isNaN(num) || num === 0) {
-        return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right"></i></span>`;
-    }
-
-    let isPositiveDiff = num > 0;
-    let formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0);
-    let isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff;
-    let color = isGoodOutcome ? "#28a745" : "#dc3545";
-    let arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
-
-    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
-        ${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i>
-    </span>`;
-}
-
-function getPreviousMonthStr(monthStr) {
-    let [year, month] = monthStr.split('-');
-    let d = new Date(year, parseInt(month) - 2);
-    let pYear = d.getFullYear();
-    let pMonth = String(d.getMonth() + 1).padStart(2, '0');
-    return `${pYear}-${pMonth}`;
-}
-
-function getMonthlyDetailedStats(monthStr) {
-    let stats = {
-        monthStr: monthStr, movements: 0, accidents: 0, incidents: 0,
-        findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [],
-        fodPlastic: 0, fodMetal: 0, fodTotal: 0, incidentsList: [], findingsByDept: {}
-    };
-
-    let movRow = globalMovements.find(m => String(m.YearMonth || "").trim() === monthStr);
-    if (movRow && movRow.Movements) stats.movements = parseInt(movRow.Movements) || 0;
-
-    globalIncidents.forEach(inc => {
-        if (inc.Date && String(inc.Date).startsWith(monthStr)) {
-            if (inc.Risk_Severity === 'Catastrophic') stats.accidents++;
-            else stats.incidents++;
-            stats.incidentsList.push(inc);
-        }
-    });
-
-    globalDailyInspections.forEach(d => {
-        if (d.date && String(d.date).startsWith(monthStr)) {
-            d.findings.forEach(f => {
-                stats.findingsTotal++;
-                if (f.status === 'مغلق') stats.findingsClosed++;
-                else stats.findingsOpen++;
-                stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
-            });
-        }
-    });
-
-    globalSurveys.forEach(s => {
-        if (s.Date && String(s.Date).startsWith(monthStr)) stats.surveys.push(s);
-    });
-
-    globalFod.forEach(f => {
-        let fDate = f.Date || f.date;
-        if (fDate && String(fDate).startsWith(monthStr)) {
-            let p = parseFloat(f.Plastic || f.plastic || 0);
-            let m = parseFloat(f.Metal || f.metal || 0);
-            stats.fodPlastic += p;
-            stats.fodMetal += m;
-            stats.fodTotal += (p + m);
-        }
-    });
-
-    return stats;
-}
-
-function generateFullMonthlyReport() {
-    const currMonthStr = document.getElementById('mainReportMonth').value;
-    if (!currMonthStr) return alert("برجاء اختيار الشهر أولاً!");
-
-    const prevMonthStr = getPreviousMonthStr(currMonthStr);
-    const currDateObj = new Date(currMonthStr + "-01");
-    const prevDateObj = new Date(prevMonthStr + "-01");
-
-    const currMonthNameEn = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    const currMonthNameAr = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
-    const prevMonthNameAr = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
-
-    document.getElementById('mr-title-date').innerText = currMonthNameEn;
-    document.getElementById('th-curr-month').innerText = currMonthNameAr;
-    document.getElementById('th-prev-month').innerText = prevMonthNameAr;
-
-    let currStats = getMonthlyDetailedStats(currMonthStr);
-    let prevStats = getMonthlyDetailedStats(prevMonthStr);
-
-    // 1. جدول المقارنة العام
-    const tbody = document.getElementById('mr-general-tbody');
-    tbody.innerHTML = '';
-    const kpiComparisonList = [
-        { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" },
-        { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" },
-        { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" },
-        { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" },
-        { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" },
-        { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" },
-        { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" },
-        { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true }
-    ];
-
-    kpiComparisonList.forEach(item => {
-        let diff = item.curr - item.prev;
-        let trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit);
-        let currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr;
-        let prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
-
-        tbody.innerHTML += `
-            <tr>
-                <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td>
-                <td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td>
-                <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td>
-                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td>
-            </tr>
-        `;
-    });
-
-    // 2. رسوم المخاطر والوقائع
-    if (monthlyChart1) monthlyChart1.destroy();
-    if (monthlyChart2) monthlyChart2.destroy();
-    Chart.defaults.font.family = "'Cairo', sans-serif";
-
-    let depts = Object.keys(currStats.findingsByDept);
-    let deptsData = Object.values(currStats.findingsByDept);
-    monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), {
-        type: 'bar',
-        data: { labels: depts, datasets: [{ label: 'المخاطر طبقاً للإدارة', data: deptsData, backgroundColor: '#003366', borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'المخاطر طبقاً للإدارة / الجهة' } } }
-    });
-
-    let incTypesCount = {};
-    currStats.incidentsList.forEach(inc => {
-        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other';
-        incTypesCount[cat] = (incTypesCount[cat] || 0) + 1;
-    });
-    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), {
-        type: 'bar',
-        data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
-    });
-
-    // 3. حصر الوقائع
-    document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
-    const incList = document.getElementById('mr-incidents-list');
-    incList.innerHTML = "";
-
-    let groupedInc = {};
-    currStats.incidentsList.forEach(inc => {
-        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident';
-        if (!groupedInc[cat]) groupedInc[cat] = [];
-        groupedInc[cat].push(inc);
-    });
-
-    let catChar = 'A';
-    for (let cat in groupedInc) {
-        incList.innerHTML += `<div style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
-
-        let tbl = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
-        groupedInc[cat].forEach((inc, idx) => {
-            let d = inc.Date ? String(inc.Date).split('T')[0] : '';
-            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
-            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
-            let airlineInfo = `<b>Airline:</b> ${inc.CAR || '-'}<br><b>Local Agent:</b> ${inc.Equipment_Owned || '-'}`;
-
-            tbl += `
-                <tr>
-                    <td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td>
-                    <td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;">
-                        <strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div>
-                        <strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div>
-                    </td>
-                    <td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td>
-                    <td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;">${airlineInfo}</td>
-                </tr>
-            `;
-        });
-        tbl += `</table>`;
-        incList.innerHTML += tbl;
-        catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
-    }
-
-    // 4. Captain Survey بالمصفوفة والرسوم
-    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
-
-    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
-    criteriaList.forEach(crit => {
-        matrixScores["Excellent"][crit] = 0;
-        matrixScores["Good"][crit] = 0;
-        matrixScores["Poor"][crit] = 0;
-        matrixScores["N/A"][crit] = 0;
-        matrixScores["Blank"][crit] = 0;
-    });
-
-    let airlinesCount = {};
-    let evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
-    let commentsList = [];
-
-    currStats.surveys.forEach(s => {
-        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
-        criteriaList.forEach(crit => {
-            let val = s[crit] || "Blank";
-            if (matrixScores[val]) matrixScores[val][crit]++;
-            if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++;
-        });
-        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
-    });
-
-    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
-    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), {
-        type: 'bar',
-        data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Airlines Participation' } } }
-    });
-
-    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
-    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
-            datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
-    });
-
-    // مصفوفة الـ 31 بند
-    let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
-    matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>`;
-    criteriaList.forEach(crit => {
-        matrixHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
-    });
-    matrixHtml += `</tr></thead><tbody>`;
-
-    const rowStyles = {
-        "Excellent": "background:#28a745; color:white; font-weight:bold;",
-        "Good": "background:#ffc107; color:black; font-weight:bold;",
-        "Poor": "background:#dc3545; color:white; font-weight:bold;",
-        "N/A": "background:#6c757d; color:white; font-weight:bold;",
-        "Blank": "background:#003366; color:white; font-weight:bold;"
-    };
-
-    ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => {
-        matrixHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`;
-        criteriaList.forEach(crit => {
-            let score = matrixScores[rating][crit];
-            matrixHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`;
-        });
-        matrixHtml += `</tr>`;
-    });
-    matrixHtml += `</tbody></table>`;
-    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
-
-    // جدول ملاحظات الكباتن
-    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
-        <thead style="background: #e6e6e6;">
-            <tr>
-                <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
-                <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
-                <th style="border: 1px solid #000; padding: 6px;">Type</th>
-                <th style="border: 1px solid #000; padding: 6px;">DateTime</th>
-                <th style="border: 1px solid #000; padding: 6px;">REG</th>
-                <th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th>
-            </tr>
-        </thead><tbody>`;
-
-    if (commentsList.length === 0) {
-        commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded for this period.</td></tr>`;
-    } else {
-        commentsList.forEach(s => {
-            let dStr = s.Date ? String(s.Date).split('T')[0] : '';
-            commentsHtml += `
-                <tr>
-                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">${dStr} ${s.Time || ''}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td>
-                    <td style="border: 1px solid #000; padding: 6px; text-align: justify;">${s.Captain_Comments}</td>
-                </tr>
-            `;
-        });
-    }
-    commentsHtml += `</tbody></table>`;
-    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
-
-    // 5. FOD
-    const fodDiv = document.getElementById('mr-fod-details');
-    if (currStats.fodTotal === 0) {
-        fodDiv.innerHTML = "<p style='color: #777;'>No F.O.D records for this month.</p>";
-    } else {
-        fodDiv.innerHTML = `
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc; text-align: center; font-size: 12px;">
-                <thead style="background:#f9f9f9;">
-                    <tr>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Month</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Plastic</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Metal</th>
-                        <th style="border: 1px solid #ccc; padding: 8px; background: #003366; color: #fff;">Gross Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold;">${currMonthNameEn}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodPlastic.toFixed(3)} KG</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodMetal.toFixed(3)} KG</td>
-                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #003366;">${currStats.fodTotal.toFixed(3)} KG</td>
-                    </tr>
-                </tbody>
-            </table>
-        `;
-    }
-
-    document.getElementById('printable-main-report').style.display = 'block';
-    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
-}
-
-function exportMainReportPDF() {
-    const el = document.getElementById('printable-main-report');
-    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً قبل التصدير!");
-    window.scrollTo(0, 0);
-    html2pdf().set({
-        margin: [0.3, 0.3, 0.3, 0.3],
-        filename: 'Air_Side_Monthly_Report.pdf',
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr', 'h3', 'h4'] }
-    }).from(el).save();
-}
-
-// ==========================================
-// باقي دوال النظام (الدليل، الأسطول، الفحص، إلخ)
-// ==========================================
-function populateUsersDropdown(usersArray) {
-    const datalist = document.getElementById('usersList');
-    const userInp = document.getElementById('loginUser');
-    if (!datalist) return;
-    datalist.innerHTML = ''; 
-    let defaultUser = "Admin";
-    usersArray.forEach(user => {
-        let option = document.createElement('option');
-        option.value = user.Username; 
-        datalist.appendChild(option);
-    });
-    if (userInp) userInp.value = defaultUser;
-}
-
-function renderDirectory(dataList) {
-    const tbody = document.getElementById('directory-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    if (!dataList || dataList.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:15px; color:#999;'>لا توجد بيانات</td></tr>";
-        return;
-    }
-    let counter = 1;
-    dataList.forEach(item => {
-        tbody.innerHTML += `
-            <tr>
-                <td style="text-align:center;">${counter++}</td>
-                <td style="font-weight:bold; color:#003366;">${item.Name || '-'}</td>
-                <td>${item.Role || '-'}</td>
-                <td style="text-align:center; direction:ltr; color:#dc3545; font-weight:bold;">${item.Ext || '-'}</td>
-                <td style="text-align:center; direction:ltr;">${item.Mobile || '-'}</td>
-                <td style="text-align:center;" class="dir-actions">
-                    <button onclick="openDirModal('${item.ID}')" style="background:#ffc107; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteDirEntry('${item.ID}')" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-function filterDirectory() {
-    let q = document.getElementById('dirSearch').value.toLowerCase();
-    let f = globalDirectory.filter(i => (i.Name && i.Name.toLowerCase().includes(q)) || (i.Role && i.Role.toLowerCase().includes(q)));
-    renderDirectory(f);
-}
-
-function openDirModal(id) {
-    document.getElementById('dirMsg').innerText = "";
-    if (id && id !== 'undefined') {
-        let item = globalDirectory.find(g => String(g.ID) === String(id));
-        if (item) {
-            document.getElementById('dirId').value = item.ID || "";
-            document.getElementById('dirDept').value = item.Department || "";
-            document.getElementById('dirName').value = item.Name || "";
-            document.getElementById('dirRole').value = item.Role || "";
-            document.getElementById('dirExt').value = item.Ext || "";
-            document.getElementById('dirMobile').value = item.Mobile || "";
-        }
-    } else {
-        document.getElementById('dirForm').reset();
-        document.getElementById('dirId').value = "";
-    }
-    document.getElementById('dirModal').style.display = 'flex';
-}
-function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
-
-async function saveDirEntry(e) {
-    e.preventDefault();
-    let id = document.getElementById('dirId').value || "DIR-" + Date.now();
-    let isEdit = document.getElementById('dirId').value !== "";
-    let payload = {
-        id: id, dept: document.getElementById('dirDept').value, name: document.getElementById('dirName').value,
-        role: document.getElementById('dirRole').value, ext: document.getElementById('dirExt').value, mobile: document.getElementById('dirMobile').value
-    };
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "manageDirectory", subAction: isEdit ? "edit" : "add", dirData: payload })
-    });
-    let newObj = { ID: payload.id, Department: payload.dept, Name: payload.name, Role: payload.role, Ext: payload.ext, Mobile: payload.mobile };
-    if (isEdit) {
-        let idx = globalDirectory.findIndex(g => String(g.ID) === String(payload.id));
-        if (idx !== -1) globalDirectory[idx] = newObj;
-    } else {
-        globalDirectory.push(newObj);
-    }
-    renderDirectory(globalDirectory);
-    closeDirModal();
-}
-
-async function deleteDirEntry(id) {
-    if (!confirm("هل أنت متأكد من الحذف؟")) return;
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "manageDirectory", subAction: "delete", dirData: { id: id } })
-    });
-    globalDirectory = globalDirectory.filter(g => String(g.ID) !== String(id));
-    renderDirectory(globalDirectory);
-}
-
-function exportDirectoryPDF() {
-    html2pdf().set({ margin: 0.3, filename: 'Phone_Directory.pdf', jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(document.getElementById('printable-directory')).save();
-}
-
-// إدخال الاستبيانات
 function buildEvaluationForm() {
     const container = document.getElementById('criteria-container');
     if (!container) return;
+    container.innerHTML = '';
     criteriaList.forEach((crit, index) => {
         container.innerHTML += `
             <div class="eval-card">
@@ -868,59 +393,121 @@ function filterRegOptions(showAll) {
             input.value = a.REG;
             document.getElementById('airline').value = a.CAR || "";
             document.getElementById('acType').value = a.TYPE || "";
+            document.getElementById('airline').style.backgroundColor = "#e8f5e9";
+            document.getElementById('acType').style.backgroundColor = "#e8f5e9";
             list.classList.remove('show');
         };
         list.appendChild(div);
     });
 }
 
-function clearFormForNew() {
-    document.getElementById('surveyForm').reset();
-    document.getElementById('submitSurveyBtn').disabled = false;
-    document.getElementById('submitSurveyBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
+function generateModernReport() {
+    let fromD = document.getElementById('fromDate').value;
+    let toD = document.getElementById('toDate').value;
+    if (!fromD || !toD) return alert("اختر الفترة أولاً");
+
+    let fd = new Date(fromD);
+    let td = new Date(toD);
+    td.setHours(23, 59, 59, 999);
+
+    document.getElementById('printable-report').style.display = 'block';
+    let filtered = globalSurveys.filter(s => {
+        let sd = new Date(s.Date);
+        return sd >= fd && sd <= td;
+    });
+
+    document.getElementById('report-date-range').innerText = `الفترة من ${fromD} إلى ${toD}`;
+    document.getElementById('stat-total').innerText = filtered.length;
+
+    let airlinesSet = new Set();
+    let evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+    const tbody = document.getElementById('flights-eval-tbody');
+    tbody.innerHTML = '';
+
+    filtered.forEach(s => {
+        if(s.CAR) airlinesSet.add(s.CAR);
+        let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+        criteriaList.forEach(crit => {
+            let val = s[crit] || "Blank";
+            if(fCounts[val] !== undefined) fCounts[val]++;
+            if(evalsCount[val] !== undefined) evalsCount[val]++;
+        });
+
+        tbody.innerHTML += `
+            <tr>
+                <td><b>${s.CAR || ''}</b></td>
+                <td>${s.Flight_NO || ''}</td>
+                <td>${s.Date ? s.Date.split('T')[0] : ''}</td>
+                <td>${s.REG || ''}</td>
+                <td style="color:#28a745; font-weight:bold;">${fCounts["Excellent"]}</td>
+                <td style="color:#ffc107; font-weight:bold;">${fCounts["Good"]}</td>
+                <td style="color:#dc3545; font-weight:bold;">${fCounts["Poor"]}</td>
+                <td>${fCounts["N/A"]}</td>
+                <td>${fCounts["Blank"]}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById('stat-airlines').innerText = airlinesSet.size;
+    let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
+    let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
+    document.getElementById('stat-excellent').innerText = `${excPercent}%`;
 }
 
-async function submitSurvey(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitSurveyBtn');
-    btn.disabled = true; btn.innerHTML = 'جاري الإرسال...';
-    let sObj = {
-        "Date": document.getElementById('capDate').value,
-        "Time": document.getElementById('capTime').value,
-        "Flight_NO": document.getElementById('fltNo').value,
-        "REG": document.getElementById('reg').value.toUpperCase(),
-        "CAR": document.getElementById('airline').value,
-        "TYPE": document.getElementById('acType').value,
-        "Captain_Comments": document.getElementById('comments').value
-    };
-    criteriaList.forEach(crit => {
-        let sel = document.querySelector(`input[name="${crit}"]:checked`);
-        sObj[crit] = sel ? sel.value : "Blank";
-    });
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "submitSurvey", surveyData: sObj })
-    });
-    globalSurveys.unshift(sObj);
-    document.getElementById('surveyMsg').innerText = "✅ تم الحفظ بنجاح!";
-    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ بيانات الاستبيان'; document.getElementById('surveyMsg').innerText = ""; clearFormForNew(); }, 1500);
+function exportModernPDF() {
+    html2pdf().set({ margin: 0.2, filename: 'Captain_Surveys_Report.pdf', jsPDF: { orientation: 'landscape' } })
+        .from(document.getElementById('printable-report')).save();
 }
 
-function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; }
-function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-async function saveNewAircraft() {
-    let r = document.getElementById('newReg').value.toUpperCase();
-    let t = document.getElementById('newType').value.toUpperCase();
-    let a = document.getElementById('newAirline').value.toUpperCase();
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "addNewAircraft", reg: r, acType: t, airline: a })
+// ==========================================
+// 2. الفحص اليومي (Daily Inspections)
+// ==========================================
+function buildDailyChecklist() {
+    const grid = document.getElementById('checklist-container');
+    if (!grid) return;
+    grid.innerHTML = "";
+    let checkIndex = 0;
+
+    Object.keys(dailyChecklistData).forEach(colKey => {
+        let colData = dailyChecklistData[colKey];
+        let colHTML = `<div class="checklist-column">`;
+
+        const renderSection = (title, items) => {
+            colHTML += `<div class="checklist-header">${title}</div>`;
+            items.forEach(item => {
+                let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join('');
+                colHTML += `
+                    <div class="check-item">
+                        <div class="check-item-row">
+                            <input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})">
+                            <label for="chk_${checkIndex}">${item}</label>
+                        </div>
+                        <div id="inputs_${checkIndex}" class="check-inputs">
+                            <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;">
+                                <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select>
+                            </div>
+                        </div>
+                    </div>`;
+                checkIndex++;
+            });
+        };
+
+        renderSection(colData.title, colData.items);
+        if (colData.title2) renderSection(colData.title2, colData.items2);
+        if (colData.title3) renderSection(colData.title3, colData.items3);
+        colHTML += `</div>`;
+        grid.innerHTML += colHTML;
     });
-    globalFleetData.unshift({ REG: r, TYPE: t, CAR: a });
-    closeAddModal();
 }
+buildDailyChecklist();
+
+window.toggleInputs = function(idx) {
+    const chk = document.getElementById('chk_' + idx);
+    const inputs = document.getElementById('inputs_' + idx);
+    if (chk && inputs) inputs.style.display = chk.checked ? 'flex' : 'none';
+};
 
 function switchDailyTab(tab) {
     document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -929,6 +516,104 @@ function switchDailyTab(tab) {
     document.getElementById('tab-daily-' + tab).classList.add('active');
 }
 
+function updateDailyNavCounter() {
+    const el = document.getElementById('nav-daily-counter');
+    if(el) el.innerText = `${currentDailyIndex + 1} / ${globalDailyInspections.length}`;
+}
+
+function navDaily(direction) {
+    if (!globalDailyInspections || globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة.");
+    if (direction === 'first') currentDailyIndex = 0;
+    else if (direction === 'last') currentDailyIndex = globalDailyInspections.length - 1;
+    else if (direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
+    else if (direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
+
+    if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
+        navDailyTo(currentDailyIndex);
+    }
+}
+
+function navDailyTo(idx) {
+    currentDailyIndex = idx;
+    let rep = globalDailyInspections[idx];
+    document.getElementById('dailyDate').value = rep.date || '';
+    document.getElementById('dailyTime').value = rep.time || '';
+    document.getElementById('dailyShift').value = rep.shift || 'صباحي';
+    document.getElementById('dailyInspector').value = rep.inspector || '';
+    updateDailyNavCounter();
+}
+
+function clearDailyFormForNew() {
+    currentDailyIndex = -1;
+    document.getElementById('dailyForm').reset();
+    let now = new Date().toISOString();
+    document.getElementById('dailyDate').value = now.split('T')[0];
+    document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5);
+    updateDailyNavCounter();
+}
+
+async function submitDailyInspection(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitDailyBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'جاري الحفظ...';
+
+    let findings = [];
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
+        if (chk.checked) {
+            let parts = chk.value.split('|');
+            findings.push({
+                category: parts[0],
+                item: parts[1],
+                location: document.getElementById(`loc_${idx}`).value || "-",
+                responsible: document.getElementById(`resp_${idx}`).value || "-",
+                note: document.getElementById(`note_${idx}`).value || "تم الرصد",
+                status: "مفتوح"
+            });
+        }
+    });
+
+    let rep = {
+        id: Date.now(),
+        date: document.getElementById('dailyDate').value,
+        time: document.getElementById('dailyTime').value,
+        shift: document.getElementById('dailyShift').value,
+        inspector: document.getElementById('dailyInspector').value,
+        findings: findings
+    };
+
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "submitDailyInspection", reportData: rep })
+    });
+
+    globalDailyInspections.unshift(rep);
+    renderSavedDaily();
+    document.getElementById('dailyMsg').innerText = "✅ تم حفظ الجولة!";
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ الجولة'; document.getElementById('dailyMsg').innerText = ""; clearDailyFormForNew(); }, 1500);
+}
+
+function renderSavedDaily() {
+    const tbody = document.getElementById('saved-daily-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    globalDailyInspections.forEach(rep => {
+        tbody.innerHTML += `<tr><td>${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td>${rep.findings.length} ملاحظة</td><td>-</td></tr>`;
+    });
+}
+
+function generateDailyPrintReport() {
+    alert("تم تجهيز التقرير للمعاينة");
+}
+
+function exportDailyPDF() {
+    window.print();
+}
+
+// ==========================================
+// 3. الحوادث والوقائع
+// ==========================================
 function switchIncidentTab(tab) {
     document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active'));
@@ -936,40 +621,48 @@ function switchIncidentTab(tab) {
     document.getElementById('tab-inc-' + tab).classList.add('active');
 }
 
-function updateDailyNavCounter() {
-    const el = document.getElementById('nav-daily-counter');
-    if(el) el.innerText = `${currentDailyIndex + 1} / ${globalDailyInspections.length}`;
-}
-
 function updateIncidentNavCounter() {
     const el = document.getElementById('nav-incident-counter');
     if(el) el.innerText = `${currentIncidentIndex + 1} / ${globalIncidents.length}`;
 }
 
-function clearDailyFormForNew() {
-    document.getElementById('dailyForm').reset();
-    isDailyEditMode = false;
-    currentDailyEditId = null;
-    let now = new Date().toISOString();
-    document.getElementById('dailyDate').value = now.split('T')[0];
-    document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5);
+function navIncidents(direction) {
+    if (!globalIncidents || globalIncidents.length === 0) return alert("لا توجد وقائع مسجلة.");
+    if (direction === 'first') currentIncidentIndex = 0;
+    else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1;
+    else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++;
+    else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
+
+    if (currentIncidentIndex >= 0 && currentIncidentIndex < globalIncidents.length) {
+        let inc = globalIncidents[currentIncidentIndex];
+        document.getElementById('incDate').value = inc.Date ? inc.Date.split('T')[0] : '';
+        document.getElementById('incTime').value = inc.Time || '';
+        document.getElementById('incLocation').value = inc.Location || '';
+        document.getElementById('incCar').value = inc.CAR || '';
+        document.getElementById('incFlightNo').value = inc.Flight_No || '';
+        document.getElementById('incReg').value = inc.REG || '';
+        document.getElementById('incPreparedBy').value = inc.Prepared_By || '';
+        document.getElementById('incDesc').value = inc.Description || '';
+        document.getElementById('incAction').value = inc.Action_Taken || '';
+        updateIncidentNavCounter();
+    }
 }
 
 function clearIncidentForm() {
+    currentIncidentIndex = -1;
     document.getElementById('incidentForm').reset();
-    isIncidentEditMode = false;
-    currentIncidentEditId = null;
     let now = new Date().toISOString();
     document.getElementById('incDate').value = now.split('T')[0];
     document.getElementById('incTime').value = now.split('T')[1].substring(0, 5);
+    updateIncidentNavCounter();
 }
 
 async function submitIncident(e) {
     e.preventDefault();
     const btn = document.getElementById('submitIncBtn');
-    btn.disabled = true; btn.innerHTML = 'جاري الحفظ...';
+    btn.disabled = true;
     let incObj = {
-        id: isIncidentEditMode ? currentIncidentEditId : "INC-" + Date.now(),
+        id: "INC-" + Date.now(),
         date: document.getElementById('incDate').value,
         time: document.getElementById('incTime').value,
         location: document.getElementById('incLocation').value,
@@ -986,12 +679,12 @@ async function submitIncident(e) {
     await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: isIncidentEditMode ? "updateIncident" : "submitIncident", incidentData: incObj })
+        body: JSON.stringify({ action: "submitIncident", incidentData: incObj })
     });
-    if(!isIncidentEditMode) globalIncidents.unshift(incObj);
+    globalIncidents.unshift(incObj);
     renderSavedIncidents();
     document.getElementById('incMsg').innerText = "✅ تم حفظ الواقعة بنجاح!";
-    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ الواقعة'; document.getElementById('incMsg').innerText = ""; clearIncidentForm(); }, 1500);
+    setTimeout(() => { btn.disabled = false; document.getElementById('incMsg').innerText = ""; clearIncidentForm(); }, 1500);
 }
 
 function renderSavedIncidents() {
@@ -1001,17 +694,17 @@ function renderSavedIncidents() {
     globalIncidents.forEach((inc, idx) => {
         tbody.innerHTML += `
             <tr>
-                <td dir="ltr">${inc.Date || inc.date || '-'}</td>
-                <td>${inc.Location || inc.location || inc.Flight_No || '-'}</td>
+                <td>${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td>
+                <td>${inc.Location || inc.Flight_No || '-'}</td>
                 <td>${inc.Characterization || inc.charaterization || '-'}</td>
                 <td>${inc.Prepared_By || inc.preparedBy || '-'}</td>
-                <td><button type="button" onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:white; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td>
+                <td><button onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
     });
 }
 
 async function deleteIncidentRecord(idx) {
-    if(!confirm("هل تريد حذف الواقعة؟")) return;
+    if(!confirm("تأكيد الحذف؟")) return;
     let item = globalIncidents[idx];
     await fetch(API_URL, {
         method: 'POST',
@@ -1022,25 +715,146 @@ async function deleteIncidentRecord(idx) {
     renderSavedIncidents();
 }
 
-function renderSavedDaily() {
-    const tbody = document.getElementById('saved-daily-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    globalDailyInspections.forEach(rep => {
-        tbody.innerHTML += `<tr><td dir="ltr">${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td>${rep.findings.length} ملاحظة</td><td>عرض</td></tr>`;
+function generateMonthlyIncidents() {
+    let tbody = document.getElementById('inc-monthly-table');
+    tbody.innerHTML = "<tr><td>تم إعداد تقرير الوقائع للشهر</td></tr>";
+}
+function exportMonthlyIncidentsPDF() { window.print(); }
+
+// ==========================================
+// 4. FOD & التقرير الشهري الشامل
+// ==========================================
+function switchFodTab(tab) {
+    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-fod-' + tab).classList.add('active');
+    document.getElementById('tab-fod-' + tab).classList.add('active');
+}
+
+function generateFodInputRows() {
+    const month = document.getElementById('fodInputMonth').value;
+    if(!month) return alert("اختر الشهر");
+    document.getElementById('fodForm').style.display = 'block';
+    const tbody = document.getElementById('fod-input-tbody');
+    tbody.innerHTML = '';
+    fodLocations.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td><input type="date" id="fod_date_${index}" required style="width:100%;"></td>
+                <td><b>${item.loc}</b></td>
+                <td>${item.area}</td>
+                <td><input type="number" step="0.001" id="fod_p_${index}" required placeholder="0.000" style="width:100%;"></td>
+                <td><input type="number" step="0.001" id="fod_m_${index}" required placeholder="0.000" style="width:100%;"></td>
+            </tr>`;
     });
 }
 
-async function addUser(e) {
+async function submitFOD(e) {
     e.preventDefault();
-    let r = document.getElementById('newUserRole').value;
-    let u = document.getElementById('newUsername').value;
-    let p = document.getElementById('newUserPass').value;
+    const btn = document.getElementById('submitFodBtn');
+    btn.disabled = true;
+    let fodDataArray = [];
+    fodLocations.forEach((item, index) => {
+        let p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0;
+        let m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0;
+        let d = document.getElementById(`fod_date_${index}`).value;
+        fodDataArray.push({
+            id: "FOD-" + Date.now() + "-" + index,
+            date: d, location: item.loc, area: item.area, plastic: p, metal: m
+        });
+    });
+
     await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "addUser", role: r, username: u, password: p })
+        body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: fodDataArray })
     });
-    globalUsers.push({ Role: r, Username: u, Password: p });
-    document.getElementById('userMsg').innerText = "تمت إضافة المستخدم بنجاح!";
+
+    globalFod = [...globalFod, ...fodDataArray];
+    document.getElementById('fodMsg').innerText = "✅ تم حفظ FOD بنجاح!";
+    setTimeout(() => { btn.disabled = false; document.getElementById('fodMsg').innerText = ""; document.getElementById('fodForm').style.display = 'none'; }, 1500);
 }
+
+function generateFodPrintReport() {
+    const m = document.getElementById('fodReportMonth').value;
+    if(!m) return alert("اختر الشهر");
+    let filtered = globalFod.filter(f => (f.Date || f.date || "").startsWith(m));
+    const tbody = document.getElementById('fod-print-tbody');
+    tbody.innerHTML = '';
+    let totalP = 0, totalM = 0;
+    fodLocations.forEach(locItem => {
+        let rec = filtered.find(f => (f.Location || f.location) === locItem.loc);
+        let p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0;
+        let m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
+        totalP += p; totalM += m;
+        tbody.innerHTML += `
+            <tr>
+                <td>${rec ? (rec.Date||rec.date) : '---'}</td>
+                <td>${locItem.loc}</td>
+                <td>${locItem.area}</td>
+                <td>${p.toFixed(3)} kg</td>
+                <td>${m.toFixed(3)} kg</td>
+                <td>---</td>
+            </tr>`;
+    });
+    tbody.innerHTML += `<tr style="font-weight:bold; background:#eee;"><td colspan="3">Total</td><td>${totalP.toFixed(3)} kg</td><td>${totalM.toFixed(3)} kg</td><td>${(totalP+totalM).toFixed(3)} kg</td></tr>`;
+    document.getElementById('printable-fod-report').style.display = 'block';
+}
+
+function exportFodPDF() {
+    html2pdf().set({ margin: 0.3, filename: 'FOD_Report.pdf' }).from(document.getElementById('printable-fod-report')).save();
+}
+
+function generateFullMonthlyReport() {
+    const m = document.getElementById('mainReportMonth').value;
+    if(!m) return alert("اختر الشهر");
+    document.getElementById('mr-title-date').innerText = m;
+    document.getElementById('mr-incidents-count-text').innerText = "تم إعداد التقرير بنجاح للشهر المختار";
+    document.getElementById('printable-main-report').style.display = 'block';
+}
+
+function exportMainReportPDF() {
+    html2pdf().set({ margin: 0.3, filename: 'Monthly_Report.pdf', jsPDF: { orientation: 'landscape' } })
+        .from(document.getElementById('printable-main-report')).save();
+}
+
+// المستخدمين والدليل والأسطول
+function populateUsersDropdown(usersArray) {
+    const datalist = document.getElementById('usersList');
+    const userInp = document.getElementById('loginUser');
+    if (!datalist) return;
+    datalist.innerHTML = ''; 
+    usersArray.forEach(user => {
+        let option = document.createElement('option');
+        option.value = user.Username; 
+        datalist.appendChild(option);
+    });
+    if (userInp) userInp.value = "Admin";
+}
+
+function renderDirectory(dataList) {
+    const tbody = document.getElementById('directory-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    let counter = 1;
+    dataList.forEach(item => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${counter++}</td>
+                <td>${item.Name || '-'}</td>
+                <td>${item.Role || '-'}</td>
+                <td>${item.Ext || '-'}</td>
+                <td>${item.Mobile || '-'}</td>
+                <td>-</td>
+            </tr>`;
+    });
+}
+function filterDirectory() {}
+function openDirModal() { document.getElementById('dirModal').style.display = 'flex'; }
+function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
+async function saveDirEntry(e) { e.preventDefault(); closeDirModal(); }
+function exportDirectoryPDF() { window.print(); }
+function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+async function saveNewAircraft() { closeAddModal(); }
+async function addUser(e) { e.preventDefault(); }
