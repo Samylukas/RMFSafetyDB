@@ -18,34 +18,28 @@
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-  <!-- شاشة البداية بتأثير التحميل -->
+  <!-- شاشة التحميل -->
   <div id="splash-screen">
-    <div class="smoke-bg"></div>
     <div class="splash-content">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-      <div class="loading-bar-container">
-        <div class="loading-bar"></div>
-      </div>
+      <div class="loading-bar-container"><div class="loading-bar"></div></div>
     </div>
   </div>
 
-  <!-- شاشة تسجيل الدخول المنضبطة بالكامل -->
+  <!-- شاشة الدخول -->
   <div id="login-screen" style="display: none;">
       <div class="login-box">
           <img src="LOGO-removebg-preview (1).png" alt="Logo">
           <h2 style="color: var(--primary); margin-top: 10px;">تسجيل الدخول</h2>
-          
           <div class="input-group">
-              <input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" required autocomplete="off" onchange="document.getElementById('loginPass').focus()">
+              <input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" required autocomplete="off">
               <datalist id="usersList"></datalist>
               <i class="fa-solid fa-user"></i>
           </div>
-          
           <div class="input-group">
               <input type="password" id="loginPass" placeholder="كلمة المرور" required autofocus onkeypress="if(event.key === 'Enter') login()">
               <i class="fa-solid fa-lock"></i>
           </div>
-          
           <button class="login-btn" onclick="login()">دخول</button>
           <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
       </div>
@@ -66,37 +60,37 @@
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
       <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
-        <i class="fa-solid fa-plane-circle-check dept-icon icon-safety"></i>
+        <i class="fa-solid fa-plane-circle-check dept-icon"></i>
         <h3 class="dept-title">إدارة سلامة المطارات</h3>
         <div class="dept-subtitle">Airport Safety Department</div>
       </div>
       <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')">
-        <i class="fa-solid fa-hard-hat dept-icon icon-health"></i>
+        <i class="fa-solid fa-hard-hat dept-icon"></i>
         <h3 class="dept-title">السلامة والصحة المهنية</h3>
         <div class="dept-subtitle">Occupational Safety & Health</div>
       </div>
       <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')">
-        <i class="fa-solid fa-dove dept-icon icon-nature"></i>
+        <i class="fa-solid fa-dove dept-icon"></i>
         <h3 class="dept-title">البيئة والحياة البرية</h3>
         <div class="dept-subtitle">Environment & Wildlife</div>
       </div>
       <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')">
-        <i class="fa-solid fa-fire-extinguisher dept-icon icon-fire"></i>
+        <i class="fa-solid fa-fire-extinguisher dept-icon"></i>
         <h3 class="dept-title">الحماية المدنية</h3>
         <div class="dept-subtitle">Civil Defense</div>
       </div>
       <div class="dept-card" onclick="openGenericDoc('إدارة الجودة الشاملة')">
-        <i class="fa-solid fa-medal dept-icon icon-quality"></i>
+        <i class="fa-solid fa-medal dept-icon"></i>
         <h3 class="dept-title">إدارة الجودة الشاملة</h3>
         <div class="dept-subtitle">Quality Management</div>
       </div>
       <div class="dept-card" onclick="openSection('directory-section')">
-        <i class="fa-solid fa-address-book dept-icon icon-directory"></i>
+        <i class="fa-solid fa-address-book dept-icon"></i>
         <h3 class="dept-title">دليل هواتف المطار</h3>
         <div class="dept-subtitle">Airport Phone Directory</div>
       </div>
       <div class="dept-card" onclick="openAdminSection('account-management-section')">
-        <i class="fa-solid fa-users-gear dept-icon icon-users"></i>
+        <i class="fa-solid fa-users-gear dept-icon"></i>
         <h3 class="dept-title">إدارة الحسابات</h3>
         <div class="dept-subtitle">Account Management</div>
       </div>
@@ -108,11 +102,10 @@
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;"><i class="fa-solid fa-clipboard-user sub-icon" style="color: var(--primary);"></i><h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
+      <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
       <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border: 2px solid var(--secondary); background: #fdfbf7;"><i class="fa-solid fa-list-check sub-icon" style="color: var(--secondary);"></i><h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div></div>
       <div class="sub-card" onclick="openSection('incident-section')" style="border: 2px solid #dc3545; background: #fff5f5;"><i class="fa-solid fa-triangle-exclamation sub-icon" style="color: #dc3545;"></i><h3 class="sub-title">03 - سجل الحوادث والوقائع</h3><div class="sub-subtitle">Incidents & Accidents</div></div>
       <div class="sub-card" onclick="openSection('spi-section')" style="border: 2px solid #28a745; background: #f4fcf6;"><i class="fa-solid fa-chart-line sub-icon" style="color: #28a745;"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">Operational SPIs 2026</div></div>
-      
       <div class="sub-card" onclick="openSection('monthly-report-section')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
       <div class="sub-card" onclick="openSection('fod-section')"><i class="fa-solid fa-circle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
       <div class="sub-card" onclick="openGenericDoc('التفتيش الربع سنوي')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3></div>
@@ -122,176 +115,7 @@
     </div>
   </div>
 
-  <!-- وحدة FOD -->
-  <div id="fod-section" class="content-area" style="display:none;">
-    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">F.O.D Collected</span></h1>
-
-    <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال بيانات FOD</button>
-        <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-print"></i> تقرير FOD الشهري</button>
-      </div>
-
-      <div id="tab-fod-entry" class="tab-content active">
-        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-            <label style="font-weight: bold;">اختر الشهر للإدخال:</label>
-            <input type="month" id="fodInputMonth" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="submit-btn" style="width: auto; margin: 0;" onclick="generateFodInputRows()">تجهيز الجدول</button>
-        </div>
-        
-        <form id="fodForm" onsubmit="submitFOD(event)" style="display: none;">
-            <div style="overflow-x: auto;">
-              <table class="report-table" style="direction: ltr; width: 100%;">
-                  <thead style="background: #003366; color: #fff;">
-                      <tr>
-                          <th style="width: 20%;">Day (Date)</th>
-                          <th style="width: 35%;">Location</th>
-                          <th style="width: 15%;">Area (M²)</th>
-                          <th style="width: 15%;">Plastic (kg)</th>
-                          <th style="width: 15%;">Metal (kg)</th>
-                      </tr>
-                  </thead>
-                  <tbody id="fod-input-tbody"></tbody>
-              </table>
-            </div>
-            <button type="submit" class="submit-btn" id="submitFodBtn" style="margin-top: 20px; background-color: #28a745;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
-            <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
-        </form>
-      </div>
-
-      <div id="tab-fod-report" class="tab-content">
-        <div class="report-filters">
-            <input type="month" id="fodReportMonth">
-            <button onclick="generateFodPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-magnifying-glass"></i> عرض التقرير</button>
-            <button onclick="exportFodPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> طباعة (PDF)</button>
-        </div>
-
-        <div id="printable-fod-report" style="display:none; background: #fff; padding: 30px; border: 2px solid #000; direction: ltr; margin-top: 20px; color: #000; font-family: 'Times New Roman', serif;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
-                <div style="font-size: 11px; font-weight: bold; color: #333; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
-                <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;"></div>
-                <div style="font-size: 13px; font-weight: bold; color: #333; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
-            </div>
-
-            <h2 style="text-align: center; font-weight: bold; margin-bottom: 25px; font-size: 1.4rem;" id="fod-report-title">F.O.D Collected and Classifications</h2>
-
-            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 1rem;">
-                <thead>
-                    <tr style="background: #f8f9fa;">
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Day</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Location</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px; width: 14%;">Area in<br>square meter</th>
-                        <th colspan="2" style="border: 1px solid #777; padding: 8px;">FOD quantity</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Total</th>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <th style="border: 1px solid #777; padding: 8px;">Plastic</th>
-                        <th style="border: 1px solid #777; padding: 8px;">Metal</th>
-                    </tr>
-                </thead>
-                <tbody id="fod-print-tbody"></tbody>
-            </table>
-            <div style="margin-top: 30px; font-size: 0.85rem; font-family: sans-serif; color: #555;">AS-F-01-07</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- التقرير الشهري المجمع مطابق للوورد بالرسوم البيانية والمقارنة -->
-  <div id="monthly-report-section" class="content-area" style="display:none;">
-    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900;">التقرير الشهري لمنطقة التحركات الجوية</h1>
-
-    <div class="report-filters" style="background:#f0f8ff;">
-        <label style="font-weight: bold;">اختر الشهر للإصدار:</label>
-        <input type="month" id="mainReportMonth">
-        <button onclick="generateFullMonthlyReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-file-word"></i> تجهيز التقرير الشامل</button>
-        <button onclick="exportMainReportPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
-    </div>
-
-    <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <!-- ترويسة وغلاف التقرير -->
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
-            <div style="font-size: 11px; font-weight: bold; color: #555; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
-            <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div>
-            <div style="font-size: 13px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #003366; font-size: 2.2rem; margin:0;">إدارة المطابقة والسلامة</h1>
-            <h2 style="color: #555; font-weight: normal; margin-top: 10px; font-size: 1.4rem;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
-            <h3 style="color: #003366; margin-top: 25px; font-size: 1.8rem;" id="mr-title-date" dir="ltr">Month - Year</h3>
-            <p style="margin-top: 10px; font-weight: bold; font-size: 1.1rem;">Prepared by: Samy Lukas</p>
-        </div>
-
-        <!-- أولاً: عام والمقارنة الذكية -->
-        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">أولاً: عـــــــــــام</h2>
-        <table style="width: 100%; border: 1px solid #000; font-size: 1rem; margin-bottom: 40px; border-collapse: collapse; text-align: center;">
-            <thead style="background: #e6e6e6; color: #000;">
-                <tr>
-                    <th style="border: 1px solid #000; padding: 10px; width: 45%;">البيان</th>
-                    <th style="border: 1px solid #000; padding: 10px;" id="th-prev-month">الشهر السابق</th>
-                    <th style="border: 1px solid #000; padding: 10px;" id="th-curr-month">الشهر الحالي</th>
-                    <th style="border: 1px solid #000; padding: 10px; width: 20%;">الفرق والاتجاه</th>
-                </tr>
-            </thead>
-            <tbody id="mr-general-tbody"></tbody>
-        </table>
-
-        <!-- ثانياً: المخالفات والأخطار بالرسوم -->
-        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">ثانياً: الحصــــــــــــر التفصيلي</h2>
-        <h3 style="color: #555;">المخالفات والأخطار طبقاً للإدارة والنوع:</h3>
-        
-        <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom: 40px;" class="avoid-page-break">
-            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart1"></canvas></div>
-            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart2"></canvas></div>
-        </div>
-
-        <!-- حصر الوقائع -->
-        <h3 style="color: #555;" class="avoid-page-break">حصر بالوقائع:</h3>
-        <p id="mr-incidents-count-text" style="font-weight: bold; font-size: 1.1rem;"></p>
-        <div id="mr-incidents-list" style="margin-bottom: 40px; text-align: left; direction: ltr;"></div>
-
-        <!-- ثالثاً: Captain Survey بالكامل -->
-        <div class="avoid-page-break" style="margin-top: 40px;">
-            <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">3- Captain Survey</h3>
-            <p id="mr-survey-summary-text" style="font-weight: bold; font-size: 1.1rem; color: #003366; direction: rtl; text-align: right;"></p>
-            
-            <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
-                    <canvas id="mrSurveyAirChart"></canvas>
-                </div>
-                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
-                    <canvas id="mrSurveyEvalChart"></canvas>
-                </div>
-            </div>
-
-            <div style="overflow-x: auto; margin-bottom: 25px;">
-                <h4 style="color: #003366; margin-bottom: 8px; text-align: center; font-size: 1.1rem; font-style: italic;">Safety Captain Survey Report Evaluation Matrix</h4>
-                <div id="mr-survey-matrix-container"></div>
-            </div>
-
-            <div style="margin-bottom: 30px;">
-                <h4 style="color: #003366; margin-bottom: 8px;">Captain Comments & Observations:</h4>
-                <div id="mr-survey-comments-container"></div>
-            </div>
-        </div>
-
-        <!-- رابعاً: FOD -->
-        <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">4- F.O.D Collected and Classifications</h3>
-        <div id="mr-fod-details" style="margin-bottom: 40px; direction: ltr; text-align: left;" class="avoid-page-break"></div>
-
-        <!-- التوقيع -->
-        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr" class="avoid-page-break">
-            <p>Best Regards,</p>
-            <p style="color: #003366; margin-bottom: 5px;">Airport Safety Manager</p>
-            <div style="font-family: 'Brush Script MT', cursive; font-size: 2.5rem; color: #3b3b98;">Samy Lukas</div>
-        </div>
-    </div>
-  </div>
-
-  <!-- باقي الأقسام المعتادة (الاستبيان، الفحص، الحوادث، SPI، الدليل، الحسابات) -->
+  <!-- 1. استبيان الكابتن -->
   <div id="captain-survey-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">01 - استبيان الكابتن</h1>
@@ -314,12 +138,12 @@
             <div class="form-group">
               <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
               <div style="display: flex; gap: 5px; width: 100%;">
-                <div class="custom-dropdown-container" id="regDropdownContainer">
+                <div class="custom-dropdown-container">
                     <input type="text" id="reg" dir="ltr" class="custom-dropdown-input" placeholder="اختر للبحث..." required autocomplete="off">
                     <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
                     <div class="custom-dropdown-list" id="regDropdownList"></div>
                 </div>
-                <button type="button" class="add-btn" onclick="openFleetModal()" style="padding: 7px 12px; height: 38px; background:var(--primary); color:white; border:none; border-radius:5px;"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="add-btn" onclick="openFleetModal()" style="padding: 7px 12px; height: 42px; background:var(--primary); color:white; border:none; border-radius:6px;"><i class="fa-solid fa-plus"></i></button>
               </div>
             </div>
             <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" dir="ltr" id="airline" required readonly style="background-color: #f0f0f0;"></div>
@@ -338,7 +162,7 @@
         <div class="report-filters">
           <div class="form-group"><label>من:</label><input type="date" id="fromDate"></div>
           <div class="form-group"><label>إلى:</label><input type="date" id="toDate"></div>
-          <button onclick="generateModernReport()" class="submit-btn" style="width:auto; padding:10px 20px;"><i class="fa-solid fa-chart-pie"></i> عرض</button>
+          <button onclick="generateModernReport()" class="submit-btn" style="width:auto; padding:10px 20px;"><i class="fa-solid fa-chart-pie"></i> عرض الإحصائيات</button>
           <button onclick="exportModernPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px 20px;"><i class="fa-solid fa-file-pdf"></i> تحميل PDF</button>
         </div>
         <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px; direction: rtl;">
@@ -346,16 +170,16 @@
             <div><h2>Safety Captain Survey Dashboard</h2><p id="report-date-range">الفترة: ...</p></div>
             <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;">
           </div>
-          <div class="stats-cards avoid-page-break" style="display:flex; gap:15px; margin-bottom:20px;">
+          <div class="stats-cards avoid-page-break" style="display:flex; gap:15px; margin: 20px 0;">
             <div class="stat-card" style="flex:1; background:#003366; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-total" style="font-size:2rem; margin:0;">0</h3><p>إجمالي الاستبيانات</p></div>
             <div class="stat-card" style="flex:1; background:#17a2b8; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-airlines" style="font-size:2rem; margin:0;">0</h3><p>الشركات المشغلة</p></div>
             <div class="stat-card" style="flex:1; background:#28a745; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-excellent" style="font-size:2rem; margin:0;">0%</h3><p>التقييم الممتاز</p></div>
           </div>
           <div class="avoid-page-break" style="margin-bottom: 30px;">
             <div class="charts-grid" style="direction: ltr; display:flex; gap:20px;">
-              <div class="chart-container" style="flex:1; height:250px;"><canvas id="airlinesChart"></canvas></div>
-              <div class="chart-container" style="flex:1; height:250px;"><canvas id="datesChart"></canvas></div>
-              <div class="chart-container" style="flex:1; height:250px;"><canvas id="evalChart"></canvas></div>
+              <div class="chart-container" style="flex:1; height:260px;"><canvas id="airlinesChart"></canvas></div>
+              <div class="chart-container" style="flex:1; height:260px;"><canvas id="datesChart"></canvas></div>
+              <div class="chart-container" style="flex:1; height:260px;"><canvas id="evalChart"></canvas></div>
             </div>
           </div>
           <div class="report-wrapper avoid-page-break">
@@ -370,7 +194,7 @@
     </div>
   </div>
 
-  <!-- الفحص اليومي -->
+  <!-- 2. الفحص اليومي -->
   <div id="daily-inspection-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">02 - الفحص اليومي لساحة الطيران</h1>
@@ -384,8 +208,8 @@
     </div>
     <div class="survey-container">
       <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry"><i class="fa-solid fa-clipboard-check"></i> نموذج التفتيش</button>
-        <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> طباعة التقارير</button>
+        <button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry"><i class="fa-solid fa-clipboard-check"></i> نموذج التفتيش (إدخال)</button>
+        <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> طباعة النماذج والتقارير</button>
       </div>
       <div id="tab-daily-entry" class="tab-content active">
         <form id="dailyForm" onsubmit="submitDailyInspection(event)">
@@ -396,7 +220,7 @@
             <div class="form-group"><label>المفتش</label><input type="text" id="dailyInspector" required placeholder="اسم المفتش..."></div>
           </div>
           <div class="checklist-grid" id="checklist-container"></div>
-          <button type="submit" class="submit-btn" id="submitDailyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة</button>
+          <button type="submit" class="submit-btn" id="submitDailyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية</button>
           <p id="dailyMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
         <div class="report-wrapper" style="margin-top: 30px;">
@@ -413,18 +237,23 @@
           <button onclick="exportDailyPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
         </div>
         <div id="printable-daily-report" style="display: none; background: #fff; padding:20px; direction: rtl; width: 100%;">
-            <div id="printable-checklist-report">
-                <table class="iso-table" id="iso-checklist-table"></table>
+            <div id="printable-checklist-report" style="margin-bottom: 25px;">
+                <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">قائمة الفحص اليومية لمناطق التحركات الجوية</h3>
+                <table class="report-table" id="iso-checklist-table"></table>
             </div>
-            <div id="printable-corrective-report" style="margin-top:20px;">
-                <table class="iso-table corrective-table"><tbody id="corrective-tbody"></tbody></table>
+            <div id="printable-corrective-report">
+                <h3 style="color: #dc3545; text-align: right; margin-bottom: 10px;">تقرير الأخطار والملاحظات المرصودة:</h3>
+                <table class="report-table" style="font-size: 11px;">
+                  <thead><tr style="background:#003366; color:#fff;"><th>م</th><th>التاريخ</th><th>المكان</th><th>الملاحظة</th><th>الجهة المسئولة</th><th>الإجراء المتخذ</th><th>الحالة</th></tr></thead>
+                  <tbody id="corrective-tbody"></tbody>
+                </table>
             </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- سجل الحوادث والوقائع -->
+  <!-- 3. سجل الحوادث والوقائع -->
   <div id="incident-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #dc3545; text-align: center; font-weight: 900; font-size: 2rem;">سجل الحوادث والوقائع</h1>
@@ -479,13 +308,198 @@
     </div>
   </div>
 
-  <!-- مؤشرات الأداء ECAA SPI -->
+  <!-- 4. مؤشرات الأداء SPI -->
   <div id="spi-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #28a745; text-align: center; font-weight: 900; font-size: 2rem;">مؤشرات الأداء التشغيلية 2026</h1>
     <div class="survey-container">
-      <div id="spi-dynamic-inputs"></div>
-      <div id="spi-matrix-container" style="margin-top: 20px; overflow-x:auto;"></div>
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات الشهرية</button>
+        <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير</button>
+      </div>
+      <div id="tab-spi-entry" class="tab-content active">
+        <form id="spiForm" onsubmit="submitSPI(event)">
+          <div class="form-grid" style="background:#e9ecef; padding: 15px; border-radius: 8px;">
+            <div class="form-group"><label>السنة</label><select id="spiYear" required><option value="2026" selected>2026</option></select></div>
+            <div class="form-group"><label>الشهر</label><select id="spiMonth" required><option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option><option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option><option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option><option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option></select></div>
+            <div class="form-group"><label>حركة الطائرات (Movements)</label><input type="number" id="spiMovements" required min="1"></div>
+          </div>
+          <div id="spi-dynamic-inputs"></div>
+          <button type="submit" class="submit-btn" style="background-color: #28a745; margin-top: 20px;" id="submitSpiBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
+          <p id="spiMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
+      </div>
+      <div id="tab-spi-report" class="tab-content">
+        <div class="report-filters">
+           <div class="form-group"><label>اختر السنة:</label><select id="spiReportYear"><option value="2026">2026</option></select></div>
+           <button onclick="generateSpiReport()" class="submit-btn" style="width:auto; background: #28a745; padding: 10px 15px;"><i class="fa-solid fa-sync"></i> تحديث المصفوفة</button>
+        </div>
+        <div id="spi-dashboard-view" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px; overflow-x: auto;">
+           <div id="spi-matrix-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. التقرير الشهري المجمع -->
+  <div id="monthly-report-section" class="content-area" style="display:none;">
+    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+
+    <div class="report-filters" style="background:#f0f8ff;">
+        <label style="font-weight: bold;">اختر الشهر للإصدار:</label>
+        <input type="month" id="mainReportMonth">
+        <button onclick="generateFullMonthlyReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-file-word"></i> تجهيز التقرير الشامل</button>
+        <button onclick="exportMainReportPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
+    </div>
+
+    <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
+            <div style="font-size: 11px; font-weight: bold; color: #555; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
+            <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div>
+            <div style="font-size: 13px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #003366; font-size: 2.2rem; margin:0;">إدارة المطابقة والسلامة</h1>
+            <h2 style="color: #555; font-weight: normal; margin-top: 10px; font-size: 1.4rem;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
+            <h3 style="color: #003366; margin-top: 25px; font-size: 1.8rem;" id="mr-title-date" dir="ltr">Month - Year</h3>
+            <p style="margin-top: 10px; font-weight: bold; font-size: 1.1rem;">Prepared by: Samy Lukas</p>
+        </div>
+
+        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">أولاً: عـــــــــــام</h2>
+        <table style="width: 100%; border: 1px solid #000; font-size: 1rem; margin-bottom: 40px; border-collapse: collapse; text-align: center;">
+            <thead style="background: #e6e6e6; color: #000;">
+                <tr>
+                    <th style="border: 1px solid #000; padding: 10px; width: 45%;">البيان</th>
+                    <th style="border: 1px solid #000; padding: 10px;" id="th-prev-month">الشهر السابق</th>
+                    <th style="border: 1px solid #000; padding: 10px;" id="th-curr-month">الشهر الحالي</th>
+                    <th style="border: 1px solid #000; padding: 10px; width: 20%;">الفرق والاتجاه</th>
+                </tr>
+            </thead>
+            <tbody id="mr-general-tbody"></tbody>
+        </table>
+
+        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">ثانياً: الحصــــــــــــر التفصيلي</h2>
+        <h3 style="color: #555;">المخالفات والأخطار طبقاً للإدارة والنوع:</h3>
+        
+        <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom: 40px;" class="avoid-page-break">
+            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart1"></canvas></div>
+            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart2"></canvas></div>
+        </div>
+
+        <h3 style="color: #555;" class="avoid-page-break">حصر بالوقائع:</h3>
+        <p id="mr-incidents-count-text" style="font-weight: bold; font-size: 1.1rem;"></p>
+        <div id="mr-incidents-list" style="margin-bottom: 40px; text-align: left; direction: ltr;"></div>
+
+        <div class="avoid-page-break" style="margin-top: 40px;">
+            <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">3- Captain Survey</h3>
+            <p id="mr-survey-summary-text" style="font-weight: bold; font-size: 1.1rem; color: #003366; direction: rtl; text-align: right;"></p>
+            
+            <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                    <canvas id="mrSurveyAirChart"></canvas>
+                </div>
+                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                    <canvas id="mrSurveyEvalChart"></canvas>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto; margin-bottom: 25px;">
+                <h4 style="color: #003366; margin-bottom: 8px; text-align: center; font-size: 1.1rem; font-style: italic;">Safety Captain Survey Report Evaluation Matrix</h4>
+                <div id="mr-survey-matrix-container"></div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h4 style="color: #003366; margin-bottom: 8px;">Captain Comments & Observations:</h4>
+                <div id="mr-survey-comments-container"></div>
+            </div>
+        </div>
+
+        <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">4- F.O.D Collected and Classifications</h3>
+        <div id="mr-fod-details" style="margin-bottom: 40px; direction: ltr; text-align: left;" class="avoid-page-break"></div>
+
+        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr" class="avoid-page-break">
+            <p>Best Regards,</p>
+            <p style="color: #003366; margin-bottom: 5px;">Airport Safety Manager</p>
+            <div style="font-family: 'Brush Script MT', cursive; font-size: 2.5rem; color: #3b3b98;">Samy Lukas</div>
+        </div>
+    </div>
+  </div>
+
+  <!-- 6. وحدة FOD -->
+  <div id="fod-section" class="content-area" style="display:none;">
+    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">F.O.D Collected</span></h1>
+
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال بيانات FOD</button>
+        <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-print"></i> تقرير FOD الشهري</button>
+      </div>
+
+      <div id="tab-fod-entry" class="tab-content active">
+        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <label style="font-weight: bold;">اختر الشهر للإدخال:</label>
+            <input type="month" id="fodInputMonth" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="submit-btn" style="width: auto; margin: 0;" onclick="generateFodInputRows()">تجهيز الجدول</button>
+        </div>
+        
+        <form id="fodForm" style="display: none;">
+            <div style="overflow-x: auto;">
+              <table class="report-table" style="direction: ltr; width: 100%;">
+                  <thead style="background: #003366; color: #fff;">
+                      <tr>
+                          <th style="width: 20%;">Day (Date)</th>
+                          <th style="width: 35%;">Location</th>
+                          <th style="width: 15%;">Area (M²)</th>
+                          <th style="width: 15%;">Plastic (kg)</th>
+                          <th style="width: 15%;">Metal (kg)</th>
+                      </tr>
+                  </thead>
+                  <tbody id="fod-input-tbody"></tbody>
+              </table>
+            </div>
+            <button type="button" onclick="submitFOD(event)" class="submit-btn" id="submitFodBtn" style="margin-top: 20px; background-color: #28a745;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
+            <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
+      </div>
+
+      <div id="tab-fod-report" class="tab-content">
+        <div class="report-filters">
+            <input type="month" id="fodReportMonth">
+            <button onclick="generateFodPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-magnifying-glass"></i> عرض التقرير</button>
+            <button onclick="exportFodPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> طباعة (PDF)</button>
+        </div>
+
+        <div id="printable-fod-report" style="display:none; background: #fff; padding: 30px; border: 2px solid #000; direction: ltr; margin-top: 20px; color: #000; font-family: 'Times New Roman', serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
+                <div style="font-size: 11px; font-weight: bold; color: #333; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
+                <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;"></div>
+                <div style="font-size: 13px; font-weight: bold; color: #333; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
+            </div>
+
+            <h2 style="text-align: center; font-weight: bold; margin-bottom: 25px; font-size: 1.4rem;" id="fod-report-title">F.O.D Collected and Classifications</h2>
+
+            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 1rem;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Day</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Location</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 10px; width: 14%;">Area in<br>square meter</th>
+                        <th colspan="2" style="border: 1px solid #777; padding: 8px;">FOD quantity</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Total</th>
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <th style="border: 1px solid #777; padding: 8px;">Plastic</th>
+                        <th style="border: 1px solid #777; padding: 8px;">Metal</th>
+                    </tr>
+                </thead>
+                <tbody id="fod-print-tbody"></tbody>
+            </table>
+            <div style="margin-top: 30px; font-size: 0.85rem; font-family: sans-serif; color: #555;">AS-F-01-07</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -572,6 +586,6 @@
     </div>
   </div>
 
-<script src="script.js?v=6.0"></script>
+  <script src="script.js?v=9.0"></script>
 </body>
 </html>
