@@ -9,6 +9,11 @@ const criteriaList = [
     "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"
 ];
 
+const spiCategories = [
+    { name: "Safety Operational Issues", items: ["Bird Strike", "Wildlife Strike", "FOD Occurrence", "Runway Incursion", "Exceeding Speed"] },
+    { name: "Technical & Ground Issues", items: ["Fuel Spill/Leakage", "Equipment Breakdown", "Navigation Aids Failure", "Lighting System Fault"] }
+];
+
 const dailyChecklistData = {
     col1: { 
         title: "المناطق المرصوفة", 
@@ -49,7 +54,6 @@ const fodLocations = [
     { loc: "Around Aprons Gas station", area: "2539 M²" }
 ];
 
-// المتغيرات العامة
 let globalFleetData = []; 
 let globalSurveys = []; 
 let globalUsers = []; 
@@ -58,23 +62,20 @@ let globalIncidents = [];
 let globalDirectory = [];
 let globalFod = [];
 let globalMovements = [];
+let globalSpiData = [];
 
 let currentSurveyIndex = -1; 
 let currentDailyIndex = -1; 
 let currentIncidentIndex = -1;
 let isDailyEditMode = false; 
 let currentDailyEditId = null;
-let isIncidentEditMode = false; 
-let currentIncidentEditId = null;
 
 let chartInstances = {}; 
-let chartInstancesDaily = {};
 let monthlyChart1 = null;
 let monthlyChart2 = null;
 let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
 
-// إنهاء التحميل والانتقال لتسجيل الدخول
 function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
@@ -96,7 +97,6 @@ function finishLoading() {
     }
 }
 
-// تسجيل الدخول
 function login() {
     const userField = document.getElementById('loginUser').value.trim();
     const passField = document.getElementById('loginPass').value.trim();
@@ -137,7 +137,6 @@ function openGenericDoc(title) {
     openSection('generic-doc-section');
 }
 
-// جلب كل البيانات من Google Apps Script
 function loadAppDataInit() {
     const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
     window[callbackName] = function (data) {
@@ -150,12 +149,13 @@ function loadAppDataInit() {
                 globalDirectory = data.directory || [];
                 globalFod = data.fod || [];
                 globalMovements = data.movements || [];
+                globalSpiData = data.spi || [];
 
                 populateUsersDropdown(globalUsers);
                 renderDirectory(globalDirectory);
                 updateSurveyNavCounter();
+                buildSpiEntryForm();
 
-                // قراءة جولات التفتيش اليومية
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
@@ -211,20 +211,15 @@ function loadAppDataInit() {
 loadAppDataInit();
 
 // ==========================================
-// 1. استبيان الكابتن (Captain Survey) مع كامل التنقل
+// 1. استبيان الكابتن (Captain Survey)
 // ==========================================
 function updateSurveyNavCounter() {
     const el = document.getElementById('nav-counter');
-    if (el) {
-        el.innerText = globalSurveys.length > 0 ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / 0`;
-    }
+    if (el) el.innerText = globalSurveys.length > 0 ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / 0`;
 }
 
 function navSurveys(direction) {
-    if (!globalSurveys || globalSurveys.length === 0) {
-        return alert("لا توجد استبيانات مسجلة بعد في قاعدة البيانات.");
-    }
-    
+    if (!globalSurveys || globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
     if (direction === 'first') currentSurveyIndex = 0;
     else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1;
     else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
@@ -245,7 +240,6 @@ function navSurveys(direction) {
 function displaySurveyInForm(survey) {
     if (!survey) return;
     document.getElementById('capDate').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
-    
     let timeVal = survey.Time || '';
     if (timeVal.includes('T')) {
         let t = new Date(timeVal);
@@ -253,13 +247,11 @@ function displaySurveyInForm(survey) {
     } else {
         document.getElementById('capTime').value = timeVal;
     }
-
     document.getElementById('fltNo').value = survey.Flight_NO || '';
     document.getElementById('reg').value = survey.REG || '';
     document.getElementById('airline').value = survey.CAR || '';
     document.getElementById('acType').value = survey.TYPE || '';
     document.getElementById('comments').value = survey.Captain_Comments || '';
-
     document.getElementById('airline').style.backgroundColor = "#e8f5e9";
     document.getElementById('acType').style.backgroundColor = "#e8f5e9";
 
@@ -401,6 +393,12 @@ function filterRegOptions(showAll) {
     });
 }
 
+function destroyCaptainCharts() {
+    if (chartInstances.air) chartInstances.air.destroy();
+    if (chartInstances.dates) chartInstances.dates.destroy();
+    if (chartInstances.eval) chartInstances.eval.destroy();
+}
+
 function generateModernReport() {
     let fromD = document.getElementById('fromDate').value;
     let toD = document.getElementById('toDate').value;
@@ -419,13 +417,17 @@ function generateModernReport() {
     document.getElementById('report-date-range').innerText = `الفترة من ${fromD} إلى ${toD}`;
     document.getElementById('stat-total').innerText = filtered.length;
 
-    let airlinesSet = new Set();
+    let airlinesCount = {};
+    let datesCount = {};
     let evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
     const tbody = document.getElementById('flights-eval-tbody');
     tbody.innerHTML = '';
 
     filtered.forEach(s => {
-        if(s.CAR) airlinesSet.add(s.CAR);
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
+        let dStr = s.Date ? String(s.Date).split('T')[0] : 'Unknown';
+        datesCount[dStr] = (datesCount[dStr] || 0) + 1;
+
         let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
         criteriaList.forEach(crit => {
             let val = s[crit] || "Blank";
@@ -437,7 +439,7 @@ function generateModernReport() {
             <tr>
                 <td><b>${s.CAR || ''}</b></td>
                 <td>${s.Flight_NO || ''}</td>
-                <td>${s.Date ? s.Date.split('T')[0] : ''}</td>
+                <td>${dStr}</td>
                 <td>${s.REG || ''}</td>
                 <td style="color:#28a745; font-weight:bold;">${fCounts["Excellent"]}</td>
                 <td style="color:#ffc107; font-weight:bold;">${fCounts["Good"]}</td>
@@ -448,10 +450,36 @@ function generateModernReport() {
         `;
     });
 
-    document.getElementById('stat-airlines').innerText = airlinesSet.size;
+    document.getElementById('stat-airlines').innerText = Object.keys(airlinesCount).length;
     let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0);
     let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
     document.getElementById('stat-excellent').innerText = `${excPercent}%`;
+
+    // رسم الخرائط البيانية
+    destroyCaptainCharts();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+
+    chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Top Airlines' } } }
+    });
+
+    let sortedDates = Object.keys(datesCount).sort();
+    chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), {
+        type: 'line',
+        data: { labels: sortedDates, datasets: [{ label: 'النشاط اليومي', data: sortedDates.map(d => datesCount[d]), borderColor: '#f39c12', tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Surveys Over Time' } } }
+    });
+
+    chartInstances.eval = new Chart(document.getElementById('evalChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
+            datasets: [{ data: Object.values(evalsCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Performance' } } }
+    });
 }
 
 function exportModernPDF() {
@@ -486,7 +514,7 @@ function buildDailyChecklist() {
                             <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
                             <div style="display:flex; gap:5px;">
                                 <input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;">
-                                <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة المسئولة...</option>${rOpts}</select>
+                                <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${rOpts}</select>
                             </div>
                         </div>
                     </div>`;
@@ -546,6 +574,7 @@ function navDailyTo(idx) {
 function clearDailyFormForNew() {
     currentDailyIndex = -1;
     document.getElementById('dailyForm').reset();
+    document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
     let now = new Date().toISOString();
     document.getElementById('dailyDate').value = now.split('T')[0];
     document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5);
@@ -591,7 +620,7 @@ async function submitDailyInspection(e) {
     globalDailyInspections.unshift(rep);
     renderSavedDaily();
     document.getElementById('dailyMsg').innerText = "✅ تم حفظ الجولة!";
-    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ الجولة'; document.getElementById('dailyMsg').innerText = ""; clearDailyFormForNew(); }, 1500);
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ الجولة التفتيشية'; document.getElementById('dailyMsg').innerText = ""; clearDailyFormForNew(); }, 1500);
 }
 
 function renderSavedDaily() {
@@ -599,16 +628,51 @@ function renderSavedDaily() {
     if (!tbody) return;
     tbody.innerHTML = "";
     globalDailyInspections.forEach(rep => {
-        tbody.innerHTML += `<tr><td>${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td>${rep.findings.length} ملاحظة</td><td>-</td></tr>`;
+        tbody.innerHTML += `<tr><td>${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td>${rep.findings.length} ملاحظة</td><td>عرض</td></tr>`;
     });
 }
 
 function generateDailyPrintReport() {
-    alert("تم تجهيز التقرير للمعاينة");
+    let fromD = document.getElementById('dailyFromDate').value;
+    let toD = document.getElementById('dailyToDate').value;
+    if(!fromD || !toD) return alert("اختر الفترة أولاً");
+
+    let fd = new Date(fromD);
+    let td = new Date(toD);
+    td.setHours(23, 59, 59, 999);
+
+    let filtered = globalDailyInspections.filter(r => {
+        let sd = new Date(r.date);
+        return sd >= fd && sd <= td;
+    });
+
+    const cTbody = document.getElementById('corrective-tbody');
+    cTbody.innerHTML = '';
+    let counter = 1;
+
+    filtered.forEach(rep => {
+        rep.findings.forEach(f => {
+            cTbody.innerHTML += `
+                <tr>
+                    <td style="text-align:center;">${counter++}</td>
+                    <td style="direction:ltr;">${rep.date}</td>
+                    <td>${f.location}</td>
+                    <td>${f.item} - ${f.note}</td>
+                    <td>${f.responsible}</td>
+                    <td>-</td>
+                    <td style="color:${f.status === 'مغلق' ? 'green' : 'red'}; font-weight:bold;">${f.status}</td>
+                </tr>
+            `;
+        });
+    });
+
+    if(counter === 1) cTbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>سليم 100% ولا توجد ملاحظات</td></tr>";
+    document.getElementById('printable-daily-report').style.display = 'block';
 }
 
 function exportDailyPDF() {
-    window.print();
+    html2pdf().set({ margin: 0.3, filename: 'Daily_Inspection_Report.pdf', jsPDF: { orientation: 'landscape' } })
+        .from(document.getElementById('printable-daily-report')).save();
 }
 
 // ==========================================
@@ -717,12 +781,450 @@ async function deleteIncidentRecord(idx) {
 
 function generateMonthlyIncidents() {
     let tbody = document.getElementById('inc-monthly-table');
-    tbody.innerHTML = "<tr><td>تم إعداد تقرير الوقائع للشهر</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>تم إنشاء تقرير الوقائع</td></tr>";
 }
 function exportMonthlyIncidentsPDF() { window.print(); }
 
 // ==========================================
-// 4. FOD & التقرير الشهري الشامل
+// 4. مؤشرات الأداء ECAA SPI
+// ==========================================
+function switchSpiTab(tab) {
+    document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-spi-' + tab).classList.add('active');
+    document.getElementById('tab-spi-' + tab).classList.add('active');
+}
+
+function buildSpiEntryForm() {
+    const container = document.getElementById('spi-dynamic-inputs');
+    if(!container) return;
+    container.innerHTML = '';
+    spiCategories.forEach(cat => {
+        let catHtml = `<h4 style="color: #28a745; margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${cat.name}</h4><div class="form-grid">`;
+        cat.items.forEach((spi) => {
+            let safeId = "spi_" + spi.replace(/[^a-zA-Z0-9]/g, '');
+            catHtml += `<div class="form-group"><label style="font-size:0.8rem; direction:ltr; text-align:left;">${spi}</label><input type="number" id="${safeId}" data-spi="${spi}" value="0" min="0" required></div>`;
+        });
+        catHtml += `</div>`;
+        container.innerHTML += catHtml;
+    });
+}
+
+async function submitSPI(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitSpiBtn');
+    btn.disabled = true;
+    let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0;
+    let monthData = { "Movements": movementsVal };
+
+    document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(input => {
+        monthData[input.getAttribute('data-spi')] = parseInt(input.value) || 0;
+    });
+
+    let spiDataObj = {
+        id: "SPI-" + Date.now(),
+        year: document.getElementById('spiYear').value,
+        month: document.getElementById('spiMonth').value,
+        group: "ECAA_SPI_Matrix",
+        name: "OperationalSPI",
+        target: "0",
+        actual: JSON.stringify(monthData),
+        status: "Submitted",
+        actionPlan: movementsVal.toString(),
+        preparedBy: "Safety Officer"
+    };
+
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj })
+    });
+
+    globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual });
+    document.getElementById('spiMsg').innerText = "✅ تم حفظ المؤشرات بنجاح!";
+    setTimeout(() => { btn.disabled = false; document.getElementById('spiMsg').innerText = ""; }, 1500);
+}
+
+function generateSpiReport() {
+    const container = document.getElementById('spi-matrix-container');
+    let selectedYear = document.getElementById('spiReportYear').value;
+    let monthlySpiParsed = {};
+
+    globalSpiData.forEach(row => {
+        if (row.Indicator_Name === "OperationalSPI" && String(row.Year) === selectedYear) {
+            try { monthlySpiParsed[row.Month] = JSON.parse(row.Actual_Value); } catch (e) {}
+        }
+    });
+
+    let tableHtml = `<table class="report-table spi-matrix-table"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366; color:#fff;">Total Events</th></tr></thead><tbody>`;
+    let totalMov = 0;
+    
+    tableHtml += `<tr><td>Number of aircraft movements</td>`;
+    for (let i = 1; i <= 12; i++) {
+        let m = monthlySpiParsed[i] ? monthlySpiParsed[i].Movements || 0 : 0;
+        totalMov += m;
+        tableHtml += `<td style="font-weight:bold; background:#e8f5e9;">${m || '-'}</td>`;
+    }
+    tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td></tr>`;
+
+    spiCategories.forEach(cat => {
+        tableHtml += `<tr><td colspan="14" style="background:#f4fcf6; color:#28a745; font-weight:bold; text-align:right;">${cat.name}</td></tr>`;
+        cat.items.forEach(spi => {
+            let totalSpi = 0;
+            let rowHtml = `<tr><td>${spi}</td>`;
+            for (let i = 1; i <= 12; i++) {
+                let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
+                totalSpi += val;
+                rowHtml += `<td>${val || '-'}</td>`;
+            }
+            rowHtml += `<td style="font-weight:bold; color:#003366;">${totalSpi}</td></tr>`;
+            tableHtml += rowHtml;
+        });
+    });
+
+    tableHtml += `</tbody></table>`;
+    container.innerHTML = tableHtml;
+}
+
+// ==========================================
+// 5. التقرير الشهري المجمع
+// ==========================================
+function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
+    let num = parseFloat(diffVal);
+    if (isNaN(num) || num === 0) {
+        return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right"></i></span>`;
+    }
+    let isPositiveDiff = num > 0;
+    let formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0);
+    let isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff;
+    let color = isGoodOutcome ? "#28a745" : "#dc3545";
+    let arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
+
+    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 4px;">
+        ${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i>
+    </span>`;
+}
+
+function getPreviousMonthStr(monthStr) {
+    let [year, month] = monthStr.split('-');
+    let d = new Date(year, parseInt(month) - 2);
+    let pYear = d.getFullYear();
+    let pMonth = String(d.getMonth() + 1).padStart(2, '0');
+    return `${pYear}-${pMonth}`;
+}
+
+function getMonthlyDetailedStats(monthStr) {
+    let stats = {
+        monthStr: monthStr, movements: 0, accidents: 0, incidents: 0,
+        findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [],
+        fodPlastic: 0, fodMetal: 0, fodTotal: 0, incidentsList: [], findingsByDept: {}
+    };
+
+    let movRow = globalMovements.find(m => String(m.YearMonth || "").trim() === monthStr);
+    if (movRow && movRow.Movements) stats.movements = parseInt(movRow.Movements) || 0;
+
+    globalIncidents.forEach(inc => {
+        let iDate = inc.Date ? String(inc.Date).split('T')[0] : '';
+        if (iDate.startsWith(monthStr)) {
+            if (inc.Risk_Severity === 'Catastrophic') stats.accidents++;
+            else stats.incidents++;
+            stats.incidentsList.push(inc);
+        }
+    });
+
+    globalDailyInspections.forEach(d => {
+        let dDate = d.date ? String(d.date).split('T')[0] : '';
+        if (dDate.startsWith(monthStr)) {
+            d.findings.forEach(f => {
+                stats.findingsTotal++;
+                if (f.status === 'مغلق') stats.findingsClosed++;
+                else stats.findingsOpen++;
+                stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
+            });
+        }
+    });
+
+    globalSurveys.forEach(s => {
+        let sDate = s.Date ? String(s.Date).split('T')[0] : '';
+        if (sDate.startsWith(monthStr)) stats.surveys.push(s);
+    });
+
+    globalFod.forEach(f => {
+        let rawDate = f.Date || f.date || '';
+        let fDate = String(rawDate).split('T')[0];
+        if (fDate.startsWith(monthStr)) {
+            let p = parseFloat(f.Plastic || f.plastic || 0);
+            let m = parseFloat(f.Metal || f.metal || 0);
+            stats.fodPlastic += p;
+            stats.fodMetal += m;
+            stats.fodTotal += (p + m);
+        }
+    });
+
+    return stats;
+}
+
+function generateFullMonthlyReport() {
+    const currMonthStr = document.getElementById('mainReportMonth').value;
+    if (!currMonthStr) return alert("اختر الشهر أولاً!");
+
+    const prevMonthStr = getPreviousMonthStr(currMonthStr);
+    const currDateObj = new Date(currMonthStr + "-01");
+    const prevDateObj = new Date(prevMonthStr + "-01");
+
+    const currMonthNameEn = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const currMonthNameAr = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
+    const prevMonthNameAr = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
+
+    document.getElementById('mr-title-date').innerText = currMonthNameEn;
+    document.getElementById('th-curr-month').innerText = currMonthNameAr;
+    document.getElementById('th-prev-month').innerText = prevMonthNameAr;
+
+    let currStats = getMonthlyDetailedStats(currMonthStr);
+    let prevStats = getMonthlyDetailedStats(prevMonthStr);
+
+    // 1. جدول المقارنة العام
+    const tbody = document.getElementById('mr-general-tbody');
+    tbody.innerHTML = '';
+    const kpiComparisonList = [
+        { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" },
+        { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" },
+        { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" },
+        { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" },
+        { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" },
+        { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" },
+        { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" },
+        { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true }
+    ];
+
+    kpiComparisonList.forEach(item => {
+        let diff = item.curr - item.prev;
+        let trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit);
+        let currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr;
+        let prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td>
+                <td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td>
+                <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td>
+            </tr>
+        `;
+    });
+
+    // 2. رسوم المخاطر والوقائع
+    if (monthlyChart1) monthlyChart1.destroy();
+    if (monthlyChart2) monthlyChart2.destroy();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+
+    let depts = Object.keys(currStats.findingsByDept);
+    let deptsData = Object.values(currStats.findingsByDept);
+    monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), {
+        type: 'bar',
+        data: { labels: depts, datasets: [{ label: 'المخاطر طبقاً للإدارة', data: deptsData, backgroundColor: '#003366', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'المخاطر طبقاً للإدارة / الجهة' } } }
+    });
+
+    let incTypesCount = {};
+    currStats.incidentsList.forEach(inc => {
+        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other';
+        incTypesCount[cat] = (incTypesCount[cat] || 0) + 1;
+    });
+    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
+    });
+
+    // 3. حصر الوقائع
+    document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
+    const incList = document.getElementById('mr-incidents-list');
+    incList.innerHTML = "";
+
+    let groupedInc = {};
+    currStats.incidentsList.forEach(inc => {
+        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident';
+        if (!groupedInc[cat]) groupedInc[cat] = [];
+        groupedInc[cat].push(inc);
+    });
+
+    let catChar = 'A';
+    for (let cat in groupedInc) {
+        incList.innerHTML += `<div style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
+
+        let tbl = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
+        groupedInc[cat].forEach((inc, idx) => {
+            let d = inc.Date ? String(inc.Date).split('T')[0] : '';
+            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
+            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
+            let airlineInfo = `<b>Airline:</b> ${inc.CAR || '-'}<br><b>Local Agent:</b> ${inc.Equipment_Owned || '-'}`;
+
+            tbl += `
+                <tr>
+                    <td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td>
+                    <td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;">
+                        <strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div>
+                        <strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div>
+                    </td>
+                    <td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td>
+                    <td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;">${airlineInfo}</td>
+                </tr>
+            `;
+        });
+        tbl += `</table>`;
+        incList.innerHTML += tbl;
+        catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
+    }
+
+    // 4. Captain Survey بالمصفوفة والرسوم
+    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
+
+    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+    criteriaList.forEach(crit => {
+        matrixScores["Excellent"][crit] = 0;
+        matrixScores["Good"][crit] = 0;
+        matrixScores["Poor"][crit] = 0;
+        matrixScores["N/A"][crit] = 0;
+        matrixScores["Blank"][crit] = 0;
+    });
+
+    let airlinesCount = {};
+    let evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+    let commentsList = [];
+
+    currStats.surveys.forEach(s => {
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
+        criteriaList.forEach(crit => {
+            let val = s[crit] || "Blank";
+            if (matrixScores[val]) matrixScores[val][crit]++;
+            if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++;
+        });
+        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
+    });
+
+    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
+    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Airlines Participation' } } }
+    });
+
+    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
+    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
+            datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
+    });
+
+    let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
+    matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>`;
+    criteriaList.forEach(crit => {
+        matrixHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
+    });
+    matrixHtml += `</tr></thead><tbody>`;
+
+    const rowStyles = {
+        "Excellent": "background:#28a745; color:white; font-weight:bold;",
+        "Good": "background:#ffc107; color:black; font-weight:bold;",
+        "Poor": "background:#dc3545; color:white; font-weight:bold;",
+        "N/A": "background:#6c757d; color:white; font-weight:bold;",
+        "Blank": "background:#003366; color:white; font-weight:bold;"
+    };
+
+    ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => {
+        matrixHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`;
+        criteriaList.forEach(crit => {
+            let score = matrixScores[rating][crit];
+            matrixHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`;
+        });
+        matrixHtml += `</tr>`;
+    });
+    matrixHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
+
+    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+        <thead style="background: #e6e6e6;">
+            <tr>
+                <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
+                <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
+                <th style="border: 1px solid #000; padding: 6px;">Type</th>
+                <th style="border: 1px solid #000; padding: 6px;">DateTime</th>
+                <th style="border: 1px solid #000; padding: 6px;">REG</th>
+                <th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th>
+            </tr>
+        </thead><tbody>`;
+
+    if (commentsList.length === 0) {
+        commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded for this period.</td></tr>`;
+    } else {
+        commentsList.forEach(s => {
+            let dStr = s.Date ? String(s.Date).split('T')[0] : '';
+            commentsHtml += `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${dStr} ${s.Time || ''}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: justify;">${s.Captain_Comments}</td>
+                </tr>
+            `;
+        });
+    }
+    commentsHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
+
+    // 5. FOD
+    const fodDiv = document.getElementById('mr-fod-details');
+    if (currStats.fodTotal === 0) {
+        fodDiv.innerHTML = "<p style='color: #777;'>No F.O.D records for this month.</p>";
+    } else {
+        fodDiv.innerHTML = `
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc; text-align: center; font-size: 12px;">
+                <thead style="background:#f9f9f9;">
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Month</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Plastic</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Metal</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; background: #003366; color: #fff;">Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold;">${currMonthNameEn}</td>
+                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodPlastic.toFixed(3)} KG</td>
+                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodMetal.toFixed(3)} KG</td>
+                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #003366;">${currStats.fodTotal.toFixed(3)} KG</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+
+    document.getElementById('printable-main-report').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
+}
+
+function exportMainReportPDF() {
+    const el = document.getElementById('printable-main-report');
+    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً قبل التصدير!");
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: 'Air_Side_Monthly_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr', 'h3', 'h4'] }
+    }).from(el).save();
+}
+
+// ==========================================
+// 6. وحدة FOD
 // ==========================================
 function switchFodTab(tab) {
     document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -750,75 +1252,93 @@ function generateFodInputRows() {
 }
 
 async function submitFOD(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const btn = document.getElementById('submitFodBtn');
+    const msg = document.getElementById('fodMsg');
     btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
     let fodDataArray = [];
+    let localFodArray = [];
+
     fodLocations.forEach((item, index) => {
         let p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0;
         let m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0;
         let d = document.getElementById(`fod_date_${index}`).value;
-        fodDataArray.push({
-            id: "FOD-" + Date.now() + "-" + index,
-            date: d, location: item.loc, area: item.area, plastic: p, metal: m
+        let newId = "FOD-" + Date.now() + "-" + index;
+        fodDataArray.push({ id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m });
+        localFodArray.push({ ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m });
+    });
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: fodDataArray })
         });
-    });
-
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: fodDataArray })
-    });
-
-    globalFod = [...globalFod, ...fodDataArray];
-    document.getElementById('fodMsg').innerText = "✅ تم حفظ FOD بنجاح!";
-    setTimeout(() => { btn.disabled = false; document.getElementById('fodMsg').innerText = ""; document.getElementById('fodForm').style.display = 'none'; }, 1500);
+        globalFod = [...globalFod, ...localFodArray];
+        msg.style.color = "green";
+        msg.innerText = "✅ تم حفظ FOD بنجاح في قاعدة البيانات!";
+        setTimeout(() => { 
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر'; 
+            msg.innerText = ""; 
+            document.getElementById('fodForm').style.display = 'none'; 
+        }, 1500);
+    } catch (err) {
+        btn.disabled = false;
+        msg.style.color = "red";
+        msg.innerText = "حدث خطأ أثناء الحفظ!";
+    }
 }
 
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
-    if(!m) return alert("اختر الشهر");
-    let filtered = globalFod.filter(f => (f.Date || f.date || "").startsWith(m));
+    if(!m) return alert("اختر الشهر أولاً");
+    
+    let filtered = globalFod.filter(f => {
+        let fDate = f.Date || f.date || '';
+        return String(fDate).split('T')[0].startsWith(m);
+    });
+
     const tbody = document.getElementById('fod-print-tbody');
     tbody.innerHTML = '';
     let totalP = 0, totalM = 0;
+
     fodLocations.forEach(locItem => {
         let rec = filtered.find(f => (f.Location || f.location) === locItem.loc);
         let p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0;
         let m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
         totalP += p; totalM += m;
+
+        let dDisplay = '---';
+        if (rec && (rec.Date || rec.date)) {
+            dDisplay = String(rec.Date || rec.date).split('T')[0].split('-').reverse().join('/');
+        }
+
         tbody.innerHTML += `
             <tr>
-                <td>${rec ? (rec.Date||rec.date) : '---'}</td>
+                <td>${dDisplay}</td>
                 <td>${locItem.loc}</td>
                 <td>${locItem.area}</td>
-                <td>${p.toFixed(3)} kg</td>
-                <td>${m.toFixed(3)} kg</td>
+                <td>${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+                <td>${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td>
                 <td>---</td>
             </tr>`;
     });
+
     tbody.innerHTML += `<tr style="font-weight:bold; background:#eee;"><td colspan="3">Total</td><td>${totalP.toFixed(3)} kg</td><td>${totalM.toFixed(3)} kg</td><td>${(totalP+totalM).toFixed(3)} kg</td></tr>`;
     document.getElementById('printable-fod-report').style.display = 'block';
 }
 
 function exportFodPDF() {
-    html2pdf().set({ margin: 0.3, filename: 'FOD_Report.pdf' }).from(document.getElementById('printable-fod-report')).save();
+    html2pdf().set({ margin: 0.3, filename: 'FOD_Report.pdf', jsPDF: { orientation: 'landscape' } })
+        .from(document.getElementById('printable-fod-report')).save();
 }
 
-function generateFullMonthlyReport() {
-    const m = document.getElementById('mainReportMonth').value;
-    if(!m) return alert("اختر الشهر");
-    document.getElementById('mr-title-date').innerText = m;
-    document.getElementById('mr-incidents-count-text').innerText = "تم إعداد التقرير بنجاح للشهر المختار";
-    document.getElementById('printable-main-report').style.display = 'block';
-}
-
-function exportMainReportPDF() {
-    html2pdf().set({ margin: 0.3, filename: 'Monthly_Report.pdf', jsPDF: { orientation: 'landscape' } })
-        .from(document.getElementById('printable-main-report')).save();
-}
-
-// المستخدمين والدليل والأسطول
+// ==========================================
+// 7. المستخدمين والدليل والأسطول
+// ==========================================
 function populateUsersDropdown(usersArray) {
     const datalist = document.getElementById('usersList');
     const userInp = document.getElementById('loginUser');
