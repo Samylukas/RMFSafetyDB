@@ -78,7 +78,7 @@ let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
 
 // ==========================================
-// دالة الإرسال المركزية الموثوقة 
+// دالة الإرسال المركزية الموثوقة (Raw JSON)
 // ==========================================
 async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
     if(btnElement) {
@@ -92,8 +92,9 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
     }
 
     try {
-        let response = await fetch(API_URL, {
+        await fetch(API_URL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         });
@@ -103,36 +104,13 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
             msgElement.style.color = "green";
             msgElement.innerText = "✅ " + successText;
         }
+
     } catch (err) {
-        console.error("Fetch Error, using iframe fallback", err);
-        // Iframe Fallback للتأكد من وصول البيانات بنسبة 100% حتى لو اعترض المتصفح
-        let iframeName = "hiddenFrame_" + Date.now();
-        let iframe = document.createElement("iframe");
-        iframe.name = iframeName;
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
-        
-        let form = document.createElement("form");
-        form.method = "POST";
-        form.action = API_URL;
-        form.target = iframeName;
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "postData"; 
-        input.value = JSON.stringify(payload);
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-        
-        setTimeout(() => {
-            if(onSuccessCallback) onSuccessCallback();
-            if(msgElement && successText) {
-                msgElement.style.color = "green";
-                msgElement.innerText = "✅ " + successText + " (عبر المسار البديل)";
-            }
-            if (form.parentNode) form.parentNode.removeChild(form);
-            setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 3000);
-        }, 1500);
+        console.error("Network Error:", err);
+        if(msgElement) {
+            msgElement.style.color = "red";
+            msgElement.innerText = "❌ تعذر الاتصال بالسيرفر! تأكد من اتصال الإنترنت.";
+        }
     }
 
     setTimeout(() => {
@@ -141,7 +119,7 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
             btnElement.innerHTML = btnElement.dataset.origText;
         }
         if(msgElement) msgElement.innerText = "";
-    }, 3000);
+    }, 2000);
 }
 
 // ==========================================
@@ -277,7 +255,6 @@ function loadAppDataInit() {
     };
 
     const script = document.createElement('script');
-    // إضافة Date.now() لمنع الكاش نهائياً وإحضار بيانات طازجة 100%
     script.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + callbackName;
     document.body.appendChild(script);
 }
@@ -557,7 +534,7 @@ function generateModernReport() {
 
     const addContainer = document.getElementById('additional-tables-container');
     
-    // إصلاح دوران النصوص في الـ PDF
+    // إصلاح الكلمات المتداخلة باستخدام writing-mode
     let extraHtml = `
         <div class="avoid-page-break" style="margin-top: 35px;">
             <h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix (31 Items)</h3>
@@ -568,7 +545,7 @@ function generateModernReport() {
     `;
     criteriaList.forEach(crit => {
         let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf");
-        extraHtml += `<th style="border: 1px solid #999; padding: 2px; height: 110px; max-width: 25px;"><div style="transform: rotate(-90deg); white-space: nowrap; width: 15px; margin: auto;">${shortCrit}</div></th>`;
+        extraHtml += `<th style="border: 1px solid #999; padding: 4px; height: 140px;"><div style="writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; margin: auto;">${shortCrit}</div></th>`;
     });
     extraHtml += `</tr></thead><tbody>`;
 
@@ -593,7 +570,7 @@ function generateModernReport() {
     extraHtml += `
         <div class="avoid-page-break" style="margin-top: 35px;">
             <h3 style="color:#003366; margin-bottom:10px; text-align:right;">Captain Comments & Observations:</h3>
-            <table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
+            <table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
                 <thead style="background: #e6e6e6;">
                     <tr>
                         <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
@@ -630,8 +607,14 @@ function generateModernReport() {
 }
 
 function exportModernPDF() {
-    html2pdf().set({ margin: 0.2, filename: 'Captain_Surveys_Report.pdf', jsPDF: { orientation: 'landscape' } })
-        .from(document.getElementById('printable-report')).save();
+    html2pdf().set({ 
+        margin: 0.2, 
+        filename: 'Captain_Surveys_Report.pdf', 
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { orientation: 'landscape', unit: 'in', format: 'a4' },
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', '.avoid-page-break'] }
+    }).from(document.getElementById('printable-report')).save();
 }
 
 // ==========================================
@@ -896,7 +879,7 @@ function generateDailyPrintReport() {
     filtered.forEach(rep => {
         rep.findings.forEach(f => {
             cTbody.innerHTML += `
-                <tr>
+                <tr class="avoid-page-break">
                     <td style="text-align:center;">${counter++}</td>
                     <td style="direction:ltr;">${rep.date}</td>
                     <td>${f.location || f.Location || '-'}</td>
@@ -914,8 +897,14 @@ function generateDailyPrintReport() {
 }
 
 function exportDailyPDF() {
-    html2pdf().set({ margin: 0.3, filename: 'Daily_Inspection_Report.pdf', jsPDF: { orientation: 'landscape' } })
-        .from(document.getElementById('printable-daily-report')).save();
+    html2pdf().set({ 
+        margin: 0.3, 
+        filename: 'Daily_Inspection_Report.pdf', 
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { orientation: 'landscape', unit: 'in', format: 'a4' },
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', '.avoid-page-break'] }
+    }).from(document.getElementById('printable-daily-report')).save();
 }
 
 // ==========================================
@@ -1379,9 +1368,9 @@ function generateFullMonthlyReport() {
 
     let catChar = 'A';
     for (let cat in groupedInc) {
-        incList.innerHTML += `<div style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
+        incList.innerHTML += `<div class="avoid-page-break" style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
 
-        let tbl = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
+        let tbl = `<table class="avoid-page-break" style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
         groupedInc[cat].forEach((inc, idx) => {
             let d = inc.Date ? String(inc.Date).split('T')[0] : '';
             let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
@@ -1447,11 +1436,12 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
 
-    let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
+    // استخدام vertical-rl لكتابة الحروف صحيحة بدون تقطيع
+    let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
     matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
     criteriaList.forEach(crit => {
         let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf");
-        matrixHtml += `<th style="border: 1px solid #999; padding: 2px; height: 110px; max-width: 25px;"><div style="transform: rotate(-90deg); white-space: nowrap; width: 15px; margin: auto;">${shortCrit}</div></th>`;
+        matrixHtml += `<th style="border: 1px solid #999; padding: 4px; height: 140px;"><div style="writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; margin: auto;">${shortCrit}</div></th>`;
     });
     matrixHtml += `</tr></thead><tbody>`;
 
@@ -1474,7 +1464,7 @@ function generateFullMonthlyReport() {
     matrixHtml += `</tbody></table>`;
     document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
 
-    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
+    let commentsHtml = `<table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
         <thead style="background: #e6e6e6;">
             <tr>
                 <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
@@ -1492,7 +1482,7 @@ function generateFullMonthlyReport() {
         commentsList.forEach(s => {
             let dStr = s.Date ? String(s.Date).split('T')[0] : '';
             commentsHtml += `
-                <tr>
+                <tr class="avoid-page-break">
                     <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td>
                     <td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td>
                     <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
@@ -1533,7 +1523,7 @@ function generateFullMonthlyReport() {
             }
 
             fodRowsHtml += `
-                <tr>
+                <tr class="avoid-page-break">
                     <td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td>
                     <td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td>
                     <td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td>
@@ -1547,7 +1537,7 @@ function generateFullMonthlyReport() {
         let grossTotal = totalP + totalM;
 
         fodDiv.innerHTML = `
-            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;">
+            <table class="avoid-page-break" style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;">
                 <thead>
                     <tr style="background: #e6e6e6; color: #000;">
                         <th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th>
@@ -1586,9 +1576,9 @@ function exportMainReportPDF() {
         margin: [0.3, 0.3, 0.3, 0.3],
         filename: 'Air_Side_Monthly_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr', 'h3', 'h4'] }
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h2', 'h3', 'h4', '.avoid-page-break'] }
     }).from(el).save();
 }
 
@@ -1699,7 +1689,7 @@ function generateFodPrintReport() {
         }
 
         tbody.innerHTML += `
-            <tr>
+            <tr class="avoid-page-break">
                 <td style="border: 1px solid #777; padding: 12px;">${dDisplay}</td>
                 <td style="border: 1px solid #777; padding: 12px; text-align: left;">${locItem.loc}</td>
                 <td style="border: 1px solid #777; padding: 12px;">${locItem.area}</td>
@@ -1730,9 +1720,9 @@ function exportFodPDF() {
         margin: [0.2, 0.2, 0.2, 0.2],
         filename: 'FOD_Monthly_Report.pdf',
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2.5, useCORS: true, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'table'] }
+        pagebreak: { mode: 'css', avoid: ['tr', 'table'] }
     }).from(el).save();
 }
 
