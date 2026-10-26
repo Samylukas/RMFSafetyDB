@@ -18,7 +18,7 @@
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-<!-- شاشة البداية بتأثير الدخان -->
+  <!-- شاشة البداية بتأثير الدخان -->
   <div id="splash-screen">
     <div class="smoke-bg"></div>
     <div class="splash-content">
@@ -28,6 +28,25 @@
       </div>
     </div>
   </div>
+
+  <!-- شاشة تسجيل الدخول -->
+  <div id="login-screen" style="display: none;">
+      <div class="login-box">
+          <img src="LOGO-removebg-preview (1).png" alt="Logo">
+          <h2 style="color: var(--primary);">تسجيل الدخول</h2>
+          <div class="input-group">
+              <input type="text" id="loginUser" placeholder="اسم المستخدم" required>
+              <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="input-group">
+              <input type="password" id="loginPass" placeholder="كلمة المرور" required>
+              <i class="fa-solid fa-lock"></i>
+          </div>
+          <button class="login-btn" onclick="login()">دخول</button>
+          <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
+      </div>
+  </div>
+
   <div class="header" id="app-header" style="display: none;">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles">
@@ -96,7 +115,7 @@
         <div class="form-grid">
           <div class="form-group"><label>الصلاحية (Role)</label><select id="newUserRole"><option value="Admin">Admin</option><option value="Safety Officer">Safety Officer</option></select></div>
           <div class="form-group"><label>اسم المستخدم (Username)</label><input type="text" id="newUsername" required></div>
-          <div class="form-group"><label>كلمة المرور (Password)</label><input type="text" id="newUserPass" required></div>
+          <div class="form-group"><label>كلمة المرور (Password)</label><input type="password" id="newUserPass" required></div>
         </div>
         <button type="submit" class="submit-btn" style="width: auto; padding: 10px 30px; margin-top: 10px;">إضافة حساب</button>
         <p id="userMsg" style="margin-top: 10px; font-weight: bold;"></p>
@@ -132,7 +151,6 @@
         </div>
     </div>
     <div id="printable-directory" style="background: #fff; padding: 15px; border-radius: 10px; direction: rtl; margin-top: 20px;">
-        <!-- ترويسة التقرير الخاصة بالطباعة واللوجو -->
         <div class="dir-print-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #003366; padding-bottom: 12px; margin-bottom: 15px;">
             <div style="text-align: right;">
                 <h2 style="margin: 0; color: #003366; font-size: 1.15rem; font-weight: 900;">مطار مرسى علم الدولي</h2>
@@ -227,8 +245,8 @@
             <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" dir="ltr" id="airline" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً..."></div>
             <div class="form-group"><label>Aircraft Type</label><input type="text" dir="ltr" id="acType" required readonly style="background-color: #f0f0f0; color: #555; font-weight: bold; cursor: not-allowed;" placeholder="يُملأ تلقائياً..."></div>
             <div class="form-group"><label>Flight NO</label><input type="text" dir="ltr" id="fltNo" required placeholder="مثال: MS 184"></div>
-            <div class="form-group"><label>Date</label><input type="date" id="date" required></div>
-            <div class="form-group"><label>Time</label><input type="time" id="time"></div>
+            <div class="form-group"><label>Date</label><input type="date" id="capDate" required></div>
+            <div class="form-group"><label>Time</label><input type="time" id="capTime"></div>
           </div>
           <div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div>
           <div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><textarea id="comments" class="inc-textarea"></textarea></div></div>
