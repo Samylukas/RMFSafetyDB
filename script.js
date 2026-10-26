@@ -1257,10 +1257,10 @@ async function submitFOD(e) {
     const msg = document.getElementById('fodMsg');
     
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال للشيت...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال الفعلي...';
     if (msg) {
         msg.style.color = "#003366";
-        msg.innerText = "جاري الحفظ في Google Sheets...";
+        msg.innerText = "جاري الاتصال بالسيرفر والكتابة...";
     }
 
     let fodDataArray = [];
@@ -1296,10 +1296,8 @@ async function submitFOD(e) {
     });
 
     try {
-        // إرسال البيانات كنص صريح يتقبله Apps Script بدون قيود preflight
-        await fetch(API_URL, {
+        let response = await fetch(API_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 action: "submitBulkFOD",
@@ -1307,33 +1305,35 @@ async function submitFOD(e) {
             })
         });
 
-        // تحديث البيانات محلياً
-        globalFod = [...globalFod, ...localFodArray];
+        let res = await response.json();
 
-        if (msg) {
-            msg.style.color = "green";
-            msg.innerText = "✅ تم الإرسال وكتابة البيانات في الشيت بنجاح!";
+        if (res.status === "success") {
+            globalFod = [...globalFod, ...localFodArray];
+            if (msg) {
+                msg.style.color = "green";
+                msg.innerText = `✅ تم الحفظ الفعلي وكتابة (${res.count}) صفوف في الشيت!`;
+            }
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
+                if (msg) msg.innerText = "";
+                let form = document.getElementById('fodForm');
+                if (form) form.style.display = 'none';
+            }, 1800);
+        } else {
+            throw new Error(res.message || "فشل رد السيرفر");
         }
-
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-            if (msg) msg.innerText = "";
-            let form = document.getElementById('fodForm');
-            if (form) form.style.display = 'none';
-        }, 1500);
 
     } catch (err) {
-        console.error("FOD Save Error:", err);
-        if (msg) {
-            msg.style.color = "red";
-            msg.innerText = "❌ تعذر الوصول للسيرفر، تأكد من إعدادات الـ Deployment!";
-        }
+        console.error("FOD Real Error:", err);
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
+        if (msg) {
+            msg.style.color = "red";
+            msg.innerText = "❌ لم يتم الحفظ في الشيت: " + err.message;
+        }
     }
 }
-
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
     if (!m) return alert("اختر الشهر أولاً لعرض التقرير");
