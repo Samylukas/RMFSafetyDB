@@ -75,6 +75,7 @@ function finishLoading() {
     try {
         const splash = document.getElementById('splash-screen');
         const loginScreen = document.getElementById('login-screen');
+        const passInp = document.getElementById('loginPass');
         
         if (splash) {
             splash.style.opacity = '0';
@@ -82,6 +83,10 @@ function finishLoading() {
                 splash.style.display = 'none';
                 if (loginScreen) {
                     loginScreen.style.display = 'flex';
+                    // تركيز الماوس على الباسورد مباشرة بمجرد ظهور شاشة الدخول
+                    if (passInp) {
+                        passInp.focus();
+                    }
                 }
             }, 500);
         }
@@ -145,35 +150,29 @@ function loadAppDataInit() {
 
                 // --- التعديل هنا: تعبئة قائمة المستخدمين المنسدلة في شاشة الدخول ---
 // دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول مع تحديد الافتراضي
+// دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول
 function populateUsersDropdown(usersArray) {
     const datalist = document.getElementById('usersList');
     const userInp = document.getElementById('loginUser');
-    const passInp = document.getElementById('loginPass');
     if (!datalist) return;
     
     datalist.innerHTML = ''; 
-    let defaultUser = "";
+    let defaultUser = "Admin"; // قيمة افتراضية إجبارية
     
     usersArray.forEach(user => {
         let option = document.createElement('option');
         option.value = user.Username; 
         datalist.appendChild(option);
         
-        // البحث عن حساب الأدمن لجعله الافتراضي
         if(user.Username.toLowerCase() === 'admin' || user.Username === 'ادمن' || user.Role === 'Admin') {
             defaultUser = user.Username;
         }
     });
 
-    if(usersArray.length > 0) {
-        userInp.value = defaultUser ? defaultUser : usersArray[0].Username;
-        // تركيز الماوس تلقائياً على حقل كلمة المرور بعد نصف ثانية من تحميل الشاشة
-        setTimeout(() => {
-            passInp.focus();
-        }, 500);
+    if (userInp) {
+        userInp.value = defaultUser; // كتابة اسم الأدمن تلقائياً
     }
-}                // -----------------------------------------------------------
-
+}
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
                     data.daily.forEach(row => {
