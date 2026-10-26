@@ -1961,3 +1961,16 @@ function renderUsersTable() {
         tbody.innerHTML += `<tr><td>${i + 1}</td><td>${u.Role}</td><td>${u.Username}</td><td>***</td></tr>`;
     });
 }
+// دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول
+function populateUsersDropdown(usersArray) {
+    const datalist = document.getElementById('usersList');
+    if (!datalist) return;
+    
+    datalist.innerHTML = ''; // تفريغ القائمة
+    usersArray.forEach(user => {
+        let option = document.createElement('option');
+        // تأكد أن "Username" تتطابق مع المتغير العائد من جوجل سكربت
+        option.value = user.Username; 
+        datalist.appendChild(option);
+    });
+}
