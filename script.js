@@ -1259,7 +1259,7 @@ function submitFOD(e) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...';
     msg.style.color = "#003366";
-    msg.innerText = "جاري إرسال البيانات...";
+    msg.innerText = "جاري الاتصال بالسيرفر...";
 
     let fodDataArray = [];
     let localFodArray = [];
@@ -1293,19 +1293,17 @@ function submitFOD(e) {
         });
     });
 
-    // استخدام JSONP لتخطي قيود CORS والـ Failed to fetch نهائياً
     const callbackName = 'jsonpFodSave_' + Math.round(100000 * Math.random());
     
     window[callbackName] = function(res) {
         delete window[callbackName];
-        if (scriptTag && scriptTag.parentNode) {
-            scriptTag.parentNode.removeChild(scriptTag);
-        }
+        const s = document.getElementById('fod-jsonp-script');
+        if (s && s.parentNode) s.parentNode.removeChild(s);
 
         if (res && res.status === "success") {
             globalFod = [...globalFod, ...localFodArray];
             msg.style.color = "green";
-            msg.innerText = "✅ تم حفظ البيانات بنجاح في Google Sheets!";
+            msg.innerText = "✅ تم حفظ البيانات وتحديث الشيت بنجاح!";
 
             setTimeout(() => {
                 btn.disabled = false;
@@ -1313,23 +1311,25 @@ function submitFOD(e) {
                 msg.innerText = "";
                 let form = document.getElementById('fodForm');
                 if (form) form.style.display = 'none';
-            }, 1500);
+            }, 1800);
         } else {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
             msg.style.color = "red";
-            msg.innerText = "❌ حدث خطأ في استجابة السيرفر!";
+            msg.innerText = "❌ حدث خطأ من السيرفر: " + (res ? res.message : "رد غير معروف");
         }
     };
 
     const encodedData = encodeURIComponent(JSON.stringify(fodDataArray));
     const scriptTag = document.createElement('script');
+    scriptTag.id = 'fod-jsonp-script';
     scriptTag.src = `${API_URL}?action=submitFOD_GET&data=${encodedData}&callback=${callbackName}`;
+    
     scriptTag.onerror = function() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
         msg.style.color = "red";
-        msg.innerText = "❌ تعذر الاتصال بالسيرفر، تأكد من الإنترنت والنشر!";
+        msg.innerText = "❌ لم يتم النشر كـ Anyone أو New Version في Google Script!";
     };
 
     document.body.appendChild(scriptTag);
