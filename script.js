@@ -70,6 +70,7 @@ let incFileBase64 = null;
 
 let chartInstances = {}; 
 let chartInstancesDaily = {};
+let globalMovements = [];
 
 function finishLoading() {
     try {
@@ -147,7 +148,7 @@ function loadAppDataInit() {
                 if(data.directory) globalDirectory = data.directory;
                 globalFod = data.fod || [];
                 renderDirectory(globalDirectory);
-
+if(data.movements) globalMovements = data.movements;
                 // --- التعديل هنا: تعبئة قائمة المستخدمين المنسدلة في شاشة الدخول ---
 // دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول مع تحديد الافتراضي
 // دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول
@@ -2177,65 +2178,107 @@ function exportFodPDF() {
     }).from(el).save();
 }
 // ----------------- التقرير الشهري المجمع (Word Style) -----------------
-let monthlyChart1, monthlyChart2;
+// المتغيرات الخاصة برسوم الكابتن سيرفي في التقرير الشهري
+let mrSurveyAirChartInstance = null;
+let mrSurveyEvalChartInstance = null;
 
-function getMonthlyStats(monthStr) {
+// دالة المقارنة الذكية وتحديد شكل ولون السهم
+function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
+    let num = parseFloat(diffVal);
+    if (isNaN(num) || num === 0) {
+        return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right" style="margin-right: 4px;"></i></span>`;
+    }
+
+    let isPositiveDiff = num > 0;
+    let formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0);
+
+    // تحديد اللون: إذا كان الارتفاع أفضل للمؤشر، الزيادة خضراء والنقصان أحمر، والعكس صحيح
+    let isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff;
+    let color = isGoodOutcome ? "#28a745" : "#dc3545";
+    let arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
+
+    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 5px;">
+        ${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i>
+    </span>`;
+}
+
+// دالة جمع إحصائيات الشهر الشاملة
+function getMonthlyDetailedStats(monthStr) {
     let stats = {
-        movements: 0, accidents: 0, incidents: 0, findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: 0, fod: 0,
-        incidentsList: [], findingsByDept: {}
+        monthStr: monthStr,
+        movements: 0,
+        accidents: 0,
+        incidents: 0,
+        findingsTotal: 0,
+        findingsOpen: 0,
+        findingsClosed: 0,
+        surveys: [],
+        fodPlastic: 0,
+        fodMetal: 0,
+        fodTotal: 0,
+        incidentsList: [],
+        findingsByDept: {}
     };
 
+    // 1. قراءة التحركات
+    let movRow = globalMovements.find(m => String(m.YearMonth).trim() === monthStr);
+    if (movRow && movRow.Movements) {
+        stats.movements = parseInt(movRow.Movements) || 0;
+    }
+
+    // 2. الوقائع والحوادث
     globalIncidents.forEach(inc => {
-        if(inc.Date && inc.Date.startsWith(monthStr)) {
-            if(inc.Risk_Severity === 'Catastrophic') stats.accidents++;
+        if (inc.Date && String(inc.Date).startsWith(monthStr)) {
+            if (inc.Risk_Severity === 'Catastrophic') stats.accidents++;
             else stats.incidents++;
             stats.incidentsList.push(inc);
         }
     });
 
-    globalSurveys.forEach(s => {
-        if(s.Date && s.Date.startsWith(monthStr)) stats.surveys++;
-    });
-
+    // 3. الفحص اليومي والمخالفات
     globalDailyInspections.forEach(d => {
-        if(d.date && d.date.startsWith(monthStr)) {
+        if (d.date && String(d.date).startsWith(monthStr)) {
             d.findings.forEach(f => {
                 stats.findingsTotal++;
-                if(f.status === 'مغلق') stats.findingsClosed++;
+                if (f.status === 'مغلق') stats.findingsClosed++;
                 else stats.findingsOpen++;
                 stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
             });
         }
     });
 
-    // تعديل الفلتر ليتطابق مع الحروف الكبيرة من الشيت
+    // 4. استبيانات الكابتن
+    globalSurveys.forEach(s => {
+        if (s.Date && String(s.Date).startsWith(monthStr)) {
+            stats.surveys.push(s);
+        }
+    });
+
+    // 5. الأجسام الغريبة FOD
     globalFod.forEach(f => {
-        if(f.Date && String(f.Date).startsWith(monthStr)) {
-            stats.fod += (parseFloat(f.Plastic||0) + parseFloat(f.Metal||0));
+        let fDate = f.Date || f.date;
+        if (fDate && String(fDate).startsWith(monthStr)) {
+            let p = parseFloat(f.Plastic || f.plastic || 0);
+            let m = parseFloat(f.Metal || f.metal || 0);
+            stats.fodPlastic += p;
+            stats.fodMetal += m;
+            stats.fodTotal += (p + m);
         }
     });
 
     return stats;
 }
 
-function getPreviousMonthStr(monthStr) {
-    let [year, month] = monthStr.split('-');
-    let d = new Date(year, parseInt(month) - 2);
-    let pYear = d.getFullYear();
-    let pMonth = String(d.getMonth() + 1).padStart(2, '0');
-    return `${pYear}-${pMonth}`;
-}
-
+// الدالة المركزية لإنشاء التقرير الشهري كاملاً
 function generateFullMonthlyReport() {
     const currMonthStr = document.getElementById('mainReportMonth').value;
-    if(!currMonthStr) return alert("اختر الشهر");
-    
+    if (!currMonthStr) return alert("برجاء اختيار الشهر أولاً!");
+
     const prevMonthStr = getPreviousMonthStr(currMonthStr);
-    
-    // أسماء الشهور للغلاف والجدول
+
     const currDateObj = new Date(currMonthStr + "-01");
     const prevDateObj = new Date(prevMonthStr + "-01");
-    
+
     const currMonthNameEn = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     const currMonthNameAr = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
     const prevMonthNameAr = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
@@ -2244,57 +2287,57 @@ function generateFullMonthlyReport() {
     document.getElementById('th-curr-month').innerText = currMonthNameAr;
     document.getElementById('th-prev-month').innerText = prevMonthNameAr;
 
-    // استخراج الإحصائيات للشهرين
-    let currStats = getMonthlyStats(currMonthStr);
-    let prevStats = getMonthlyStats(prevMonthStr);
+    let currStats = getMonthlyDetailedStats(currMonthStr);
+    let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
-    // 1- جدول المقارنة العام
+    // ==========================================
+    // 1. جدول المقارنة العام بالأسهم الذكية
+    // ==========================================
     const tbody = document.getElementById('mr-general-tbody');
     tbody.innerHTML = '';
-    const tableItems = [
-        { label: "1- عدد التحركات الجوية", curr: 0, prev: 0 }, // يمكنك جلبها من الـ SPI لاحقاً
-        { label: "2- عدد الحوادث", curr: currStats.accidents, prev: prevStats.accidents },
-        { label: "3- عدد الوقائع", curr: currStats.incidents, prev: prevStats.incidents },
-        { label: "4- حالات عدم المطابقة (الفحص اليومي)", curr: currStats.findingsTotal, prev: prevStats.findingsTotal },
-        { label: "5- حالات عدم المطابقة المعلقة", curr: currStats.findingsOpen, prev: prevStats.findingsOpen },
-        { label: "6- حالات عدم المطابقة التي تم تلافيها", curr: currStats.findingsClosed, prev: prevStats.findingsClosed },
-        { label: "7- استبيان الطيارين", curr: currStats.surveys, prev: prevStats.surveys },
-        { label: "8- الاجتماعات والتفتيشات والتوعية", curr: 0, prev: 0 }, 
-        { label: "9- كمية F.O.D (بلاستيك + معدن)", curr: currStats.fod.toFixed(3) + " KG", prev: prevStats.fod.toFixed(3) + " KG", isFloat: true }
+
+    const kpiComparisonList = [
+        { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" },
+        { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" },
+        { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" },
+        { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" },
+        { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" },
+        { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" },
+        { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" },
+        { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true }
     ];
 
-    tableItems.forEach(item => {
-        let diff = item.isFloat 
-            ? (parseFloat(item.curr) - parseFloat(item.prev)).toFixed(3) + " KG"
-            : (item.curr - item.prev);
-        
-        let diffColor = (item.curr - item.prev) > 0 && !item.isFloat ? "red" : (item.curr - item.prev) < 0 && !item.isFloat ? "green" : "#000";
+    kpiComparisonList.forEach(item => {
+        let diff = item.curr - item.prev;
+        let trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit);
+        let currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr;
+        let prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
 
         tbody.innerHTML += `
             <tr>
-                <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td>
-                <td style="border: 1px solid #000; padding: 8px;">${item.prev}</td>
-                <td style="border: 1px solid #000; padding: 8px;">${item.curr}</td>
-                <td style="border: 1px solid #000; padding: 8px; direction:ltr; font-weight:bold; color:${diffColor};">${diff}</td>
+                <td style="border: 1px solid #000; padding: 9px; text-align: right; font-weight: bold;">${item.label}</td>
+                <td style="border: 1px solid #000; padding: 9px; direction: ltr;">${prevDisplay}</td>
+                <td style="border: 1px solid #000; padding: 9px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td>
+                <td style="border: 1px solid #000; padding: 9px; text-align: center;">${trendHtml}</td>
             </tr>
         `;
     });
 
-    // 2- الرسوم البيانية
-    if(monthlyChart1) monthlyChart1.destroy();
-    if(monthlyChart2) monthlyChart2.destroy();
-    Chart.defaults.font.family = "'Arial', sans-serif";
+    // ==========================================
+    // 2. رسوم المخاطر والوقائع
+    // ==========================================
+    if (monthlyChart1) monthlyChart1.destroy();
+    if (monthlyChart2) monthlyChart2.destroy();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
 
-    // رسم المخاطر طبقاً للإدارة
     let depts = Object.keys(currStats.findingsByDept);
     let deptsData = Object.values(currStats.findingsByDept);
     monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), {
         type: 'bar',
-        data: { labels: depts, datasets: [{ label: 'المخاطر (الإجمالي)', data: deptsData, backgroundColor: '#a9a9a9' }] },
+        data: { labels: depts, datasets: [{ label: 'المخاطر طبقاً للإدارة', data: deptsData, backgroundColor: '#003366', borderRadius: 4 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'المخاطر طبقاً للإدارة / الجهة' } } }
     });
 
-    // رسم الوقائع بالأنواع
     let incTypesCount = {};
     currStats.incidentsList.forEach(inc => {
         let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other';
@@ -2302,83 +2345,194 @@ function generateFullMonthlyReport() {
     });
     monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), {
         type: 'bar',
-        data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#d9534f' }] },
+        data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
     });
 
-    // 3- تفاصيل الوقائع
+    // ==========================================
+    // 3. حصر الوقائع التفصيلي المماثل لملف الوورد
+    // ==========================================
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
-    
+
     let groupedInc = {};
     currStats.incidentsList.forEach(inc => {
         let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident';
-        if(!groupedInc[cat]) groupedInc[cat] = [];
+        if (!groupedInc[cat]) groupedInc[cat] = [];
         groupedInc[cat].push(inc);
     });
 
-    let catCounter = 'A';
+    let catChar = 'A';
     for (let cat in groupedInc) {
-        incList.innerHTML += `<h4 style="color: #003366; background:#e6e6e6; padding:5px; margin-top:20px;">${catCounter}) ${cat}. <span style="float:right;">Total: ${groupedInc[cat].length}</span></h4>`;
-        
-        let tableHtml = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:20px; text-align:left; font-size:14px;">`;
+        incList.innerHTML += `<div style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
+
+        let tbl = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
         groupedInc[cat].forEach((inc, idx) => {
-            let d = inc.Date ? inc.Date.split('T')[0] : '';
-            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '';
-            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '';
-            let airlineInfo = `Airline:<br><b>${inc.CAR || '-'}</b><br>Local Agent:<br><b>${inc.Equipment_Owned || '-'}</b>`;
-            
-            tableHtml += `
+            let d = inc.Date ? String(inc.Date).split('T')[0] : '';
+            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
+            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
+            let airlineInfo = `<b>Airline:</b> ${inc.CAR || '-'}<br><b>Local Agent:</b> ${inc.Equipment_Owned || '-'}`;
+
+            tbl += `
                 <tr>
-                    <td style="border: 1px solid #000; padding:10px; width:5%; text-align:center; font-weight:bold;">0${idx+1}</td>
-                    <td style="border: 1px solid #000; padding:10px; width:65%;">
-                        <strong style="color:#003366;">Description:</strong><br><span style="color:#333;">${desc}</span><br><br>
-                        <strong style="color:#28a745;">Action Taken:</strong><br><span style="color:#333;">${action}</span>
+                    <td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td>
+                    <td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;">
+                        <strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div>
+                        <strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div>
                     </td>
-                    <td style="border: 1px solid #000; padding:10px; width:15%; text-align:center; vertical-align:top;">${d}</td>
-                    <td style="border: 1px solid #000; padding:10px; width:15%; vertical-align:top;">${airlineInfo}</td>
+                    <td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td>
+                    <td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;">${airlineInfo}</td>
                 </tr>
             `;
         });
-        tableHtml += `</table>`;
-        incList.innerHTML += tableHtml;
-        catCounter = String.fromCharCode(catCounter.charCodeAt(0) + 1);
+        tbl += `</table>`;
+        incList.innerHTML += tbl;
+        catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
 
-    // 4- استبيان الكابتن (ملخص مبسط)
-    const surveyDiv = document.getElementById('mr-survey-details');
-    if(currStats.surveys === 0) {
-        surveyDiv.innerHTML = "<p>No Captain Surveys recorded for this month.</p>";
+    // ==========================================
+    // 4. قسم Captain Survey بالكامل وبالمصفوفة
+    // ==========================================
+    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
+
+    // حساب الإحصائيات لجميع البنود الـ 31
+    let matrixScores = {
+        "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {}
+    };
+    criteriaList.forEach(crit => {
+        matrixScores["Excellent"][crit] = 0;
+        matrixScores["Good"][crit] = 0;
+        matrixScores["Poor"][crit] = 0;
+        matrixScores["N/A"][crit] = 0;
+        matrixScores["Blank"][crit] = 0;
+    });
+
+    let airlinesCount = {};
+    let evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+    let commentsList = [];
+
+    currStats.surveys.forEach(s => {
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
+
+        criteriaList.forEach(crit => {
+            let val = s[crit] || "Blank";
+            if (matrixScores[val]) matrixScores[val][crit]++;
+            if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++;
+        });
+
+        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") {
+            commentsList.push(s);
+        }
+    });
+
+    // رسم بياني 1: شركات الطيران المشغلة
+    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
+    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Airlines Participation' } } }
+    });
+
+    // رسم بياني 2: التقييم الإجمالي دونات
+    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
+    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
+            datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating Distribution' } } }
+    });
+
+    // بناء جدول المصفوفة الـ 31 بند المماثل للوورد
+    let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
+    matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>`;
+    criteriaList.forEach(crit => {
+        matrixHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
+    });
+    matrixHtml += `</tr></thead><tbody>`;
+
+    const rowStyles = {
+        "Excellent": "background:#28a745; color:white; font-weight:bold;",
+        "Good": "background:#ffc107; color:black; font-weight:bold;",
+        "Poor": "background:#dc3545; color:white; font-weight:bold;",
+        "N/A": "background:#6c757d; color:white; font-weight:bold;",
+        "Blank": "background:#003366; color:white; font-weight:bold;"
+    };
+
+    ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => {
+        matrixHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`;
+        criteriaList.forEach(crit => {
+            let score = matrixScores[rating][crit];
+            matrixHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`;
+        });
+        matrixHtml += `</tr>`;
+    });
+    matrixHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
+
+    // جدول ملاحظات الكباتن
+    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+        <thead style="background: #e6e6e6;">
+            <tr>
+                <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
+                <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
+                <th style="border: 1px solid #000; padding: 6px;">Type</th>
+                <th style="border: 1px solid #000; padding: 6px;">DateTime</th>
+                <th style="border: 1px solid #000; padding: 6px;">REG</th>
+                <th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th>
+            </tr>
+        </thead><tbody>`;
+
+    if (commentsList.length === 0) {
+        commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded for this period.</td></tr>`;
     } else {
-        surveyDiv.innerHTML = `<p>Total Captain Surveys held in ${currMonthNameEn} are <b>${currStats.surveys}</b>.</p>`;
-        // يمكن هنا إضافة جدول يحصر التعليقات إذا أردت
+        commentsList.forEach(s => {
+            let dStr = s.Date ? String(s.Date).split('T')[0] : '';
+            commentsHtml += `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${dStr} ${s.Time || ''}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td>
+                </tr>
+            `;
+        });
     }
+    commentsHtml += `</tbody></table><p style="font-weight: bold; font-style: italic; margin-top: 6px; font-size: 11px;">Total of captain surveys with comments on ${currMonthNameEn} are ${commentsList.length}</p>`;
+    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
-    // 5- الـ FOD
+    // ==========================================
+    // 5. قسم الـ FOD
+    // ==========================================
     const fodDiv = document.getElementById('mr-fod-details');
-    if(currStats.fod === 0) {
-        fodDiv.innerHTML = "<p>No F.O.D records for this month.</p>";
+    if (currStats.fodTotal === 0) {
+        fodDiv.innerHTML = "<p style='color: #777;'>No F.O.D records for this month.</p>";
     } else {
-        fodDiv.innerHTML = `<p>Total F.O.D Collected for ${currMonthNameEn} is <b>${currStats.fod.toFixed(3)} KG</b>.</p>`;
+        fodDiv.innerHTML = `
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc; text-align: center; font-size: 12px;">
+                <thead style="background:#f9f9f9;">
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Month</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Plastic</th>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Metal</th>
+                        <th style="border: 1px solid #ccc; padding: 8px; background: #003366; color: #fff;">Gross Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold;">${currMonthNameEn}</td>
+                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodPlastic.toFixed(3)} KG</td>
+                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodMetal.toFixed(3)} KG</td>
+                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #003366;">${currStats.fodTotal.toFixed(3)} KG</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
     }
 
     document.getElementById('printable-main-report').style.display = 'block';
-}
-
-function exportMainReportPDF() {
-    const el = document.getElementById('printable-main-report');
-    if(el.style.display === 'none') return alert("اعرض التقرير أولاً");
-    
-    // إخفاء الأزرار أو الأشياء غير المرغوبة أثناء الطباعة لو وجدت
-    window.scrollTo(0, 0);
-
-    html2pdf().set({
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: 'Airport_Safety_Monthly_Report.pdf',
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr', 'h3', 'h4'] }
-    }).from(el).save();
 }
