@@ -138,6 +138,7 @@ function loadAppDataInit() {
                 globalUsers = data.users || [];
                 globalSpiData = data.spi || [];
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
+                globalFod = data.fod || []; // ضعه هنا
                 if(data.directory) globalDirectory = data.directory;
                 
                 renderDirectory(globalDirectory);
