@@ -67,6 +67,10 @@ let globalSpiData = [];
 let currentSurveyIndex = -1; 
 let currentDailyIndex = -1; 
 let currentIncidentIndex = -1;
+
+let isDailyEditMode = false;
+let currentDailyEditId = null;
+
 let currentIncidentEditId = null;
 
 let chartInstances = {}; 
@@ -157,7 +161,7 @@ function loadAppDataInit() {
                 globalSpiData = data.spi || [];
 
                 populateUsersDropdown(globalUsers);
-                renderDirectory(globalDirectory);
+                renderDirectory();
                 updateSurveyNavCounter();
                 buildSpiEntryForm();
 
@@ -636,7 +640,28 @@ function switchDailyTab(tab) {
 
 function updateDailyNavCounter() {
     const el = document.getElementById('nav-daily-counter');
-    if(el) el.innerText = `${currentDailyIndex + 1} / ${globalDailyInspections.length}`;
+    if(el) el.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`;
+}
+
+function clearDailyFormForNew() {
+    currentDailyIndex = -1;
+    isDailyEditMode = false;
+    currentDailyEditId = null;
+
+    document.getElementById('dailyForm').reset();
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(chk => chk.checked = false);
+    document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
+
+    let btn = document.getElementById('submitDailyBtn');
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية';
+        btn.style.backgroundColor = "var(--primary)";
+    }
+
+    let now = new Date().toISOString();
+    document.getElementById('dailyDate').value = now.split('T')[0];
+    document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5);
+    updateDailyNavCounter();
 }
 
 function navDaily(direction) {
@@ -647,35 +672,73 @@ function navDaily(direction) {
     else if (direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
 
     if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) {
-        navDailyTo(currentDailyIndex);
+        loadDailyInspectionToForm(currentDailyIndex);
     }
 }
 
-function navDailyTo(idx) {
+function loadDailyInspectionToForm(idx) {
+    if (idx < 0 || idx >= globalDailyInspections.length) return;
     currentDailyIndex = idx;
+    isDailyEditMode = true;
+
     let rep = globalDailyInspections[idx];
+    currentDailyEditId = rep.id;
+
     document.getElementById('dailyDate').value = rep.date || '';
     document.getElementById('dailyTime').value = rep.time || '';
     document.getElementById('dailyShift').value = rep.shift || 'صباحي';
     document.getElementById('dailyInspector').value = rep.inspector || '';
-    updateDailyNavCounter();
-}
 
-function clearDailyFormForNew() {
-    currentDailyIndex = -1;
-    document.getElementById('dailyForm').reset();
-    document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
-    let now = new Date().toISOString();
-    document.getElementById('dailyDate').value = now.split('T')[0];
-    document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5);
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(chk => chk.checked = false);
+    document.querySelectorAll('.check-inputs').forEach(el => {
+        el.style.display = 'none';
+        el.querySelectorAll('input').forEach(inp => inp.value = '');
+        el.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+    });
+
+    if (rep.findings && rep.findings.length > 0) {
+        rep.findings.forEach(f => {
+            let fCategory = (f.category || f.Category || "").trim();
+            let fItem = (f.item || f.Finding_Item || "").trim();
+
+            document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, cIdx) => {
+                let parts = chk.value.split('|');
+                let chkCat = (parts[0] || "").trim();
+                let chkItem = (parts[1] || "").trim();
+
+                if (chkCat === fCategory && chkItem === fItem) {
+                    chk.checked = true;
+                    toggleInputs(cIdx);
+
+                    let noteEl = document.getElementById(`note_${cIdx}`);
+                    let locEl = document.getElementById(`loc_${cIdx}`);
+                    let respEl = document.getElementById(`resp_${cIdx}`);
+
+                    if (noteEl) noteEl.value = f.note || f.Corrective_Action || '';
+                    if (locEl) locEl.value = f.location || f.Location || '';
+                    if (respEl) respEl.value = f.responsible || f.Responsible || '';
+                }
+            });
+        });
+    }
+
+    let btn = document.getElementById('submitDailyBtn');
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تحديث وحفظ التعديلات';
+        btn.style.backgroundColor = "#e67e22";
+    }
+
     updateDailyNavCounter();
+    window.scrollTo({ top: document.getElementById('dailyForm').offsetTop - 30, behavior: 'smooth' });
 }
 
 async function submitDailyInspection(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const btn = document.getElementById('submitDailyBtn');
+    const msg = document.getElementById('dailyMsg');
+
     btn.disabled = true;
-    btn.innerHTML = 'جاري الحفظ...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
     let findings = [];
     document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
@@ -692,8 +755,10 @@ async function submitDailyInspection(e) {
         }
     });
 
+    let reportId = isDailyEditMode && currentDailyEditId ? currentDailyEditId : Date.now();
+
     let rep = {
-        id: Date.now(),
+        id: reportId,
         date: document.getElementById('dailyDate').value,
         time: document.getElementById('dailyTime').value,
         shift: document.getElementById('dailyShift').value,
@@ -701,25 +766,95 @@ async function submitDailyInspection(e) {
         findings: findings
     };
 
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "submitDailyInspection", reportData: rep })
-    });
+    let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection";
 
-    globalDailyInspections.unshift(rep);
-    renderSavedDaily();
-    document.getElementById('dailyMsg').innerText = "✅ تم حفظ الجولة!";
-    setTimeout(() => { btn.disabled = false; btn.innerHTML = 'حفظ الجولة التفتيشية'; document.getElementById('dailyMsg').innerText = ""; clearDailyFormForNew(); }, 1500);
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: actionType, reportData: rep })
+        });
+
+        if (isDailyEditMode) {
+            let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId));
+            if (existingIdx !== -1) {
+                globalDailyInspections[existingIdx] = rep;
+            }
+            msg.style.color = "green";
+            msg.innerText = "✅ تم تحديث بيانات الجولة بنجاح!";
+        } else {
+            globalDailyInspections.unshift(rep);
+            msg.style.color = "green";
+            msg.innerText = "✅ تم حفظ الجولة التفتيشية بنجاح!";
+        }
+
+        renderSavedDaily();
+        setTimeout(() => {
+            btn.disabled = false;
+            msg.innerText = "";
+            clearDailyFormForNew();
+        }, 1500);
+
+    } catch (err) {
+        console.error("Daily Save Error:", err);
+        btn.disabled = false;
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ أثناء الاتصال بالسيرفر!";
+    }
 }
 
 function renderSavedDaily() {
     const tbody = document.getElementById('saved-daily-tbody');
     if (!tbody) return;
     tbody.innerHTML = "";
-    globalDailyInspections.forEach(rep => {
-        tbody.innerHTML += `<tr><td>${rep.date}</td><td>${rep.time}</td><td>${rep.shift}</td><td>${rep.inspector}</td><td>${rep.findings.length} ملاحظة</td><td>عرض</td></tr>`;
+
+    globalDailyInspections.forEach((rep, idx) => {
+        let fCount = rep.findings ? rep.findings.length : 0;
+        let countBadge = fCount > 0 
+            ? `<span style="color:#dc3545; font-weight:bold;">${fCount} ملاحظة</span>` 
+            : `<span style="color:#28a745; font-weight:bold;">سليم (0 ملاحظة)</span>`;
+
+        tbody.innerHTML += `
+            <tr>
+                <td dir="ltr">${rep.date || '-'}</td>
+                <td>${rep.time || '-'}</td>
+                <td>${rep.shift || '-'}</td>
+                <td>${rep.inspector || '-'}</td>
+                <td>${countBadge}</td>
+                <td>
+                    <button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#003366; color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:6px;">
+                        <i class="fa-solid fa-pen-to-square"></i> عرض وتعديل
+                    </button>
+                    <button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
     });
+}
+
+async function deleteDailyInspectionRecord(idx) {
+    if (!confirm("هل أنت متأكد من حذف هذه الجولة التفتيشية وجميع ملاحظاتها نهائياً؟")) return;
+
+    let rep = globalDailyInspections[idx];
+    let repId = rep.id;
+
+    globalDailyInspections.splice(idx, 1);
+    renderSavedDaily();
+    updateDailyNavCounter();
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                action: "updateDailyInspection",
+                reportData: { id: repId, findings: [] }
+            })
+        });
+    } catch (e) {
+        console.error("Delete Error:", e);
+    }
 }
 
 function generateDailyPrintReport() {
@@ -746,17 +881,17 @@ function generateDailyPrintReport() {
                 <tr>
                     <td style="text-align:center;">${counter++}</td>
                     <td style="direction:ltr;">${rep.date}</td>
-                    <td>${f.location}</td>
-                    <td>${f.item} - ${f.note}</td>
-                    <td>${f.responsible}</td>
+                    <td>${f.location || f.Location || '-'}</td>
+                    <td>${f.item || f.Finding_Item || '-'} - ${f.note || f.Corrective_Action || '-'}</td>
+                    <td>${f.responsible || f.Responsible || '-'}</td>
                     <td>-</td>
-                    <td style="color:${f.status === 'مغلق' ? 'green' : 'red'}; font-weight:bold;">${f.status}</td>
+                    <td style="color:${f.status === 'مغلق' ? 'green' : 'red'}; font-weight:bold;">${f.status || 'مفتوح'}</td>
                 </tr>
             `;
         });
     });
 
-    if(counter === 1) cTbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>سليم 100% ولا توجد ملاحظات</td></tr>";
+    if(counter === 1) cTbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>سليم 100% ولا توجد ملاحظات لهذه الفترة</td></tr>";
     document.getElementById('printable-daily-report').style.display = 'block';
 }
 
@@ -766,7 +901,7 @@ function exportDailyPDF() {
 }
 
 // ==========================================
-// 3. سجل الحوادث والوقائع (الكود الكامل لـ 28 حقل)
+// 3. سجل الحوادث والوقائع 
 // ==========================================
 function switchIncidentTab(tab) {
     document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -777,7 +912,7 @@ function switchIncidentTab(tab) {
 
 function updateIncidentNavCounter() {
     const el = document.getElementById('nav-incident-counter');
-    if(el) el.innerText = `${currentIncidentIndex + 1} / ${globalIncidents.length}`;
+    if(el) el.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`;
 }
 
 function clearIncidentForm() {
@@ -787,9 +922,12 @@ function clearIncidentForm() {
     let now = new Date().toISOString();
     document.getElementById('incDate').value = now.split('T')[0];
     document.getElementById('incTime').value = now.split('T')[1].substring(0, 5);
+    
     let btn = document.getElementById('submitIncBtn');
-    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة';
-    btn.style.backgroundColor = "#dc3545";
+    if(btn) {
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة';
+        btn.style.backgroundColor = "#dc3545";
+    }
     updateIncidentNavCounter();
 }
 
@@ -833,8 +971,10 @@ function navIncidents(direction) {
         document.getElementById('incRecommendation').value = inc.Recommendation || '';
 
         let btn = document.getElementById('submitIncBtn');
-        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل الواقعة الحالية';
-        btn.style.backgroundColor = "#e67e22";
+        if(btn) {
+            btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل الواقعة الحالية';
+            btn.style.backgroundColor = "#e67e22";
+        }
 
         updateIncidentNavCounter();
     }
@@ -904,7 +1044,7 @@ async function submitIncident(e) {
 
         renderSavedIncidents();
         msg.style.color = "green";
-        msg.innerText = isEdit ? "✅ تم تعديل الواقعة بنجاح!" : "✅ تم حفظ الواقعة بنجاح في قاعدة البيانات!";
+        msg.innerText = isEdit ? "✅ تم تعديل الواقعة بنجاح!" : "✅ تم حفظ الواقعة بنجاح!";
 
         setTimeout(() => {
             btn.disabled = false;
@@ -929,7 +1069,7 @@ function renderSavedIncidents() {
                 <td dir="ltr">${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td>
                 <td>${inc.Location || inc.Flight_No || '-'}</td>
                 <td>${inc.Characterization || inc.charaterization || '-'}</td>
-                <td style="font-weight:bold; color:${inc.Risk_Severity === 'Catastrophic' ? 'red' : 'inherit'}">${inc.Risk_Severity || '-'}</td>
+                <td style="font-weight:bold; color:${inc.Risk_Severity === 'Catastrophic' ? '#dc3545' : 'inherit'}">${inc.Risk_Severity || '-'}</td>
                 <td>${inc.Prepared_By || inc.preparedBy || '-'}</td>
                 <td><button type="button" onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
@@ -937,7 +1077,7 @@ function renderSavedIncidents() {
 }
 
 async function deleteIncidentRecord(idx) {
-    if(!confirm("تأكيد الحذف؟")) return;
+    if(!confirm("تأكيد حذف الواقعة نهائياً؟")) return;
     let item = globalIncidents[idx];
     await fetch(API_URL, {
         method: 'POST',
@@ -946,6 +1086,7 @@ async function deleteIncidentRecord(idx) {
     });
     globalIncidents.splice(idx, 1);
     renderSavedIncidents();
+    updateIncidentNavCounter();
 }
 
 function generateMonthlyIncidents() {
@@ -1108,7 +1249,7 @@ function getMonthlyDetailedStats(monthStr) {
                 stats.findingsTotal++;
                 if (f.status === 'مغلق') stats.findingsClosed++;
                 else stats.findingsOpen++;
-                stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
+                stats.findingsByDept[f.responsible || f.Responsible] = (stats.findingsByDept[f.responsible || f.Responsible] || 0) + 1;
             });
         }
     });
@@ -1120,7 +1261,7 @@ function getMonthlyDetailedStats(monthStr) {
 
     globalFod.forEach(f => {
         let rawDate = f.Date || f.date || '';
-        let fDate = String(rawDate).split('T')[0];
+        let fDate = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0];
         if (fDate.startsWith(monthStr)) {
             let p = parseFloat(f.Plastic || f.plastic || 0);
             let m = parseFloat(f.Metal || f.metal || 0);
@@ -1152,7 +1293,6 @@ function generateFullMonthlyReport() {
     let currStats = getMonthlyDetailedStats(currMonthStr);
     let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
-    // 1. جدول المقارنة العام
     const tbody = document.getElementById('mr-general-tbody');
     tbody.innerHTML = '';
     const kpiComparisonList = [
@@ -1182,7 +1322,6 @@ function generateFullMonthlyReport() {
         `;
     });
 
-    // 2. رسوم المخاطر والوقائع
     if (monthlyChart1) monthlyChart1.destroy();
     if (monthlyChart2) monthlyChart2.destroy();
     Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -1206,7 +1345,6 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
     });
 
-    // 3. حصر الوقائع
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
@@ -1246,7 +1384,6 @@ function generateFullMonthlyReport() {
         catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
 
-    // 4. Captain Survey
     document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
 
     let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
@@ -1315,7 +1452,7 @@ function generateFullMonthlyReport() {
     matrixHtml += `</tbody></table>`;
     document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
 
-    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+    let commentsHtml = `<table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
         <thead style="background: #e6e6e6;">
             <tr>
                 <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
@@ -1347,7 +1484,6 @@ function generateFullMonthlyReport() {
     commentsHtml += `</tbody></table>`;
     document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
-    // 5. قسم الـ FOD الكامل ذو الأربعة مواقع
     const fodDiv = document.getElementById('mr-fod-details');
     let filteredFod = globalFod.filter(f => {
         let rawDate = f.Date || f.date || '';
@@ -1504,7 +1640,6 @@ function submitFOD(e) {
         });
     });
 
-    // إرسال البيانات عبر iframe خفي لتجاوز أي مشاكل CORS أو قيود طول الرابط نهائياً
     let iframeName = "hiddenFodFrame_" + Date.now();
     let iframe = document.createElement("iframe");
     iframe.name = iframeName;
@@ -1528,11 +1663,9 @@ function submitFOD(e) {
     document.body.appendChild(form);
     form.submit();
 
-    // تحديث البيانات محلياً وإعلام المستخدم
     globalFod = [...globalFod, ...localFodArray];
 
     setTimeout(() => {
-        // تنظيف العناصر المؤقتة
         if (form.parentNode) form.parentNode.removeChild(form);
         if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
 
@@ -1548,6 +1681,7 @@ function submitFOD(e) {
         }, 1500);
     }, 1200);
 }
+
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
     if (!m) return alert("اختر الشهر أولاً لعرض التقرير");
@@ -1630,29 +1764,186 @@ function populateUsersDropdown(usersArray) {
     if (userInp) userInp.value = "Admin";
 }
 
-function renderDirectory(dataList) {
+function renderDirectory() {
     const tbody = document.getElementById('directory-tbody');
     if (!tbody) return;
     tbody.innerHTML = "";
     let counter = 1;
-    dataList.forEach(item => {
+    globalDirectory.forEach(item => {
         tbody.innerHTML += `
             <tr>
                 <td>${counter++}</td>
                 <td>${item.Name || '-'}</td>
                 <td>${item.Role || '-'}</td>
-                <td>${item.Ext || '-'}</td>
-                <td>${item.Mobile || '-'}</td>
+                <td dir="ltr">${item.Ext || '-'}</td>
+                <td dir="ltr">${item.Mobile || '-'}</td>
                 <td>-</td>
             </tr>`;
     });
 }
-function filterDirectory() {}
-function openDirModal() { document.getElementById('dirModal').style.display = 'flex'; }
-function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
-async function saveDirEntry(e) { e.preventDefault(); closeDirModal(); }
-function exportDirectoryPDF() { window.print(); }
-function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; }
-function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-async function saveNewAircraft() { closeAddModal(); }
-async function addUser(e) { e.preventDefault(); }
+
+function filterDirectory() {
+    let val = document.getElementById('dirSearch').value.toLowerCase();
+    let tbody = document.getElementById('directory-tbody');
+    tbody.innerHTML = '';
+    let counter = 1;
+    globalDirectory.forEach(item => {
+        let n = (item.Name || '').toLowerCase();
+        let r = (item.Role || '').toLowerCase();
+        let d = (item.Department || '').toLowerCase();
+        if (n.includes(val) || r.includes(val) || d.includes(val)) {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${counter++}</td>
+                    <td>${item.Name || '-'}</td>
+                    <td>${item.Role || '-'}</td>
+                    <td dir="ltr">${item.Ext || '-'}</td>
+                    <td dir="ltr">${item.Mobile || '-'}</td>
+                    <td>-</td>
+                </tr>`;
+        }
+    });
+}
+
+function openDirModal() { 
+    document.getElementById('dirModal').style.display = 'flex'; 
+}
+
+function closeDirModal() { 
+    document.getElementById('dirModal').style.display = 'none'; 
+}
+
+async function saveDirEntry(e) { 
+    e.preventDefault(); 
+    let btn = document.getElementById('dirSubmitBtn');
+    let msg = document.getElementById('dirMsg');
+    btn.disabled = true;
+    btn.innerText = "جاري الحفظ...";
+    
+    let obj = {
+        id: document.getElementById('dirId').value || "DIR-" + Date.now(),
+        dept: document.getElementById('dirDept').value,
+        name: document.getElementById('dirName').value,
+        role: document.getElementById('dirRole').value,
+        ext: document.getElementById('dirExt').value,
+        mobile: document.getElementById('dirMobile').value
+    };
+    
+    try {
+        await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "manageDirectory", subAction: "add", dirData: obj }) 
+        });
+        globalDirectory.push(obj);
+        renderDirectory();
+        document.getElementById('dirForm').reset();
+        closeDirModal();
+    } catch(err) {
+        msg.style.color = "red";
+        msg.innerText = "خطأ في الاتصال!";
+    }
+    btn.disabled = false;
+    btn.innerText = "حفظ في الدليل";
+}
+
+function exportDirectoryPDF() { 
+    window.print(); 
+}
+
+function openFleetModal() { 
+    document.getElementById('addModal').style.display = 'flex'; 
+}
+
+function closeAddModal() { 
+    document.getElementById('addModal').style.display = 'none'; 
+}
+
+async function saveNewAircraft() {
+    let btn = document.querySelector('#addModal .submit-btn');
+    let msg = document.getElementById('modalMsg');
+    
+    let reg = document.getElementById('newReg').value.toUpperCase();
+    let type = document.getElementById('newType').value.toUpperCase();
+    let airline = document.getElementById('newAirline').value.toUpperCase();
+    let handling = document.getElementById('newHandling').value;
+    let country = document.getElementById('newCountry').value;
+    
+    if(!reg || !type || !airline) {
+        msg.style.color = "red";
+        msg.innerText = "الرجاء إكمال البيانات الأساسية";
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerText = "جاري الحفظ...";
+    
+    try {
+        await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country }) 
+        });
+        globalFleetData.unshift({REG: reg, TYPE: type, CAR: airline});
+        msg.style.color = "green";
+        msg.innerText = "تم الحفظ!";
+        setTimeout(() => {
+            closeAddModal();
+            document.getElementById('newReg').value = "";
+            document.getElementById('newType').value = "";
+            document.getElementById('newAirline').value = "";
+            msg.innerText = "";
+            btn.disabled = false;
+            btn.innerText = "حفظ";
+        }, 1000);
+    } catch (err) {
+        msg.style.color = "red";
+        msg.innerText = "حدث خطأ";
+        btn.disabled = false;
+        btn.innerText = "حفظ";
+    }
+}
+
+async function addUser(e) {
+    e.preventDefault();
+    let btn = document.querySelector('#account-management-section .submit-btn');
+    let msg = document.getElementById('userMsg');
+    
+    let role = document.getElementById('newUserRole').value;
+    let user = document.getElementById('newUsername').value;
+    let pass = document.getElementById('newUserPass').value;
+    
+    btn.disabled = true;
+    msg.style.color = "#003366";
+    msg.innerText = "جاري إضافة الحساب...";
+    
+    try {
+        await fetch(API_URL, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "addUser", role: role, username: user, password: pass }) 
+        });
+        
+        globalUsers.push({Role: role, Username: user, Password: pass});
+        
+        msg.style.color = "green";
+        msg.innerText = "✅ تمت إضافة الحساب بنجاح!";
+        
+        const tbody = document.getElementById('users-tbody');
+        if(tbody) {
+            tbody.innerHTML += `<tr><td>${globalUsers.length}</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`;
+        }
+        
+        document.getElementById('newUsername').value = "";
+        document.getElementById('newUserPass').value = "";
+        
+        setTimeout(() => {
+            btn.disabled = false;
+            msg.innerText = "";
+        }, 1500);
+    } catch(err) {
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ";
+        btn.disabled = false;
+    }
+}
