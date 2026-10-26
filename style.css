@@ -1,3 +1,7 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 :root {
     --primary: #003366;
     --secondary: #f39c12;
@@ -6,7 +10,7 @@
 }
 
 body {
-    font-family: 'Cairo', sans-serif !important;
+    font-family: 'Cairo', sans-serif;
     background-color: var(--bg-light);
     margin: 0;
     padding: 0;
@@ -14,8 +18,8 @@ body {
     color: var(--text-dark);
 }
 
-body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, label, input, button, select, textarea {
-    font-family: 'Cairo', sans-serif !important;
+input, button, select, textarea {
+    font-family: inherit;
 }
 
 /* ========================================================
@@ -49,14 +53,12 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     z-index: 10000; transition: opacity 0.5s ease-out;
 }
 
-/* طبقة الدخان في الخلفية */
 .smoke-bg {
     position: absolute; width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(0,51,102,0.05) 0%, rgba(255,255,255,1) 60%);
     animation: smokeMove 6s linear infinite; opacity: 0.8; z-index: 1;
 }
 
-/* حاوية اللوجو والشريط */
 .splash-content {
     position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
     animation: smokeDissolveEnter 3.5s ease-in-out forwards;
@@ -77,7 +79,6 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     animation: loadProgress 1.8s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
 }
 
-/* حركات الأنيميشن */
 @keyframes smokeMove { 
     0% { transform: translate(0,0) scale(1); } 
     50% { transform: translate(-2%,2%) scale(1.05); } 
@@ -94,6 +95,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 
 @keyframes fadeIn { to { opacity: 1; } }
 @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+
 /* ========================================================
    شاشة تسجيل الدخول
    ======================================================== */
@@ -139,7 +141,6 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
-    box-sizing: border-box;
 }
 
 .login-btn, .submit-btn {
@@ -194,7 +195,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 }
 
 /* ========================================================
-   لوحة القيادة - شبكة الإدارات (3x2)
+   لوحة القيادة - شبكة الإدارات
    ======================================================== */
 .content-area {
     padding: 30px;
@@ -243,13 +244,13 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     margin-bottom: 15px;
 }
 
-.icon-safety   { color: #0088ff; }
-.icon-health   { color: #28a745; }
-.icon-nature   { color: #5a189a; }
-.icon-fire     { color: #dc3545; }
-.icon-quality  { color: #ffc107; }
-.icon-directory{ color: #fd7e14; }
-.icon-users    { color: #495057; }
+.icon-safety    { color: #0088ff; }
+.icon-health    { color: #28a745; }
+.icon-nature    { color: #5a189a; }
+.icon-fire      { color: #dc3545; }
+.icon-quality   { color: #ffc107; }
+.icon-directory { color: #fd7e14; }
+.icon-users     { color: #495057; }
 
 .dept-title {
     color: var(--primary);
@@ -417,10 +418,8 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     border-radius: 6px;
     font-size: 0.9rem;
     width: 100%;
-    box-sizing: border-box;
 }
 
-/* جعل صف الرحلة صفاً واحداً على الديسكتوب ومتجاوباً */
 #surveyForm .form-grid {
     display: grid;
     grid-template-columns: 1.35fr 1.1fr 1fr 1fr 1.1fr 0.85fr;
@@ -468,7 +467,6 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 0.85rem;
-    box-sizing: border-box;
     background: #fff;
     font-weight: bold;
     color: #003366;
@@ -591,7 +589,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
    ======================================================== */
 .checklist-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     margin-top: 20px;
 }
@@ -684,9 +682,8 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-family: 'Cairo', sans-serif;
+    font-family: inherit;
     resize: vertical;
-    box-sizing: border-box;
     font-size: 0.9rem;
 }
 
@@ -781,3 +778,4 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     background: rgba(0,0,0,0.5);
     display: none;
     justify-content: center;
+}
