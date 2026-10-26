@@ -2130,64 +2130,195 @@ function exportFodPDF() {
         html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(el).save();
 }
-
 // ----------------- التقرير الشهري المجمع (Word Style) -----------------
-function generateFullMonthlyReport() {
-    const monthVal = document.getElementById('mainReportMonth').value;
-    if(!monthVal) return alert("اختر الشهر");
-    
-    const dateObj = new Date(monthVal + "-01");
-    const monthName = dateObj.toLocaleString('en-US', { month: 'long' });
-    const year = dateObj.getFullYear();
-    document.getElementById('mr-title-date').innerText = `${monthName} - ${year}`;
-    
-    // فلترة الوقائع
-    let mIncidents = globalIncidents.filter(i => i.Date && i.Date.startsWith(monthVal));
-    document.getElementById('mr-incidents').innerText = mIncidents.length;
-    // الحوادث (حيث أن Severity = Catastrophic مثلاً أو حسب تعريفك) - افترضنا صفر للتبسيط أو نفلتر
-    document.getElementById('mr-accidents').innerText = mIncidents.filter(i => i.Risk_Severity === 'Catastrophic').length;
-    
-    // فلترة الاستبيانات
-    let mSurveys = globalSurveys.filter(s => s.Date && s.Date.startsWith(monthVal));
-    document.getElementById('mr-surveys').innerText = mSurveys.length;
-    
-    // فلترة الفحص اليومي (المخالفات)
-    let mDailys = globalDailyInspections.filter(d => d.date && d.date.startsWith(monthVal));
-    let findingsCount = 0;
-    mDailys.forEach(d => findingsCount += d.findings.length);
-    document.getElementById('mr-findings').innerText = findingsCount;
-    
-    // حساب FOD
-    let mFod = globalFod.filter(f => f.date && f.date.startsWith(monthVal));
-    let totalFod = 0;
-    mFod.forEach(f => totalFod += (parseFloat(f.plastic||0) + parseFloat(f.metal||0)));
-    document.getElementById('mr-fod').innerText = totalFod.toFixed(3) + " KG";
+let monthlyChart1, monthlyChart2;
 
-    // رسم تفاصيل الوقائع بالإنجليزية (كما في ملف الوورد)
+function getMonthlyStats(monthStr) {
+    let stats = {
+        movements: 0, accidents: 0, incidents: 0, findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: 0, fod: 0,
+        incidentsList: [], findingsByDept: {}
+    };
+
+    // حوادث ووقائع
+    globalIncidents.forEach(inc => {
+        if(inc.Date && inc.Date.startsWith(monthStr)) {
+            if(inc.Risk_Severity === 'Catastrophic') stats.accidents++;
+            else stats.incidents++;
+            stats.incidentsList.push(inc);
+        }
+    });
+
+    // استبيانات
+    globalSurveys.forEach(s => {
+        if(s.Date && s.Date.startsWith(monthStr)) stats.surveys++;
+    });
+
+    // فحص يومي
+    globalDailyInspections.forEach(d => {
+        if(d.date && d.date.startsWith(monthStr)) {
+            d.findings.forEach(f => {
+                stats.findingsTotal++;
+                if(f.status === 'مغلق') stats.findingsClosed++;
+                else stats.findingsOpen++;
+
+                stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
+            });
+        }
+    });
+
+    // FOD
+    globalFod.forEach(f => {
+        if(f.date && f.date.startsWith(monthStr)) {
+            stats.fod += (parseFloat(f.plastic||0) + parseFloat(f.metal||0));
+        }
+    });
+
+    return stats;
+}
+
+function getPreviousMonthStr(monthStr) {
+    let [year, month] = monthStr.split('-');
+    let d = new Date(year, parseInt(month) - 2);
+    let pYear = d.getFullYear();
+    let pMonth = String(d.getMonth() + 1).padStart(2, '0');
+    return `${pYear}-${pMonth}`;
+}
+
+function generateFullMonthlyReport() {
+    const currMonthStr = document.getElementById('mainReportMonth').value;
+    if(!currMonthStr) return alert("اختر الشهر");
+    
+    const prevMonthStr = getPreviousMonthStr(currMonthStr);
+    
+    // أسماء الشهور للغلاف والجدول
+    const currDateObj = new Date(currMonthStr + "-01");
+    const prevDateObj = new Date(prevMonthStr + "-01");
+    
+    const currMonthNameEn = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const currMonthNameAr = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
+    const prevMonthNameAr = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
+
+    document.getElementById('mr-title-date').innerText = currMonthNameEn;
+    document.getElementById('th-curr-month').innerText = currMonthNameAr;
+    document.getElementById('th-prev-month').innerText = prevMonthNameAr;
+
+    // استخراج الإحصائيات للشهرين
+    let currStats = getMonthlyStats(currMonthStr);
+    let prevStats = getMonthlyStats(prevMonthStr);
+
+    // 1- جدول المقارنة العام
+    const tbody = document.getElementById('mr-general-tbody');
+    tbody.innerHTML = '';
+    const tableItems = [
+        { label: "1- عدد التحركات الجوية", curr: 0, prev: 0 }, // يمكنك جلبها من الـ SPI لاحقاً
+        { label: "2- عدد الحوادث", curr: currStats.accidents, prev: prevStats.accidents },
+        { label: "3- عدد الوقائع", curr: currStats.incidents, prev: prevStats.incidents },
+        { label: "4- حالات عدم المطابقة (الفحص اليومي)", curr: currStats.findingsTotal, prev: prevStats.findingsTotal },
+        { label: "5- حالات عدم المطابقة المعلقة", curr: currStats.findingsOpen, prev: prevStats.findingsOpen },
+        { label: "6- حالات عدم المطابقة التي تم تلافيها", curr: currStats.findingsClosed, prev: prevStats.findingsClosed },
+        { label: "7- استبيان الطيارين", curr: currStats.surveys, prev: prevStats.surveys },
+        { label: "8- الاجتماعات والتفتيشات والتوعية", curr: 0, prev: 0 }, 
+        { label: "9- كمية F.O.D (بلاستيك + معدن)", curr: currStats.fod.toFixed(3) + " KG", prev: prevStats.fod.toFixed(3) + " KG", isFloat: true }
+    ];
+
+    tableItems.forEach(item => {
+        let diff = item.isFloat 
+            ? (parseFloat(item.curr) - parseFloat(item.prev)).toFixed(3) + " KG"
+            : (item.curr - item.prev);
+        
+        let diffColor = (item.curr - item.prev) > 0 && !item.isFloat ? "red" : (item.curr - item.prev) < 0 && !item.isFloat ? "green" : "#000";
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td>
+                <td style="border: 1px solid #000; padding: 8px;">${item.prev}</td>
+                <td style="border: 1px solid #000; padding: 8px;">${item.curr}</td>
+                <td style="border: 1px solid #000; padding: 8px; direction:ltr; font-weight:bold; color:${diffColor};">${diff}</td>
+            </tr>
+        `;
+    });
+
+    // 2- الرسوم البيانية
+    if(monthlyChart1) monthlyChart1.destroy();
+    if(monthlyChart2) monthlyChart2.destroy();
+    Chart.defaults.font.family = "'Arial', sans-serif";
+
+    // رسم المخاطر طبقاً للإدارة
+    let depts = Object.keys(currStats.findingsByDept);
+    let deptsData = Object.values(currStats.findingsByDept);
+    monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), {
+        type: 'bar',
+        data: { labels: depts, datasets: [{ label: 'المخاطر (الإجمالي)', data: deptsData, backgroundColor: '#a9a9a9' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'المخاطر طبقاً للإدارة / الجهة' } } }
+    });
+
+    // رسم الوقائع بالأنواع
+    let incTypesCount = {};
+    currStats.incidentsList.forEach(inc => {
+        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other';
+        incTypesCount[cat] = (incTypesCount[cat] || 0) + 1;
+    });
+    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), {
+        type: 'bar',
+        data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#d9534f' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
+    });
+
+    // 3- تفاصيل الوقائع
+    document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
     
-    if(mIncidents.length === 0) {
-        incList.innerHTML = "<p style='text-align:right; direction:rtl;'>لا توجد وقائع مسجلة في هذا الشهر.</p>";
-    } else {
-        mIncidents.forEach((inc, idx) => {
-            let cat = inc.Characterization ? inc.Characterization.split('/')[0] : 'Incident';
-            let desc = inc.Description || 'No description provided.';
-            let action = inc.Action_Taken || 'No action recorded.';
-            incList.innerHTML += `
-                <div style="margin-bottom: 30px; border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
-                    <h3 style="color: #d9534f; margin-top:0;">${idx+1}- ${cat}</h3>
-                    <table style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
-                        <tr><td style="width:20%; font-weight:bold;">Date:</td><td>${inc.Date ? inc.Date.split('T')[0] : ''}</td></tr>
-                        <tr><td style="font-weight:bold;">Airline:</td><td>${inc.CAR || inc.Equipment_Owned || '-'}</td></tr>
-                    </table>
-                    <strong>Description:</strong>
-                    <p style="margin-top:5px; margin-bottom:15px; text-align:justify;">${desc}</p>
-                    <strong>Action Taken:</strong>
-                    <p style="margin-top:5px; color:#28a745; text-align:justify;">${action}</p>
-                </div>
+    let groupedInc = {};
+    currStats.incidentsList.forEach(inc => {
+        let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident';
+        if(!groupedInc[cat]) groupedInc[cat] = [];
+        groupedInc[cat].push(inc);
+    });
+
+    let catCounter = 'A';
+    for (let cat in groupedInc) {
+        incList.innerHTML += `<h4 style="color: #003366; background:#e6e6e6; padding:5px; margin-top:20px;">${catCounter}) ${cat}. <span style="float:right;">Total: ${groupedInc[cat].length}</span></h4>`;
+        
+        let tableHtml = `<table style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:20px; text-align:left; font-size:14px;">`;
+        groupedInc[cat].forEach((inc, idx) => {
+            let d = inc.Date ? inc.Date.split('T')[0] : '';
+            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '';
+            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '';
+            let airlineInfo = `Airline:<br><b>${inc.CAR || '-'}</b><br>Local Agent:<br><b>${inc.Equipment_Owned || '-'}</b>`;
+            
+            tableHtml += `
+                <tr>
+                    <td style="border: 1px solid #000; padding:10px; width:5%; text-align:center; font-weight:bold;">0${idx+1}</td>
+                    <td style="border: 1px solid #000; padding:10px; width:65%;">
+                        <strong style="color:#003366;">Description:</strong><br><span style="color:#333;">${desc}</span><br><br>
+                        <strong style="color:#28a745;">Action Taken:</strong><br><span style="color:#333;">${action}</span>
+                    </td>
+                    <td style="border: 1px solid #000; padding:10px; width:15%; text-align:center; vertical-align:top;">${d}</td>
+                    <td style="border: 1px solid #000; padding:10px; width:15%; vertical-align:top;">${airlineInfo}</td>
+                </tr>
             `;
         });
+        tableHtml += `</table>`;
+        incList.innerHTML += tableHtml;
+        catCounter = String.fromCharCode(catCounter.charCodeAt(0) + 1);
+    }
+
+    // 4- استبيان الكابتن (ملخص مبسط)
+    const surveyDiv = document.getElementById('mr-survey-details');
+    if(currStats.surveys === 0) {
+        surveyDiv.innerHTML = "<p>No Captain Surveys recorded for this month.</p>";
+    } else {
+        surveyDiv.innerHTML = `<p>Total Captain Surveys held in ${currMonthNameEn} are <b>${currStats.surveys}</b>.</p>`;
+        // يمكن هنا إضافة جدول يحصر التعليقات إذا أردت
+    }
+
+    // 5- الـ FOD
+    const fodDiv = document.getElementById('mr-fod-details');
+    if(currStats.fod === 0) {
+        fodDiv.innerHTML = "<p>No F.O.D records for this month.</p>";
+    } else {
+        fodDiv.innerHTML = `<p>Total F.O.D Collected for ${currMonthNameEn} is <b>${currStats.fod.toFixed(3)} KG</b>.</p>`;
     }
 
     document.getElementById('printable-main-report').style.display = 'block';
@@ -2196,8 +2327,16 @@ function generateFullMonthlyReport() {
 function exportMainReportPDF() {
     const el = document.getElementById('printable-main-report');
     if(el.style.display === 'none') return alert("اعرض التقرير أولاً");
+    
+    // إخفاء الأزرار أو الأشياء غير المرغوبة أثناء الطباعة لو وجدت
+    window.scrollTo(0, 0);
+
     html2pdf().set({
-        margin: 0.5, filename: 'Airport_Safety_Monthly_Report.pdf', image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: 'Airport_Safety_Monthly_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-page-break', 'tr', 'h3', 'h4'] }
     }).from(el).save();
 }
