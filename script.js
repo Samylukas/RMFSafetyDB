@@ -811,34 +811,146 @@ function clearIncidentForm() {
     updateIncidentNavCounter();
 }
 
+let currentIncidentEditId = null;
+
+function clearIncidentForm() {
+    currentIncidentIndex = -1;
+    currentIncidentEditId = null;
+    document.getElementById('incidentForm').reset();
+    let now = new Date().toISOString();
+    document.getElementById('incDate').value = now.split('T')[0];
+    document.getElementById('incTime').value = now.split('T')[1].substring(0, 5);
+    let btn = document.getElementById('submitIncBtn');
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة';
+    btn.style.backgroundColor = "#dc3545";
+    updateIncidentNavCounter();
+}
+
+function navIncidents(direction) {
+    if (!globalIncidents || globalIncidents.length === 0) return alert("لا توجد وقائع مسجلة.");
+    if (direction === 'first') currentIncidentIndex = 0;
+    else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1;
+    else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++;
+    else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
+
+    if (currentIncidentIndex >= 0 && currentIncidentIndex < globalIncidents.length) {
+        let inc = globalIncidents[currentIncidentIndex];
+        currentIncidentEditId = inc.ID || inc.id;
+
+        document.getElementById('incDate').value = inc.Date ? String(inc.Date).split('T')[0] : '';
+        document.getElementById('incTime').value = inc.Time || '';
+        document.getElementById('incLocation').value = inc.Location || '';
+        document.getElementById('incCar').value = inc.CAR || '';
+        document.getElementById('incFlightNo').value = inc.Flight_No || '';
+        document.getElementById('incReg').value = inc.REG || '';
+        document.getElementById('incOrgVia').value = inc.ORG_VIA || '';
+        document.getElementById('incViaDst').value = inc.VIA_DST || '';
+        
+        document.getElementById('incPersonnel').value = inc.Personnel_Involved || '';
+        document.getElementById('incPosition').value = inc.Position || '';
+        document.getElementById('incInjuryType').value = inc.Injury_Type || '';
+        document.getElementById('incEquipmentNo').value = inc.Equipment_No || '';
+        document.getElementById('incDriver').value = inc.Driver_Name || '';
+        document.getElementById('incEqOwner').value = inc.Equipment_Owned || '';
+
+        document.getElementById('incChar').value = inc.Characterization || 'Equipment Accident';
+        document.getElementById('incRiskSev').value = inc.Risk_Severity || 'Minor';
+        document.getElementById('incRiskProb').value = inc.Risk_Probability || 'Remote';
+        document.getElementById('incStatus').value = inc.Status || 'In service';
+        document.getElementById('incCauses').value = inc.Occurrence_Causes || '';
+        document.getElementById('incPreparedBy').value = inc.Prepared_By || '';
+
+        document.getElementById('incHazardDesc').value = inc.Hazard_Description || '';
+        document.getElementById('incDesc').value = inc.Description || '';
+        document.getElementById('incAction').value = inc.Action_Taken || '';
+        document.getElementById('incRecommendation').value = inc.Recommendation || '';
+
+        let btn = document.getElementById('submitIncBtn');
+        btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل الواقعة الحالية';
+        btn.style.backgroundColor = "#e67e22";
+
+        updateIncidentNavCounter();
+    }
+}
+
 async function submitIncident(e) {
     e.preventDefault();
     const btn = document.getElementById('submitIncBtn');
+    const msg = document.getElementById('incMsg');
     btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    let isEdit = currentIncidentEditId !== null;
+    let newId = isEdit ? currentIncidentEditId : "INC-" + Date.now();
+
     let incObj = {
-        id: "INC-" + Date.now(),
+        id: newId,
         date: document.getElementById('incDate').value,
         time: document.getElementById('incTime').value,
         location: document.getElementById('incLocation').value,
+        personnel: document.getElementById('incPersonnel').value,
+        equipmentNo: document.getElementById('incEquipmentNo').value,
+        driver: document.getElementById('incDriver').value,
+        eqOwner: document.getElementById('incEqOwner').value,
+        status: document.getElementById('incStatus').value,
+        causes: document.getElementById('incCauses').value,
+        charaterization: document.getElementById('incChar').value,
+        riskSeverity: document.getElementById('incRiskSev').value,
+        riskProb: document.getElementById('incRiskProb').value,
         car: document.getElementById('incCar').value,
         flightNo: document.getElementById('incFlightNo').value,
         reg: document.getElementById('incReg').value,
+        orgVia: document.getElementById('incOrgVia').value,
+        viaDst: document.getElementById('incViaDst').value,
         preparedBy: document.getElementById('incPreparedBy').value,
-        charaterization: document.getElementById('incChar').value,
-        riskSeverity: document.getElementById('incRiskSev').value,
+        hazardDesc: document.getElementById('incHazardDesc').value,
         description: document.getElementById('incDesc').value,
         actionTaken: document.getElementById('incAction').value,
-        status: "In service"
+        recommendation: document.getElementById('incRecommendation').value,
+        position: document.getElementById('incPosition').value,
+        injuryType: document.getElementById('incInjuryType').value,
+        causesDetails: ""
     };
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "submitIncident", incidentData: incObj })
-    });
-    globalIncidents.unshift(incObj);
-    renderSavedIncidents();
-    document.getElementById('incMsg').innerText = "✅ تم حفظ الواقعة بنجاح!";
-    setTimeout(() => { btn.disabled = false; document.getElementById('incMsg').innerText = ""; clearIncidentForm(); }, 1500);
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj })
+        });
+
+        // تحديث المصفوفة محلياً لكي تنعكس في التقارير والجدول فوراً
+        let mappedLocal = {
+            ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location,
+            Personnel_Involved: incObj.personnel, Equipment_No: incObj.equipmentNo, Driver_Name: incObj.driver, Equipment_Owned: incObj.eqOwner,
+            Status: incObj.status, Occurrence_Causes: incObj.causes, Characterization: incObj.charaterization, Risk_Severity: incObj.riskSeverity,
+            Risk_Probability: incObj.riskProb, CAR: incObj.car, Flight_No: incObj.flightNo, REG: incObj.reg, ORG_VIA: incObj.orgVia,
+            VIA_DST: incObj.viaDst, Prepared_By: incObj.preparedBy, Hazard_Description: incObj.hazardDesc, Description: incObj.description,
+            Action_Taken: incObj.actionTaken, Recommendation: incObj.recommendation, Position: incObj.position, Injury_Type: incObj.injuryType
+        };
+
+        if (isEdit) {
+            let idx = globalIncidents.findIndex(i => (i.ID || i.id) === newId);
+            if (idx !== -1) globalIncidents[idx] = mappedLocal;
+        } else {
+            globalIncidents.unshift(mappedLocal);
+        }
+
+        renderSavedIncidents();
+        msg.style.color = "green";
+        msg.innerText = isEdit ? "✅ تم تعديل الواقعة بنجاح!" : "✅ تم حفظ الواقعة بنجاح في قاعدة البيانات!";
+
+        setTimeout(() => {
+            btn.disabled = false;
+            msg.innerText = "";
+            clearIncidentForm();
+        }, 1500);
+
+    } catch (err) {
+        btn.disabled = false;
+        msg.style.color = "red";
+        msg.innerText = "حدث خطأ أثناء الحفظ!";
+    }
 }
 
 function renderSavedIncidents() {
@@ -848,33 +960,15 @@ function renderSavedIncidents() {
     globalIncidents.forEach((inc, idx) => {
         tbody.innerHTML += `
             <tr>
-                <td>${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td>
+                <td dir="ltr">${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td>
                 <td>${inc.Location || inc.Flight_No || '-'}</td>
                 <td>${inc.Characterization || inc.charaterization || '-'}</td>
+                <td style="font-weight:bold; color:${inc.Risk_Severity === 'Catastrophic' ? 'red' : 'inherit'}">${inc.Risk_Severity || '-'}</td>
                 <td>${inc.Prepared_By || inc.preparedBy || '-'}</td>
-                <td><button onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td>
+                <td><button type="button" onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
     });
 }
-
-async function deleteIncidentRecord(idx) {
-    if(!confirm("تأكيد الحذف؟")) return;
-    let item = globalIncidents[idx];
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "deleteIncident", id: item.ID || item.id })
-    });
-    globalIncidents.splice(idx, 1);
-    renderSavedIncidents();
-}
-
-function generateMonthlyIncidents() {
-    let tbody = document.getElementById('inc-monthly-table');
-    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>تم إنشاء تقرير الوقائع</td></tr>";
-}
-function exportMonthlyIncidentsPDF() { window.print(); }
-
 // ==========================================
 // 4. مؤشرات الأداء ECAA SPI
 // ==========================================
