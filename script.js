@@ -143,8 +143,35 @@ function loadAppDataInit() {
                 renderDirectory(globalDirectory);
 
                 // --- التعديل هنا: تعبئة قائمة المستخدمين المنسدلة في شاشة الدخول ---
-                populateUsersDropdown(globalUsers);
-                // -----------------------------------------------------------
+// دالة لتعبئة قائمة المستخدمين المنسدلة في شاشة الدخول مع تحديد الافتراضي
+function populateUsersDropdown(usersArray) {
+    const datalist = document.getElementById('usersList');
+    const userInp = document.getElementById('loginUser');
+    const passInp = document.getElementById('loginPass');
+    if (!datalist) return;
+    
+    datalist.innerHTML = ''; 
+    let defaultUser = "";
+    
+    usersArray.forEach(user => {
+        let option = document.createElement('option');
+        option.value = user.Username; 
+        datalist.appendChild(option);
+        
+        // البحث عن حساب الأدمن لجعله الافتراضي
+        if(user.Username.toLowerCase() === 'admin' || user.Username === 'ادمن' || user.Role === 'Admin') {
+            defaultUser = user.Username;
+        }
+    });
+
+    if(usersArray.length > 0) {
+        userInp.value = defaultUser ? defaultUser : usersArray[0].Username;
+        // تركيز الماوس تلقائياً على حقل كلمة المرور بعد نصف ثانية من تحميل الشاشة
+        setTimeout(() => {
+            passInp.focus();
+        }, 500);
+    }
+}                // -----------------------------------------------------------
 
                 if (data.daily && data.daily.length > 0) {
                     let reportsMap = {};
