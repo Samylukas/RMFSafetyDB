@@ -1998,3 +1998,205 @@ function populateUsersDropdown(usersArray) {
         datalist.appendChild(option);
     });
 }
+// ----------------- قسم الـ FOD -----------------
+let globalFod = [];
+const fodLocations = [
+    { loc: "Aircraft Stands Area", area: "53.125 M²" },
+    { loc: "GSE Area", area: "4152 M²" },
+    { loc: "Arrival & Departures Gates", area: "2420 M²" },
+    { loc: "Around Aprons Gas station", area: "2539 M²" }
+];
+
+// أضف قراءة globalFod داخل دالة loadAppDataInit (داخل if (data.status === "success"))
+// globalFod = data.fod || [];
+
+function switchFodTab(tab) {
+    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-fod-' + tab).classList.add('active');
+    document.getElementById('tab-fod-' + tab).classList.add('active');
+}
+
+function generateFodInputRows() {
+    const month = document.getElementById('fodInputMonth').value;
+    if(!month) return alert("برجاء اختيار الشهر أولاً!");
+    
+    document.getElementById('fodForm').style.display = 'block';
+    const tbody = document.getElementById('fod-input-tbody');
+    tbody.innerHTML = '';
+    
+    fodLocations.forEach((item, index) => {
+        tbody.innerHTML += `
+            <tr style="background: #fff;">
+                <td><input type="date" id="fod_date_${index}" required style="width: 100%;"></td>
+                <td style="font-weight: bold;">${item.loc}</td>
+                <td style="text-align: center;">${item.area}</td>
+                <td><input type="number" step="0.001" id="fod_p_${index}" required placeholder="0.000" style="width: 100%;"></td>
+                <td><input type="number" step="0.001" id="fod_m_${index}" required placeholder="0.000" style="width: 100%;"></td>
+            </tr>
+        `;
+    });
+}
+
+async function submitFOD(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitFodBtn');
+    const msg = document.getElementById('fodMsg');
+    btn.disabled = true; btn.innerHTML = 'جاري الحفظ...';
+    
+    let fodDataArray = [];
+    fodLocations.forEach((item, index) => {
+        let p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0;
+        let m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0;
+        let d = document.getElementById(`fod_date_${index}`).value;
+        fodDataArray.push({
+            id: "FOD-" + Date.now() + "-" + index,
+            date: d, location: item.loc, area: item.area, plastic: p, metal: m
+        });
+    });
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: fodDataArray }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        msg.style.color = "green"; msg.innerText = "تم حفظ بيانات FOD بنجاح!";
+        globalFod = [...globalFod, ...fodDataArray]; // إضافة محلياً
+        setTimeout(() => { document.getElementById('fodForm').reset(); msg.innerText = ''; btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; document.getElementById('fodForm').style.display = 'none'; }, 2000);
+    } catch(err) {
+        msg.style.color = "red"; msg.innerText = "حدث خطأ في الإرسال!";
+        btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر';
+    }
+}
+
+function generateFodPrintReport() {
+    const monthVal = document.getElementById('fodReportMonth').value;
+    if(!monthVal) return alert("اختر الشهر");
+    
+    // تحويل YYYY-MM لاسم الشهر (مثال: September 2026)
+    const dateObj = new Date(monthVal + "-01");
+    const monthName = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('fod-report-title').innerText = `F.O.D Collected and Classifications for ${monthName}`;
+    
+    // تصفية البيانات (نجلب البيانات الخاصة بالشهر المختار)
+    let filtered = globalFod.filter(f => f.date && f.date.startsWith(monthVal));
+    
+    const tbody = document.getElementById('fod-print-tbody');
+    tbody.innerHTML = '';
+    
+    let totalP = 0, totalM = 0;
+    
+    fodLocations.forEach(locItem => {
+        // نبحث هل تم إدخال هذا اللوكيشن في الشهر المختار
+        let record = filtered.find(f => f.location === locItem.loc);
+        let d = record ? record.date.split('-').reverse().join('/') : '---';
+        let p = record ? parseFloat(record.plastic) : 0;
+        let m = record ? parseFloat(record.metal) : 0;
+        
+        totalP += p; totalM += m;
+        
+        tbody.innerHTML += `
+            <tr>
+                <td style="border: 1px solid #ccc; padding: 15px;">${d}</td>
+                <td style="border: 1px solid #ccc; padding: 15px; text-align: left;">${locItem.loc}</td>
+                <td style="border: 1px solid #ccc; padding: 15px;">${locItem.area}</td>
+                <td style="border: 1px solid #ccc; padding: 15px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+                <td style="border: 1px solid #ccc; padding: 15px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td>
+                <td style="border: 1px solid #ccc; padding: 15px;">---</td>
+            </tr>
+        `;
+    });
+    
+    let grossTotal = totalP + totalM;
+    tbody.innerHTML += `
+        <tr style="background: #fafafa; font-weight: bold;">
+            <td colspan="3" style="border: 1px solid #ccc; padding: 15px;">Total</td>
+            <td style="border: 1px solid #ccc; padding: 15px;">${totalP.toFixed(3)} kg</td>
+            <td style="border: 1px solid #ccc; padding: 15px;">${totalM.toFixed(3)} kg</td>
+            <td style="border: 1px solid #ccc; padding: 15px; color:#000;">${grossTotal.toFixed(3)} kg</td>
+        </tr>
+    `;
+    
+    document.getElementById('printable-fod-report').style.display = 'block';
+}
+
+function exportFodPDF() {
+    const el = document.getElementById('printable-fod-report');
+    if(el.style.display === 'none') return alert("اعرض التقرير أولاً");
+    html2pdf().set({
+        margin: 0.5, filename: 'FOD_Monthly_Report.pdf', image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+    }).from(el).save();
+}
+
+// ----------------- التقرير الشهري المجمع (Word Style) -----------------
+function generateFullMonthlyReport() {
+    const monthVal = document.getElementById('mainReportMonth').value;
+    if(!monthVal) return alert("اختر الشهر");
+    
+    const dateObj = new Date(monthVal + "-01");
+    const monthName = dateObj.toLocaleString('en-US', { month: 'long' });
+    const year = dateObj.getFullYear();
+    document.getElementById('mr-title-date').innerText = `${monthName} - ${year}`;
+    
+    // فلترة الوقائع
+    let mIncidents = globalIncidents.filter(i => i.Date && i.Date.startsWith(monthVal));
+    document.getElementById('mr-incidents').innerText = mIncidents.length;
+    // الحوادث (حيث أن Severity = Catastrophic مثلاً أو حسب تعريفك) - افترضنا صفر للتبسيط أو نفلتر
+    document.getElementById('mr-accidents').innerText = mIncidents.filter(i => i.Risk_Severity === 'Catastrophic').length;
+    
+    // فلترة الاستبيانات
+    let mSurveys = globalSurveys.filter(s => s.Date && s.Date.startsWith(monthVal));
+    document.getElementById('mr-surveys').innerText = mSurveys.length;
+    
+    // فلترة الفحص اليومي (المخالفات)
+    let mDailys = globalDailyInspections.filter(d => d.date && d.date.startsWith(monthVal));
+    let findingsCount = 0;
+    mDailys.forEach(d => findingsCount += d.findings.length);
+    document.getElementById('mr-findings').innerText = findingsCount;
+    
+    // حساب FOD
+    let mFod = globalFod.filter(f => f.date && f.date.startsWith(monthVal));
+    let totalFod = 0;
+    mFod.forEach(f => totalFod += (parseFloat(f.plastic||0) + parseFloat(f.metal||0)));
+    document.getElementById('mr-fod').innerText = totalFod.toFixed(3) + " KG";
+
+    // رسم تفاصيل الوقائع بالإنجليزية (كما في ملف الوورد)
+    const incList = document.getElementById('mr-incidents-list');
+    incList.innerHTML = "";
+    
+    if(mIncidents.length === 0) {
+        incList.innerHTML = "<p style='text-align:right; direction:rtl;'>لا توجد وقائع مسجلة في هذا الشهر.</p>";
+    } else {
+        mIncidents.forEach((inc, idx) => {
+            let cat = inc.Characterization ? inc.Characterization.split('/')[0] : 'Incident';
+            let desc = inc.Description || 'No description provided.';
+            let action = inc.Action_Taken || 'No action recorded.';
+            incList.innerHTML += `
+                <div style="margin-bottom: 30px; border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                    <h3 style="color: #d9534f; margin-top:0;">${idx+1}- ${cat}</h3>
+                    <table style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
+                        <tr><td style="width:20%; font-weight:bold;">Date:</td><td>${inc.Date ? inc.Date.split('T')[0] : ''}</td></tr>
+                        <tr><td style="font-weight:bold;">Airline:</td><td>${inc.CAR || inc.Equipment_Owned || '-'}</td></tr>
+                    </table>
+                    <strong>Description:</strong>
+                    <p style="margin-top:5px; margin-bottom:15px; text-align:justify;">${desc}</p>
+                    <strong>Action Taken:</strong>
+                    <p style="margin-top:5px; color:#28a745; text-align:justify;">${action}</p>
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById('printable-main-report').style.display = 'block';
+}
+
+function exportMainReportPDF() {
+    const el = document.getElementById('printable-main-report');
+    if(el.style.display === 'none') return alert("اعرض التقرير أولاً");
+    html2pdf().set({
+        margin: 0.5, filename: 'Airport_Safety_Monthly_Report.pdf', image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+}
