@@ -49,12 +49,14 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     z-index: 10000; transition: opacity 0.5s ease-out;
 }
 
+/* طبقة الدخان في الخلفية */
 .smoke-bg {
     position: absolute; width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(0,51,102,0.05) 0%, rgba(255,255,255,1) 60%);
     animation: smokeMove 6s linear infinite; opacity: 0.8; z-index: 1;
 }
 
+/* حاوية اللوجو والشريط */
 .splash-content {
     position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
     animation: smokeDissolveEnter 3.5s ease-in-out forwards;
@@ -75,6 +77,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     animation: loadProgress 1.8s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
 }
 
+/* حركات الأنيميشن */
 @keyframes smokeMove { 
     0% { transform: translate(0,0) scale(1); } 
     50% { transform: translate(-2%,2%) scale(1.05); } 
@@ -207,7 +210,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     margin-bottom: 30px;
 }
 
-.departments-grid {
+.dashboard-grid, .departments-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
@@ -216,7 +219,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     padding: 10px;
 }
 
-.dept-card {
+.dashboard-card, .dept-card {
     background: #fff;
     border-radius: 15px;
     padding: 30px 20px;
@@ -231,12 +234,12 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     justify-content: center;
 }
 
-.dept-card:hover {
+.dashboard-card:hover, .dept-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
-.dept-icon {
+.dashboard-card i, .dept-icon {
     font-size: 4rem;
     margin-bottom: 15px;
 }
@@ -249,16 +252,17 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 .icon-directory{ color: #fd7e14; }
 .icon-users    { color: #495057; }
 
-.dept-title {
+.dashboard-card h3, .dept-title {
     color: var(--primary);
     font-weight: 900;
     font-size: 1.25rem;
     margin: 10px 0 5px;
 }
 
-.dept-subtitle {
+.dashboard-card p, .dept-subtitle {
     color: #6c757d;
     font-size: 0.85rem;
+    margin: 0;
 }
 
 /* ========================================================
@@ -418,6 +422,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     box-sizing: border-box;
 }
 
+/* جعل صف الرحلة صفاً واحداً على الديسكتوب ومتجاوباً */
 #surveyForm .form-grid {
     display: grid;
     grid-template-columns: 1.35fr 1.1fr 1fr 1fr 1.1fr 0.85fr;
@@ -484,6 +489,20 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     padding: 4px;
     z-index: 5;
     pointer-events: auto;
+}
+
+.custom-dropdown-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    direction: ltr;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+.custom-dropdown-item:hover {
+    background-color: #e8f5e9;
+    color: var(--primary);
 }
 
 /* ========================================================
@@ -737,7 +756,7 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
 }
 
 /* ========================================================
-   المودال والطباعة وأولوية القائمة المنسدلة (التحسينات الأخيرة)
+   المودال والقوائم المنسدلة (التحسينات المطلوبة)
    ======================================================== */
 .modal {
     position: fixed;
@@ -747,9 +766,31 @@ body, div, h1, h2, h3, h4, h5, h6, p, span, a, table, tbody, thead, tr, th, td, 
     height: 100%;
     background: rgba(0,0,0,0.5);
     display: none;
+    align-items: center;
     justify-content: center;
     z-index: 100000 !important;
 }
+
+.modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+.close:hover { color: #333; }
 
 .custom-dropdown-list {
     position: absolute;
