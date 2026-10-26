@@ -9,76 +9,80 @@
    
 </head>
 <body>
-
     <!-- شاشة البداية -->
-    <div id="splash-screen" class="splash-screen">
-        <img src="LOGO-removebg-preview (1).png" alt="Logo" class="splash-logo">
-        <h1 class="splash-title">Airport Safety Management System</h1>
-        <div class="loader"></div>
+    <div id="splash-screen">
+        <div class="smoke-bg"></div>
+        <div class="splash-content">
+            <img src="LOGO-removebg-preview (1).png" alt="Logo" class="splash-logo">
+            <div class="loading-bar-container"><div class="loading-bar"></div></div>
+        </div>
     </div>
 
     <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="login-screen" style="display:none;">
+    <div id="login-screen" style="display:none;">
         <div class="login-box">
-            <img src="wmremove-transformed-removebg-preview.png" alt="Safety Logo" style="width: 100px; margin-bottom: 20px;">
+            <img src="wmremove-transformed-removebg-preview.png" alt="Safety Logo">
             <h2 style="color: var(--primary); margin-bottom: 20px;">تسجيل الدخول</h2>
             <form onsubmit="handleLogin(event)">
-                <input type="text" id="username" placeholder="اسم المستخدم" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
-                <input type="password" id="password" placeholder="كلمة المرور" required style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
-                <button type="submit" class="submit-btn" style="width: 100%;">دخول</button>
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" placeholder="اسم المستخدم" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="login-btn">دخول</button>
             </form>
         </div>
     </div>
 
     <!-- رأس الصفحة -->
-    <header id="app-header" style="display:none;">
-        <div class="header-content">
-            <img src="wmremove-transformed-removebg-preview.png" alt="Safety Logo" class="logo">
-            <div class="header-titles">
-                <h1 style="color:#003366; margin:0;">الإدارة العامة للسلامة والمطابقة</h1>
-                <p style="color:#777; margin:0; font-size:14px; font-weight:bold;">General Department of Safety and Compliance</p>
-            </div>
-            <img src="LOGO-removebg-preview (1).png" alt="Airport Logo" class="logo">
+    <header id="app-header" class="header" style="display:none;">
+        <img src="wmremove-transformed-removebg-preview.png" alt="Safety Logo" class="dept-logo">
+        <div class="header-titles">
+            <h1>الإدارة العامة للسلامة والمطابقة</h1>
+            <h2>General Department of Safety and Compliance</h2>
         </div>
+        <img src="LOGO-removebg-preview (1).png" alt="Airport Logo" class="main-logo">
     </header>
 
     <main>
-        <!-- ========================================== القائمة الرئيسية ========================================== -->
+        <!-- القائمة الرئيسية (الداشبورد) -->
         <div id="airport-safety-dashboard" class="content-area" style="display:none;">
-            <h2 style="text-align: center; color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">إدارة سلامة المطارات</h2>
-            <p style="text-align: center; color: #666; font-size: 1.2rem; margin-bottom: 40px; font-weight: bold;">Airport Safety Department</p>
-            <div class="dashboard-grid">
-                <div class="dashboard-card" onclick="openSection('captain-survey-section')" style="border-bottom: 4px solid #003366;">
-                    <i class="fa-solid fa-clipboard-user" style="color: #003366;"></i>
-                    <h3>01 - استبيان الكابتن</h3><p>Captain Survey</p>
+            <h2 class="welcome-text">إدارة سلامة المطارات<br><span style="font-size: 1rem; color:#666;">Airport Safety Department</span></h2>
+            <div class="departments-grid">
+                <div class="dept-card" onclick="openSection('captain-survey-section')" style="border-bottom: 4px solid #003366;">
+                    <i class="fa-solid fa-clipboard-user dept-icon icon-safety"></i>
+                    <h3 class="dept-title">01 - استبيان الكابتن</h3><p class="dept-subtitle">Captain Survey</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('daily-inspection-section')" style="border-bottom: 4px solid #f39c12;">
-                    <i class="fa-solid fa-list-check" style="color: #f39c12;"></i>
-                    <h3>02 - الفحص اليومي</h3><p>Daily Air-Side Inspection</p>
+                <div class="dept-card" onclick="openSection('daily-inspection-section')" style="border-bottom: 4px solid #f39c12;">
+                    <i class="fa-solid fa-list-check dept-icon icon-quality"></i>
+                    <h3 class="dept-title">02 - الفحص اليومي</h3><p class="dept-subtitle">Daily Air-Side Inspection</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('incident-section')" style="border-bottom: 4px solid #dc3545;">
-                    <i class="fa-solid fa-triangle-exclamation" style="color: #dc3545;"></i>
-                    <h3>03 - سجل الحوادث والوقائع</h3><p>Incidents & Accidents</p>
+                <div class="dept-card" onclick="openSection('incident-section')" style="border-bottom: 4px solid #dc3545;">
+                    <i class="fa-solid fa-triangle-exclamation dept-icon icon-fire"></i>
+                    <h3 class="dept-title">03 - سجل الحوادث والوقائع</h3><p class="dept-subtitle">Incidents & Accidents</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('fod-section')" style="border-bottom: 4px solid #28a745;">
-                    <i class="fa-solid fa-circle-exclamation" style="color: #28a745;"></i>
-                    <h3>04 - الأجسام الغريبة</h3><p>FOD</p>
+                <div class="dept-card" onclick="openSection('fod-section')" style="border-bottom: 4px solid #28a745;">
+                    <i class="fa-solid fa-circle-exclamation dept-icon icon-health"></i>
+                    <h3 class="dept-title">04 - الأجسام الغريبة</h3><p class="dept-subtitle">FOD</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('spi-section')">
-                    <i class="fa-solid fa-chart-line" style="color: #003366;"></i>
-                    <h3>مؤشرات الأداء</h3><p>Operational SPIs 2026</p>
+                <div class="dept-card" onclick="openSection('spi-section')">
+                    <i class="fa-solid fa-chart-line dept-icon icon-safety"></i>
+                    <h3 class="dept-title">مؤشرات الأداء</h3><p class="dept-subtitle">Operational SPIs 2026</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('generic-doc-section')">
-                    <i class="fa-solid fa-shield-halved" style="color: #003366;"></i>
-                    <h3>تقارير السلامة</h3><p>SMS 2024 & 2023</p>
+                <div class="dept-card" onclick="openSection('generic-doc-section')">
+                    <i class="fa-solid fa-shield-halved dept-icon icon-users"></i>
+                    <h3 class="dept-title">تقارير السلامة</h3><p class="dept-subtitle">SMS 2024 & 2023</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('directory-section')">
-                    <i class="fa-solid fa-address-book" style="color: #003366;"></i><span class="pdf-badge">PDF</span>
-                    <h3>دليل المطار</h3><p>ACM 2025</p>
+                <div class="dept-card" onclick="openSection('directory-section')">
+                    <i class="fa-solid fa-address-book dept-icon icon-directory"></i>
+                    <h3 class="dept-title">دليل المطار</h3><p class="dept-subtitle">ACM 2025</p>
                 </div>
-                <div class="dashboard-card" onclick="openSection('monthly-report-section')" style="border-bottom: 4px solid #d9534f;">
-                    <i class="fa-solid fa-file-pdf" style="color: #d9534f;"></i>
-                    <h3>التقرير الشهري المجمع</h3><p>إصدار التقرير الشامل لمنطقة التحركات</p>
+                <div class="dept-card" onclick="openSection('monthly-report-section')" style="border-bottom: 4px solid #d9534f;">
+                    <i class="fa-solid fa-file-pdf dept-icon icon-fire"></i>
+                    <h3 class="dept-title">التقرير الشهري المجمع</h3><p class="dept-subtitle">إصدار التقرير الشامل لمنطقة التحركات</p>
                 </div>
             </div>
         </div>
