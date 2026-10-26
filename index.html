@@ -777,7 +777,7 @@
     </div>
   </div>
 
-  <!-- التقرير الشهري المجمع -->
+ <!-- التقرير الشهري المجمع -->
   <div id="monthly-report-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900;">التقرير الشهري لمنطقة التحركات الجوية</h1>
@@ -790,38 +790,58 @@
     </div>
 
     <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <!-- الصفحة الأولى غلاف الوورد -->
-        <div style="text-align: center; margin-bottom: 50px;">
-            <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 100px; margin-bottom: 20px;">
-            <h1 style="color: #003366; font-size: 2.5rem; margin:0;">إدارة المطابقة والسلامة</h1>
-            <h2 style="color: #555; font-weight: normal; margin-top: 10px;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
-            <h3 style="color: #003366; margin-top: 30px; font-size: 1.8rem;" id="mr-title-date">September - 2026</h3>
-            <p style="margin-top: 20px; font-weight: bold;">Prepared by: Safety Officer</p>
-            <hr style="border: 2px solid #003366; margin-top: 30px;">
+        <!-- الغلاف -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+            <div style="font-size: 11px; font-weight: bold; color: #555; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
+            <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div>
+            <div style="font-size: 13px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
         </div>
 
-        <h2 style="color: #003366;">أولاً: عـــــــــــام</h2>
-        <table class="report-table rtl-table" style="width: 100%; border: 2px solid #000; font-size: 1.1rem; margin-bottom: 40px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #003366; font-size: 2.2rem; margin:0;">إدارة المطابقة والسلامة</h1>
+            <h2 style="color: #555; font-weight: normal; margin-top: 10px; font-size: 1.5rem;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
+            <!-- يمكن استبدال الرابط بصورة المطار إذا أردت رفعها -->
+            <div style="background: #f0f0f0; height: 150px; display: flex; align-items: center; justify-content: center; margin-top: 20px; border: 2px solid #003366; color:#777; font-weight:bold;">صورة الغلاف (Airport Cover Image)</div>
+            <h3 style="color: #003366; margin-top: 20px; font-size: 1.8rem;" id="mr-title-date" dir="ltr">September - 2026</h3>
+            <p style="margin-top: 10px; font-weight: bold; font-size: 1.1rem;">Prepared by: Samy Lukas</p>
+        </div>
+
+        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">أولاً: عـــــــــــام</h2>
+        <table style="width: 100%; border: 1px solid #000; font-size: 1rem; margin-bottom: 40px; border-collapse: collapse; text-align: center;">
             <thead style="background: #e6e6e6; color: #000;">
-                <tr><th style="width: 50%;">البيان</th><th>الشهر المختار</th></tr>
+                <tr>
+                    <th style="border: 1px solid #000; padding: 10px; width: 40%;">البيان</th>
+                    <th style="border: 1px solid #000; padding: 10px;" id="th-prev-month">الشهر السابق</th>
+                    <th style="border: 1px solid #000; padding: 10px;" id="th-curr-month">الشهر الحالي</th>
+                    <th style="border: 1px solid #000; padding: 10px;">الفرق</th>
+                </tr>
             </thead>
-            <tbody>
-                <tr><td>1- عدد الحوادث</td><td id="mr-accidents" style="text-align: center; font-weight: bold;">0</td></tr>
-                <tr><td>2- عدد الوقائع</td><td id="mr-incidents" style="text-align: center; font-weight: bold;">0</td></tr>
-                <tr><td>3- حالات عدم المطابقة (الفحص اليومي)</td><td id="mr-findings" style="text-align: center; font-weight: bold;">0</td></tr>
-                <tr><td>4- استبيان الطيارين</td><td id="mr-surveys" style="text-align: center; font-weight: bold;">0</td></tr>
-                <tr><td>5- كمية F.O.D (بلاستيك + معدن)</td><td id="mr-fod" style="text-align: center; font-weight: bold; direction: ltr;">0 KG</td></tr>
-            </tbody>
+            <tbody id="mr-general-tbody"></tbody>
         </table>
 
-        <h2 style="color: #003366;">ثانياً: حصر بالوقائع</h2>
-        <div id="mr-incidents-list" style="margin-bottom: 40px; direction: ltr; text-align: left;">
-            <!-- سيتم توليد الوقائع هنا من الجافاسكربت -->
-        </div>
+        <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">ثانياً: الحصــــــــــــر التفصيلي</h2>
+        <h3 style="color: #555;">المخالفات والأخطار</h3>
         
-        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr">
+        <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom: 40px;" class="avoid-page-break">
+            <div style="flex:1; height: 300px;"><canvas id="mrChart1"></canvas></div>
+            <div style="flex:1; height: 300px;"><canvas id="mrChart2"></canvas></div>
+        </div>
+
+        <h3 style="color: #555;" class="avoid-page-break">حصر بالوقائع</h3>
+        <p id="mr-incidents-count-text" style="font-weight: bold; font-size: 1.1rem;"></p>
+        
+        <div id="mr-incidents-list" style="margin-bottom: 40px; text-align: left; direction: ltr;"></div>
+        
+        <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">3- Captain Survey</h3>
+        <div id="mr-survey-details" style="margin-bottom: 40px; direction: ltr; text-align: left;" class="avoid-page-break"></div>
+
+        <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">4- F.O.D Collected and Classifications</h3>
+        <div id="mr-fod-details" style="margin-bottom: 40px; direction: ltr; text-align: left;" class="avoid-page-break"></div>
+
+        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr" class="avoid-page-break">
             <p>Best Regards,</p>
-            <p style="color: #003366;">Airport Safety Manager</p>
+            <p style="color: #003366; margin-bottom: 5px;">Airport Safety Manager</p>
+            <div style="font-family: 'Brush Script MT', cursive; font-size: 2.5rem; color: #3b3b98;">Samy Lukas</div>
         </div>
     </div>
   </div>
