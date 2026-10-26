@@ -145,7 +145,7 @@ function loadAppDataInit() {
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
                 globalFod = data.fod || []; // ضعه هنا
                 if(data.directory) globalDirectory = data.directory;
-                
+                globalFod = data.fod || [];
                 renderDirectory(globalDirectory);
 
                 // --- التعديل هنا: تعبئة قائمة المستخدمين المنسدلة في شاشة الدخول ---
