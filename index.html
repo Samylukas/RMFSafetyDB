@@ -36,19 +36,21 @@
           <h2 style="color: var(--primary);">تسجيل الدخول</h2>
           
           <div class="input-group">
-              <!-- استخدام input مع datalist للسماح بالكتابة أو الاختيار -->
-              <input type="text" id="loginUser" list="usersList" placeholder="اسم المستخدم" required autocomplete="off" onchange="document.getElementById('loginPass').focus()">
+              <input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" required autocomplete="off" onchange="document.getElementById('loginPass').focus()">
               <datalist id="usersList">
-                  <!-- سيتم تعبئة أسماء المستخدمين هنا من الجافاسكربت -->
               </datalist>
               <i class="fa-solid fa-user"></i>
           </div>
           
           <div class="input-group">
-              <!-- إضافة حدث onkeypress لاكتشاف الضغط على Enter -->
-              <input type="password" id="loginPass" placeholder="كلمة المرور" required onkeypress="if(event.key === 'Enter') login()">
+              <input type="password" id="loginPass" placeholder="كلمة المرور" required autofocus onkeypress="if(event.key === 'Enter') login()">
               <i class="fa-solid fa-lock"></i>
           </div>
+          
+          <button class="login-btn" onclick="login()">دخول</button>
+          <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
+      </div>
+  </div>
           
           <button class="login-btn" onclick="login()">دخول</button>
           <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
