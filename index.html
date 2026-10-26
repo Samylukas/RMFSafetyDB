@@ -700,5 +700,131 @@
   </div>
 
   <script src="script.js"></script>
+  <!-- وحدة الأجسام الغريبة FOD -->
+  <div id="fod-section" class="content-area" style="display:none;">
+    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">F.O.D Collected</span></h1>
+
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال بيانات FOD</button>
+        <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-print"></i> تقرير FOD الشهري</button>
+      </div>
+
+      <!-- الإدخال -->
+      <div id="tab-fod-entry" class="tab-content active">
+        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+            <label style="font-weight: bold;">اختر الشهر للإدخال:</label>
+            <input type="month" id="fodInputMonth" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="submit-btn" style="width: auto; margin: 0;" onclick="generateFodInputRows()">تجهيز الجدول</button>
+        </div>
+        
+        <form id="fodForm" onsubmit="submitFOD(event)" style="display: none;">
+            <table class="report-table" style="direction: ltr; width: 100%;">
+                <thead style="background: #003366; color: #fff;">
+                    <tr>
+                        <th style="width: 15%;">Day (Date)</th>
+                        <th style="width: 30%;">Location</th>
+                        <th style="width: 15%;">Area in square meter</th>
+                        <th style="width: 20%;">Plastic (kg)</th>
+                        <th style="width: 20%;">Metal (kg)</th>
+                    </tr>
+                </thead>
+                <tbody id="fod-input-tbody"></tbody>
+            </table>
+            <button type="submit" class="submit-btn" id="submitFodBtn" style="margin-top: 20px; background-color: #28a745;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
+            <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+        </form>
+      </div>
+
+      <!-- التقرير للطباعة -->
+      <div id="tab-fod-report" class="tab-content">
+        <div class="report-filters">
+            <input type="month" id="fodReportMonth">
+            <button onclick="generateFodPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-magnifying-glass"></i> عرض التقرير</button>
+            <button onclick="exportFodPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> طباعة (PDF)</button>
+        </div>
+
+        <div id="printable-fod-report" style="display:none; background: #fff; padding: 40px; border: 2px solid #000; direction: ltr; margin-top: 20px; color: #000; font-family: 'Times New Roman', serif;">
+            <!-- ترويسة التقرير مطابقة للصورة -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
+                <div style="font-size: 10px; font-weight: bold; color: #555; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
+                <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;"></div>
+                <div style="font-size: 12px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
+            </div>
+
+            <h2 style="text-align: center; font-weight: normal; margin-bottom: 30px; font-size: 1.5rem;" id="fod-report-title">F.O.D Collected and Classifications for ...</h2>
+
+            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #ccc; font-size: 1.1rem;" id="fod-print-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="border: 1px solid #ccc; padding: 15px; font-weight: normal;">Day</th>
+                        <th rowspan="2" style="border: 1px solid #ccc; padding: 15px; font-weight: normal;">Location</th>
+                        <th rowspan="2" style="border: 1px solid #ccc; padding: 15px; font-weight: normal; width: 12%;">Area in<br>square<br>meter</th>
+                        <th colspan="2" style="border: 1px solid #ccc; padding: 10px; font-weight: normal;">FOD quantity</th>
+                        <th rowspan="2" style="border: 1px solid #ccc; padding: 15px; font-weight: normal;">Total</th>
+                    </tr>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 10px; font-weight: normal;">Plastic</th>
+                        <th style="border: 1px solid #ccc; padding: 10px; font-weight: normal;">Metal</th>
+                    </tr>
+                </thead>
+                <tbody id="fod-print-tbody"></tbody>
+            </table>
+
+            <div style="margin-top: 50px; font-size: 0.8rem; font-family: sans-serif; color: #777;">AS-F-01-07</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- التقرير الشهري المجمع -->
+  <div id="monthly-report-section" class="content-area" style="display:none;">
+    <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+
+    <div class="report-filters" style="background:#f0f8ff;">
+        <label style="font-weight: bold;">اختر الشهر للإصدار:</label>
+        <input type="month" id="mainReportMonth">
+        <button onclick="generateFullMonthlyReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-file-word"></i> تجهيز التقرير (يُحاكي Word)</button>
+        <button onclick="exportMainReportPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير للطباعة</button>
+    </div>
+
+    <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <!-- الصفحة الأولى غلاف الوورد -->
+        <div style="text-align: center; margin-bottom: 50px;">
+            <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 100px; margin-bottom: 20px;">
+            <h1 style="color: #003366; font-size: 2.5rem; margin:0;">إدارة المطابقة والسلامة</h1>
+            <h2 style="color: #555; font-weight: normal; margin-top: 10px;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
+            <h3 style="color: #003366; margin-top: 30px; font-size: 1.8rem;" id="mr-title-date">September - 2026</h3>
+            <p style="margin-top: 20px; font-weight: bold;">Prepared by: Safety Officer</p>
+            <hr style="border: 2px solid #003366; margin-top: 30px;">
+        </div>
+
+        <h2 style="color: #003366;">أولاً: عـــــــــــام</h2>
+        <table class="report-table rtl-table" style="width: 100%; border: 2px solid #000; font-size: 1.1rem; margin-bottom: 40px;">
+            <thead style="background: #e6e6e6; color: #000;">
+                <tr><th style="width: 50%;">البيان</th><th>الشهر المختار</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1- عدد الحوادث</td><td id="mr-accidents" style="text-align: center; font-weight: bold;">0</td></tr>
+                <tr><td>2- عدد الوقائع</td><td id="mr-incidents" style="text-align: center; font-weight: bold;">0</td></tr>
+                <tr><td>3- حالات عدم المطابقة (الفحص اليومي)</td><td id="mr-findings" style="text-align: center; font-weight: bold;">0</td></tr>
+                <tr><td>4- استبيان الطيارين</td><td id="mr-surveys" style="text-align: center; font-weight: bold;">0</td></tr>
+                <tr><td>5- كمية F.O.D (بلاستيك + معدن)</td><td id="mr-fod" style="text-align: center; font-weight: bold; direction: ltr;">0 KG</td></tr>
+            </tbody>
+        </table>
+
+        <h2 style="color: #003366;">ثانياً: حصر بالوقائع</h2>
+        <div id="mr-incidents-list" style="margin-bottom: 40px; direction: ltr; text-align: left;">
+            <!-- سيتم توليد الوقائع هنا من الجافاسكربت -->
+        </div>
+        
+        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr">
+            <p>Best Regards,</p>
+            <p style="color: #003366;">Airport Safety Manager</p>
+        </div>
+    </div>
+  </div>
 </body>
 </html>
