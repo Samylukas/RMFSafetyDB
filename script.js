@@ -2042,7 +2042,9 @@ async function submitFOD(e) {
     e.preventDefault();
     const btn = document.getElementById('submitFodBtn');
     const msg = document.getElementById('fodMsg');
-    btn.disabled = true; btn.innerHTML = 'جاري الحفظ...';
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+    msg.innerText = "";
     
     let fodDataArray = [];
     let localFodArray = [];
@@ -2053,29 +2055,62 @@ async function submitFOD(e) {
         let d = document.getElementById(`fod_date_${index}`).value;
         let newId = "FOD-" + Date.now() + "-" + index;
         
-        // للإرسال لجوجل سكربت (يستخدم حروف صغيرة كما يتوقع الباك إند)
+        // البيانات للباك إند
         fodDataArray.push({
-            id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m
+            id: newId, 
+            date: d, 
+            location: item.loc, 
+            area: item.area, 
+            plastic: p, 
+            metal: m
         });
         
-        // للحفظ محلياً في المتصفح ليقرأها التقرير مباشرة (يستخدم حروف كبيرة ليطابق شيت جوجل)
+        // البيانات محلياً للتقارير
         localFodArray.push({
-            ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m
+            ID: newId, 
+            Date: d, 
+            Location: item.loc, 
+            Area: item.area, 
+            Plastic: p, 
+            Metal: m
         });
     });
 
     try {
+        // إرسال البيانات باستخدام mode: 'no-cors' لتفادي أخطاء CORS المعتادة في Apps Script
         await fetch(API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: "submitBulkFOD", fodDataArray: fodDataArray }),
-            headers: { "Content-Type": "text/plain;charset=utf-8" }
+            mode: 'no-cors',
+            headers: { 
+                'Content-Type': 'text/plain;charset=utf-8' 
+            },
+            body: JSON.stringify({ 
+                action: "submitBulkFOD", 
+                fodDataArray: fodDataArray 
+            })
         });
-        msg.style.color = "green"; msg.innerText = "تم حفظ بيانات FOD بنجاح!";
-        globalFod = [...globalFod, ...localFodArray]; // تحديث القائمة المحلية
-        setTimeout(() => { document.getElementById('fodForm').reset(); msg.innerText = ''; btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; document.getElementById('fodForm').style.display = 'none'; }, 2000);
+
+        // بمجرد نجاح تنفيذ الـ fetch
+        msg.style.color = "green"; 
+        msg.innerText = "✅ تم حفظ بيانات FOD بنجاح في الشيت!";
+        
+        // تحديث القائمة المحلية فوراً لتظهر في التقارير
+        globalFod = [...globalFod, ...localFodArray]; 
+
+        setTimeout(() => { 
+            document.getElementById('fodForm').reset(); 
+            msg.innerText = ''; 
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر'; 
+            document.getElementById('fodForm').style.display = 'none'; 
+        }, 2000);
+
     } catch(err) {
-        msg.style.color = "red"; msg.innerText = "حدث خطأ في الإرسال!";
-        btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر';
+        console.error("FOD submit error:", err);
+        msg.style.color = "red"; 
+        msg.innerText = "حدث خطأ في الإرسال! يرجى مراجعة اتصال الإنترنت.";
+        btn.disabled = false; 
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
     }
 }
 
