@@ -2045,13 +2045,22 @@ async function submitFOD(e) {
     btn.disabled = true; btn.innerHTML = 'جاري الحفظ...';
     
     let fodDataArray = [];
+    let localFodArray = [];
+    
     fodLocations.forEach((item, index) => {
         let p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0;
         let m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0;
         let d = document.getElementById(`fod_date_${index}`).value;
+        let newId = "FOD-" + Date.now() + "-" + index;
+        
+        // للإرسال لجوجل سكربت (يستخدم حروف صغيرة كما يتوقع الباك إند)
         fodDataArray.push({
-            id: "FOD-" + Date.now() + "-" + index,
-            date: d, location: item.loc, area: item.area, plastic: p, metal: m
+            id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m
+        });
+        
+        // للحفظ محلياً في المتصفح ليقرأها التقرير مباشرة (يستخدم حروف كبيرة ليطابق شيت جوجل)
+        localFodArray.push({
+            ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m
         });
     });
 
@@ -2062,7 +2071,7 @@ async function submitFOD(e) {
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
         msg.style.color = "green"; msg.innerText = "تم حفظ بيانات FOD بنجاح!";
-        globalFod = [...globalFod, ...fodDataArray]; // إضافة محلياً
+        globalFod = [...globalFod, ...localFodArray]; // تحديث القائمة المحلية
         setTimeout(() => { document.getElementById('fodForm').reset(); msg.innerText = ''; btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; document.getElementById('fodForm').style.display = 'none'; }, 2000);
     } catch(err) {
         msg.style.color = "red"; msg.innerText = "حدث خطأ في الإرسال!";
@@ -2074,13 +2083,12 @@ function generateFodPrintReport() {
     const monthVal = document.getElementById('fodReportMonth').value;
     if(!monthVal) return alert("اختر الشهر");
     
-    // تحويل YYYY-MM لاسم الشهر (مثال: September 2026)
     const dateObj = new Date(monthVal + "-01");
     const monthName = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     document.getElementById('fod-report-title').innerText = `F.O.D Collected and Classifications for ${monthName}`;
     
-    // تصفية البيانات (نجلب البيانات الخاصة بالشهر المختار)
-    let filtered = globalFod.filter(f => f.date && f.date.startsWith(monthVal));
+    // الفلترة باستخدام Date بحرف كبير والتأكد من تحويله لنص
+    let filtered = globalFod.filter(f => f.Date && String(f.Date).startsWith(monthVal));
     
     const tbody = document.getElementById('fod-print-tbody');
     tbody.innerHTML = '';
@@ -2088,11 +2096,15 @@ function generateFodPrintReport() {
     let totalP = 0, totalM = 0;
     
     fodLocations.forEach(locItem => {
-        // نبحث هل تم إدخال هذا اللوكيشن في الشهر المختار
-        let record = filtered.find(f => f.location === locItem.loc);
-        let d = record ? record.date.split('-').reverse().join('/') : '---';
-        let p = record ? parseFloat(record.plastic) : 0;
-        let m = record ? parseFloat(record.metal) : 0;
+        let record = filtered.find(f => f.Location === locItem.loc);
+        
+        let d = '---';
+        if(record && record.Date) {
+            d = String(record.Date).split('T')[0].split('-').reverse().join('/');
+        }
+        
+        let p = record ? parseFloat(record.Plastic) : 0;
+        let m = record ? parseFloat(record.Metal) : 0;
         
         totalP += p; totalM += m;
         
@@ -2138,7 +2150,6 @@ function getMonthlyStats(monthStr) {
         incidentsList: [], findingsByDept: {}
     };
 
-    // حوادث ووقائع
     globalIncidents.forEach(inc => {
         if(inc.Date && inc.Date.startsWith(monthStr)) {
             if(inc.Risk_Severity === 'Catastrophic') stats.accidents++;
@@ -2147,28 +2158,25 @@ function getMonthlyStats(monthStr) {
         }
     });
 
-    // استبيانات
     globalSurveys.forEach(s => {
         if(s.Date && s.Date.startsWith(monthStr)) stats.surveys++;
     });
 
-    // فحص يومي
     globalDailyInspections.forEach(d => {
         if(d.date && d.date.startsWith(monthStr)) {
             d.findings.forEach(f => {
                 stats.findingsTotal++;
                 if(f.status === 'مغلق') stats.findingsClosed++;
                 else stats.findingsOpen++;
-
                 stats.findingsByDept[f.responsible] = (stats.findingsByDept[f.responsible] || 0) + 1;
             });
         }
     });
 
-    // FOD
+    // تعديل الفلتر ليتطابق مع الحروف الكبيرة من الشيت
     globalFod.forEach(f => {
-        if(f.date && f.date.startsWith(monthStr)) {
-            stats.fod += (parseFloat(f.plastic||0) + parseFloat(f.metal||0));
+        if(f.Date && String(f.Date).startsWith(monthStr)) {
+            stats.fod += (parseFloat(f.Plastic||0) + parseFloat(f.Metal||0));
         }
     });
 
