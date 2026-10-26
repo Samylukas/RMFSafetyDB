@@ -426,8 +426,20 @@ function generateModernReport() {
     let airlinesCount = {};
     let datesCount = {};
     let evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
+    let commentsList = [];
+
     const tbody = document.getElementById('flights-eval-tbody');
     tbody.innerHTML = '';
+
+    // مصفوفة الـ 31 معيار
+    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+    criteriaList.forEach(crit => {
+        matrixScores["Excellent"][crit] = 0;
+        matrixScores["Good"][crit] = 0;
+        matrixScores["Poor"][crit] = 0;
+        matrixScores["N/A"][crit] = 0;
+        matrixScores["Blank"][crit] = 0;
+    });
 
     filtered.forEach(s => {
         if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
@@ -437,9 +449,14 @@ function generateModernReport() {
         let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
         criteriaList.forEach(crit => {
             let val = s[crit] || "Blank";
-            if(fCounts[val] !== undefined) fCounts[val]++;
-            if(evalsCount[val] !== undefined) evalsCount[val]++;
+            if (fCounts[val] !== undefined) fCounts[val]++;
+            if (evalsCount[val] !== undefined) evalsCount[val]++;
+            if (matrixScores[val]) matrixScores[val][crit]++;
         });
+
+        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") {
+            commentsList.push(s);
+        }
 
         tbody.innerHTML += `
             <tr>
@@ -461,6 +478,7 @@ function generateModernReport() {
     let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
     document.getElementById('stat-excellent').innerText = `${excPercent}%`;
 
+    // 1. رسم الخرائط البيانية
     destroyCaptainCharts();
     Chart.defaults.font.family = "'Cairo', sans-serif";
 
@@ -483,13 +501,80 @@ function generateModernReport() {
             labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'],
             datasets: [{ data: Object.values(evalsCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Performance' } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
-}
 
-function exportModernPDF() {
-    html2pdf().set({ margin: 0.2, filename: 'Captain_Surveys_Report.pdf', jsPDF: { orientation: 'landscape' } })
-        .from(document.getElementById('printable-report')).save();
+    // 2. بناء باقي التقرير (مصفوفة الـ 31 معيار + جدول التعليقات)
+    const addContainer = document.getElementById('additional-tables-container');
+    let extraHtml = `
+        <div class="avoid-page-break" style="margin-top: 35px;">
+            <h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix (31 Items)</h3>
+            <div style="overflow-x:auto;">
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;">
+                    <thead><tr style="background:#f2f4f8;">
+                        <th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>
+    `;
+    criteriaList.forEach(crit => {
+        extraHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
+    });
+    extraHtml += `</tr></thead><tbody>`;
+
+    const rowStyles = {
+        "Excellent": "background:#28a745; color:white; font-weight:bold;",
+        "Good": "background:#ffc107; color:black; font-weight:bold;",
+        "Poor": "background:#dc3545; color:white; font-weight:bold;",
+        "N/A": "background:#6c757d; color:white; font-weight:bold;",
+        "Blank": "background:#003366; color:white; font-weight:bold;"
+    };
+
+    ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => {
+        extraHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`;
+        criteriaList.forEach(crit => {
+            let score = matrixScores[rating][crit];
+            extraHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`;
+        });
+        extraHtml += `</tr>`;
+    });
+    extraHtml += `</tbody></table></div></div>`;
+
+    // جدول التعليقات
+    extraHtml += `
+        <div class="avoid-page-break" style="margin-top: 35px;">
+            <h3 style="color:#003366; margin-bottom:10px; text-align:right;">Captain Comments & Observations:</h3>
+            <table style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
+                <thead style="background: #e6e6e6;">
+                    <tr>
+                        <th style="border: 1px solid #000; padding: 6px;">Airline NAME</th>
+                        <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
+                        <th style="border: 1px solid #000; padding: 6px;">Type</th>
+                        <th style="border: 1px solid #000; padding: 6px;">DateTime</th>
+                        <th style="border: 1px solid #000; padding: 6px;">REG</th>
+                        <th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    if (commentsList.length === 0) {
+        extraHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded for this period.</td></tr>`;
+    } else {
+        commentsList.forEach(s => {
+            let dStr = s.Date ? String(s.Date).split('T')[0] : '';
+            extraHtml += `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">${dStr} ${s.Time || ''}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td>
+                </tr>
+            `;
+        });
+    }
+    extraHtml += `</tbody></table></div>`;
+
+    addContainer.innerHTML = extraHtml;
 }
 
 // ==========================================
@@ -1179,32 +1264,74 @@ function generateFullMonthlyReport() {
     commentsHtml += `</tbody></table>`;
     document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
+  // 5. قسم الـ FOD الكامل في التقرير الشهري
     const fodDiv = document.getElementById('mr-fod-details');
-    if (currStats.fodTotal === 0) {
-        fodDiv.innerHTML = "<p style='color: #777;'>No F.O.D records for this month.</p>";
+    let filteredFod = globalFod.filter(f => {
+        let rawDate = f.Date || f.date || '';
+        let dStr = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0];
+        return dStr.startsWith(currMonthStr);
+    });
+
+    if (filteredFod.length === 0 && currStats.fodTotal === 0) {
+        fodDiv.innerHTML = "<p style='color: #777; text-align: center; font-style: italic;'>No F.O.D records for this month.</p>";
     } else {
+        let totalP = 0, totalM = 0;
+        let fodRowsHtml = '';
+
+        fodLocations.forEach(locItem => {
+            let rec = filteredFod.find(f => (f.Location || f.location) === locItem.loc);
+            let p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0;
+            let m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
+            totalP += p; totalM += m;
+
+            let dDisplay = '---';
+            if (rec && (rec.Date || rec.date)) {
+                let rDate = rec.Date || rec.date;
+                let dStr = (typeof rDate === 'string') ? rDate.split('T')[0] : new Date(rDate).toISOString().split('T')[0];
+                dDisplay = dStr.split('-').reverse().join('/');
+            }
+
+            fodRowsHtml += `
+                <tr>
+                    <td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td>
+                    <td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td>
+                    <td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td>
+                    <td style="border: 1px solid #777; padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+                    <td style="border: 1px solid #777; padding: 8px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td>
+                    <td style="border: 1px solid #777; padding: 8px;">---</td>
+                </tr>
+            `;
+        });
+
+        let grossTotal = totalP + totalM;
+
         fodDiv.innerHTML = `
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc; text-align: center; font-size: 12px;">
-                <thead style="background:#f9f9f9;">
-                    <tr>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Month</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Plastic</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;">Metal</th>
-                        <th style="border: 1px solid #ccc; padding: 8px; background: #003366; color: #fff;">Gross Total</th>
+            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;">
+                <thead>
+                    <tr style="background: #e6e6e6; color: #000;">
+                        <th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 8px;">Location</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 8px; width: 14%;">Area in M²</th>
+                        <th colspan="2" style="border: 1px solid #777; padding: 6px;">FOD quantity</th>
+                        <th rowspan="2" style="border: 1px solid #777; padding: 8px;">Total</th>
+                    </tr>
+                    <tr style="background: #e6e6e6; color: #000;">
+                        <th style="border: 1px solid #777; padding: 6px;">Plastic</th>
+                        <th style="border: 1px solid #777; padding: 6px;">Metal</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold;">${currMonthNameEn}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodPlastic.toFixed(3)} KG</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">${currStats.fodMetal.toFixed(3)} KG</td>
-                        <td style="border: 1px solid #ccc; padding: 8px; font-weight: bold; color: #003366;">${currStats.fodTotal.toFixed(3)} KG</td>
+                    ${fodRowsHtml}
+                    <tr style="background: #fafafa; font-weight: bold; border-top: 2px solid #000;">
+                        <td colspan="3" style="border: 1px solid #777; padding: 8px;">Total</td>
+                        <td style="border: 1px solid #777; padding: 8px;">${totalP.toFixed(3)} kg</td>
+                        <td style="border: 1px solid #777; padding: 8px;">${totalM.toFixed(3)} kg</td>
+                        <td style="border: 1px solid #777; padding: 8px; color: #003366;">${grossTotal.toFixed(3)} kg</td>
                     </tr>
                 </tbody>
             </table>
         `;
     }
-
     document.getElementById('printable-main-report').style.display = 'block';
     window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
 }
@@ -1391,8 +1518,18 @@ function generateFodPrintReport() {
 }
 
 function exportFodPDF() {
-    html2pdf().set({ margin: 0.3, filename: 'FOD_Report.pdf', jsPDF: { orientation: 'landscape' } })
-        .from(document.getElementById('printable-fod-report')).save();
+    const el = document.getElementById('printable-fod-report');
+    if (el.style.display === 'none') return alert("قم بعرض التقرير أولاً قبل التصدير!");
+    
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: [0.2, 0.2, 0.2, 0.2],
+        filename: 'FOD_Monthly_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2.5, useCORS: true, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'table'] }
+    }).from(el).save();
 }
 
 // ==========================================
