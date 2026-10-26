@@ -1191,7 +1191,6 @@ function generateSpiReport() {
     tableHtml += `</tbody></table>`;
     container.innerHTML = tableHtml;
 
-    // بناء الرسم البياني للحركة
     if(window.spiChartInstance) window.spiChartInstance.destroy();
     window.spiChartInstance = new Chart(document.getElementById('spiTrendChart').getContext('2d'), {
         type: 'line',
@@ -1211,7 +1210,7 @@ function generateSpiReport() {
 }
 
 // ==========================================
-// 5. التقرير الشهري المجمع (تحديث ربط الموفمينت)
+// 5. التقرير الشهري المجمع
 // ==========================================
 function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
     let num = parseFloat(diffVal);
@@ -1238,7 +1237,6 @@ function getPreviousMonthStr(monthStr) {
 }
 
 function getMonthlyDetailedStats(monthStr) {
-    // monthStr = "2026-10"
     let [y, m] = monthStr.split('-');
     let mNum = parseInt(m).toString();
 
@@ -1248,7 +1246,6 @@ function getMonthlyDetailedStats(monthStr) {
         fodPlastic: 0, fodMetal: 0, fodTotal: 0, incidentsList: [], findingsByDept: {}
     };
 
-    // سحب الحركة من مؤشرات الأداء (SPI) تلقائياً بدلاً من الجدول القديم
     let spiRow = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mNum && r.Indicator_Name === "OperationalSPI");
     if (spiRow) {
         try {
@@ -1450,12 +1447,10 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
 
-    // إصلاح دوران النصوص في مصفوفة الكابتن لتعمل جيداً في الـ PDF
     let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
     matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
     criteriaList.forEach(crit => {
         let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf");
-        // استخدام rotation -90 ليكون مقروء بشكل ممتاز في المتصفح والـ PDF
         matrixHtml += `<th style="border: 1px solid #999; padding: 2px; height: 110px; max-width: 25px;"><div style="transform: rotate(-90deg); white-space: nowrap; width: 15px; margin: auto;">${shortCrit}</div></th>`;
     });
     matrixHtml += `</tr></thead><tbody>`;
@@ -1511,7 +1506,6 @@ function generateFullMonthlyReport() {
     commentsHtml += `</tbody></table>`;
     document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
-    // 5. قسم الـ FOD الكامل
     const fodDiv = document.getElementById('mr-fod-details');
     let filteredFod = globalFod.filter(f => {
         let rawDate = f.Date || f.date || '';
