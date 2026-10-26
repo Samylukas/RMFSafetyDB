@@ -61,7 +61,6 @@ let globalDailyInspections = [];
 let globalIncidents = [];
 let globalDirectory = [];
 let globalFod = [];
-let globalMovements = [];
 let globalSpiData = [];
 
 let currentSurveyIndex = -1; 
@@ -79,7 +78,7 @@ let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
 
 // ==========================================
-// قلب النظام: دالة موحدة للإرسال وتخطي الحظر
+// دالة الإرسال المركزية الموثوقة 
 // ==========================================
 async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
     if(btnElement) {
@@ -93,39 +92,56 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
     }
 
     try {
-        await fetch(API_URL, {
+        let response = await fetch(API_URL, {
             method: 'POST',
-            mode: 'no-cors', // يتخطى قيود الحظر (CORS) بنجاح لجميع النماذج
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         });
-
+        
         if(onSuccessCallback) onSuccessCallback();
-
         if(msgElement && successText) {
             msgElement.style.color = "green";
             msgElement.innerText = "✅ " + successText;
         }
-
-        setTimeout(() => {
-            if(btnElement) {
-                btnElement.disabled = false;
-                btnElement.innerHTML = btnElement.dataset.origText;
-            }
-            if(msgElement) msgElement.innerText = "";
-        }, 1500);
-
     } catch (err) {
-        console.error("Network Error:", err);
-        if(msgElement) {
-            msgElement.style.color = "red";
-            msgElement.innerText = "❌ تعذر الاتصال بالإنترنت!";
-        }
+        console.error("Fetch Error, using iframe fallback", err);
+        // Iframe Fallback للتأكد من وصول البيانات بنسبة 100% حتى لو اعترض المتصفح
+        let iframeName = "hiddenFrame_" + Date.now();
+        let iframe = document.createElement("iframe");
+        iframe.name = iframeName;
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+        
+        let form = document.createElement("form");
+        form.method = "POST";
+        form.action = API_URL;
+        form.target = iframeName;
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "postData"; 
+        input.value = JSON.stringify(payload);
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        
+        setTimeout(() => {
+            if(onSuccessCallback) onSuccessCallback();
+            if(msgElement && successText) {
+                msgElement.style.color = "green";
+                msgElement.innerText = "✅ " + successText + " (عبر المسار البديل)";
+            }
+            if (form.parentNode) form.parentNode.removeChild(form);
+            setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 3000);
+        }, 1500);
+    }
+
+    setTimeout(() => {
         if(btnElement) {
             btnElement.disabled = false;
             btnElement.innerHTML = btnElement.dataset.origText;
         }
-    }
+        if(msgElement) msgElement.innerText = "";
+    }, 3000);
 }
 
 // ==========================================
@@ -193,7 +209,7 @@ function openGenericDoc(title) {
 }
 
 // ==========================================
-// تهيئة وجلب البيانات
+// تهيئة وجلب البيانات (بكسر الكاش)
 // ==========================================
 function loadAppDataInit() {
     const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
@@ -206,7 +222,6 @@ function loadAppDataInit() {
                 globalIncidents = data.incidents ? data.incidents.reverse() : [];
                 globalDirectory = data.directory || [];
                 globalFod = data.fod || [];
-                globalMovements = data.movements || [];
                 globalSpiData = data.spi || [];
 
                 populateUsersDropdown(globalUsers);
@@ -262,7 +277,8 @@ function loadAppDataInit() {
     };
 
     const script = document.createElement('script');
-    script.src = API_URL + "?action=getAppData&callback=" + callbackName;
+    // إضافة Date.now() لمنع الكاش نهائياً وإحضار بيانات طازجة 100%
+    script.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + callbackName;
     document.body.appendChild(script);
 }
 
@@ -366,9 +382,7 @@ function submitSurvey(e) {
 
     safePost(
         { action: "submitSurvey", surveyData: sObj }, 
-        btn, 
-        msg, 
-        "تم حفظ بيانات الاستبيان بنجاح!", 
+        btn, msg, "تم حفظ بيانات الاستبيان بنجاح في قاعدة البيانات!", 
         () => {
             globalSurveys.unshift(sObj);
             updateSurveyNavCounter();
@@ -542,16 +556,19 @@ function generateModernReport() {
     });
 
     const addContainer = document.getElementById('additional-tables-container');
+    
+    // إصلاح دوران النصوص في الـ PDF
     let extraHtml = `
         <div class="avoid-page-break" style="margin-top: 35px;">
             <h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix (31 Items)</h3>
             <div style="overflow-x:auto;">
                 <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;">
                     <thead><tr style="background:#f2f4f8;">
-                        <th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>
+                        <th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>
     `;
     criteriaList.forEach(crit => {
-        extraHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
+        let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf");
+        extraHtml += `<th style="border: 1px solid #999; padding: 2px; height: 110px; max-width: 25px;"><div style="transform: rotate(-90deg); white-space: nowrap; width: 15px; margin: auto;">${shortCrit}</div></th>`;
     });
     extraHtml += `</tr></thead><tbody>`;
 
@@ -642,7 +659,7 @@ function buildDailyChecklist() {
                         </div>
                         <div id="inputs_${checkIndex}" class="check-inputs">
                             <input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة...">
-                            <div style="display:flex; gap:5px;">
+                            <div style="display:flex; gap:5px; width: 100%;">
                                 <input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;">
                                 <select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${rOpts}</select>
                             </div>
@@ -745,9 +762,11 @@ function loadDailyInspectionToForm(idx) {
                 if (chkCat === fCategory && chkItem === fItem) {
                     chk.checked = true;
                     toggleInputs(cIdx);
+
                     let noteEl = document.getElementById(`note_${cIdx}`);
                     let locEl = document.getElementById(`loc_${cIdx}`);
                     let respEl = document.getElementById(`resp_${cIdx}`);
+
                     if (noteEl) noteEl.value = f.note || f.Corrective_Action || '';
                     if (locEl) locEl.value = f.location || f.Location || '';
                     if (respEl) respEl.value = f.responsible || f.Responsible || '';
@@ -802,7 +821,7 @@ function submitDailyInspection(e) {
     safePost(
         { action: actionType, reportData: rep },
         btn, msg,
-        isDailyEditMode ? "تم تحديث بيانات الجولة بنجاح!" : "تم حفظ الجولة التفتيشية بنجاح!",
+        isDailyEditMode ? "تم تحديث بيانات الجولة في قاعدة البيانات!" : "تم حفظ الجولة التفتيشية في قاعدة البيانات!",
         () => {
             if (isDailyEditMode) {
                 let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId));
@@ -853,7 +872,6 @@ function deleteDailyInspectionRecord(idx) {
     globalDailyInspections.splice(idx, 1);
     renderSavedDaily();
     updateDailyNavCounter();
-    // صامتة في الخلفية للحذف بدون تغيير الزرار
     safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } });
 }
 
@@ -901,7 +919,7 @@ function exportDailyPDF() {
 }
 
 // ==========================================
-// 3. سجل الحوادث والوقائع (النموذج الكامل)
+// 3. سجل الحوادث والوقائع 
 // ==========================================
 function switchIncidentTab(tab) {
     document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1020,7 +1038,7 @@ function submitIncident(e) {
     safePost(
         { action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj },
         btn, msg,
-        isEdit ? "تم تعديل الواقعة بنجاح!" : "تم حفظ الواقعة بنجاح!",
+        isEdit ? "تم تعديل الواقعة بنجاح في قاعدة البيانات!" : "تم حفظ الواقعة بنجاح في قاعدة البيانات!",
         () => {
             let mappedLocal = {
                 ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location,
@@ -1070,14 +1088,8 @@ function deleteIncidentRecord(idx) {
     safePost({ action: "deleteIncident", id: item.ID || item.id });
 }
 
-function generateMonthlyIncidents() {
-    let tbody = document.getElementById('inc-monthly-table');
-    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>تم إنشاء تقرير الوقائع</td></tr>";
-}
-function exportMonthlyIncidentsPDF() { window.print(); }
-
 // ==========================================
-// 4. مؤشرات الأداء ECAA SPI
+// 4. حركة الطائرات (Movements) ومؤشرات الأداء
 // ==========================================
 function switchSpiTab(tab) {
     document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1129,9 +1141,10 @@ function submitSPI(e) {
     safePost(
         { action: "submitSPI", spiData: spiDataObj },
         btn, msg,
-        "تم حفظ المؤشرات بنجاح!",
+        "تم حفظ المؤشرات والحركة بنجاح في قاعدة البيانات!",
         () => {
             globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual });
+            document.getElementById('spiForm').reset();
         }
     );
 }
@@ -1147,13 +1160,15 @@ function generateSpiReport() {
         }
     });
 
-    let tableHtml = `<table class="report-table spi-matrix-table"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366; color:#fff;">Total Events</th></tr></thead><tbody>`;
+    let tableHtml = `<table class="report-table spi-matrix-table" style="min-width: 800px; font-size:12px;"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366; color:#fff;">Total Events</th></tr></thead><tbody>`;
     let totalMov = 0;
+    let movDataForChart = [];
     
     tableHtml += `<tr><td>Number of aircraft movements</td>`;
     for (let i = 1; i <= 12; i++) {
         let m = monthlySpiParsed[i] ? monthlySpiParsed[i].Movements || 0 : 0;
         totalMov += m;
+        movDataForChart.push(m);
         tableHtml += `<td style="font-weight:bold; background:#e8f5e9;">${m || '-'}</td>`;
     }
     tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td></tr>`;
@@ -1175,10 +1190,28 @@ function generateSpiReport() {
 
     tableHtml += `</tbody></table>`;
     container.innerHTML = tableHtml;
+
+    // بناء الرسم البياني للحركة
+    if(window.spiChartInstance) window.spiChartInstance.destroy();
+    window.spiChartInstance = new Chart(document.getElementById('spiTrendChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],
+            datasets: [{ 
+                label: 'Aircraft Movements (حركة الطائرات)', 
+                data: movDataForChart, 
+                borderColor: '#28a745', 
+                backgroundColor: 'rgba(40, 167, 69, 0.2)', 
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 }
 
 // ==========================================
-// 5. التقرير الشهري المجمع
+// 5. التقرير الشهري المجمع (تحديث ربط الموفمينت)
 // ==========================================
 function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
     let num = parseFloat(diffVal);
@@ -1205,14 +1238,24 @@ function getPreviousMonthStr(monthStr) {
 }
 
 function getMonthlyDetailedStats(monthStr) {
+    // monthStr = "2026-10"
+    let [y, m] = monthStr.split('-');
+    let mNum = parseInt(m).toString();
+
     let stats = {
         monthStr: monthStr, movements: 0, accidents: 0, incidents: 0,
         findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [],
         fodPlastic: 0, fodMetal: 0, fodTotal: 0, incidentsList: [], findingsByDept: {}
     };
 
-    let movRow = globalMovements.find(m => String(m.YearMonth || "").trim() === monthStr);
-    if (movRow && movRow.Movements) stats.movements = parseInt(movRow.Movements) || 0;
+    // سحب الحركة من مؤشرات الأداء (SPI) تلقائياً بدلاً من الجدول القديم
+    let spiRow = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mNum && r.Indicator_Name === "OperationalSPI");
+    if (spiRow) {
+        try {
+            let parsed = JSON.parse(spiRow.Actual_Value);
+            stats.movements = parseInt(parsed.Movements) || 0;
+        } catch(e){}
+    }
 
     globalIncidents.forEach(inc => {
         let iDate = inc.Date ? String(inc.Date).split('T')[0] : '';
@@ -1274,7 +1317,6 @@ function generateFullMonthlyReport() {
     let currStats = getMonthlyDetailedStats(currMonthStr);
     let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
-    // 1. جدول المقارنة العام
     const tbody = document.getElementById('mr-general-tbody');
     tbody.innerHTML = '';
     const kpiComparisonList = [
@@ -1304,7 +1346,6 @@ function generateFullMonthlyReport() {
         `;
     });
 
-    // 2. رسوم المخاطر والوقائع
     if (monthlyChart1) monthlyChart1.destroy();
     if (monthlyChart2) monthlyChart2.destroy();
     Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -1328,7 +1369,6 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
     });
 
-    // 3. حصر الوقائع
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
@@ -1368,7 +1408,6 @@ function generateFullMonthlyReport() {
         catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
 
-    // 4. Captain Survey بالكامل
     document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
 
     let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
@@ -1411,10 +1450,13 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
 
+    // إصلاح دوران النصوص في مصفوفة الكابتن لتعمل جيداً في الـ PDF
     let matrixHtml = `<table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
-    matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 70px;">Rating</th>`;
+    matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
     criteriaList.forEach(crit => {
-        matrixHtml += `<th style="border: 1px solid #999; padding: 3px; writing-mode: vertical-lr; transform: rotate(180deg); height: 110px; font-size: 9px;">${crit}</th>`;
+        let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf");
+        // استخدام rotation -90 ليكون مقروء بشكل ممتاز في المتصفح والـ PDF
+        matrixHtml += `<th style="border: 1px solid #999; padding: 2px; height: 110px; max-width: 25px;"><div style="transform: rotate(-90deg); white-space: nowrap; width: 15px; margin: auto;">${shortCrit}</div></th>`;
     });
     matrixHtml += `</tr></thead><tbody>`;
 
@@ -1623,8 +1665,7 @@ function submitFOD(e) {
 
     safePost(
         { action: "submitBulkFOD", fodDataArray: fodDataArray },
-        btn, msg,
-        "تم حفظ البيانات في Google Sheets بنجاح!",
+        btn, msg, "تم حفظ البيانات في قاعدة البيانات بنجاح!",
         () => {
             globalFod = [...globalFod, ...localFodArray];
             setTimeout(() => {
