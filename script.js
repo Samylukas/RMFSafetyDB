@@ -1470,7 +1470,7 @@ function submitFOD(e) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...';
     msg.style.color = "#003366";
-    msg.innerText = "جاري الاتصال بالسيرفر...";
+    msg.innerText = "جاري الإرسال...";
 
     let fodDataArray = [];
     let localFodArray = [];
@@ -1504,48 +1504,50 @@ function submitFOD(e) {
         });
     });
 
-    const callbackName = 'jsonpFodSave_' + Math.round(100000 * Math.random());
-    
-    window[callbackName] = function(res) {
-        delete window[callbackName];
-        const s = document.getElementById('fod-jsonp-script');
-        if (s && s.parentNode) s.parentNode.removeChild(s);
+    // إرسال البيانات عبر iframe خفي لتجاوز أي مشاكل CORS أو قيود طول الرابط نهائياً
+    let iframeName = "hiddenFodFrame_" + Date.now();
+    let iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
 
-        if (res && res.status === "success") {
-            globalFod = [...globalFod, ...localFodArray];
-            msg.style.color = "green";
-            msg.innerText = "✅ تم حفظ البيانات وتحديث الشيت بنجاح!";
+    let form = document.createElement("form");
+    form.method = "POST";
+    form.action = API_URL;
+    form.target = iframeName;
 
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-                msg.innerText = "";
-                let form = document.getElementById('fodForm');
-                if (form) form.style.display = 'none';
-            }, 1800);
-        } else {
+    let input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "postData";
+    input.value = JSON.stringify({
+        action: "submitBulkFOD",
+        fodDataArray: fodDataArray
+    });
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+
+    // تحديث البيانات محلياً وإعلام المستخدم
+    globalFod = [...globalFod, ...localFodArray];
+
+    setTimeout(() => {
+        // تنظيف العناصر المؤقتة
+        if (form.parentNode) form.parentNode.removeChild(form);
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+
+        msg.style.color = "green";
+        msg.innerText = "✅ تم حفظ البيانات في Google Sheets بنجاح!";
+
+        setTimeout(() => {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-            msg.style.color = "red";
-            msg.innerText = "❌ حدث خطأ من السيرفر!";
-        }
-    };
-
-    const encodedData = encodeURIComponent(JSON.stringify(fodDataArray));
-    const scriptTag = document.createElement('script');
-    scriptTag.id = 'fod-jsonp-script';
-    scriptTag.src = `${API_URL}?action=submitFOD_GET&data=${encodedData}&callback=${callbackName}`;
-    
-    scriptTag.onerror = function() {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-        msg.style.color = "red";
-        msg.innerText = "❌ تعذر الاتصال بالسيرفر، تأكد من النشر كـ Anyone!";
-    };
-
-    document.body.appendChild(scriptTag);
+            msg.innerText = "";
+            let fodFormEl = document.getElementById('fodForm');
+            if (fodFormEl) fodFormEl.style.display = 'none';
+        }, 1500);
+    }, 1200);
 }
-
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
     if (!m) return alert("اختر الشهر أولاً لعرض التقرير");
