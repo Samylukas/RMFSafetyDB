@@ -4,114 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>General Department of Safety and Compliance - Marsa Alam Airport</title>
-  
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 </head>
 <body>
 
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-  <!-- شاشة التحميل الأولية -->
-  <div id="splash-screen">
-    <div class="splash-content">
-      <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
-      <div class="loading-bar-container"><div class="loading-bar"></div></div>
-    </div>
-  </div>
+  <div id="splash-screen"><div class="splash-content"><img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Logo"><div class="loading-bar-container"><div class="loading-bar"></div></div></div></div>
 
-  <!-- شاشة تسجيل الدخول -->
   <div id="login-screen" style="display: none;">
       <div class="login-box">
           <img src="LOGO-removebg-preview (1).png" alt="Logo">
           <h2 style="color: var(--primary); margin-top: 10px;">تسجيل الدخول</h2>
-          <div class="input-group">
-              <input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" required autocomplete="off">
-              <datalist id="usersList"></datalist>
-              <i class="fa-solid fa-user"></i>
-          </div>
-          <div class="input-group">
-              <input type="password" id="loginPass" placeholder="كلمة المرور" required autofocus onkeypress="if(event.key === 'Enter') login()">
-              <i class="fa-solid fa-lock"></i>
-          </div>
+          <div class="input-group"><input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم"><datalist id="usersList"></datalist><i class="fa-solid fa-user"></i></div>
+          <div class="input-group"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeypress="if(event.key === 'Enter') login()"><i class="fa-solid fa-lock"></i></div>
           <button class="login-btn" onclick="login()">دخول</button>
           <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
       </div>
   </div>
 
-  <!-- الهيدر الرئيسي -->
   <div class="header" id="app-header" style="display: none;">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
-    <div class="header-titles">
-      <h1>General Department of Safety and Compliance</h1>
-      <h2>الإدارة العامة للسلامة والمطابقة</h2>
-    </div>
+    <div class="header-titles"><h1>General Department of Safety and Compliance</h1><h2>الإدارة العامة للسلامة والمطابقة</h2></div>
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
-  <!-- لوحة القيادة المركزية -->
   <div id="main-dashboard" class="content-area" style="display:none;">
-    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Central Departments</span></h1>
+    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size: 1.2rem; color:#777;">Central Departments</span></h1>
     <div class="departments-grid">
-      <div class="dept-card" onclick="openSection('airport-safety-dashboard')">
-        <i class="fa-solid fa-plane-circle-check dept-icon"></i>
-        <h3 class="dept-title">إدارة سلامة المطارات</h3>
-        <div class="dept-subtitle">Airport Safety Department</div>
-      </div>
-      <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')">
-        <i class="fa-solid fa-hard-hat dept-icon"></i>
-        <h3 class="dept-title">السلامة والصحة المهنية</h3>
-        <div class="dept-subtitle">Occupational Safety & Health</div>
-      </div>
-      <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')">
-        <i class="fa-solid fa-dove dept-icon"></i>
-        <h3 class="dept-title">البيئة والحياة البرية</h3>
-        <div class="dept-subtitle">Environment & Wildlife</div>
-      </div>
-      <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')">
-        <i class="fa-solid fa-fire-extinguisher dept-icon"></i>
-        <h3 class="dept-title">الحماية المدنية</h3>
-        <div class="dept-subtitle">Civil Defense</div>
-      </div>
-      <div class="dept-card" onclick="openGenericDoc('إدارة الجودة الشاملة')">
-        <i class="fa-solid fa-medal dept-icon"></i>
-        <h3 class="dept-title">إدارة الجودة الشاملة</h3>
-        <div class="dept-subtitle">Quality Management</div>
-      </div>
-      <div class="dept-card" onclick="openSection('directory-section')">
-        <i class="fa-solid fa-address-book dept-icon"></i>
-        <h3 class="dept-title">دليل هواتف المطار</h3>
-        <div class="dept-subtitle">Airport Phone Directory</div>
-      </div>
-      <div class="dept-card" onclick="openAdminSection('account-management-section')">
-        <i class="fa-solid fa-users-gear dept-icon"></i>
-        <h3 class="dept-title">إدارة الحسابات</h3>
-        <div class="dept-subtitle">Account Management</div>
-      </div>
+      <div class="dept-card" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-plane-circle-check dept-icon"></i><h3 class="dept-title">إدارة سلامة المطارات</h3><div class="dept-subtitle">Airport Safety Department</div></div>
+      <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية')"><i class="fa-solid fa-hard-hat dept-icon"></i><h3 class="dept-title">السلامة والصحة المهنية</h3></div>
+      <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية')"><i class="fa-solid fa-dove dept-icon"></i><h3 class="dept-title">البيئة والحياة البرية</h3></div>
+      <div class="dept-card" onclick="openGenericDoc('الحماية المدنية')"><i class="fa-solid fa-fire-extinguisher dept-icon"></i><h3 class="dept-title">الحماية المدنية</h3></div>
+      <div class="dept-card" onclick="openGenericDoc('إدارة الجودة الشاملة')"><i class="fa-solid fa-medal dept-icon"></i><h3 class="dept-title">إدارة الجودة الشاملة</h3></div>
+      <div class="dept-card" onclick="openSection('directory-section')"><i class="fa-solid fa-address-book dept-icon"></i><h3 class="dept-title">دليل هواتف المطار</h3></div>
+      <div class="dept-card" onclick="openAdminSection('account-management-section')"><i class="fa-solid fa-users-gear dept-icon"></i><h3 class="dept-title">إدارة الحسابات</h3></div>
     </div>
   </div>
 
-  <!-- لوحة سلامة المطارات الفرعية -->
   <div id="airport-safety-dashboard" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
-    <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777; font-family: sans-serif;">Airport Safety Department</span></h1>
+    <h1 class="welcome-text" style="margin-bottom: 30px;">إدارة سلامة المطارات <br><span style="font-size: 1.2rem; color:#777;">Airport Safety Department</span></h1>
     <div class="submenu-grid">
-      <div class="sub-card" onclick="openSection('captain-survey-section')" style="border: 2px solid var(--primary); background: #f4f8fc;"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
-      <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border: 2px solid var(--secondary); background: #fdfbf7;"><i class="fa-solid fa-list-check sub-icon" style="color: var(--secondary);"></i><h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div></div>
-      <div class="sub-card" onclick="openSection('incident-section')" style="border: 2px solid #dc3545; background: #fff5f5;"><i class="fa-solid fa-triangle-exclamation sub-icon" style="color: #dc3545;"></i><h3 class="sub-title">03 - سجل الحوادث والوقائع</h3><div class="sub-subtitle">Incidents & Accidents</div></div>
-      <div class="sub-card" onclick="openSection('spi-section')" style="border: 2px solid #28a745; background: #f4fcf6;"><i class="fa-solid fa-chart-line sub-icon" style="color: #28a745;"></i><h3 class="sub-title">مؤشرات الأداء</h3><div class="sub-subtitle">Operational SPIs 2026</div></div>
-      <div class="sub-card" onclick="openSection('monthly-report-section')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
-      <div class="sub-card" onclick="openSection('fod-section')"><i class="fa-solid fa-circle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
+      <div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">01 - استبيان الكابتن</h3></div>
+      <div class="sub-card" onclick="openSection('daily-inspection-section')"><i class="fa-solid fa-list-check sub-icon"></i><h3 class="sub-title">02 - الفحص اليومي</h3></div>
+      <div class="sub-card" onclick="openSection('incident-section')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">03 - سجل الحوادث والوقائع</h3></div>
+      <div class="sub-card" onclick="openSection('spi-section')"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء</h3></div>
+      <div class="sub-card" onclick="openSection('monthly-report-section')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3></div>
+      <div class="sub-card" onclick="openSection('fod-section')"><i class="fa-solid fa-circle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3></div>
       <div class="sub-card" onclick="openGenericDoc('التفتيش الربع سنوي')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3></div>
-      <div class="sub-card" onclick="openGenericDoc('تقارير السلامة SMS')"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3><div class="sub-subtitle">SMS 2024 & 2023</div></div>
-      <div class="sub-card" onclick="openGenericDoc('دليل المطار ACM')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3><div class="sub-subtitle">ACM 2025</div></div>
-      <div class="sub-card" onclick="openGenericDoc('خطة الطوارئ AEP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3><div class="sub-subtitle">AEP</div></div>
+      <div class="sub-card" onclick="openGenericDoc('تقارير السلامة SMS')"><i class="fa-solid fa-shield-halved sub-icon"></i><h3 class="sub-title">تقارير السلامة</h3></div>
+      <div class="sub-card" onclick="openGenericDoc('دليل المطار ACM')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-book-atlas sub-icon"></i><h3 class="sub-title">دليل المطار</h3></div>
+      <div class="sub-card" onclick="openGenericDoc('خطة الطوارئ AEP')"><div class="pdf-badge">PDF</div><i class="fa-solid fa-truck-medical sub-icon"></i><h3 class="sub-title">خطة الطوارئ</h3></div>
     </div>
   </div>
 
@@ -119,75 +68,32 @@
   <div id="captain-survey-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">01 - استبيان الكابتن</h1>
-    <div class="nav-controls">
-      <button class="new-btn" onclick="clearFormForNew()"><i class="fa-solid fa-plus"></i> جديد</button>
-      <button class="nav-btn" onclick="navSurveys('first')"><i class="fa-solid fa-angles-right"></i></button>
-      <button class="nav-btn" onclick="navSurveys('prev')"><i class="fa-solid fa-angle-right"></i></button>
-      <div class="nav-counter" id="nav-counter">0 / 0</div>
-      <button class="nav-btn" onclick="navSurveys('next')"><i class="fa-solid fa-angle-left"></i></button>
-      <button class="nav-btn" onclick="navSurveys('last')"><i class="fa-solid fa-angles-left"></i></button>
-    </div>
+    <div class="nav-controls"><button class="new-btn" onclick="clearFormForNew()"><i class="fa-solid fa-plus"></i> جديد</button><button class="nav-btn" onclick="navSurveys('first')"><i class="fa-solid fa-angles-right"></i></button><button class="nav-btn" onclick="navSurveys('prev')"><i class="fa-solid fa-angle-right"></i></button><div class="nav-counter" id="nav-counter">0 / 0</div><button class="nav-btn" onclick="navSurveys('next')"><i class="fa-solid fa-angle-left"></i></button><button class="nav-btn" onclick="navSurveys('last')"><i class="fa-solid fa-angles-left"></i></button></div>
     <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button>
-        <button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير (Dashboard)</button>
-      </div>
+      <div class="tabs-header"><button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry">إدخال البيانات</button><button class="tab-btn" onclick="switchTab('report')" id="btn-report">التقارير</button></div>
       <div id="tab-entry" class="tab-content active">
         <form id="surveyForm" onsubmit="submitSurvey(event)">
           <div class="form-grid">
-            <div class="form-group">
-              <label>Registration (REG) <i class="fa-solid fa-plane"></i></label>
-              <div style="display: flex; gap: 5px; width: 100%;">
-                <div class="custom-dropdown-container">
-                    <input type="text" id="reg" dir="ltr" class="custom-dropdown-input" placeholder="اختر للبحث..." required autocomplete="off">
-                    <i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i>
-                    <div class="custom-dropdown-list" id="regDropdownList"></div>
-                </div>
-                <button type="button" class="add-btn" onclick="openFleetModal()" style="padding: 7px 12px; height: 42px; background:var(--primary); color:white; border:none; border-radius:6px;"><i class="fa-solid fa-plus"></i></button>
-              </div>
-            </div>
+            <div class="form-group"><label>Registration (REG)</label><div style="display: flex; gap: 5px; width: 100%;"><div class="custom-dropdown-container"><input type="text" id="reg" dir="ltr" class="custom-dropdown-input" placeholder="اختر للبحث..." required autocomplete="off"><i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i><div class="custom-dropdown-list" id="regDropdownList"></div></div><button type="button" class="add-btn" onclick="openFleetModal()" style="padding: 7px 12px; background:var(--primary); color:white; border:none; border-radius:6px;"><i class="fa-solid fa-plus"></i></button></div></div>
             <div class="form-group"><label>Airline NAME (CAR)</label><input type="text" dir="ltr" id="airline" required readonly style="background-color: #f0f0f0;"></div>
             <div class="form-group"><label>Aircraft Type</label><input type="text" dir="ltr" id="acType" required readonly style="background-color: #f0f0f0;"></div>
-            <div class="form-group"><label>Flight NO</label><input type="text" dir="ltr" id="fltNo" required placeholder="مثال: MS 184"></div>
+            <div class="form-group"><label>Flight NO</label><input type="text" dir="ltr" id="fltNo" required></div>
             <div class="form-group"><label>Date</label><input type="date" id="capDate" required></div>
             <div class="form-group"><label>Time</label><input type="time" id="capTime"></div>
           </div>
           <div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div>
-          <div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><textarea id="comments" class="inc-textarea"></textarea></div></div>
+          <div class="eval-section"><div class="form-group"><label>Captain Comments</label><textarea id="comments" class="inc-textarea"></textarea></div></div>
           <button type="submit" class="submit-btn" id="submitSurveyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button>
           <p id="surveyMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
       </div>
       <div id="tab-report" class="tab-content">
-        <div class="report-filters">
-          <div class="form-group"><label>من:</label><input type="date" id="fromDate"></div>
-          <div class="form-group"><label>إلى:</label><input type="date" id="toDate"></div>
-          <button onclick="generateModernReport()" class="submit-btn" style="width:auto; padding:10px 20px;"><i class="fa-solid fa-chart-pie"></i> عرض الإحصائيات</button>
-          <button onclick="exportModernPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px 20px;"><i class="fa-solid fa-file-pdf"></i> تحميل PDF</button>
-        </div>
-        <div id="printable-report" style="display: none; background: #fff; padding: 20px; border-radius: 10px; direction: rtl;">
-          <div class="dashboard-header avoid-page-break" style="display:flex; justify-content:space-between; align-items:center;">
-            <div><h2>Safety Captain Survey Dashboard</h2><p id="report-date-range">الفترة: ...</p></div>
-            <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;">
-          </div>
-          <div class="stats-cards avoid-page-break" style="display:flex; gap:15px; margin: 20px 0;">
-            <div class="stat-card" style="flex:1; background:#003366; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-total" style="font-size:2rem; margin:0;">0</h3><p>إجمالي الاستبيانات</p></div>
-            <div class="stat-card" style="flex:1; background:#17a2b8; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-airlines" style="font-size:2rem; margin:0;">0</h3><p>الشركات المشغلة</p></div>
-            <div class="stat-card" style="flex:1; background:#28a745; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-excellent" style="font-size:2rem; margin:0;">0%</h3><p>التقييم الممتاز</p></div>
-          </div>
-          <div class="avoid-page-break" style="margin-bottom: 30px;">
-            <div class="charts-grid" style="direction: ltr; display:flex; gap:20px;">
-              <div class="chart-container" style="flex:1; height:260px;"><canvas id="airlinesChart"></canvas></div>
-              <div class="chart-container" style="flex:1; height:260px;"><canvas id="datesChart"></canvas></div>
-              <div class="chart-container" style="flex:1; height:260px;"><canvas id="evalChart"></canvas></div>
-            </div>
-          </div>
-          <div class="report-wrapper avoid-page-break">
-            <table class="report-table rtl-table" dir="rtl">
-              <thead><tr><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th style="background:#28a745;color:white;">E</th><th style="background:#ffc107;color:black;">G</th><th style="background:#dc3545;color:white;">P</th><th style="background:#6c757d;color:white;">N/A</th><th style="background:#1a2a6c;color:white;">B</th></tr></thead>
-              <tbody id="flights-eval-tbody"></tbody>
-            </table>
-          </div>
+        <div class="report-filters"><div class="form-group"><label>من:</label><input type="date" id="fromDate"></div><div class="form-group"><label>إلى:</label><input type="date" id="toDate"></div><button onclick="generateModernReport()" class="submit-btn" style="width:auto; padding:10px 20px;">عرض</button><button onclick="exportModernPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px 20px;">PDF</button></div>
+        <div id="printable-report" style="display: none; background: #fff; padding: 20px; direction: rtl;">
+          <div class="dashboard-header avoid-page-break" style="display:flex; justify-content:space-between; align-items:center;"><div><h2>Safety Captain Survey Dashboard</h2><p id="report-date-range">الفترة: ...</p></div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div>
+          <div class="stats-cards avoid-page-break" style="display:flex; gap:15px; margin: 20px 0;"><div class="stat-card" style="flex:1; background:#003366; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-total" style="font-size:2rem; margin:0;">0</h3><p>إجمالي الاستبيانات</p></div><div class="stat-card" style="flex:1; background:#17a2b8; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-airlines" style="font-size:2rem; margin:0;">0</h3><p>الشركات المشغلة</p></div><div class="stat-card" style="flex:1; background:#28a745; color:white; padding:15px; border-radius:8px; text-align:center;"><h3 id="stat-excellent" style="font-size:2rem; margin:0;">0%</h3><p>التقييم الممتاز</p></div></div>
+          <div class="avoid-page-break" style="margin-bottom: 30px;"><div class="charts-grid" style="direction: ltr; display:flex; gap:20px;"><div class="chart-container" style="flex:1; height:260px;"><canvas id="airlinesChart"></canvas></div><div class="chart-container" style="flex:1; height:260px;"><canvas id="datesChart"></canvas></div><div class="chart-container" style="flex:1; height:260px;"><canvas id="evalChart"></canvas></div></div></div>
+          <div class="report-wrapper avoid-page-break"><table class="report-table rtl-table" dir="rtl"><thead><tr><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th style="background:#28a745;color:white;">E</th><th style="background:#ffc107;color:black;">G</th><th style="background:#dc3545;color:white;">P</th><th style="background:#6c757d;color:white;">N/A</th><th style="background:#1a2a6c;color:white;">B</th></tr></thead><tbody id="flights-eval-tbody"></tbody></table></div>
           <div id="additional-tables-container"></div>
         </div>
       </div>
@@ -198,176 +104,52 @@
   <div id="daily-inspection-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">02 - الفحص اليومي لساحة الطيران</h1>
-    <div class="nav-controls">
-      <button class="new-btn" onclick="clearDailyFormForNew()"><i class="fa-solid fa-plus"></i> فحص جديد</button>
-      <button class="nav-btn" onclick="navDaily('first')"><i class="fa-solid fa-angles-right"></i></button>
-      <button class="nav-btn" onclick="navDaily('prev')"><i class="fa-solid fa-angle-right"></i></button>
-      <div class="nav-counter" id="nav-daily-counter">0 / 0</div>
-      <button class="nav-btn" onclick="navDaily('next')"><i class="fa-solid fa-angle-left"></i></button>
-      <button class="nav-btn" onclick="navDaily('last')"><i class="fa-solid fa-angles-left"></i></button>
-    </div>
+    <div class="nav-controls"><button class="new-btn" onclick="clearDailyFormForNew()"><i class="fa-solid fa-plus"></i> جديد</button><button class="nav-btn" onclick="navDaily('first')"><i class="fa-solid fa-angles-right"></i></button><button class="nav-btn" onclick="navDaily('prev')"><i class="fa-solid fa-angle-right"></i></button><div class="nav-counter" id="nav-daily-counter">0 / 0</div><button class="nav-btn" onclick="navDaily('next')"><i class="fa-solid fa-angle-left"></i></button><button class="nav-btn" onclick="navDaily('last')"><i class="fa-solid fa-angles-left"></i></button></div>
     <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry"><i class="fa-solid fa-clipboard-check"></i> نموذج التفتيش (إدخال)</button>
-        <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> طباعة النماذج والتقارير</button>
-      </div>
+      <div class="tabs-header"><button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry">نموذج التفتيش</button><button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report">التقارير</button></div>
       <div id="tab-daily-entry" class="tab-content active">
         <form id="dailyForm" onsubmit="submitDailyInspection(event)">
-          <div class="form-grid">
-            <div class="form-group"><label>التاريخ</label><input type="date" id="dailyDate" required></div>
-            <div class="form-group"><label>الوقت</label><input type="time" id="dailyTime" required></div>
-            <div class="form-group"><label>الوردية</label><select id="dailyShift" required><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option><option value="ليلي">ليلي</option></select></div>
-            <div class="form-group"><label>المفتش</label><input type="text" id="dailyInspector" required placeholder="اسم المفتش..."></div>
-          </div>
+          <div class="form-grid"><div class="form-group"><label>التاريخ</label><input type="date" id="dailyDate" required></div><div class="form-group"><label>الوقت</label><input type="time" id="dailyTime" required></div><div class="form-group"><label>الوردية</label><select id="dailyShift" required><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option><option value="ليلي">ليلي</option></select></div><div class="form-group"><label>المفتش</label><input type="text" id="dailyInspector" required></div></div>
           <div class="checklist-grid" id="checklist-container"></div>
-          <button type="submit" class="submit-btn" id="submitDailyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة التفتيشية</button>
+          <button type="submit" class="submit-btn" id="submitDailyBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة</button>
           <p id="dailyMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
-        <div class="report-wrapper" style="margin-top: 30px;">
-            <table class="report-table rtl-table" dir="rtl">
-              <thead><tr><th>التاريخ</th><th>الوقت</th><th>الوردية</th><th>المفتش</th><th>المخالفات</th><th>إجراء</th></tr></thead>
-              <tbody id="saved-daily-tbody"></tbody>
-            </table>
-        </div>
+        <div class="report-wrapper" style="margin-top: 30px;"><table class="report-table rtl-table" dir="rtl"><thead><tr><th>التاريخ</th><th>الوقت</th><th>الوردية</th><th>المفتش</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="saved-daily-tbody"></tbody></table></div>
       </div>
       <div id="tab-daily-report" class="tab-content">
-        <div class="report-filters">
-          <input type="date" id="dailyFromDate"><input type="date" id="dailyToDate">
-          <button onclick="generateDailyPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-print"></i> عرض التقرير</button>
-          <button onclick="exportDailyPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
-        </div>
+        <div class="report-filters"><input type="date" id="dailyFromDate"><input type="date" id="dailyToDate"><button onclick="generateDailyPrintReport()" class="submit-btn" style="width:auto; padding:10px;">عرض</button><button onclick="exportDailyPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;">PDF</button></div>
         <div id="printable-daily-report" style="display: none; background: #fff; padding:20px; direction: rtl; width: 100%;">
-            <div id="printable-checklist-report" style="margin-bottom: 25px;">
-                <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">قائمة الفحص اليومية لمناطق التحركات الجوية</h3>
-                <table class="report-table" id="iso-checklist-table"></table>
-            </div>
-            <div id="printable-corrective-report">
-                <h3 style="color: #dc3545; text-align: right; margin-bottom: 10px;">تقرير الأخطار والملاحظات المرصودة:</h3>
-                <table class="report-table" style="font-size: 11px;">
-                  <thead><tr style="background:#003366; color:#fff;"><th>م</th><th>التاريخ</th><th>المكان</th><th>الملاحظة</th><th>الجهة المسئولة</th><th>الإجراء المتخذ</th><th>الحالة</th></tr></thead>
-                  <tbody id="corrective-tbody"></tbody>
-                </table>
-            </div>
+            <div id="printable-corrective-report"><h3 style="color: #dc3545; text-align: right; margin-bottom: 10px;">تقرير الأخطار والملاحظات المرصودة:</h3><table class="report-table" style="font-size: 11px;"><thead><tr style="background:#003366; color:#fff;"><th>م</th><th>التاريخ</th><th>المكان</th><th>الملاحظة</th><th>الجهة المسئولة</th><th>الإجراء المتخذ</th><th>الحالة</th></tr></thead><tbody id="corrective-tbody"></tbody></table></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 3. سجل الحوادث والوقائع (النموذج الكامل لـ 28 حقل) -->
+  <!-- 3. الحوادث 28 حقل -->
   <div id="incident-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #dc3545; text-align: center; font-weight: 900; font-size: 2rem;">سجل الحوادث والوقائع</h1>
-    <div class="nav-controls">
-      <button class="new-btn" onclick="clearIncidentForm()"><i class="fa-solid fa-plus"></i> واقعة جديدة</button>
-      <button class="nav-btn" onclick="navIncidents('first')"><i class="fa-solid fa-angles-right"></i></button>
-      <button class="nav-btn" onclick="navIncidents('prev')"><i class="fa-solid fa-angle-right"></i></button>
-      <div class="nav-counter" id="nav-incident-counter">0 / 0</div>
-      <button class="nav-btn" onclick="navIncidents('next')"><i class="fa-solid fa-angle-left"></i></button>
-      <button class="nav-btn" onclick="navIncidents('last')"><i class="fa-solid fa-angles-left"></i></button>
-    </div>
+    <div class="nav-controls"><button class="new-btn" onclick="clearIncidentForm()"><i class="fa-solid fa-plus"></i> واقعة جديدة</button><button class="nav-btn" onclick="navIncidents('first')"><i class="fa-solid fa-angles-right"></i></button><button class="nav-btn" onclick="navIncidents('prev')"><i class="fa-solid fa-angle-right"></i></button><div class="nav-counter" id="nav-incident-counter">0 / 0</div><button class="nav-btn" onclick="navIncidents('next')"><i class="fa-solid fa-angle-left"></i></button><button class="nav-btn" onclick="navIncidents('last')"><i class="fa-solid fa-angles-left"></i></button></div>
     <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchIncidentTab('entry')" id="btn-inc-entry"><i class="fa-solid fa-pen-to-square"></i> الإدخال</button>
-        <button class="tab-btn" onclick="switchIncidentTab('monthly')" id="btn-inc-monthly"><i class="fa-solid fa-table-list"></i> التقرير المجمع</button>
-      </div>
+      <div class="tabs-header"><button class="tab-btn active" onclick="switchIncidentTab('entry')" id="btn-inc-entry">الإدخال</button><button class="tab-btn" onclick="switchIncidentTab('monthly')" id="btn-inc-monthly">التقرير المجمع</button></div>
       <div id="tab-inc-entry" class="tab-content active">
         <form id="incidentForm" onsubmit="submitIncident(event)">
-          <!-- بيانات التوقيت والرحلة -->
           <h4 style="color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">1. معلومات عامة والرحلة</h4>
-          <div class="form-grid">
-            <div class="form-group"><label>التاريخ (Date)</label><input type="date" id="incDate" required></div>
-            <div class="form-group"><label>الوقت (Time)</label><input type="time" id="incTime" required></div>
-            <div class="form-group"><label>المكان (Location)</label><input type="text" id="incLocation" required placeholder="Stand / Taxiway"></div>
-            <div class="form-group"><label>الشركة / الوكيل (CAR)</label><input type="text" id="incCar" dir="ltr" placeholder="Airline / Agent"></div>
-            <div class="form-group"><label>رقم الرحلة (Flight NO)</label><input type="text" id="incFlightNo" dir="ltr" placeholder="Flight No"></div>
-            <div class="form-group"><label>تسجيل الطائرة (REG)</label><input type="text" id="incReg" dir="ltr" placeholder="REG"></div>
-            <div class="form-group"><label>خط السير من (ORG / VIA)</label><input type="text" id="incOrgVia" dir="ltr"></div>
-            <div class="form-group"><label>إلى (VIA / DST)</label><input type="text" id="incViaDst" dir="ltr"></div>
-          </div>
-
-          <!-- الأفراد والمعدات المشتركة -->
-          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">2. الأفراد والمعدات المشتركة</h4>
-          <div class="form-grid">
-            <div class="form-group"><label>الأفراد المشتركون (Personnel)</label><input type="text" id="incPersonnel"></div>
-            <div class="form-group"><label>الوظيفة (Position)</label><input type="text" id="incPosition"></div>
-            <div class="form-group"><label>نوع الإصابة إن وجد (Injury)</label><input type="text" id="incInjuryType"></div>
-            <div class="form-group"><label>رقم المعدة (Equipment No)</label><input type="text" id="incEquipmentNo"></div>
-            <div class="form-group"><label>اسم السائق (Driver Name)</label><input type="text" id="incDriver"></div>
-            <div class="form-group"><label>تبعية المعدة (Equipment Owned)</label><input type="text" id="incEqOwner"></div>
-          </div>
-
-          <!-- التصنيف وشدة الخطر -->
-          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">3. التصنيف وتقييم الخطر (Safety Risk Matrix)</h4>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>التوصيف (Characterization)</label>
-              <select id="incChar">
-                <option value="Equipment Accident">Equipment Accident</option>
-                <option value="Aircraft technical">Aircraft technical</option>
-                <option value="Bird Strike">Bird Strike</option>
-                <option value="Wildlife">Wildlife</option>
-                <option value="FOD">FOD</option>
-                <option value="Diesel leakage">Diesel leakage</option>
-                <option value="Fuel Spill">Fuel Spill</option>
-                <option value="Driving violation">Driving violation</option>
-                <option value="Safety violation">Safety violation</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>شدة الخطر (Risk Severity)</label>
-              <select id="incRiskSev">
-                <option value="Negligible">Negligible (A)</option>
-                <option value="Minor" selected>Minor (B)</option>
-                <option value="Major">Major (C)</option>
-                <option value="Hazardous">Hazardous (D)</option>
-                <option value="Catastrophic">Catastrophic (E)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>احتمالية التكرار (Risk Probability)</label>
-              <select id="incRiskProb">
-                <option value="Extremely Improbable">Extremely Improbable (1)</option>
-                <option value="Improbable">Improbable (2)</option>
-                <option value="Remote" selected>Remote (3)</option>
-                <option value="Occasional">Occasional (4)</option>
-                <option value="Frequent">Frequent (5)</option>
-              </select>
-            </div>
-            <div class="form-group"><label>حالة التشغيل (Status)</label><select id="incStatus"><option value="In service" selected>In service</option><option value="Out of service">Out of service</option><option value="Under Investigation">Under Investigation</option><option value="Closed">Closed</option></select></div>
-            <div class="form-group"><label>أسباب الوقوع (Occurrence Causes)</label><input type="text" id="incCauses"></div>
-            <div class="form-group"><label>المُعِد (Prepared By)</label><input type="text" id="incPreparedBy" required></div>
-          </div>
-
-          <!-- التفاصيل والإجراءات -->
-          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">4. التفاصيل والإجراءات التصحيحية</h4>
-          <div class="form-group" style="margin-top:10px;"><label>وصف الخطر (Hazard Description)</label><textarea id="incHazardDesc" class="inc-textarea" style="height:60px;"></textarea></div>
-          <div class="form-group"><label>الوصف التفصيلي (Description)</label><textarea id="incDesc" class="inc-textarea" style="height:80px;"></textarea></div>
-          <div class="form-group"><label>الإجراء المتخذ (Action Taken)</label><textarea id="incAction" class="inc-textarea" style="height:80px; border-color:#28a745;"></textarea></div>
-          <div class="form-group"><label>التوصيات (Recommendation)</label><textarea id="incRecommendation" class="inc-textarea" style="height:60px; border-color:#003366;"></textarea></div>
-          
-          <div style="display:flex; gap:15px; margin-top:20px;">
-            <button type="submit" class="submit-btn" id="submitIncBtn" style="background-color: #dc3545; flex:2;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة</button>
-            <button type="button" onclick="clearIncidentForm()" class="submit-btn" style="background-color: #6c757d; flex:1;"><i class="fa-solid fa-rotate-left"></i> تفريغ</button>
-          </div>
+          <div class="form-grid"><div class="form-group"><label>التاريخ (Date)</label><input type="date" id="incDate" required></div><div class="form-group"><label>الوقت (Time)</label><input type="time" id="incTime" required></div><div class="form-group"><label>المكان (Location)</label><input type="text" id="incLocation" required></div><div class="form-group"><label>الشركة / الوكيل (CAR)</label><input type="text" id="incCar" dir="ltr"></div><div class="form-group"><label>رقم الرحلة (Flight NO)</label><input type="text" id="incFlightNo" dir="ltr"></div><div class="form-group"><label>تسجيل الطائرة (REG)</label><input type="text" id="incReg" dir="ltr"></div><div class="form-group"><label>خط السير من (ORG / VIA)</label><input type="text" id="incOrgVia" dir="ltr"></div><div class="form-group"><label>إلى (VIA / DST)</label><input type="text" id="incViaDst" dir="ltr"></div></div>
+          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">2. الأفراد والمعدات</h4>
+          <div class="form-grid"><div class="form-group"><label>الأفراد المشتركون</label><input type="text" id="incPersonnel"></div><div class="form-group"><label>الوظيفة</label><input type="text" id="incPosition"></div><div class="form-group"><label>نوع الإصابة</label><input type="text" id="incInjuryType"></div><div class="form-group"><label>رقم المعدة</label><input type="text" id="incEquipmentNo"></div><div class="form-group"><label>اسم السائق</label><input type="text" id="incDriver"></div><div class="form-group"><label>تبعية المعدة</label><input type="text" id="incEqOwner"></div></div>
+          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">3. التصنيف وتقييم الخطر</h4>
+          <div class="form-grid"><div class="form-group"><label>التوصيف</label><select id="incChar"><option value="Equipment Accident">Equipment Accident</option><option value="Aircraft technical">Aircraft technical</option><option value="Bird Strike">Bird Strike</option><option value="Wildlife">Wildlife</option><option value="FOD">FOD</option><option value="Diesel leakage">Diesel leakage</option><option value="Fuel Spill">Fuel Spill</option><option value="Driving violation">Driving violation</option><option value="Safety violation">Safety violation</option><option value="Others">Others</option></select></div><div class="form-group"><label>شدة الخطر</label><select id="incRiskSev"><option value="Negligible">Negligible</option><option value="Minor" selected>Minor</option><option value="Major">Major</option><option value="Hazardous">Hazardous</option><option value="Catastrophic">Catastrophic</option></select></div><div class="form-group"><label>الاحتمالية</label><select id="incRiskProb"><option value="Extremely Improbable">Extremely Improbable</option><option value="Improbable">Improbable</option><option value="Remote" selected>Remote</option><option value="Occasional">Occasional</option><option value="Frequent">Frequent</option></select></div><div class="form-group"><label>الحالة</label><select id="incStatus"><option value="In service" selected>In service</option><option value="Out of service">Out of service</option><option value="Under Investigation">Under Investigation</option><option value="Closed">Closed</option></select></div><div class="form-group"><label>الأسباب</label><input type="text" id="incCauses"></div><div class="form-group"><label>المُعِد</label><input type="text" id="incPreparedBy" required></div></div>
+          <h4 style="color: var(--primary); margin: 20px 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px;">4. التفاصيل والإجراءات</h4>
+          <div class="form-group" style="margin-top:10px;"><label>وصف الخطر</label><textarea id="incHazardDesc" class="inc-textarea" style="height:60px;"></textarea></div><div class="form-group"><label>الوصف التفصيلي</label><textarea id="incDesc" class="inc-textarea" style="height:80px;"></textarea></div><div class="form-group"><label>الإجراء المتخذ</label><textarea id="incAction" class="inc-textarea" style="height:80px; border-color:#28a745;"></textarea></div><div class="form-group"><label>التوصيات</label><textarea id="incRecommendation" class="inc-textarea" style="height:60px; border-color:#003366;"></textarea></div>
+          <div style="display:flex; gap:15px; margin-top:20px;"><button type="submit" class="submit-btn" id="submitIncBtn" style="background-color: #dc3545; flex:2;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة</button><button type="button" onclick="clearIncidentForm()" class="submit-btn" style="background-color: #6c757d; flex:1;">تفريغ</button></div>
           <p id="incMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
-        <div class="report-wrapper" style="margin-top: 30px;">
-            <table class="report-table rtl-table" dir="rtl">
-              <thead><tr><th>التاريخ</th><th>المكان/الرحلة</th><th>التوصيف</th><th>الشدة</th><th>المُعد</th><th>إجراء</th></tr></thead>
-              <tbody id="saved-inc-tbody"></tbody>
-            </table>
-        </div>
+        <div class="report-wrapper" style="margin-top: 30px;"><table class="report-table rtl-table" dir="rtl"><thead><tr><th>التاريخ</th><th>المكان/الرحلة</th><th>التوصيف</th><th>الشدة</th><th>المُعد</th><th>إجراء</th></tr></thead><tbody id="saved-inc-tbody"></tbody></table></div>
       </div>
       <div id="tab-inc-monthly" class="tab-content">
-        <div class="report-filters">
-            <input type="date" id="incFromDate"><input type="date" id="incToDate">
-            <button onclick="generateMonthlyIncidents()" class="submit-btn" style="width:auto; padding:10px;">عرض التقرير</button>
-            <button onclick="exportMonthlyIncidentsPDF()" class="submit-btn" style="width:auto; background:#dc3545; padding:10px;">طباعة PDF</button>
-        </div>
-        <div id="printable-monthly-incidents" style="display:none; background:#fff; padding:20px; direction:rtl;">
-            <table class="report-table rtl-table" id="inc-monthly-table"></table>
-        </div>
+        <div class="report-filters"><input type="date" id="incFromDate"><input type="date" id="incToDate"><button onclick="generateMonthlyIncidents()" class="submit-btn" style="width:auto; padding:10px;">عرض التقرير</button><button onclick="exportMonthlyIncidentsPDF()" class="submit-btn" style="width:auto; background:#dc3545; padding:10px;">PDF</button></div>
+        <div id="printable-monthly-incidents" style="display:none; background:#fff; padding:20px; direction:rtl;"><table class="report-table rtl-table" id="inc-monthly-table"></table></div>
       </div>
     </div>
   </div>
@@ -377,30 +159,16 @@
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: #28a745; text-align: center; font-weight: 900; font-size: 2rem;">مؤشرات الأداء التشغيلية 2026</h1>
     <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات الشهرية</button>
-        <button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report"><i class="fa-solid fa-table-cells"></i> مصفوفة التقارير</button>
-      </div>
+      <div class="tabs-header"><button class="tab-btn active" onclick="switchSpiTab('entry')" id="btn-spi-entry">إدخال</button><button class="tab-btn" onclick="switchSpiTab('report')" id="btn-spi-report">مصفوفة التقارير</button></div>
       <div id="tab-spi-entry" class="tab-content active">
         <form id="spiForm" onsubmit="submitSPI(event)">
-          <div class="form-grid" style="background:#e9ecef; padding: 15px; border-radius: 8px;">
-            <div class="form-group"><label>السنة</label><select id="spiYear" required><option value="2026" selected>2026</option></select></div>
-            <div class="form-group"><label>الشهر</label><select id="spiMonth" required><option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option><option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option><option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option><option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option></select></div>
-            <div class="form-group"><label>حركة الطائرات (Movements)</label><input type="number" id="spiMovements" required min="1"></div>
-          </div>
-          <div id="spi-dynamic-inputs"></div>
-          <button type="submit" class="submit-btn" style="background-color: #28a745; margin-top: 20px;" id="submitSpiBtn"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
-          <p id="spiMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
+          <div class="form-grid" style="background:#e9ecef; padding: 15px; border-radius: 8px;"><div class="form-group"><label>السنة</label><select id="spiYear"><option value="2026" selected>2026</option></select></div><div class="form-group"><label>الشهر</label><select id="spiMonth"><option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option><option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option><option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option><option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option></select></div><div class="form-group"><label>حركة الطائرات</label><input type="number" id="spiMovements" required min="1"></div></div>
+          <div id="spi-dynamic-inputs"></div><button type="submit" class="submit-btn" style="background-color: #28a745; margin-top: 20px;" id="submitSpiBtn">حفظ</button><p id="spiMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
       </div>
       <div id="tab-spi-report" class="tab-content">
-        <div class="report-filters">
-           <div class="form-group"><label>اختر السنة:</label><select id="spiReportYear"><option value="2026">2026</option></select></div>
-           <button onclick="generateSpiReport()" class="submit-btn" style="width:auto; background: #28a745; padding: 10px 15px;"><i class="fa-solid fa-sync"></i> تحديث المصفوفة</button>
-        </div>
-        <div id="spi-dashboard-view" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px; overflow-x: auto;">
-           <div id="spi-matrix-container"></div>
-        </div>
+        <div class="report-filters"><div class="form-group"><label>السنة:</label><select id="spiReportYear"><option value="2026">2026</option></select></div><button onclick="generateSpiReport()" class="submit-btn" style="width:auto; background: #28a745; padding: 10px 15px;">تحديث المصفوفة</button></div>
+        <div id="spi-dashboard-view" style="background: #fff; padding: 20px; border-radius: 10px; direction: rtl; margin-top: 20px; overflow-x: auto;"><div id="spi-matrix-container"></div></div>
       </div>
     </div>
   </div>
@@ -409,164 +177,51 @@
   <div id="monthly-report-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+    <div class="report-filters" style="background:#f0f8ff;"><label style="font-weight: bold;">اختر الشهر:</label><input type="month" id="mainReportMonth"><button onclick="generateFullMonthlyReport()" class="submit-btn" style="width:auto; padding:10px;">تجهيز</button><button onclick="exportMainReportPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;">PDF</button></div>
 
-    <div class="report-filters" style="background:#f0f8ff;">
-        <label style="font-weight: bold;">اختر الشهر للإصدار:</label>
-        <input type="month" id="mainReportMonth">
-        <button onclick="generateFullMonthlyReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-file-word"></i> تجهيز التقرير الشامل</button>
-        <button onclick="exportMainReportPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
-    </div>
+    <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;"><div style="font-size: 11px; font-weight: bold; color: #555;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div><div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div><div style="font-size: 13px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div></div>
+        <div style="text-align: center; margin-bottom: 40px;"><h1 style="color: #003366; font-size: 2.2rem; margin:0;">إدارة المطابقة والسلامة</h1><h2 style="color: #555; font-weight: normal; margin-top: 10px; font-size: 1.4rem;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2><h3 style="color: #003366; margin-top: 25px; font-size: 1.8rem;" id="mr-title-date" dir="ltr">Month - Year</h3><p style="margin-top: 10px; font-weight: bold; font-size: 1.1rem;">Prepared by: Samy Lukas</p></div>
 
-    <div id="printable-main-report" style="display:none; background: #fff; padding: 40px; margin-top: 20px; color: #000; font-family: 'Arial', sans-serif; direction: rtl; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <!-- ترويسة التقرير -->
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
-            <div style="font-size: 11px; font-weight: bold; color: #555; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
-            <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 60px;"></div>
-            <div style="font-size: 13px; font-weight: bold; color: #555; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #003366; font-size: 2.2rem; margin:0;">إدارة المطابقة والسلامة</h1>
-            <h2 style="color: #555; font-weight: normal; margin-top: 10px; font-size: 1.4rem;">التقرير الشهري الخاص بمنطقة التحركات الجوية</h2>
-            <h3 style="color: #003366; margin-top: 25px; font-size: 1.8rem;" id="mr-title-date" dir="ltr">Month - Year</h3>
-            <p style="margin-top: 10px; font-weight: bold; font-size: 1.1rem;">Prepared by: Samy Lukas</p>
-        </div>
-
-        <!-- أولاً: عام والمقارنة الذكية بالأسهم -->
         <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">أولاً: عـــــــــــام</h2>
-        <table style="width: 100%; border: 1px solid #000; font-size: 1rem; margin-bottom: 40px; border-collapse: collapse; text-align: center;">
-            <thead style="background: #e6e6e6; color: #000;">
-                <tr>
-                    <th style="border: 1px solid #000; padding: 10px; width: 45%;">البيان</th>
-                    <th style="border: 1px solid #000; padding: 10px;" id="th-prev-month">الشهر السابق</th>
-                    <th style="border: 1px solid #000; padding: 10px;" id="th-curr-month">الشهر الحالي</th>
-                    <th style="border: 1px solid #000; padding: 10px; width: 20%;">الفرق والاتجاه</th>
-                </tr>
-            </thead>
-            <tbody id="mr-general-tbody"></tbody>
-        </table>
+        <table style="width: 100%; border: 1px solid #000; font-size: 1rem; margin-bottom: 40px; border-collapse: collapse; text-align: center;"><thead style="background: #e6e6e6; color: #000;"><tr><th style="border: 1px solid #000; padding: 10px; width: 45%;">البيان</th><th style="border: 1px solid #000; padding: 10px;" id="th-prev-month">الشهر السابق</th><th style="border: 1px solid #000; padding: 10px;" id="th-curr-month">الشهر الحالي</th><th style="border: 1px solid #000; padding: 10px; width: 20%;">الفرق والاتجاه</th></tr></thead><tbody id="mr-general-tbody"></tbody></table>
 
-        <!-- ثانياً: المخالفات والأخطار بالرسوم -->
         <h2 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">ثانياً: الحصــــــــــــر التفصيلي</h2>
         <h3 style="color: #555;">المخالفات والأخطار طبقاً للإدارة والنوع:</h3>
-        
-        <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom: 40px;" class="avoid-page-break">
-            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart1"></canvas></div>
-            <div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart2"></canvas></div>
-        </div>
+        <div style="display:flex; justify-content:space-between; gap:20px; margin-bottom: 40px;" class="avoid-page-break"><div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart1"></canvas></div><div style="flex:1; height: 280px; background: #fafafa; border:1px solid #ddd; padding:10px; border-radius:6px;"><canvas id="mrChart2"></canvas></div></div>
 
-        <!-- حصر الوقائع -->
         <h3 style="color: #555;" class="avoid-page-break">حصر بالوقائع:</h3>
-        <p id="mr-incidents-count-text" style="font-weight: bold; font-size: 1.1rem;"></p>
-        <div id="mr-incidents-list" style="margin-bottom: 40px; text-align: left; direction: ltr;"></div>
+        <p id="mr-incidents-count-text" style="font-weight: bold; font-size: 1.1rem;"></p><div id="mr-incidents-list" style="margin-bottom: 40px; text-align: left; direction: ltr;"></div>
 
-        <!-- ثالثاً: Captain Survey بالكامل -->
-        <div class="avoid-page-break" style="margin-top: 40px;">
-            <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">3- Captain Survey</h3>
-            <p id="mr-survey-summary-text" style="font-weight: bold; font-size: 1.1rem; color: #003366; direction: rtl; text-align: right;"></p>
-            
-            <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
-                    <canvas id="mrSurveyAirChart"></canvas>
-                </div>
-                <div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
-                    <canvas id="mrSurveyEvalChart"></canvas>
-                </div>
-            </div>
+        <div class="avoid-page-break" style="margin-top: 40px;"><h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;">3- Captain Survey</h3><p id="mr-survey-summary-text" style="font-weight: bold; font-size: 1.1rem; color: #003366; direction: rtl; text-align: right;"></p><div style="display: flex; gap: 20px; margin-bottom: 25px;"><div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;"><canvas id="mrSurveyAirChart"></canvas></div><div style="flex: 1; height: 260px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;"><canvas id="mrSurveyEvalChart"></canvas></div></div><div style="overflow-x: auto; margin-bottom: 25px;"><h4 style="color: #003366; margin-bottom: 8px; text-align: center; font-size: 1.1rem; font-style: italic;">Safety Captain Survey Report Evaluation Matrix</h4><div id="mr-survey-matrix-container"></div></div><div style="margin-bottom: 30px;"><h4 style="color: #003366; margin-bottom: 8px;">Captain Comments & Observations:</h4><div id="mr-survey-comments-container"></div></div></div>
 
-            <div style="overflow-x: auto; margin-bottom: 25px;">
-                <h4 style="color: #003366; margin-bottom: 8px; text-align: center; font-size: 1.1rem; font-style: italic;">Safety Captain Survey Report Evaluation Matrix</h4>
-                <div id="mr-survey-matrix-container"></div>
-            </div>
-
-            <div style="margin-bottom: 30px;">
-                <h4 style="color: #003366; margin-bottom: 8px;">Captain Comments & Observations:</h4>
-                <div id="mr-survey-comments-container"></div>
-            </div>
-        </div>
-
-        <!-- رابعاً: FOD الكامل ذو الأربعة مواقع -->
         <h3 style="color: #003366; font-size: 1.5rem; border-bottom: 2px solid #003366; padding-bottom: 5px;" class="avoid-page-break">4- F.O.D Collected and Classifications</h3>
         <div id="mr-fod-details" style="margin-bottom: 40px; direction: ltr; text-align: left;" class="avoid-page-break"></div>
 
-        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr" class="avoid-page-break">
-            <p>Best Regards,</p>
-            <p style="color: #003366; margin-bottom: 5px;">Airport Safety Manager</p>
-            <div style="font-family: 'Brush Script MT', cursive; font-size: 2.5rem; color: #3b3b98;">Samy Lukas</div>
-        </div>
+        <div style="text-align: left; margin-top: 50px; font-weight: bold; font-size: 1.2rem;" dir="ltr" class="avoid-page-break"><p>Best Regards,</p><p style="color: #003366; margin-bottom: 5px;">Airport Safety Manager</p><div style="font-family: 'Brush Script MT', cursive; font-size: 2.5rem; color: #3b3b98;">Samy Lukas</div></div>
     </div>
   </div>
 
-  <!-- 6. وحدة FOD -->
+  <!-- 6. وحدة FOD iframe -->
   <div id="fod-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة <br><span style="font-size: 1rem; color:#777; font-family: sans-serif;">F.O.D Collected</span></h1>
-
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem; margin-bottom: 5px;">الأجسام الغريبة <br><span style="font-size: 1rem; color:#777;">F.O.D Collected</span></h1>
     <div class="survey-container">
-      <div class="tabs-header">
-        <button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry"><i class="fa-solid fa-keyboard"></i> إدخال بيانات FOD</button>
-        <button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report"><i class="fa-solid fa-print"></i> تقرير FOD الشهري</button>
-      </div>
-
+      <div class="tabs-header"><button class="tab-btn active" onclick="switchFodTab('entry')" id="btn-fod-entry">إدخال بيانات FOD</button><button class="tab-btn" onclick="switchFodTab('report')" id="btn-fod-report">تقرير FOD الشهري</button></div>
       <div id="tab-fod-entry" class="tab-content active">
-        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-            <label style="font-weight: bold;">اختر الشهر للإدخال:</label>
-            <input type="month" id="fodInputMonth" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="submit-btn" style="width: auto; margin: 0;" onclick="generateFodInputRows()">تجهيز الجدول</button>
-        </div>
-        
+        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;"><label style="font-weight: bold;">اختر الشهر:</label><input type="month" id="fodInputMonth" required style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;"><button class="submit-btn" style="width: auto; margin: 0;" onclick="generateFodInputRows()">تجهيز الجدول</button></div>
         <form id="fodForm" style="display: none;">
-            <div style="overflow-x: auto;">
-              <table class="report-table" style="direction: ltr; width: 100%;">
-                  <thead style="background: #003366; color: #fff;">
-                      <tr>
-                          <th style="width: 20%;">Day (Date)</th>
-                          <th style="width: 35%;">Location</th>
-                          <th style="width: 15%;">Area (M²)</th>
-                          <th style="width: 15%;">Plastic (kg)</th>
-                          <th style="width: 15%;">Metal (kg)</th>
-                      </tr>
-                  </thead>
-                  <tbody id="fod-input-tbody"></tbody>
-              </table>
-            </div>
+            <div style="overflow-x: auto;"><table class="report-table" style="direction: ltr; width: 100%;"><thead style="background: #003366; color: #fff;"><tr><th style="width: 20%;">Day (Date)</th><th style="width: 35%;">Location</th><th style="width: 15%;">Area (M²)</th><th style="width: 15%;">Plastic (kg)</th><th style="width: 15%;">Metal (kg)</th></tr></thead><tbody id="fod-input-tbody"></tbody></table></div>
             <button type="button" onclick="submitFOD(event)" class="submit-btn" id="submitFodBtn" style="margin-top: 20px; background-color: #28a745;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر</button>
             <p id="fodMsg" style="text-align: center; margin-top: 15px; font-weight: bold;"></p>
         </form>
       </div>
-
       <div id="tab-fod-report" class="tab-content">
-        <div class="report-filters">
-            <input type="month" id="fodReportMonth">
-            <button onclick="generateFodPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-magnifying-glass"></i> عرض التقرير</button>
-            <button onclick="exportFodPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> طباعة (PDF)</button>
-        </div>
-
+        <div class="report-filters"><input type="month" id="fodReportMonth"><button onclick="generateFodPrintReport()" class="submit-btn" style="width:auto; padding:10px;">عرض التقرير</button><button onclick="exportFodPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;">PDF</button></div>
         <div id="printable-fod-report" style="display:none; background: #fff; padding: 30px; border: 2px solid #000; direction: ltr; margin-top: 20px; color: #000; font-family: 'Times New Roman', serif;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;">
-                <div style="font-size: 11px; font-weight: bold; color: #333; font-family: sans-serif;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div>
-                <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;"></div>
-                <div style="font-size: 13px; font-weight: bold; color: #333; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div>
-            </div>
-
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px;"><div style="font-size: 11px; font-weight: bold; color: #333;">EMAK Marsa Alam<br>For Management and operation of Airports (S.A.E)</div><div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 50px;"></div><div style="font-size: 13px; font-weight: bold; color: #333; text-align: right; direction: rtl;">إيماك مرسى علم<br>لتشغيل وإدارة المطارات (ش.م.م)</div></div>
             <h2 style="text-align: center; font-weight: bold; margin-bottom: 25px; font-size: 1.4rem;" id="fod-report-title">F.O.D Collected and Classifications</h2>
-
-            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 1rem;">
-                <thead>
-                    <tr style="background: #f8f9fa;">
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Day</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Location</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px; width: 14%;">Area in<br>square meter</th>
-                        <th colspan="2" style="border: 1px solid #777; padding: 8px;">FOD quantity</th>
-                        <th rowspan="2" style="border: 1px solid #777; padding: 10px;">Total</th>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <th style="border: 1px solid #777; padding: 8px;">Plastic</th>
-                        <th style="border: 1px solid #777; padding: 8px;">Metal</th>
-                    </tr>
-                </thead>
-                <tbody id="fod-print-tbody"></tbody>
-            </table>
+            <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 1rem;"><thead><tr style="background: #f8f9fa;"><th rowspan="2" style="border: 1px solid #777; padding: 10px;">Day</th><th rowspan="2" style="border: 1px solid #777; padding: 10px;">Location</th><th rowspan="2" style="border: 1px solid #777; padding: 10px; width: 14%;">Area in M²</th><th colspan="2" style="border: 1px solid #777; padding: 8px;">FOD quantity</th><th rowspan="2" style="border: 1px solid #777; padding: 10px;">Total</th></tr><tr style="background: #f8f9fa;"><th style="border: 1px solid #777; padding: 8px;">Plastic</th><th style="border: 1px solid #777; padding: 8px;">Metal</th></tr></thead><tbody id="fod-print-tbody"></tbody></table>
             <div style="margin-top: 30px; font-size: 0.85rem; font-family: sans-serif; color: #555;">AS-F-01-07</div>
         </div>
       </div>
@@ -577,17 +232,8 @@
   <div id="directory-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
     <h1 style="color: var(--primary); text-align: center; font-weight: 900;">دليل هواتف المطار</h1>
-    <div class="report-filters" style="display:flex; justify-content:space-between; gap:10px;">
-        <input type="text" id="dirSearch" placeholder="ابحث بالاسم، الوظيفة، الإدارة..." onkeyup="filterDirectory()" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ccc;">
-        <button onclick="openDirModal()" class="submit-btn" style="width:auto; background:#28a745;">إضافة رقم</button>
-        <button onclick="exportDirectoryPDF()" class="submit-btn" style="width:auto;">طباعة الدليل</button>
-    </div>
-    <div id="printable-directory" style="background:#fff; padding:15px; border-radius:8px;">
-        <table class="report-table rtl-table" style="width:100%; border:2px solid #003366;">
-            <thead><tr style="background:#003366; color:#fff;"><th>م</th><th>الإسم</th><th>الوظيفة</th><th>أرضي</th><th>موبايل</th><th class="dir-actions">إجراء</th></tr></thead>
-            <tbody id="directory-tbody"></tbody>
-        </table>
-    </div>
+    <div class="report-filters" style="display:flex; justify-content:space-between; gap:10px;"><input type="text" id="dirSearch" placeholder="ابحث..." onkeyup="filterDirectory()" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ccc;"><button onclick="openDirModal()" class="submit-btn" style="width:auto; background:#28a745;">إضافة</button><button onclick="exportDirectoryPDF()" class="submit-btn" style="width:auto;">طباعة</button></div>
+    <div id="printable-directory" style="background:#fff; padding:15px; border-radius:8px;"><table class="report-table rtl-table" style="width:100%; border:2px solid #003366;"><thead><tr style="background:#003366; color:#fff;"><th>م</th><th>الإسم</th><th>الوظيفة</th><th>أرضي</th><th>موبايل</th><th class="dir-actions">إجراء</th></tr></thead><tbody id="directory-tbody"></tbody></table></div>
   </div>
 
   <!-- 8. إدارة الحسابات -->
@@ -596,66 +242,23 @@
     <h1 class="welcome-text">إدارة المستخدمين</h1>
     <div class="survey-container" style="padding: 20px;">
       <form onsubmit="addUser(event)">
-        <div class="form-grid">
-          <div class="form-group"><label>الصلاحية</label><select id="newUserRole"><option value="Admin">Admin</option><option value="Safety Officer">Safety Officer</option></select></div>
-          <div class="form-group"><label>اسم المستخدم</label><input type="text" id="newUsername" required></div>
-          <div class="form-group"><label>كلمة المرور</label><input type="password" id="newUserPass" required></div>
-        </div>
+        <div class="form-grid"><div class="form-group"><label>الصلاحية</label><select id="newUserRole"><option value="Admin">Admin</option><option value="Safety Officer">Safety Officer</option></select></div><div class="form-group"><label>اسم المستخدم</label><input type="text" id="newUsername" required></div><div class="form-group"><label>كلمة المرور</label><input type="password" id="newUserPass" required></div></div>
         <button type="submit" class="submit-btn" style="width: auto; padding: 10px 30px; margin-top: 10px;">إضافة حساب</button>
         <p id="userMsg" style="margin-top: 10px; font-weight: bold;"></p>
       </form>
-      <div class="report-wrapper" style="margin-top:20px;">
-        <table class="report-table">
-          <thead><tr><th>الرقم</th><th>الصلاحية</th><th>اسم المستخدم</th><th>كلمة المرور</th></tr></thead>
-          <tbody id="users-tbody"></tbody>
-        </table>
-      </div>
+      <div class="report-wrapper" style="margin-top:20px;"><table class="report-table"><thead><tr><th>الرقم</th><th>الصلاحية</th><th>اسم المستخدم</th><th>كلمة المرور</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
     </div>
   </div>
 
-  <!-- قسم المستندات الموحد -->
   <div id="generic-doc-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
     <h1 class="welcome-text" id="generic-doc-title">عنوان القسم</h1>
-    <div style="background: #fff; padding: 40px; text-align: center; border-radius: 12px; max-width: 600px; margin: auto;">
-      <i class="fa-solid fa-file-pdf" style="font-size: 4rem; color: #d9534f; margin-bottom: 15px;"></i>
-      <h2 style="color: var(--primary);">لا توجد مستندات مرفوعة حالياً</h2>
-    </div>
+    <div style="background: #fff; padding: 40px; text-align: center; border-radius: 12px; max-width: 600px; margin: auto;"><i class="fa-solid fa-file-pdf" style="font-size: 4rem; color: #d9534f; margin-bottom: 15px;"></i><h2 style="color: var(--primary);">لا توجد مستندات مرفوعة حالياً</h2></div>
   </div>
 
-  <!-- مودال الطائرات -->
-  <div id="addModal" class="modal">
-    <div class="modal-content" style="text-align: right;">
-      <span class="close-modal" onclick="closeAddModal()">&times;</span>
-      <h3 style="color: var(--primary); text-align: center;">إضافة طائرة جديدة</h3>
-      <div class="form-group"><label>REG:</label><input type="text" id="newReg" oninput="this.value = this.value.toUpperCase()"></div>
-      <div class="form-group"><label>Type:</label><input type="text" id="newType" style="text-transform: uppercase;"></div>
-      <div class="form-group"><label>Airline:</label><input type="text" id="newAirline" style="text-transform: uppercase;"></div>
-      <div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div>
-      <div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div>
-      <button type="button" class="submit-btn" style="margin-top: 15px;" onclick="saveNewAircraft()">حفظ</button>
-      <p id="modalMsg" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
-    </div>
-  </div>
+  <div id="addModal" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeAddModal()">&times;</span><h3 style="color: var(--primary); text-align: center;">إضافة طائرة</h3><div class="form-group"><label>REG:</label><input type="text" id="newReg"></div><div class="form-group"><label>Type:</label><input type="text" id="newType"></div><div class="form-group"><label>Airline:</label><input type="text" id="newAirline"></div><div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div><div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div><button type="button" class="submit-btn" style="margin-top: 15px;" onclick="saveNewAircraft()">حفظ</button><p id="modalMsg" style="text-align: center; font-weight: bold; margin-top: 10px;"></p></div></div>
+  <div id="dirModal" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeDirModal()">&times;</span><h3 id="dirModalTitle" style="color: var(--primary); text-align: center;">جهة إتصال</h3><form id="dirForm" onsubmit="saveDirEntry(event)"><input type="hidden" id="dirId"><div class="form-group"><label>القسم:</label><input type="text" id="dirDept" required></div><div class="form-group"><label>الإسم:</label><input type="text" id="dirName" required></div><div class="form-group"><label>الوظيفة:</label><input type="text" id="dirRole" required></div><div class="form-group"><label>أرضي:</label><input type="text" id="dirExt"></div><div class="form-group"><label>موبايل:</label><input type="text" id="dirMobile"></div><button type="submit" class="submit-btn" style="margin-top: 15px;">حفظ في الدليل</button><p id="dirMsg" style="text-align: center; font-weight: bold; margin-top: 10px;"></p></form></div></div>
 
-  <!-- مودال الدليل -->
-  <div id="dirModal" class="modal">
-    <div class="modal-content" style="text-align: right;">
-      <span class="close-modal" onclick="closeDirModal()">&times;</span>
-      <h3 id="dirModalTitle" style="color: var(--primary); text-align: center;">جهة إتصال</h3>
-      <form id="dirForm" onsubmit="saveDirEntry(event)">
-        <input type="hidden" id="dirId">
-        <div class="form-group"><label>القسم:</label><input type="text" id="dirDept" required></div>
-        <div class="form-group"><label>الإسم:</label><input type="text" id="dirName" required></div>
-        <div class="form-group"><label>الوظيفة:</label><input type="text" id="dirRole" required></div>
-        <div class="form-group"><label>أرضي:</label><input type="text" id="dirExt"></div>
-        <div class="form-group"><label>موبايل:</label><input type="text" id="dirMobile"></div>
-        <button type="submit" class="submit-btn" id="dirSubmitBtn" style="margin-top: 15px;">حفظ في الدليل</button>
-        <p id="dirMsg" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
-      </form>
-    </div>
-  </div>
-
-  <script src="script.js?v=20.0"></script>
+  <script src="script.js?v=25.0"></script>
 </body>
 </html>
