@@ -1,5 +1,6 @@
 :root {
   --primary: #003366;
+  --primary-dark: #001f3f;
   --secondary: #f39c12;
   --danger: #dc3545;
   --success: #28a745;
@@ -22,12 +23,11 @@ body {
   overflow-x: hidden;
 }
 
-/* شاشة تسجيل الدخول المنعزلة تماماً */
+/* شاشة تسجيل الدخول */
 #login-screen {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: linear-gradient(135deg, #001f3f, #003366);
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   display: flex; justify-content: center; align-items: center;
   z-index: 999999;
 }
@@ -88,7 +88,7 @@ body {
   cursor: pointer;
 }
 
-/* الهيدر الرئيسي */
+/* الهيدر */
 .header {
   background: #ffffff;
   border-bottom: 3px solid var(--primary);
@@ -119,7 +119,7 @@ body {
   color: #555;
 }
 
-/* شاشة التحميل الأولية */
+/* التحميل */
 #splash-screen {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
@@ -155,7 +155,7 @@ body {
   100% { transform: translateX(-100%); }
 }
 
-/* منطقة المحتوى والكروت */
+/* المحتوى والكروت */
 .content-area {
   padding: 30px 20px;
   max-width: 1240px;
@@ -230,7 +230,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* الحاوية والتبويبات للفورم */
 .survey-container {
   background: #ffffff;
   border-radius: 14px;
@@ -287,7 +286,7 @@ body {
 .new-btn { background: var(--success); margin-left: 10px; }
 .nav-counter { padding: 6px 16px; font-weight: bold; background: #e9ecef; border-radius: 6px; }
 
-/* شبكة الحقول (Form Grid) */
+/* الحقول */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -317,14 +316,7 @@ body {
   width: 100%;
 }
 
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-  border-color: var(--primary);
-}
-
-.inc-textarea {
-  min-height: 90px;
-  resize: vertical;
-}
+.inc-textarea { min-height: 90px; resize: vertical; }
 
 .submit-btn {
   background: var(--primary);
@@ -338,7 +330,6 @@ body {
   width: 100%;
 }
 
-/* تنسيق دروب داون طائرات الأسطول */
 .custom-dropdown-container { position: relative; flex: 1; }
 .custom-dropdown-input { width: 100%; }
 .custom-dropdown-arrow { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #777; }
@@ -351,7 +342,7 @@ body {
 .custom-dropdown-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
 .custom-dropdown-item:hover { background: #f8f9fa; }
 
-/* شبكة تقييم استبيان الكابتن (اللي كانت بايظة في الصورة) */
+/* تقييم الكابتن */
 .eval-section { margin-top: 20px; }
 .eval-grid {
   display: grid;
@@ -417,7 +408,6 @@ body {
 .report-table thead tr { background: var(--primary); color: #ffffff; }
 .rtl-table { direction: rtl; }
 
-/* المودال */
 .modal {
   display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10000;
