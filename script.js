@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
 
 const criteriaList = [
     "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
@@ -67,8 +67,7 @@ let globalSpiData = [];
 let currentSurveyIndex = -1; 
 let currentDailyIndex = -1; 
 let currentIncidentIndex = -1;
-let isDailyEditMode = false; 
-let currentDailyEditId = null;
+let currentIncidentEditId = null;
 
 let chartInstances = {}; 
 let monthlyChart1 = null;
@@ -431,7 +430,6 @@ function generateModernReport() {
     const tbody = document.getElementById('flights-eval-tbody');
     tbody.innerHTML = '';
 
-    // مصفوفة الـ 31 معيار
     let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
     criteriaList.forEach(crit => {
         matrixScores["Excellent"][crit] = 0;
@@ -449,9 +447,9 @@ function generateModernReport() {
         let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
         criteriaList.forEach(crit => {
             let val = s[crit] || "Blank";
-            if (fCounts[val] !== undefined) fCounts[val]++;
-            if (evalsCount[val] !== undefined) evalsCount[val]++;
-            if (matrixScores[val]) matrixScores[val][crit]++;
+            if(fCounts[val] !== undefined) fCounts[val]++;
+            if(evalsCount[val] !== undefined) evalsCount[val]++;
+            if(matrixScores[val]) matrixScores[val][crit]++;
         });
 
         if (s.Captain_Comments && s.Captain_Comments.trim() !== "") {
@@ -478,7 +476,6 @@ function generateModernReport() {
     let excPercent = totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0;
     document.getElementById('stat-excellent').innerText = `${excPercent}%`;
 
-    // 1. رسم الخرائط البيانية
     destroyCaptainCharts();
     Chart.defaults.font.family = "'Cairo', sans-serif";
 
@@ -504,7 +501,6 @@ function generateModernReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
 
-    // 2. بناء باقي التقرير (مصفوفة الـ 31 معيار + جدول التعليقات)
     const addContainer = document.getElementById('additional-tables-container');
     let extraHtml = `
         <div class="avoid-page-break" style="margin-top: 35px;">
@@ -537,7 +533,6 @@ function generateModernReport() {
     });
     extraHtml += `</tbody></table></div></div>`;
 
-    // جدول التعليقات
     extraHtml += `
         <div class="avoid-page-break" style="margin-top: 35px;">
             <h3 style="color:#003366; margin-bottom:10px; text-align:right;">Captain Comments & Observations:</h3>
@@ -575,6 +570,11 @@ function generateModernReport() {
     extraHtml += `</tbody></table></div>`;
 
     addContainer.innerHTML = extraHtml;
+}
+
+function exportModernPDF() {
+    html2pdf().set({ margin: 0.2, filename: 'Captain_Surveys_Report.pdf', jsPDF: { orientation: 'landscape' } })
+        .from(document.getElementById('printable-report')).save();
 }
 
 // ==========================================
@@ -766,7 +766,7 @@ function exportDailyPDF() {
 }
 
 // ==========================================
-// 3. الحوادث والوقائع
+// 3. سجل الحوادث والوقائع (الكود الكامل لـ 28 حقل)
 // ==========================================
 function switchIncidentTab(tab) {
     document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -779,39 +779,6 @@ function updateIncidentNavCounter() {
     const el = document.getElementById('nav-incident-counter');
     if(el) el.innerText = `${currentIncidentIndex + 1} / ${globalIncidents.length}`;
 }
-
-function navIncidents(direction) {
-    if (!globalIncidents || globalIncidents.length === 0) return alert("لا توجد وقائع مسجلة.");
-    if (direction === 'first') currentIncidentIndex = 0;
-    else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1;
-    else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++;
-    else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
-
-    if (currentIncidentIndex >= 0 && currentIncidentIndex < globalIncidents.length) {
-        let inc = globalIncidents[currentIncidentIndex];
-        document.getElementById('incDate').value = inc.Date ? inc.Date.split('T')[0] : '';
-        document.getElementById('incTime').value = inc.Time || '';
-        document.getElementById('incLocation').value = inc.Location || '';
-        document.getElementById('incCar').value = inc.CAR || '';
-        document.getElementById('incFlightNo').value = inc.Flight_No || '';
-        document.getElementById('incReg').value = inc.REG || '';
-        document.getElementById('incPreparedBy').value = inc.Prepared_By || '';
-        document.getElementById('incDesc').value = inc.Description || '';
-        document.getElementById('incAction').value = inc.Action_Taken || '';
-        updateIncidentNavCounter();
-    }
-}
-
-function clearIncidentForm() {
-    currentIncidentIndex = -1;
-    document.getElementById('incidentForm').reset();
-    let now = new Date().toISOString();
-    document.getElementById('incDate').value = now.split('T')[0];
-    document.getElementById('incTime').value = now.split('T')[1].substring(0, 5);
-    updateIncidentNavCounter();
-}
-
-let currentIncidentEditId = null;
 
 function clearIncidentForm() {
     currentIncidentIndex = -1;
@@ -919,7 +886,6 @@ async function submitIncident(e) {
             body: JSON.stringify({ action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj })
         });
 
-        // تحديث المصفوفة محلياً لكي تنعكس في التقارير والجدول فوراً
         let mappedLocal = {
             ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location,
             Personnel_Involved: incObj.personnel, Equipment_No: incObj.equipmentNo, Driver_Name: incObj.driver, Equipment_Owned: incObj.eqOwner,
@@ -969,6 +935,25 @@ function renderSavedIncidents() {
             </tr>`;
     });
 }
+
+async function deleteIncidentRecord(idx) {
+    if(!confirm("تأكيد الحذف؟")) return;
+    let item = globalIncidents[idx];
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "deleteIncident", id: item.ID || item.id })
+    });
+    globalIncidents.splice(idx, 1);
+    renderSavedIncidents();
+}
+
+function generateMonthlyIncidents() {
+    let tbody = document.getElementById('inc-monthly-table');
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>تم إنشاء تقرير الوقائع</td></tr>";
+}
+function exportMonthlyIncidentsPDF() { window.print(); }
+
 // ==========================================
 // 4. مؤشرات الأداء ECAA SPI
 // ==========================================
@@ -1167,6 +1152,7 @@ function generateFullMonthlyReport() {
     let currStats = getMonthlyDetailedStats(currMonthStr);
     let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
+    // 1. جدول المقارنة العام
     const tbody = document.getElementById('mr-general-tbody');
     tbody.innerHTML = '';
     const kpiComparisonList = [
@@ -1196,6 +1182,7 @@ function generateFullMonthlyReport() {
         `;
     });
 
+    // 2. رسوم المخاطر والوقائع
     if (monthlyChart1) monthlyChart1.destroy();
     if (monthlyChart2) monthlyChart2.destroy();
     Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -1219,6 +1206,7 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
     });
 
+    // 3. حصر الوقائع
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
@@ -1258,6 +1246,7 @@ function generateFullMonthlyReport() {
         catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
 
+    // 4. Captain Survey
     document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
 
     let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
@@ -1350,7 +1339,7 @@ function generateFullMonthlyReport() {
                     <td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td>
                     <td style="border: 1px solid #000; padding: 6px;">${dStr} ${s.Time || ''}</td>
                     <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td>
-                    <td style="border: 1px solid #000; padding: 6px; text-align: justify;">${s.Captain_Comments}</td>
+                    <td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td>
                 </tr>
             `;
         });
@@ -1358,7 +1347,7 @@ function generateFullMonthlyReport() {
     commentsHtml += `</tbody></table>`;
     document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
-  // 5. قسم الـ FOD الكامل في التقرير الشهري
+    // 5. قسم الـ FOD الكامل ذو الأربعة مواقع
     const fodDiv = document.getElementById('mr-fod-details');
     let filteredFod = globalFod.filter(f => {
         let rawDate = f.Date || f.date || '';
@@ -1426,6 +1415,7 @@ function generateFullMonthlyReport() {
             </table>
         `;
     }
+
     document.getElementById('printable-main-report').style.display = 'block';
     window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
 }
@@ -1537,7 +1527,7 @@ function submitFOD(e) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
             msg.style.color = "red";
-            msg.innerText = "❌ حدث خطأ من السيرفر: " + (res ? res.message : "رد غير معروف");
+            msg.innerText = "❌ حدث خطأ من السيرفر!";
         }
     };
 
@@ -1550,23 +1540,19 @@ function submitFOD(e) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
         msg.style.color = "red";
-        msg.innerText = "❌ لم يتم النشر كـ Anyone أو New Version في Google Script!";
+        msg.innerText = "❌ تعذر الاتصال بالسيرفر، تأكد من النشر كـ Anyone!";
     };
 
     document.body.appendChild(scriptTag);
 }
+
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
     if (!m) return alert("اختر الشهر أولاً لعرض التقرير");
 
     let filtered = globalFod.filter(f => {
         let rawDate = f.Date || f.date || '';
-        let dStr = "";
-        if (typeof rawDate === 'string') {
-            dStr = rawDate.split('T')[0];
-        } else if (rawDate instanceof Date) {
-            dStr = rawDate.toISOString().split('T')[0];
-        }
+        let dStr = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0];
         return dStr.startsWith(m);
     });
 
