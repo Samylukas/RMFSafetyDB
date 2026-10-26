@@ -70,7 +70,6 @@ let currentIncidentIndex = -1;
 
 let isDailyEditMode = false;
 let currentDailyEditId = null;
-
 let currentIncidentEditId = null;
 
 let chartInstances = {}; 
@@ -78,6 +77,56 @@ let monthlyChart1 = null;
 let monthlyChart2 = null;
 let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
+
+// ==========================================
+// قلب النظام: دالة موحدة للإرسال وتخطي الحظر
+// ==========================================
+async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
+    if(btnElement) {
+        btnElement.disabled = true;
+        btnElement.dataset.origText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+    }
+    if(msgElement) {
+        msgElement.style.color = "#003366";
+        msgElement.innerText = "جاري الاتصال بقاعدة البيانات...";
+    }
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors', // يتخطى قيود الحظر (CORS) بنجاح لجميع النماذج
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        });
+
+        if(onSuccessCallback) onSuccessCallback();
+
+        if(msgElement && successText) {
+            msgElement.style.color = "green";
+            msgElement.innerText = "✅ " + successText;
+        }
+
+        setTimeout(() => {
+            if(btnElement) {
+                btnElement.disabled = false;
+                btnElement.innerHTML = btnElement.dataset.origText;
+            }
+            if(msgElement) msgElement.innerText = "";
+        }, 1500);
+
+    } catch (err) {
+        console.error("Network Error:", err);
+        if(msgElement) {
+            msgElement.style.color = "red";
+            msgElement.innerText = "❌ تعذر الاتصال بالإنترنت!";
+        }
+        if(btnElement) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = btnElement.dataset.origText;
+        }
+    }
+}
 
 // ==========================================
 // شاشة البداية والدخول
@@ -288,7 +337,7 @@ function clearFormForNew() {
     document.getElementById('capTime').value = now.split('T')[1].substring(0, 5);
 }
 
-async function submitSurvey(e) {
+function submitSurvey(e) {
     e.preventDefault();
     const btn = document.getElementById('submitSurveyBtn');
     const msg = document.getElementById('surveyMsg');
@@ -299,9 +348,6 @@ async function submitSurvey(e) {
         msg.innerText = "برجاء اختيار تسجيل طائرة مسجل بالأسطول!";
         return;
     }
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
     let sObj = {
         "Date": document.getElementById('capDate').value,
@@ -318,27 +364,17 @@ async function submitSurvey(e) {
         sObj[crit] = sel ? sel.value : "Blank";
     });
 
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "submitSurvey", surveyData: sObj })
-        });
-        msg.style.color = "green";
-        msg.innerText = "✅ تم حفظ الاستبيان بنجاح!";
-        globalSurveys.unshift(sObj);
-        updateSurveyNavCounter();
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان';
-            msg.innerText = "";
-            clearFormForNew();
-        }, 1500);
-    } catch (err) {
-        btn.disabled = false;
-        msg.style.color = "red";
-        msg.innerText = "حدث خطأ أثناء الاتصال!";
-    }
+    safePost(
+        { action: "submitSurvey", surveyData: sObj }, 
+        btn, 
+        msg, 
+        "تم حفظ بيانات الاستبيان بنجاح!", 
+        () => {
+            globalSurveys.unshift(sObj);
+            updateSurveyNavCounter();
+            setTimeout(() => clearFormForNew(), 1500);
+        }
+    );
 }
 
 function buildEvaluationForm() {
@@ -709,11 +745,9 @@ function loadDailyInspectionToForm(idx) {
                 if (chkCat === fCategory && chkItem === fItem) {
                     chk.checked = true;
                     toggleInputs(cIdx);
-
                     let noteEl = document.getElementById(`note_${cIdx}`);
                     let locEl = document.getElementById(`loc_${cIdx}`);
                     let respEl = document.getElementById(`resp_${cIdx}`);
-
                     if (noteEl) noteEl.value = f.note || f.Corrective_Action || '';
                     if (locEl) locEl.value = f.location || f.Location || '';
                     if (respEl) respEl.value = f.responsible || f.Responsible || '';
@@ -732,13 +766,10 @@ function loadDailyInspectionToForm(idx) {
     window.scrollTo({ top: document.getElementById('dailyForm').offsetTop - 30, behavior: 'smooth' });
 }
 
-async function submitDailyInspection(e) {
+function submitDailyInspection(e) {
     if (e) e.preventDefault();
     const btn = document.getElementById('submitDailyBtn');
     const msg = document.getElementById('dailyMsg');
-
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
     let findings = [];
     document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => {
@@ -768,39 +799,21 @@ async function submitDailyInspection(e) {
 
     let actionType = isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection";
 
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: actionType, reportData: rep })
-        });
-
-        if (isDailyEditMode) {
-            let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId));
-            if (existingIdx !== -1) {
-                globalDailyInspections[existingIdx] = rep;
+    safePost(
+        { action: actionType, reportData: rep },
+        btn, msg,
+        isDailyEditMode ? "تم تحديث بيانات الجولة بنجاح!" : "تم حفظ الجولة التفتيشية بنجاح!",
+        () => {
+            if (isDailyEditMode) {
+                let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId));
+                if (existingIdx !== -1) globalDailyInspections[existingIdx] = rep;
+            } else {
+                globalDailyInspections.unshift(rep);
             }
-            msg.style.color = "green";
-            msg.innerText = "✅ تم تحديث بيانات الجولة بنجاح!";
-        } else {
-            globalDailyInspections.unshift(rep);
-            msg.style.color = "green";
-            msg.innerText = "✅ تم حفظ الجولة التفتيشية بنجاح!";
+            renderSavedDaily();
+            setTimeout(() => clearDailyFormForNew(), 1500);
         }
-
-        renderSavedDaily();
-        setTimeout(() => {
-            btn.disabled = false;
-            msg.innerText = "";
-            clearDailyFormForNew();
-        }, 1500);
-
-    } catch (err) {
-        console.error("Daily Save Error:", err);
-        btn.disabled = false;
-        msg.style.color = "red";
-        msg.innerText = "❌ حدث خطأ أثناء الاتصال بالسيرفر!";
-    }
+    );
 }
 
 function renderSavedDaily() {
@@ -833,28 +846,15 @@ function renderSavedDaily() {
     });
 }
 
-async function deleteDailyInspectionRecord(idx) {
+function deleteDailyInspectionRecord(idx) {
     if (!confirm("هل أنت متأكد من حذف هذه الجولة التفتيشية وجميع ملاحظاتها نهائياً؟")) return;
-
     let rep = globalDailyInspections[idx];
     let repId = rep.id;
-
     globalDailyInspections.splice(idx, 1);
     renderSavedDaily();
     updateDailyNavCounter();
-
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: "updateDailyInspection",
-                reportData: { id: repId, findings: [] }
-            })
-        });
-    } catch (e) {
-        console.error("Delete Error:", e);
-    }
+    // صامتة في الخلفية للحذف بدون تغيير الزرار
+    safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } });
 }
 
 function generateDailyPrintReport() {
@@ -901,7 +901,7 @@ function exportDailyPDF() {
 }
 
 // ==========================================
-// 3. سجل الحوادث والوقائع 
+// 3. سجل الحوادث والوقائع (النموذج الكامل)
 // ==========================================
 function switchIncidentTab(tab) {
     document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -980,12 +980,10 @@ function navIncidents(direction) {
     }
 }
 
-async function submitIncident(e) {
+function submitIncident(e) {
     e.preventDefault();
     const btn = document.getElementById('submitIncBtn');
     const msg = document.getElementById('incMsg');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
     let isEdit = currentIncidentEditId !== null;
     let newId = isEdit ? currentIncidentEditId : "INC-" + Date.now();
@@ -1019,44 +1017,31 @@ async function submitIncident(e) {
         causesDetails: ""
     };
 
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj })
-        });
+    safePost(
+        { action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj },
+        btn, msg,
+        isEdit ? "تم تعديل الواقعة بنجاح!" : "تم حفظ الواقعة بنجاح!",
+        () => {
+            let mappedLocal = {
+                ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location,
+                Personnel_Involved: incObj.personnel, Equipment_No: incObj.equipmentNo, Driver_Name: incObj.driver, Equipment_Owned: incObj.eqOwner,
+                Status: incObj.status, Occurrence_Causes: incObj.causes, Characterization: incObj.charaterization, Risk_Severity: incObj.riskSeverity,
+                Risk_Probability: incObj.riskProb, CAR: incObj.car, Flight_No: incObj.flightNo, REG: incObj.reg, ORG_VIA: incObj.orgVia,
+                VIA_DST: incObj.viaDst, Prepared_By: incObj.preparedBy, Hazard_Description: incObj.hazardDesc, Description: incObj.description,
+                Action_Taken: incObj.actionTaken, Recommendation: incObj.recommendation, Position: incObj.position, Injury_Type: incObj.injuryType
+            };
 
-        let mappedLocal = {
-            ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location,
-            Personnel_Involved: incObj.personnel, Equipment_No: incObj.equipmentNo, Driver_Name: incObj.driver, Equipment_Owned: incObj.eqOwner,
-            Status: incObj.status, Occurrence_Causes: incObj.causes, Characterization: incObj.charaterization, Risk_Severity: incObj.riskSeverity,
-            Risk_Probability: incObj.riskProb, CAR: incObj.car, Flight_No: incObj.flightNo, REG: incObj.reg, ORG_VIA: incObj.orgVia,
-            VIA_DST: incObj.viaDst, Prepared_By: incObj.preparedBy, Hazard_Description: incObj.hazardDesc, Description: incObj.description,
-            Action_Taken: incObj.actionTaken, Recommendation: incObj.recommendation, Position: incObj.position, Injury_Type: incObj.injuryType
-        };
+            if (isEdit) {
+                let idx = globalIncidents.findIndex(i => (i.ID || i.id) === newId);
+                if (idx !== -1) globalIncidents[idx] = mappedLocal;
+            } else {
+                globalIncidents.unshift(mappedLocal);
+            }
 
-        if (isEdit) {
-            let idx = globalIncidents.findIndex(i => (i.ID || i.id) === newId);
-            if (idx !== -1) globalIncidents[idx] = mappedLocal;
-        } else {
-            globalIncidents.unshift(mappedLocal);
+            renderSavedIncidents();
+            setTimeout(() => clearIncidentForm(), 1500);
         }
-
-        renderSavedIncidents();
-        msg.style.color = "green";
-        msg.innerText = isEdit ? "✅ تم تعديل الواقعة بنجاح!" : "✅ تم حفظ الواقعة بنجاح!";
-
-        setTimeout(() => {
-            btn.disabled = false;
-            msg.innerText = "";
-            clearIncidentForm();
-        }, 1500);
-
-    } catch (err) {
-        btn.disabled = false;
-        msg.style.color = "red";
-        msg.innerText = "حدث خطأ أثناء الحفظ!";
-    }
+    );
 }
 
 function renderSavedIncidents() {
@@ -1076,17 +1061,13 @@ function renderSavedIncidents() {
     });
 }
 
-async function deleteIncidentRecord(idx) {
+function deleteIncidentRecord(idx) {
     if(!confirm("تأكيد حذف الواقعة نهائياً؟")) return;
     let item = globalIncidents[idx];
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "deleteIncident", id: item.ID || item.id })
-    });
     globalIncidents.splice(idx, 1);
     renderSavedIncidents();
     updateIncidentNavCounter();
+    safePost({ action: "deleteIncident", id: item.ID || item.id });
 }
 
 function generateMonthlyIncidents() {
@@ -1120,10 +1101,11 @@ function buildSpiEntryForm() {
     });
 }
 
-async function submitSPI(e) {
+function submitSPI(e) {
     e.preventDefault();
     const btn = document.getElementById('submitSpiBtn');
-    btn.disabled = true;
+    const msg = document.getElementById('spiMsg');
+    
     let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0;
     let monthData = { "Movements": movementsVal };
 
@@ -1144,15 +1126,14 @@ async function submitSPI(e) {
         preparedBy: "Safety Officer"
     };
 
-    await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "submitSPI", spiData: spiDataObj })
-    });
-
-    globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual });
-    document.getElementById('spiMsg').innerText = "✅ تم حفظ المؤشرات بنجاح!";
-    setTimeout(() => { btn.disabled = false; document.getElementById('spiMsg').innerText = ""; }, 1500);
+    safePost(
+        { action: "submitSPI", spiData: spiDataObj },
+        btn, msg,
+        "تم حفظ المؤشرات بنجاح!",
+        () => {
+            globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual });
+        }
+    );
 }
 
 function generateSpiReport() {
@@ -1293,6 +1274,7 @@ function generateFullMonthlyReport() {
     let currStats = getMonthlyDetailedStats(currMonthStr);
     let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
+    // 1. جدول المقارنة العام
     const tbody = document.getElementById('mr-general-tbody');
     tbody.innerHTML = '';
     const kpiComparisonList = [
@@ -1322,6 +1304,7 @@ function generateFullMonthlyReport() {
         `;
     });
 
+    // 2. رسوم المخاطر والوقائع
     if (monthlyChart1) monthlyChart1.destroy();
     if (monthlyChart2) monthlyChart2.destroy();
     Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -1345,6 +1328,7 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'تصنيف الوقائع' } } }
     });
 
+    // 3. حصر الوقائع
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list');
     incList.innerHTML = "";
@@ -1384,6 +1368,7 @@ function generateFullMonthlyReport() {
         catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
 
+    // 4. Captain Survey بالكامل
     document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currMonthNameAr}.`;
 
     let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
@@ -1484,6 +1469,7 @@ function generateFullMonthlyReport() {
     commentsHtml += `</tbody></table>`;
     document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
 
+    // 5. قسم الـ FOD الكامل
     const fodDiv = document.getElementById('mr-fod-details');
     let filteredFod = globalFod.filter(f => {
         let rawDate = f.Date || f.date || '';
@@ -1603,11 +1589,6 @@ function submitFOD(e) {
     const btn = document.getElementById('submitFodBtn');
     const msg = document.getElementById('fodMsg');
 
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...';
-    msg.style.color = "#003366";
-    msg.innerText = "جاري الإرسال...";
-
     let fodDataArray = [];
     let localFodArray = [];
 
@@ -1640,46 +1621,18 @@ function submitFOD(e) {
         });
     });
 
-    let iframeName = "hiddenFodFrame_" + Date.now();
-    let iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-
-    let form = document.createElement("form");
-    form.method = "POST";
-    form.action = API_URL;
-    form.target = iframeName;
-
-    let input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "postData";
-    input.value = JSON.stringify({
-        action: "submitBulkFOD",
-        fodDataArray: fodDataArray
-    });
-
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-
-    globalFod = [...globalFod, ...localFodArray];
-
-    setTimeout(() => {
-        if (form.parentNode) form.parentNode.removeChild(form);
-        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-
-        msg.style.color = "green";
-        msg.innerText = "✅ تم حفظ البيانات في Google Sheets بنجاح!";
-
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-            msg.innerText = "";
-            let fodFormEl = document.getElementById('fodForm');
-            if (fodFormEl) fodFormEl.style.display = 'none';
-        }, 1500);
-    }, 1200);
+    safePost(
+        { action: "submitBulkFOD", fodDataArray: fodDataArray },
+        btn, msg,
+        "تم حفظ البيانات في Google Sheets بنجاح!",
+        () => {
+            globalFod = [...globalFod, ...localFodArray];
+            setTimeout(() => {
+                let fodFormEl = document.getElementById('fodForm');
+                if (fodFormEl) fodFormEl.style.display = 'none';
+            }, 1500);
+        }
+    );
 }
 
 function generateFodPrintReport() {
@@ -1805,20 +1758,13 @@ function filterDirectory() {
     });
 }
 
-function openDirModal() { 
-    document.getElementById('dirModal').style.display = 'flex'; 
-}
+function openDirModal() { document.getElementById('dirModal').style.display = 'flex'; }
+function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
 
-function closeDirModal() { 
-    document.getElementById('dirModal').style.display = 'none'; 
-}
-
-async function saveDirEntry(e) { 
+function saveDirEntry(e) { 
     e.preventDefault(); 
     let btn = document.getElementById('dirSubmitBtn');
     let msg = document.getElementById('dirMsg');
-    btn.disabled = true;
-    btn.innerText = "جاري الحفظ...";
     
     let obj = {
         id: document.getElementById('dirId').value || "DIR-" + Date.now(),
@@ -1829,37 +1775,24 @@ async function saveDirEntry(e) {
         mobile: document.getElementById('dirMobile').value
     };
     
-    try {
-        await fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "manageDirectory", subAction: "add", dirData: obj }) 
-        });
-        globalDirectory.push(obj);
-        renderDirectory();
-        document.getElementById('dirForm').reset();
-        closeDirModal();
-    } catch(err) {
-        msg.style.color = "red";
-        msg.innerText = "خطأ في الاتصال!";
-    }
-    btn.disabled = false;
-    btn.innerText = "حفظ في الدليل";
+    safePost(
+        { action: "manageDirectory", subAction: "add", dirData: obj },
+        btn, msg, "تم الحفظ في الدليل!",
+        () => {
+            globalDirectory.push(obj);
+            renderDirectory();
+            document.getElementById('dirForm').reset();
+            setTimeout(() => closeDirModal(), 1000);
+        }
+    );
 }
 
-function exportDirectoryPDF() { 
-    window.print(); 
-}
+function exportDirectoryPDF() { window.print(); }
 
-function openFleetModal() { 
-    document.getElementById('addModal').style.display = 'flex'; 
-}
+function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
-function closeAddModal() { 
-    document.getElementById('addModal').style.display = 'none'; 
-}
-
-async function saveNewAircraft() {
+function saveNewAircraft() {
     let btn = document.querySelector('#addModal .submit-btn');
     let msg = document.getElementById('modalMsg');
     
@@ -1875,36 +1808,22 @@ async function saveNewAircraft() {
         return;
     }
     
-    btn.disabled = true;
-    btn.innerText = "جاري الحفظ...";
-    
-    try {
-        await fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country }) 
-        });
-        globalFleetData.unshift({REG: reg, TYPE: type, CAR: airline});
-        msg.style.color = "green";
-        msg.innerText = "تم الحفظ!";
-        setTimeout(() => {
-            closeAddModal();
-            document.getElementById('newReg').value = "";
-            document.getElementById('newType').value = "";
-            document.getElementById('newAirline').value = "";
-            msg.innerText = "";
-            btn.disabled = false;
-            btn.innerText = "حفظ";
-        }, 1000);
-    } catch (err) {
-        msg.style.color = "red";
-        msg.innerText = "حدث خطأ";
-        btn.disabled = false;
-        btn.innerText = "حفظ";
-    }
+    safePost(
+        { action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: handling, country: country },
+        btn, msg, "تم إضافة الطائرة للأسطول!",
+        () => {
+            globalFleetData.unshift({REG: reg, TYPE: type, CAR: airline});
+            setTimeout(() => {
+                closeAddModal();
+                document.getElementById('newReg').value = "";
+                document.getElementById('newType').value = "";
+                document.getElementById('newAirline').value = "";
+            }, 1000);
+        }
+    );
 }
 
-async function addUser(e) {
+function addUser(e) {
     e.preventDefault();
     let btn = document.querySelector('#account-management-section .submit-btn');
     let msg = document.getElementById('userMsg');
@@ -1913,37 +1832,17 @@ async function addUser(e) {
     let user = document.getElementById('newUsername').value;
     let pass = document.getElementById('newUserPass').value;
     
-    btn.disabled = true;
-    msg.style.color = "#003366";
-    msg.innerText = "جاري إضافة الحساب...";
-    
-    try {
-        await fetch(API_URL, { 
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: "addUser", role: role, username: user, password: pass }) 
-        });
-        
-        globalUsers.push({Role: role, Username: user, Password: pass});
-        
-        msg.style.color = "green";
-        msg.innerText = "✅ تمت إضافة الحساب بنجاح!";
-        
-        const tbody = document.getElementById('users-tbody');
-        if(tbody) {
-            tbody.innerHTML += `<tr><td>${globalUsers.length}</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`;
+    safePost(
+        { action: "addUser", role: role, username: user, password: pass },
+        btn, msg, "تمت إضافة الحساب بنجاح!",
+        () => {
+            globalUsers.push({Role: role, Username: user, Password: pass});
+            const tbody = document.getElementById('users-tbody');
+            if(tbody) {
+                tbody.innerHTML += `<tr><td>${globalUsers.length}</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`;
+            }
+            document.getElementById('newUsername').value = "";
+            document.getElementById('newUserPass').value = "";
         }
-        
-        document.getElementById('newUsername').value = "";
-        document.getElementById('newUserPass').value = "";
-        
-        setTimeout(() => {
-            btn.disabled = false;
-            msg.innerText = "";
-        }, 1500);
-    } catch(err) {
-        msg.style.color = "red";
-        msg.innerText = "❌ حدث خطأ";
-        btn.disabled = false;
-    }
+    );
 }
