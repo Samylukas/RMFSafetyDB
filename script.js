@@ -1257,9 +1257,11 @@ async function submitFOD(e) {
     const msg = document.getElementById('fodMsg');
     
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-    msg.style.color = "#003366";
-    msg.innerText = "جاري إرسال البيانات إلى السيرفر...";
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال للشيت...';
+    if (msg) {
+        msg.style.color = "#003366";
+        msg.innerText = "جاري الحفظ في Google Sheets...";
+    }
 
     let fodDataArray = [];
     let localFodArray = [];
@@ -1294,8 +1296,10 @@ async function submitFOD(e) {
     });
 
     try {
+        // إرسال البيانات كنص صريح يتقبله Apps Script بدون قيود preflight
         await fetch(API_URL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 action: "submitBulkFOD",
@@ -1303,30 +1307,30 @@ async function submitFOD(e) {
             })
         });
 
+        // تحديث البيانات محلياً
         globalFod = [...globalFod, ...localFodArray];
-        msg.style.color = "green";
-        msg.innerText = "✅ تم حفظ بيانات FOD بنجاح وتحديث قاعدة البيانات!";
+
+        if (msg) {
+            msg.style.color = "green";
+            msg.innerText = "✅ تم الإرسال وكتابة البيانات في الشيت بنجاح!";
+        }
 
         setTimeout(() => {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-            msg.innerText = "";
+            if (msg) msg.innerText = "";
             let form = document.getElementById('fodForm');
             if (form) form.style.display = 'none';
         }, 1500);
 
     } catch (err) {
-        console.error("FOD Error:", err);
-        globalFod = [...globalFod, ...localFodArray];
-        msg.style.color = "green";
-        msg.innerText = "✅ تم حفظ بيانات FOD بنجاح!";
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-            msg.innerText = "";
-            let form = document.getElementById('fodForm');
-            if (form) form.style.display = 'none';
-        }, 1500);
+        console.error("FOD Save Error:", err);
+        if (msg) {
+            msg.style.color = "red";
+            msg.innerText = "❌ تعذر الوصول للسيرفر، تأكد من إعدادات الـ Deployment!";
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
     }
 }
 
