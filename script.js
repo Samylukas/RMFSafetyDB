@@ -1251,17 +1251,15 @@ function generateFodInputRows() {
     });
 }
 
-async function submitFOD(e) {
+function submitFOD(e) {
     if (e) e.preventDefault();
     const btn = document.getElementById('submitFodBtn');
     const msg = document.getElementById('fodMsg');
-    
+
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال الفعلي...';
-    if (msg) {
-        msg.style.color = "#003366";
-        msg.innerText = "جاري الاتصال بالسيرفر والكتابة...";
-    }
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...';
+    msg.style.color = "#003366";
+    msg.innerText = "جاري إرسال البيانات...";
 
     let fodDataArray = [];
     let localFodArray = [];
@@ -1295,44 +1293,46 @@ async function submitFOD(e) {
         });
     });
 
-    try {
-        let response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: "submitBulkFOD",
-                fodDataArray: fodDataArray
-            })
-        });
+    // استخدام JSONP لتخطي قيود CORS والـ Failed to fetch نهائياً
+    const callbackName = 'jsonpFodSave_' + Math.round(100000 * Math.random());
+    
+    window[callbackName] = function(res) {
+        delete window[callbackName];
+        if (scriptTag && scriptTag.parentNode) {
+            scriptTag.parentNode.removeChild(scriptTag);
+        }
 
-        let res = await response.json();
-
-        if (res.status === "success") {
+        if (res && res.status === "success") {
             globalFod = [...globalFod, ...localFodArray];
-            if (msg) {
-                msg.style.color = "green";
-                msg.innerText = `✅ تم الحفظ الفعلي وكتابة (${res.count}) صفوف في الشيت!`;
-            }
+            msg.style.color = "green";
+            msg.innerText = "✅ تم حفظ البيانات بنجاح في Google Sheets!";
+
             setTimeout(() => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-                if (msg) msg.innerText = "";
+                msg.innerText = "";
                 let form = document.getElementById('fodForm');
                 if (form) form.style.display = 'none';
-            }, 1800);
+            }, 1500);
         } else {
-            throw new Error(res.message || "فشل رد السيرفر");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
+            msg.style.color = "red";
+            msg.innerText = "❌ حدث خطأ في استجابة السيرفر!";
         }
+    };
 
-    } catch (err) {
-        console.error("FOD Real Error:", err);
+    const encodedData = encodeURIComponent(JSON.stringify(fodDataArray));
+    const scriptTag = document.createElement('script');
+    scriptTag.src = `${API_URL}?action=submitFOD_GET&data=${encodedData}&callback=${callbackName}`;
+    scriptTag.onerror = function() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-        if (msg) {
-            msg.style.color = "red";
-            msg.innerText = "❌ لم يتم الحفظ في الشيت: " + err.message;
-        }
-    }
+        msg.style.color = "red";
+        msg.innerText = "❌ تعذر الاتصال بالسيرفر، تأكد من الإنترنت والنشر!";
+    };
+
+    document.body.appendChild(scriptTag);
 }
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value;
