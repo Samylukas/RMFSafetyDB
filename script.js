@@ -217,27 +217,32 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
 // ==========================================
 // شاشة البداية والدخول
 // ==========================================
+let isAppLoaded = false;
 function finishLoading() {
+    if (isAppLoaded) return; // عشان متشتغلش مرتين
+    isAppLoaded = true;
     try {
         const splash = document.getElementById('splash-screen');
         const loginScreen = document.getElementById('login-screen');
         const passInp = document.getElementById('loginPass');
         
         if (splash) {
-            splash.style.opacity = '0';
+            splash.classList.add('smoke-out'); // تبخر الشاشة
             setTimeout(() => {
                 splash.style.display = 'none';
                 if (loginScreen) {
                     loginScreen.style.display = 'flex';
                     if (passInp) passInp.focus();
                 }
-            }, 300);
+            }, 800); // وقت تأثير التبخر
         }
     } catch (e) {
         console.error(e);
     }
 }
 
+// صمام أمان: إجبار السيستم يفتح شاشة الدخول بعد 4 ثواني بالظبط مهما حصل
+setTimeout(finishLoading, 4000);
 function login() {
     const userField = document.getElementById('loginUser').value.trim();
     const passField = document.getElementById('loginPass').value.trim();
