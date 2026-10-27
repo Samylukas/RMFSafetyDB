@@ -195,3 +195,16 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .avoid-page-break {
     page-break-inside: avoid !important;
 }
+/* =========================================
+   تنسيق شاشة وصندوق تسجيل الدخول
+   ========================================= */
+#login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff !important; display: flex; justify-content: center; align-items: center; z-index: 999999; }
+.login-box { background: #ffffff; padding: 40px 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); text-align: center; width: 90%; max-width: 400px; border: 1px solid #e1e4e8; }
+.login-box img { height: 80px; margin-bottom: 20px; object-fit: contain; }
+.login-box h2 { font-size: 1.5rem; margin-bottom: 10px; }
+.input-group { position: relative; margin-top: 15px; }
+.input-group input { width: 100%; padding: 12px 40px 12px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box; }
+.input-group input:focus { border-color: var(--primary); }
+.input-group i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #777; }
+.login-btn { width: 100%; background-color: var(--primary); color: #fff; border: none; padding: 12px; margin-top: 25px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+.login-btn:hover { background-color: var(--primary-dark); }
