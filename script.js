@@ -1,804 +1,97 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
+// روابط وإعدادات الداتا
+const API_URL="https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
+const dailyChecklistDataISO={col1:{title:"المناطق المرصوفة",items:["شروخ","حفر(علي الأقل 5 بوصة عرض) (3بوصة عمق)","هبوط","تآكل","مطاط","نباتات","أجسام غريبة FOD","أخرى"],title2:"المناطق الغير مرصوفة",items2:["غير مستوية","نباتات","عوائق","أجسام غريبة FOD","أخرى"],title3:"المساعدات الملاحية",items3:["البيكون الدوار بالبرج لا يعمل","كم الريح غير مطابق","PAPI غير مطابق","السارينة لاتعمل","لمبات العوائق غير مضاءة","أخرى"]},col2:{title:"التخطيط (Marking)",items:["غير مطابق / واضح والمدرج RWY","محور المدرج مغطي بالمطاط","غير مطابق / واضح في Holding Position","غير مطابق / واضح في الـ TXY","غير مطابق / واضح في الترمك"],title2:"اللافتات الإرشادية",items2:["غير مطابقة .","غير مضاءة","محجوبة بواسطة النباتات.","قاعدتها الخرسانية أعلي من مستوي الأرض","القواعد الغير قابلة للكسر.","أخرى"],title3:"الإنارة",items3:["لمبات مكسورة/ تالفة علي المدرج RWY","لمبات مكسورة/ تالفة علي الممرات TXY","لمبات مكسورة/ تالفة على الترمك","إنارة وحدات Floodlight غير مطابقة أو أقل من (20لاكس)","اللمبات الغاطسة غير مضاءة","لمبات وحدات الإقتراب غير مطابقة","لمبات العوائق غير مضاءة","لمبات مكسورة / تالفة لإنارة الطرق الخدمية داخل Airside","أخرى"]},col3:{title:"عملية تموين الوقود",items:["وقوف غير سليم علي الطائرة","الهروب السريع غير متوفر","النظام الإطفائي غير مكتمل","DEAD MAN غير مستعمل","سلك التأريض غير موصل","زر الطوارئ لايعمل","عدد المشغلين غير كاف","المشغل لا يرتدي مهمات السلامة","أختبار العينة لا يتم إجراؤه","منطقة العمل غير محددة","حساسات المصعد لا تعمل","ملصقات عدم التدخين والـ Jet A","الـ Clear Exit غير متوفرة للسيارة","البيكون لا يعمل","السائبة العامة للسيارة غير لائقة","عدم توافر المواد الماصة للوقود.","إستخدام تليفون محمول في حدود 15 م أثناء التموين.","أخرى"],title2:"أخطار الحياة البرية",items2:["مشاهدة حيوانات برية / طيور مقيمة / نافقة","وجود مصادر جذب للحياة البرية","أخرى"]},col4:{title:"التحركات الأرضية ووقوف وإيواء الطائرات ومناولة الحقائب",items:["سائق المعدة لا يحمل تصريح قيادة على المهبط","رخصة المعدة غير متوفرة.","عدم الإلتزام بالسرعات المقررة","عدم إستخدام طريق الخدمة .","إستخدام أكثر من 3 مقطورة أثناء الخدمة","عدم تجميع الـ FOD الناتج من تحميل الحقائب","إرتفاع الحقائب يتعدي 3 صفوف","الأقماع غير موضوعة علي حدود الطائرة","المعدة الأرضية غير مجهزة بليكون.","المعدة الأرضية غير مطابقة .","طفايات الحريق غير سارية.","عملية الدفع للخلف تتم بسرعة غير مناسبة","عدم إتباع تعليمات سلامة التحركات علي المهبط","وجود أشخاص غير مصرح لهم.","وجود معدات غير مصرح بها.","عدم إرتداء مهمات الوقاية الشخصية","أخرى"],title2:"الإنقاذ والإطفاء",items2:["عدم صلاحية الإتصالات","عدم الإستجابة السريعة للأفراد.","نقص في عدد مشغلي سيارة الإطفاء","أخرى"]}};
+const criteriaList=["Communication Tower","Communication Ground","VOR-DME","RNP APR 33_15","Aeronautical Beacon","Approach Lighting System","PAPI System","Wind Cone","Apron Marking","Apron Lighting","Apron Signs","APRON Stands Size","G.H Performance","Fuelling Performance","Marshall Services","RFF Team performance","Runway Marking","Runway Lighting","Runway Signs","RWY Brakes Action","RWY Evaluating Pavement","Taxi Way Marking","Taxi Way Lighting","Taxi Way Signs","TWY Brakes Action","TWY Evaluating Pavement","Stop Bars","Weather","Wildlife","Bird Strike","FOD"];
+const spiCategories=[{name:"Safety Operational Issues",items:["Bird Strike","Wildlife Strike","FOD Occurrence","Runway Incursion","Exceeding Speed"]},{name:"Technical & Ground Issues",items:["Fuel Spill/Leakage","Equipment Breakdown","Navigation Aids Failure","Lighting System Fault"]}];
+const responsibleDepts=["العمليات","الهندسة المدنية","الهندسة الكهربية","الإنقاذ والإطفاء","شركات الطيران / الوكالات","الإرشاد","أخرى"];
+const fodLocations=[{loc:"Aircraft Stands Area",area:"53.125 M²"},{loc:"GSE Area",area:"4152 M²"},{loc:"Arrival & Departures Gates",area:"2420 M²"},{loc:"Around Aprons Gas station",area:"2539 M²"}];
 
-const dailyChecklistDataISO = {
-    col1: { title: "المناطق المرصوفة", items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض) (3بوصة عمق)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخرى"], title2: "المناطق الغير مرصوفة", items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخرى"], title3: "المساعدات الملاحية", items3: ["البيكون الدوار بالبرج لا يعمل", "كم الريح غير مطابق", "PAPI غير مطابق", "السارينة لاتعمل", "لمبات العوائق غير مضاءة", "أخرى"] },
-    col2: { title: "التخطيط (Marking)", items: ["غير مطابق / واضح والمدرج RWY", "محور المدرج مغطي بالمطاط", "غير مطابق / واضح في Holding Position", "غير مطابق / واضح في الـ TXY", "غير مطابق / واضح في الترمك"], title2: "اللافتات الإرشادية", items2: ["غير مطابقة .", "غير مضاءة", "محجوبة بواسطة النباتات.", "قاعدتها الخرسانية أعلي من مستوي الأرض", "القواعد الغير قابلة للكسر.", "أخرى"], title3: "الإنارة", items3: ["لمبات مكسورة/ تالفة علي المدرج RWY", "لمبات مكسورة/ تالفة علي الممرات TXY", "لمبات مكسورة/ تالفة على الترمك", "إنارة وحدات Floodlight غير مطابقة أو أقل من (20لاكس)", "اللمبات الغاطسة غير مضاءة", "لمبات وحدات الإقتراب غير مطابقة", "لمبات العوائق غير مضاءة", "لمبات مكسورة / تالفة لإنارة الطرق الخدمية داخل Airside", "أخرى"] },
-    col3: { title: "عملية تموين الوقود", items: ["وقوف غير سليم علي الطائرة", "الهروب السريع غير متوفر", "النظام الإطفائي غير مكتمل", "DEAD MAN غير مستعمل", "سلك التأريض غير موصل", "زر الطوارئ لايعمل", "عدد المشغلين غير كاف", "المشغل لا يرتدي مهمات السلامة", "أختبار العينة لا يتم إجراؤه", "منطقة العمل غير محددة", "حساسات المصعد لا تعمل", "ملصقات عدم التدخين والـ Jet A", "الـ Clear Exit غير متوفرة للسيارة", "البيكون لا يعمل", "السائبة العامة للسيارة غير لائقة", "عدم توافر المواد الماصة للوقود.", "إستخدام تليفون محمول في حدود 15 م أثناء التموين.", "أخرى"], title2: "أخطار الحياة البرية", items2: ["مشاهدة حيوانات برية / طيور مقيمة / نافقة", "وجود مصادر جذب للحياة البرية", "أخرى"] },
-    col4: { title: "التحركات الأرضية ووقوف وإيواء الطائرات ومناولة الحقائب", items: ["سائق المعدة لا يحمل تصريح قيادة على المهبط", "رخصة المعدة غير متوفرة.", "عدم الإلتزام بالسرعات المقررة", "عدم إستخدام طريق الخدمة .", "إستخدام أكثر من 3 مقطورة أثناء الخدمة", "عدم تجميع الـ FOD الناتج من تحميل الحقائب", "إرتفاع الحقائب يتعدي 3 صفوف", "الأقماع غير موضوعة علي حدود الطائرة", "المعدة الأرضية غير مجهزة بليكون.", "المعدة الأرضية غير مطابقة .", "طفايات الحريق غير سارية.", "عملية الدفع للخلف تتم بسرعة غير مناسبة", "عدم إتباع تعليمات سلامة التحركات علي المهبط", "وجود أشخاص غير مصرح لهم.", "وجود معدات غير مصرح بها.", "عدم إرتداء مهمات الوقاية الشخصية", "أخرى"], title2: "الإنقاذ والإطفاء", items2: ["عدم صلاحية الإتصالات", "عدم الإستجابة السريعة للأفراد.", "نقص في عدد مشغلي سيارة الإطفاء", "أخرى"] }
-};
+// المتغيرات العامة
+let globalFleetData=[], globalSurveys=[], globalUsers=[], globalDailyInspections=[], globalIncidents=[], globalDirectory=[], globalFod=[], globalSpiData=[];
+let currentSurveyIndex=-1, currentDailyIndex=-1, currentIncidentIndex=-1, isDailyEditMode=false, currentDailyEditId=null, currentIncidentEditId=null;
+let chartInstances={}, monthlyChart1=null, monthlyChart2=null, mrSurveyAirChartInstance=null, mrSurveyEvalChartInstance=null;
 
-const criteriaList = ["Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", "Apron Signs", "APRON Stands Size", "G.H Performance", "Fuelling Performance", "Marshall Services", "RFF Team performance", "Runway Marking", "Runway Lighting", "Runway Signs", "RWY Brakes Action", "RWY Evaluating Pavement", "Taxi Way Marking", "Taxi Way Lighting", "Taxi Way Signs", "TWY Brakes Action", "TWY Evaluating Pavement", "Stop Bars", "Weather", "Wildlife", "Bird Strike", "FOD"];
-const spiCategories = [{ name: "Safety Operational Issues", items: ["Bird Strike", "Wildlife Strike", "FOD Occurrence", "Runway Incursion", "Exceeding Speed"] }, { name: "Technical & Ground Issues", items: ["Fuel Spill/Leakage", "Equipment Breakdown", "Navigation Aids Failure", "Lighting System Fault"] }];
-const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
-const fodLocations = [{ loc: "Aircraft Stands Area", area: "53.125 M²" }, { loc: "GSE Area", area: "4152 M²" }, { loc: "Arrival & Departures Gates", area: "2420 M²" }, { loc: "Around Aprons Gas station", area: "2539 M²" }];
+// دالة عرض شاشة التحميل والدخول 
+let isAppLoaded=false; function finishLoading(){ if(isAppLoaded) return; isAppLoaded=true; try{ const splash=document.getElementById('splash-screen'), loginScreen=document.getElementById('login-screen'), passInp=document.getElementById('loginPass'); if(splash){ splash.classList.add('smoke-out'); setTimeout(()=>{ splash.style.display='none'; if(loginScreen){ loginScreen.style.display='flex'; if(passInp) passInp.focus(); } }, 800); } else if(loginScreen){ loginScreen.style.display='flex'; } } catch(e){console.error(e);} } setTimeout(finishLoading, 3800);
 
-let globalFleetData = [], globalSurveys = [], globalUsers = [], globalDailyInspections = [], globalIncidents = [], globalDirectory = [], globalFod = [], globalSpiData = [];
-let currentSurveyIndex = -1, currentDailyIndex = -1, currentIncidentIndex = -1;
-let isDailyEditMode = false, currentDailyEditId = null, currentIncidentEditId = null;
-let chartInstances = {}, monthlyChart1 = null, monthlyChart2 = null;
+// دالة الاتصال بقاعدة البيانات
+async function safePost(payload, btn, msg, succText, cb){ if(btn){ btn.disabled=true; btn.dataset.origText=btn.innerHTML; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; } if(msg){ msg.style.color="#003366"; msg.innerText="جاري الاتصال..."; } try{ await fetch(API_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); if(cb) cb(); if(msg&&succText){ msg.style.color="green"; msg.innerText="✅ "+succText; } } catch(err){ if(msg){ msg.style.color="red"; msg.innerText="❌ تعذر الاتصال بالسيرفر!"; } } setTimeout(()=>{ if(btn){ btn.disabled=false; btn.innerHTML=btn.dataset.origText; } if(msg) msg.innerText=""; },2000); }
 
-// ==========================================
-// 1. شاشة التحميل والدخول
-// ==========================================
-let isAppLoaded = false;
-function finishLoading() {
-    if (isAppLoaded) return;
-    isAppLoaded = true;
-    try {
-        const splash = document.getElementById('splash-screen');
-        const loginScreen = document.getElementById('login-screen');
-        const passInp = document.getElementById('loginPass');
-        
-        if (splash) {
-            splash.classList.add('smoke-out');
-            setTimeout(() => {
-                splash.style.display = 'none';
-                if (loginScreen) {
-                    loginScreen.style.display = 'flex';
-                    if (passInp) passInp.focus();
-                }
-            }, 800);
-        } else if (loginScreen) {
-            loginScreen.style.display = 'flex';
-        }
-    } catch (e) { console.error(e); }
-}
-setTimeout(finishLoading, 3800);
+// دوال التنقل وتسجيل الدخول
+function login(){ const user=document.getElementById('loginUser').value.trim(), pass=document.getElementById('loginPass').value.trim(), err=document.getElementById('loginError'); let valid=globalUsers.find(u=>u.Username===user&&String(u.Password)===pass); if(valid || (globalUsers.length===0&&pass==="1234") || (user.toLowerCase()==="admin"&&pass==="1234")){ document.getElementById('login-screen').style.display='none'; document.getElementById('app-header').style.display='flex'; openSection('main-dashboard'); } else { err.style.display='block'; document.getElementById('loginPass').value=""; } }
+function openSection(id){ document.querySelectorAll('.content-area').forEach(el=>el.style.display='none'); const target=document.getElementById(id); if(target){ target.style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); } }
+function openAdminSection(id){ let pass=prompt("🔒 برجاء إدخال كلمة المرور:"); if(pass==="1234") openSection(id); else if(pass!==null) alert("❌ كلمة المرور غير صحيحة!"); }
+function openGenericDoc(title){ document.getElementById('generic-doc-title').innerText=title; openSection('generic-doc-section'); }
 
-async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
-    if(btnElement) { btnElement.disabled = true; btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
-    if(msgElement) { msgElement.style.color = "#003366"; msgElement.innerText = "جاري الاتصال..."; }
-    try {
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-        if(onSuccessCallback) onSuccessCallback();
-        if(msgElement && successText) { msgElement.style.color = "green"; msgElement.innerText = "✅ " + successText; }
-    } catch (err) {
-        if(msgElement) { msgElement.style.color = "red"; msgElement.innerText = "❌ تعذر الاتصال بالسيرفر!"; }
-    }
-    setTimeout(() => { if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = btnElement.dataset.origText; } if(msgElement) msgElement.innerText = ""; }, 2000);
-}
+// دالة جلب البيانات الأساسية من جوجل
+function loadAppDataInit(){ const cbName='jsonpInit_'+Math.round(100000*Math.random()); window[cbName]=function(data){ try{ if(data&&data.status==="success"){ globalFleetData=data.fleet?data.fleet.reverse():[]; globalSurveys=data.surveys?data.surveys.reverse():[]; globalUsers=data.users||[]; globalIncidents=data.incidents?data.incidents.reverse():[]; globalDirectory=data.directory||[]; globalFod=data.fod||[]; globalSpiData=data.spi||[]; populateUsersDropdown(globalUsers); renderDirectory(); updateSurveyNavCounter(); buildSpiEntryForm(); if(data.daily&&data.daily.length>0){ let rMap={}; data.daily.forEach(row=>{ let rId=row.Report_ID, tStr=row.Time; if(tStr&&typeof tStr==='string'&&tStr.includes('T')){ let d=new Date(tStr); if(!isNaN(d)) tStr=d.toISOString().substring(11,16); } if(!rMap[rId]) rMap[rId]={id:rId,date:row.Date?new Date(row.Date).toISOString().split('T')[0]:'',time:tStr,shift:row.Shift,inspector:row.Inspector,findings:[]}; if(row.Category&&row.Category!=="لا توجد ملاحظات") rMap[rId].findings.push({category:row.Category,item:row.Finding_Item,location:row.Location,responsible:row.Responsible,note:row.Corrective_Action||"",status:row.Status||"مفتوح"}); }); globalDailyInspections=Object.values(rMap).sort((a,b)=>b.id-a.id); } renderSavedDaily(); renderSavedIncidents(); updateDailyNavCounter(); updateIncidentNavCounter(); } }catch(e){} delete window[cbName]; }; const script=document.createElement('script'); script.src=API_URL+"?action=getAppData&_t="+Date.now()+"&callback="+cbName; document.body.appendChild(script); } loadAppDataInit();
 
-function login() {
-    const userField = document.getElementById('loginUser').value.trim();
-    const passField = document.getElementById('loginPass').value.trim();
-    const errorMsg = document.getElementById('loginError');
-    let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
-    if (validUser || (globalUsers.length === 0 && passField === "1234") || (userField.toLowerCase() === "admin" && passField === "1234")) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-    } else {
-        errorMsg.style.display = 'block'; document.getElementById('loginPass').value = "";
-    }
-}
+// دوال استبيان الكابتن الأساسية
+function updateSurveyNavCounter(){ const el=document.getElementById('nav-counter'); if(el) el.innerText=globalSurveys.length>0?`${currentSurveyIndex+1} / ${globalSurveys.length}`:`0 / 0`; }
+function navSurveys(dir){ if(!globalSurveys||globalSurveys.length===0) return alert("لا توجد استبيانات."); if(dir==='first') currentSurveyIndex=0; else if(dir==='last') currentSurveyIndex=globalSurveys.length-1; else if(dir==='next'&&currentSurveyIndex<globalSurveys.length-1) currentSurveyIndex++; else if(dir==='prev'&&currentSurveyIndex>0) currentSurveyIndex--; if(currentSurveyIndex>=0&&currentSurveyIndex<globalSurveys.length){ displaySurveyInForm(globalSurveys[currentSurveyIndex]); updateSurveyNavCounter(); let btn=document.getElementById('submitSurveyBtn'); if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-eye"></i> وضع العرض';btn.style.backgroundColor="#6c757d";} } }
+function displaySurveyInForm(s){ if(!s) return; document.getElementById('capDate').value=s.Date?new Date(s.Date).toISOString().split('T')[0]:''; let tv=s.Time||''; document.getElementById('capTime').value=tv.includes('T')?new Date(tv).toTimeString().substring(0,5):tv; document.getElementById('fltNo').value=s.Flight_NO||''; document.getElementById('reg').value=s.REG||''; document.getElementById('airline').value=s.CAR||''; document.getElementById('acType').value=s.TYPE||''; document.getElementById('comments').value=s.Captain_Comments||''; criteriaList.forEach(crit=>{ let val=s[crit]||"Blank"; let r=document.querySelector(`input[name="${crit}"][value="${val}"]`); if(r) r.checked=true; }); }
+function clearFormForNew(){ currentSurveyIndex=-1; document.getElementById('surveyForm').reset(); updateSurveyNavCounter(); let btn=document.getElementById('submitSurveyBtn'); if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> حفظ';btn.style.backgroundColor="var(--primary)";} let now=new Date().toISOString(); document.getElementById('capDate').value=now.split('T')[0]; document.getElementById('capTime').value=now.split('T')[1].substring(0,5); }
+function submitSurvey(e){ e.preventDefault(); const btn=document.getElementById('submitSurveyBtn'), msg=document.getElementById('surveyMsg'), al=document.getElementById('airline').value; if(!al) return; let sObj={"Date":document.getElementById('capDate').value,"Time":document.getElementById('capTime').value,"Flight_NO":document.getElementById('fltNo').value,"REG":document.getElementById('reg').value.toUpperCase(),"CAR":al,"TYPE":document.getElementById('acType').value,"Captain_Comments":document.getElementById('comments').value}; criteriaList.forEach(crit=>{ let sel=document.querySelector(`input[name="${crit}"]:checked`); sObj[crit]=sel?sel.value:"Blank"; }); safePost({action:"submitSurvey",surveyData:sObj},btn,msg,"تم الحفظ!",()=>{globalSurveys.unshift(sObj);updateSurveyNavCounter();setTimeout(()=>clearFormForNew(),1500);}); }
+function buildEvaluationForm(){ const cont=document.getElementById('criteria-container'); if(!cont) return; cont.innerHTML=''; criteriaList.forEach((crit,i)=>{ cont.innerHTML+=`<div class="eval-card"><div class="eval-title">${crit}</div><div class="radio-group"><input type="radio" id="c${i}_e" name="${crit}" value="Excellent" checked><label for="c${i}_e" class="lbl-e">E</label><input type="radio" id="c${i}_g" name="${crit}" value="Good"><label for="c${i}_g" class="lbl-g">G</label><input type="radio" id="c${i}_p" name="${crit}" value="Poor"><label for="c${i}_p" class="lbl-p">P</label><input type="radio" id="c${i}_n" name="${crit}" value="N/A"><label for="c${i}_n" class="lbl-n">N/A</label><input type="radio" id="c${i}_b" name="${crit}" value="Blank"><label for="c${i}_b" class="lbl-b">B</label></div></div>`; }); } buildEvaluationForm();
+function switchTab(tab){ document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn=>btn.classList.remove('active')); document.querySelectorAll('#captain-survey-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-'+tab).classList.add('active'); document.getElementById('tab-'+tab).classList.add('active'); }
+function setupCustomDropdown(){ const inp=document.getElementById('reg'), arr=document.getElementById('regArrowBtn'), list=document.getElementById('regDropdownList'); if(inp&&arr&&list){ arr.addEventListener('click',e=>{e.stopPropagation();list.classList.toggle('show');filterRegOptions(true);}); inp.addEventListener('input',()=>{list.classList.add('show');filterRegOptions(false);}); document.addEventListener('click',()=>list.classList.remove('show')); } } setupCustomDropdown();
+function filterRegOptions(all){ const inp=document.getElementById('reg'), list=document.getElementById('regDropdownList'); let v=inp.value.toUpperCase(); list.innerHTML=''; let mat=all?globalFleetData:globalFleetData.filter(a=>String(a.REG).toUpperCase().includes(v)); mat.forEach(a=>{ let div=document.createElement('div'); div.className='custom-dropdown-item'; div.innerHTML=`${a.REG} <span style="font-size:0.75rem; color:#777; float:right;">${a.CAR}</span>`; div.onclick=()=>{inp.value=a.REG; document.getElementById('airline').value=a.CAR||""; document.getElementById('acType').value=a.TYPE||""; list.classList.remove('show');}; list.appendChild(div); }); }
 
-function openSection(sectionId) { document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none'); const target = document.getElementById(sectionId); if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); } }
-function openAdminSection(sectionId) { let pass = prompt("🔒 هذه الصفحة مخصصة لمدير النظام فقط.\nبرجاء إدخال كلمة المرور:"); if (pass === "1234") openSection(sectionId); else if (pass !== null) alert("❌ كلمة المرور غير صحيحة!"); }
-function openGenericDoc(title) { document.getElementById('generic-doc-title').innerText = title; openSection('generic-doc-section'); }
+// دالة تقرير استبيان الكابتن (المصفوفة الأفقية)
+function generateModernReport(){ let fD=document.getElementById('fromDate').value, tD=document.getElementById('toDate').value; if(!fD||!tD) return alert("اختر الفترة."); let fd=new Date(fD), td=new Date(tD); td.setHours(23,59,59,999); document.getElementById('printable-report').style.display='block'; let filt=globalSurveys.filter(s=>{let sd=new Date(s.Date);return sd>=fd&&sd<=td;}); document.getElementById('report-date-range').innerText=`الفترة من ${fD} إلى ${tD}`; document.getElementById('stat-total').innerText=filt.length; let airC={}, dC={}, evC={"Excellent":0,"Good":0,"Poor":0,"N/A":0,"Blank":0}, comm=[]; const tbody=document.getElementById('flights-eval-tbody'); tbody.innerHTML=''; let mScores={"Excellent":{},"Good":{},"Poor":{},"N/A":{},"Blank":{}}; criteriaList.forEach(c=>{mScores["Excellent"][c]=0;mScores["Good"][c]=0;mScores["Poor"][c]=0;mScores["N/A"][c]=0;mScores["Blank"][c]=0;}); filt.forEach(s=>{ if(s.CAR) airC[s.CAR]=(airC[s.CAR]||0)+1; let dS=s.Date?String(s.Date).split('T')[0]:''; dC[dS]=(dC[dS]||0)+1; let fC={"Excellent":0,"Good":0,"Poor":0,"N/A":0,"Blank":0}; criteriaList.forEach(c=>{ let v=s[c]||"Blank"; if(fC[v]!==undefined) fC[v]++; if(evC[v]!==undefined) evC[v]++; if(mScores[v]) mScores[v][c]++; }); if(s.Captain_Comments&&s.Captain_Comments.trim()!=="") comm.push(s); tbody.innerHTML+=`<tr><td><b>${s.CAR||''}</b></td><td>${s.Flight_NO||''}</td><td>${dS}</td><td>${s.REG||''}</td><td style="color:#28a745;font-weight:bold;">${fC["Excellent"]}</td><td style="color:#ffc107;font-weight:bold;">${fC["Good"]}</td><td style="color:#dc3545;font-weight:bold;">${fC["Poor"]}</td><td>${fC["N/A"]}</td><td>${fC["Blank"]}</td></tr>`; }); document.getElementById('stat-airlines').innerText=Object.keys(airC).length; let tEv=Object.values(evC).reduce((a,b)=>a+b,0); document.getElementById('stat-excellent').innerText=`${tEv>0?Math.round((evC["Excellent"]/tEv)*100):0}%`; if(chartInstances.air) chartInstances.air.destroy(); if(chartInstances.dates) chartInstances.dates.destroy(); if(chartInstances.eval) chartInstances.eval.destroy(); Chart.defaults.font.family="'Cairo', sans-serif"; chartInstances.air=new Chart(document.getElementById('airlinesChart').getContext('2d'),{type:'bar',data:{labels:Object.keys(airC),datasets:[{label:'الاستبيانات',data:Object.values(airC),backgroundColor:'#003366',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false}}); chartInstances.dates=new Chart(document.getElementById('datesChart').getContext('2d'),{type:'line',data:{labels:Object.keys(dC).sort(),datasets:[{label:'النشاط اليومي',data:Object.keys(dC).sort().map(d=>dC[d]),borderColor:'#f39c12',tension:0.3}]},options:{responsive:true,maintainAspectRatio:false}}); chartInstances.eval=new Chart(document.getElementById('evalChart').getContext('2d'),{type:'doughnut',data:{labels:['Excellent','Good','Poor','N/A','Blank'],datasets:[{data:Object.values(evC),backgroundColor:['#28a745','#ffc107','#dc3545','#6c757d','#003366']}]},options:{responsive:true,maintainAspectRatio:false}}); let eH=`<div class="avoid-page-break" style="margin-top:35px; direction:ltr;"><h3 style="color:#003366;text-align:center;margin-bottom:12px;">Safety Captain Survey Report Evaluation Matrix</h3><table style="width:100%; border-collapse:collapse; border:1px solid #777; font-size:11px; text-align:center;"><thead><tr style="background:#003366;color:#fff;"><th style="padding:8px; border:1px solid #999; text-align:left;">Evaluation Criteria</th><th style="padding:8px; border:1px solid #999; background:#28a745;">Excellent</th><th style="padding:8px; border:1px solid #999; background:#ffc107; color:#000;">Good</th><th style="padding:8px; border:1px solid #999; background:#dc3545;">Poor</th><th style="padding:8px; border:1px solid #999; background:#6c757d;">N/A</th><th style="padding:8px; border:1px solid #999; background:#1a2a6c;">Blank</th></tr></thead><tbody>`; criteriaList.forEach(c=>{ eH+=`<tr><td style="padding:6px 10px; border:1px solid #ccc; text-align:left; font-weight:bold; background:#f9f9f9;">${c}</td><td style="padding:6px; border:1px solid #ccc; font-weight:bold; color:${mScores["Excellent"][c]>0?'#28a745':'#aaa'};">${mScores["Excellent"][c]||0}</td><td style="padding:6px; border:1px solid #ccc; font-weight:bold; color:${mScores["Good"][c]>0?'#ffc107':'#aaa'};">${mScores["Good"][c]||0}</td><td style="padding:6px; border:1px solid #ccc; font-weight:bold; color:${mScores["Poor"][c]>0?'#dc3545':'#aaa'};">${mScores["Poor"][c]||0}</td><td style="padding:6px; border:1px solid #ccc; color:#555;">${mScores["N/A"][c]||0}</td><td style="padding:6px; border:1px solid #ccc; color:#555;">${mScores["Blank"][c]||0}</td></tr>`; }); eH+=`</tbody></table></div>`; eH+=`<div class="avoid-page-break" style="margin-top:35px; direction:ltr; text-align:left;"><h3 style="color:#003366;margin-bottom:10px;">Captain Comments & Observations:</h3><table class="avoid-page-break" style="width:100%; border-collapse:collapse; border:1px solid #000; font-size:11px;"><thead style="background:#e6e6e6;"><tr><th style="border:1px solid #000; padding:6px;">Airline</th><th style="border:1px solid #000; padding:6px;">FLTNO</th><th style="border:1px solid #000; padding:6px;">Type</th><th style="border:1px solid #000; padding:6px;">Date</th><th style="border:1px solid #000; padding:6px;">REG</th><th style="border:1px solid #000; padding:6px;">Comments</th></tr></thead><tbody>`; if(comm.length===0) eH+=`<tr><td colspan="6" style="text-align:center;">No comments.</td></tr>`; else comm.forEach(s=>{ eH+=`<tr><td style="border:1px solid #000; padding:6px;">${s.CAR||'-'}</td><td style="border:1px solid #000; padding:6px;">${s.Flight_NO||'-'}</td><td style="border:1px solid #000; padding:6px;">${s.TYPE||'-'}</td><td style="border:1px solid #000; padding:6px;">${s.Date?String(s.Date).split('T')[0]:''}</td><td style="border:1px solid #000; padding:6px;">${s.REG||'-'}</td><td style="border:1px solid #000; padding:6px;">${s.Captain_Comments}</td></tr>`; }); eH+=`</tbody></table></div>`; document.getElementById('additional-tables-container').innerHTML=eH; }
+function exportModernPDF(){ html2pdf().set({margin:0.3,filename:'Captain_Surveys.pdf',image:{type:'jpeg',quality:1},html2canvas:{scale:2},jsPDF:{orientation:'portrait'},pagebreak:{mode:'css',avoid:['tr','table','.avoid-page-break']}}).from(document.getElementById('printable-report')).save(); }
 
-// ==========================================
-// 2. تحميل البيانات
-// ==========================================
-function loadAppDataInit() {
-    const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
-    window[callbackName] = function (data) {
-        try {
-            if (data && data.status === "success") {
-                globalFleetData = data.fleet ? data.fleet.reverse() : []; globalSurveys = data.surveys ? data.surveys.reverse() : [];
-                globalUsers = data.users || []; globalIncidents = data.incidents ? data.incidents.reverse() : [];
-                globalDirectory = data.directory || []; globalFod = data.fod || []; globalSpiData = data.spi || [];
-                populateUsersDropdown(globalUsers); renderDirectory(); updateSurveyNavCounter(); buildSpiEntryForm();
-                if (data.daily && data.daily.length > 0) {
-                    let reportsMap = {};
-                    data.daily.forEach(row => {
-                        let repId = row.Report_ID; let timeStr = row.Time;
-                        if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) { let d = new Date(timeStr); if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16); }
-                        if (!reportsMap[repId]) reportsMap[repId] = { id: repId, date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '', time: timeStr, shift: row.Shift, inspector: row.Inspector, findings: [] };
-                        if (row.Category && row.Category !== "لا توجد ملاحظات") reportsMap[repId].findings.push({ category: row.Category, item: row.Finding_Item, location: row.Location, responsible: row.Responsible, note: row.Corrective_Action || "", status: row.Status || "مفتوح" });
-                    });
-                    globalDailyInspections = Object.values(reportsMap).sort((a, b) => b.id - a.id);
-                }
-                renderSavedDaily(); renderSavedIncidents(); updateDailyNavCounter(); updateIncidentNavCounter();
-            }
-        } catch (e) {} delete window[callbackName];
-    };
-    const script = document.createElement('script'); script.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + callbackName; document.body.appendChild(script);
-}
-loadAppDataInit();
+// دوال الفحص اليومي (إدخال)
+function buildDailyChecklist(){ const g=document.getElementById('checklist-container'); if(!g)return; g.innerHTML=""; let ci=0; Object.keys(dailyChecklistDataISO).forEach(k=>{ let d=dailyChecklistDataISO[k], h=`<div class="checklist-column">`; const rS=(t,i)=>{ h+=`<div class="checklist-header">${t}</div>`; i.forEach(it=>{ let ro=responsibleDepts.map(dp=>`<option value="${dp}">${dp}</option>`).join(''); h+=`<div class="check-item"><div class="check-item-row"><input type="checkbox" id="chk_${ci}" value="${t}|${it}" onchange="toggleInputs(${ci})"><label for="chk_${ci}">${it}</label></div><div id="inputs_${ci}" class="check-inputs"><input type="text" id="note_${ci}" placeholder="الملاحظة..."><div style="display:flex;gap:5px;"><input type="text" id="loc_${ci}" placeholder="المكان..." style="flex:1;"><select id="resp_${ci}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${ro}</select></div></div></div>`; ci++; }); }; rS(d.title,d.items); if(d.title2)rS(d.title2,d.items2); if(d.title3)rS(d.title3,d.items3); h+=`</div>`; g.innerHTML+=h; }); } buildDailyChecklist();
+window.toggleInputs=function(i){ const c=document.getElementById('chk_'+i), inp=document.getElementById('inputs_'+i); if(c&&inp) inp.style.display=c.checked?'flex':'none'; };
+function switchDailyTab(t){ document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-daily-'+t).classList.add('active'); document.getElementById('tab-daily-'+t).classList.add('active'); }
+function updateDailyNavCounter(){ const el=document.getElementById('nav-daily-counter'); if(el) el.innerText=globalDailyInspections.length>0?`${currentDailyIndex+1} / ${globalDailyInspections.length}`:`0 / 0`; }
+function clearDailyFormForNew(){ currentDailyIndex=-1; isDailyEditMode=false; currentDailyEditId=null; document.getElementById('dailyForm').reset(); document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(c=>c.checked=false); document.querySelectorAll('.check-inputs').forEach(e=>e.style.display='none'); let b=document.getElementById('submitDailyBtn'); if(b){b.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> حفظ'; b.style.backgroundColor="var(--primary)";} let n=new Date().toISOString(); document.getElementById('dailyDate').value=n.split('T')[0]; document.getElementById('dailyTime').value=n.split('T')[1].substring(0,5); updateDailyNavCounter(); }
+function navDaily(d){ if(!globalDailyInspections||globalDailyInspections.length===0) return alert("لا توجد فحوصات."); if(d==='first') currentDailyIndex=0; else if(d==='last') currentDailyIndex=globalDailyInspections.length-1; else if(d==='next'&&currentDailyIndex<globalDailyInspections.length-1) currentDailyIndex++; else if(d==='prev'&&currentDailyIndex>0) currentDailyIndex--; if(currentDailyIndex>=0&&currentDailyIndex<globalDailyInspections.length) loadDailyInspectionToForm(currentDailyIndex); }
+function loadDailyInspectionToForm(i){ if(i<0||i>=globalDailyInspections.length) return; currentDailyIndex=i; isDailyEditMode=true; let r=globalDailyInspections[i]; currentDailyEditId=r.id; document.getElementById('dailyDate').value=r.date||''; document.getElementById('dailyTime').value=r.time||''; document.getElementById('dailyShift').value=r.shift||'صباحي'; document.getElementById('dailyInspector').value=r.inspector||''; document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(c=>c.checked=false); document.querySelectorAll('.check-inputs').forEach(e=>{e.style.display='none'; e.querySelectorAll('input').forEach(inp=>inp.value='');}); if(r.findings&&r.findings.length>0){ r.findings.forEach(f=>{ document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((c,ci)=>{ let p=c.value.split('|'); if(p[0]===f.category&&p[1]===f.item){ c.checked=true; toggleInputs(ci); let nE=document.getElementById(`note_${ci}`), lE=document.getElementById(`loc_${ci}`), rE=document.getElementById(`resp_${ci}`); if(nE)nE.value=f.note||f.Corrective_Action||''; if(lE)lE.value=f.location||f.Location||''; if(rE)rE.value=f.responsible||f.Responsible||''; } }); }); } let b=document.getElementById('submitDailyBtn'); if(b){b.innerHTML='<i class="fa-solid fa-pen-to-square"></i> تحديث';b.style.backgroundColor="#e67e22";} updateDailyNavCounter(); window.scrollTo({top:document.getElementById('dailyForm').offsetTop-30,behavior:'smooth'}); }
+function submitDailyInspection(e){ if(e) e.preventDefault(); const btn=document.getElementById('submitDailyBtn'), msg=document.getElementById('dailyMsg'); let fdg=[]; document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((c,i)=>{ if(c.checked){ let p=c.value.split('|'); fdg.push({category:p[0],item:p[1],location:document.getElementById(`loc_${i}`).value||"-",responsible:document.getElementById(`resp_${i}`).value||"-",note:document.getElementById(`note_${i}`).value||"تالف",status:"مفتوح"}); } }); let rId=isDailyEditMode&&currentDailyEditId?currentDailyEditId:Date.now(), rep={id:rId,date:document.getElementById('dailyDate').value,time:document.getElementById('dailyTime').value,shift:document.getElementById('dailyShift').value,inspector:document.getElementById('dailyInspector').value,findings:fdg}; safePost({action:isDailyEditMode?"updateDailyInspection":"submitDailyInspection",reportData:rep},btn,msg,"تم الحفظ!",()=>{ if(isDailyEditMode){ let ex=globalDailyInspections.findIndex(r=>String(r.id)===String(rId)); if(ex!==-1) globalDailyInspections[ex]=rep; }else{ globalDailyInspections.unshift(rep); } renderSavedDaily(); setTimeout(()=>clearDailyFormForNew(),1500); }); }
+function renderSavedDaily(){ const tb=document.getElementById('saved-daily-tbody'); if(!tb) return; tb.innerHTML=""; globalDailyInspections.forEach((r,i)=>{ let fc=r.findings?r.findings.length:0, bd=fc>0?`<span style="color:#dc3545;font-weight:bold;">${fc} ملاحظة</span>`:`<span style="color:#28a745;font-weight:bold;">سليم</span>`; tb.innerHTML+=`<tr><td dir="ltr">${r.date||'-'}</td><td>${r.time||'-'}</td><td>${r.shift||'-'}</td><td>${r.inspector||'-'}</td><td>${bd}</td><td><button onclick="loadDailyInspectionToForm(${i})" style="background:#003366;color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-weight:bold;">تعديل</button> <button onclick="deleteDailyInspectionRecord(${i})" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
+function deleteDailyInspectionRecord(i){ if(!confirm("تأكيد الحذف؟")) return; let rId=globalDailyInspections[i].id; globalDailyInspections.splice(i,1); renderSavedDaily(); updateDailyNavCounter(); safePost({action:"updateDailyInspection",reportData:{id:rId,findings:[]}}); }
 
-// ==========================================
-// 3. استبيان الكابتن (مصفوفة أفقية للـ PDF)
-// ==========================================
-function updateSurveyNavCounter() { const el = document.getElementById('nav-counter'); if (el) el.innerText = globalSurveys.length > 0 ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / 0`; }
-function navSurveys(direction) {
-    if (!globalSurveys || globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
-    if (direction === 'first') currentSurveyIndex = 0; else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1; else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++; else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
-    if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) { displaySurveyInForm(globalSurveys[currentSurveyIndex]); updateSurveyNavCounter(); let btn = document.getElementById('submitSurveyBtn'); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض'; btn.style.backgroundColor = "#6c757d"; } }
-}
-function displaySurveyInForm(survey) {
-    if (!survey) return;
-    document.getElementById('capDate').value = survey.Date ? new Date(survey.Date).toISOString().split('T')[0] : '';
-    let timeVal = survey.Time || ''; document.getElementById('capTime').value = timeVal.includes('T') ? new Date(timeVal).toTimeString().substring(0, 5) : timeVal;
-    document.getElementById('fltNo').value = survey.Flight_NO || ''; document.getElementById('reg').value = survey.REG || ''; document.getElementById('airline').value = survey.CAR || ''; document.getElementById('acType').value = survey.TYPE || ''; document.getElementById('comments').value = survey.Captain_Comments || '';
-    criteriaList.forEach(crit => { let val = survey[crit] || "Blank"; let radio = document.querySelector(`input[name="${crit}"][value="${val}"]`); if (radio) radio.checked = true; });
-}
-function clearFormForNew() {
-    currentSurveyIndex = -1; document.getElementById('surveyForm').reset(); updateSurveyNavCounter();
-    let btn = document.getElementById('submitSurveyBtn'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان'; btn.style.backgroundColor = "var(--primary)"; }
-    let now = new Date().toISOString(); document.getElementById('capDate').value = now.split('T')[0]; document.getElementById('capTime').value = now.split('T')[1].substring(0, 5);
-}
-function submitSurvey(e) {
-    e.preventDefault(); const btn = document.getElementById('submitSurveyBtn'), msg = document.getElementById('surveyMsg'), airline = document.getElementById('airline').value;
-    if (!airline) return;
-    let sObj = { "Date": document.getElementById('capDate').value, "Time": document.getElementById('capTime').value, "Flight_NO": document.getElementById('fltNo').value, "REG": document.getElementById('reg').value.toUpperCase(), "CAR": airline, "TYPE": document.getElementById('acType').value, "Captain_Comments": document.getElementById('comments').value };
-    criteriaList.forEach(crit => { let sel = document.querySelector(`input[name="${crit}"]:checked`); sObj[crit] = sel ? sel.value : "Blank"; });
-    safePost({ action: "submitSurvey", surveyData: sObj }, btn, msg, "تم الحفظ بنجاح!", () => { globalSurveys.unshift(sObj); updateSurveyNavCounter(); setTimeout(() => clearFormForNew(), 1500); });
-}
-function buildEvaluationForm() {
-    const container = document.getElementById('criteria-container'); if (!container) return; container.innerHTML = '';
-    criteriaList.forEach((crit, index) => {
-        container.innerHTML += `<div class="eval-card"><div class="eval-title">${crit}</div><div class="radio-group"><input type="radio" id="c${index}_e" name="${crit}" value="Excellent" checked><label for="c${index}_e" class="lbl-e">E</label><input type="radio" id="c${index}_g" name="${crit}" value="Good"><label for="c${index}_g" class="lbl-g">G</label><input type="radio" id="c${index}_p" name="${crit}" value="Poor"><label for="c${index}_p" class="lbl-p">P</label><input type="radio" id="c${index}_n" name="${crit}" value="N/A"><label for="c${index}_n" class="lbl-n">N/A</label><input type="radio" id="c${index}_b" name="${crit}" value="Blank"><label for="c${index}_b" class="lbl-b">B</label></div></div>`;
-    });
-}
-buildEvaluationForm();
-function switchTab(tab) { document.querySelectorAll('#captain-survey-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#captain-survey-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-' + tab).classList.add('active'); document.getElementById('tab-' + tab).classList.add('active'); }
-function setupCustomDropdown() {
-    const input = document.getElementById('reg'), arrow = document.getElementById('regArrowBtn'), list = document.getElementById('regDropdownList');
-    if(input && arrow && list) { arrow.addEventListener('click', (e) => { e.stopPropagation(); list.classList.toggle('show'); filterRegOptions(true); }); input.addEventListener('input', () => { list.classList.add('show'); filterRegOptions(false); }); document.addEventListener('click', () => list.classList.remove('show')); }
-}
-setupCustomDropdown();
-function filterRegOptions(showAll) {
-    const input = document.getElementById('reg'), list = document.getElementById('regDropdownList'); let val = input.value.toUpperCase(); list.innerHTML = '';
-    let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().includes(val));
-    matched.forEach(a => { let div = document.createElement('div'); div.className = 'custom-dropdown-item'; div.innerHTML = `${a.REG} <span style="font-size:0.75rem; color:#777; float:right;">${a.CAR}</span>`; div.onclick = () => { input.value = a.REG; document.getElementById('airline').value = a.CAR || ""; document.getElementById('acType').value = a.TYPE || ""; list.classList.remove('show'); }; list.appendChild(div); });
-}
+// دالة إصدار تقرير الفحص اليومي الأيزو (بالمطابقة والملاحظات)
+function generateIsoDailyReport(){ let tD=document.getElementById('isoReportDate').value, tS=document.getElementById('isoReportShift').value; if(!tD) return alert("اختر التاريخ."); let rep=globalDailyInspections.find(r=>String(r.date).split('T')[0]===tD && r.shift===tS); if(!rep){ alert("لا توجد جولة محفوظة بهذا التاريخ والوردية!"); document.getElementById('printable-daily-report').style.display='none'; return; } document.getElementById('iso-date-val').innerText=tD.split('-').reverse().join(' / '); document.getElementById('iso-shift-am').innerHTML=(tS==='صباحي')?'✔':''; document.getElementById('iso-shift-pm').innerHTML=(tS==='مسائي')?'✔':''; let fL=rep.findings||[]; const mtx=document.getElementById('iso-matrix-container'); mtx.innerHTML=""; let maxC=0; Object.keys(dailyChecklistDataISO).forEach(k=>{ let c=dailyChecklistDataISO[k], cnt=(c.items?.length||0)+(c.items2?.length||0)+(c.items3?.length||0)+1; if(c.title2) cnt++; if(c.title3) cnt++; if(cnt>maxC) maxC=cnt; }); const fl={}; Object.keys(dailyChecklistDataISO).forEach(k=>{ let c=dailyChecklistDataISO[k], arr=[]; const inj=(t,items)=>{ arr.push({isH:true,txt:t}); items.forEach(it=>{ let hasF=fL.some(f=>(f.category||"").trim()===t.trim() && (f.item||"").trim()===it.trim()); arr.push({isH:false,txt:it,safe:!hasF}); }); }; inj(c.title,c.items); if(c.title2) inj(c.title2,c.items2); if(c.title3) inj(c.title3,c.items3); fl[k]=arr; }); let mH=""; for(let i=0; i<maxC; i++){ Object.keys(dailyChecklistDataISO).forEach(k=>{ let cel=fl[k][i]; if(cel){ if(cel.isH){ mH+=`<div style="border:1px solid #000;background:#e6e6e6;padding:4px;font-weight:bold;text-align:center;">${cel.txt}</div>`; }else{ let bx=cel.safe?"✔":"✘", clr=cel.safe?"#000":"#dc3545", dec=cel.safe?"none":"line-through", fw=cel.safe?"normal":"bold"; mH+=`<div style="border:1px solid #000;padding:3px 5px;display:flex;justify-content:space-between;align-items:center;background:#fff;"><span style="color:${clr};text-decoration:${dec};font-weight:${fw};">${cel.txt}</span><span style="display:inline-block;width:12px;height:12px;border:1px solid #000;text-align:center;line-height:10px;font-size:10px;font-weight:bold;color:${clr};">${bx}</span></div>`; } }else{ mH+=`<div style="border:1px solid #000;background:#fff;"></div>`; } }); } mtx.innerHTML=mH; const tb=document.getElementById('iso-findings-tbody'); tb.innerHTML=""; if(fL.length===0){ tb.innerHTML=`<tr><td colspan="5" style="border:1px solid #000;padding:12px;text-align:center;color:green;font-weight:bold;font-size:1.1rem;">المنطقة مطابقة وسليمة (لا توجد ملاحظات)</td></tr>`; }else{ fL.forEach((f,idx)=>{ tb.innerHTML+=`<tr><td style="border:1px solid #000;padding:6px;">${idx+1}</td><td style="border:1px solid #000;padding:6px;">${f.location||'-'}</td><td style="border:1px solid #000;padding:6px;text-align:right;color:#dc3545;font-weight:bold;">${f.category} - ${f.item}<br><span style="color:#333;font-weight:normal;">(${f.note||'ملاحظة'})</span></td><td style="border:1px solid #000;padding:6px;">${f.responsible||'-'}</td><td style="border:1px solid #000;padding:6px;color:#dc3545;font-weight:bold;">مفتوح</td></tr>`; }); } document.getElementById('printable-daily-report').style.display='block'; }
+function exportIsoDailyPDF(){ let el=document.getElementById('printable-daily-report'); if(el.style.display==='none') return alert("اعرض النموذج أولاً"); html2pdf().set({margin:0.3,filename:`AS_F_01_01.pdf`,image:{type:'jpeg',quality:1},html2canvas:{scale:2},jsPDF:{unit:'in',format:'a4',orientation:'landscape'}}).from(el).save(); }
 
-// ** حل مشكلة المصفوفة في الـ PDF (Transpose Matrix) **
-function generateModernReport() {
-    let fromD = document.getElementById('fromDate').value, toD = document.getElementById('toDate').value; if (!fromD || !toD) return alert("اختر الفترة أولاً");
-    let fd = new Date(fromD), td = new Date(toD); td.setHours(23, 59, 59, 999); document.getElementById('printable-report').style.display = 'block';
-    let filtered = globalSurveys.filter(s => { let sd = new Date(s.Date); return sd >= fd && sd <= td; });
-    document.getElementById('report-date-range').innerText = `الفترة من ${fromD} إلى ${toD}`; document.getElementById('stat-total').innerText = filtered.length;
-    
-    let airlinesCount = {}, datesCount = {}, evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [];
-    const tbody = document.getElementById('flights-eval-tbody'); tbody.innerHTML = '';
-    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} }; criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
-    
-    filtered.forEach(s => {
-        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1; let dStr = s.Date ? String(s.Date).split('T')[0] : 'Unknown'; datesCount[dStr] = (datesCount[dStr] || 0) + 1;
-        let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
-        criteriaList.forEach(crit => { let val = s[crit] || "Blank"; if(fCounts[val] !== undefined) fCounts[val]++; if(evalsCount[val] !== undefined) evalsCount[val]++; if(matrixScores[val]) matrixScores[val][crit]++; });
-        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
-        tbody.innerHTML += `<tr><td><b>${s.CAR || ''}</b></td><td>${s.Flight_NO || ''}</td><td>${dStr}</td><td>${s.REG || ''}</td><td style="color:#28a745; font-weight:bold;">${fCounts["Excellent"]}</td><td style="color:#ffc107; font-weight:bold;">${fCounts["Good"]}</td><td style="color:#dc3545; font-weight:bold;">${fCounts["Poor"]}</td><td>${fCounts["N/A"]}</td><td>${fCounts["Blank"]}</td></tr>`;
-    });
-    
-    document.getElementById('stat-airlines').innerText = Object.keys(airlinesCount).length; let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0); document.getElementById('stat-excellent').innerText = `${totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0}%`;
-    
-    if (chartInstances.air) chartInstances.air.destroy(); if (chartInstances.dates) chartInstances.dates.destroy(); if (chartInstances.eval) chartInstances.eval.destroy();
-    Chart.defaults.font.family = "'Cairo', sans-serif";
-    chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-    chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), { type: 'line', data: { labels: Object.keys(datesCount).sort(), datasets: [{ label: 'النشاط اليومي', data: Object.keys(datesCount).sort().map(d => datesCount[d]), borderColor: '#f39c12', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } });
-    chartInstances.eval = new Chart(document.getElementById('evalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-    
-    const addContainer = document.getElementById('additional-tables-container');
-    
-    // قلب المصفوفة (العناصر صفوف والتقييمات أعمدة) لمنع التشوه في الـ PDF
-    let extraHtml = `<div class="avoid-page-break" style="margin-top: 35px; direction: ltr;">
-        <h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.2rem;">Safety Captain Survey Report Evaluation Matrix</h3>
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 11px; text-align: center;">
-            <thead>
-                <tr style="background:#003366; color:#fff;">
-                    <th style="padding: 8px; border: 1px solid #999; text-align:left; width: 40%;">Evaluation Criteria (عناصر التقييم)</th>
-                    <th style="padding: 8px; border: 1px solid #999; background:#28a745;">Excellent</th>
-                    <th style="padding: 8px; border: 1px solid #999; background:#ffc107; color:#000;">Good</th>
-                    <th style="padding: 8px; border: 1px solid #999; background:#dc3545;">Poor</th>
-                    <th style="padding: 8px; border: 1px solid #999; background:#6c757d;">N/A</th>
-                    <th style="padding: 8px; border: 1px solid #999; background:#1a2a6c;">Blank</th>
-                </tr>
-            </thead><tbody>`;
-            
-    criteriaList.forEach(crit => {
-        extraHtml += `<tr>
-            <td style="padding: 6px 10px; border: 1px solid #ccc; text-align: left; font-weight: bold; background:#f9f9f9;">${crit}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Excellent"][crit] > 0 ? '#28a745' : '#aaa'};">${matrixScores["Excellent"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Good"][crit] > 0 ? '#ffc107' : '#aaa'};">${matrixScores["Good"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Poor"][crit] > 0 ? '#dc3545' : '#aaa'};">${matrixScores["Poor"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["N/A"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["Blank"][crit] || 0}</td>
-        </tr>`;
-    });
-    extraHtml += `</tbody></table></div>`;
-    
-    // الملاحظات
-    extraHtml += `<div class="avoid-page-break" style="margin-top: 35px; direction: ltr; text-align: left;">
-        <h3 style="color:#003366; margin-bottom:10px;">Captain Comments & Observations:</h3>
-        <table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
-            <thead style="background: #e6e6e6;">
-                <tr>
-                    <th style="border: 1px solid #000; padding: 6px;">Airline</th>
-                    <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
-                    <th style="border: 1px solid #000; padding: 6px;">Type</th>
-                    <th style="border: 1px solid #000; padding: 6px;">Date</th>
-                    <th style="border: 1px solid #000; padding: 6px;">REG</th>
-                    <th style="border: 1px solid #000; padding: 6px;">Comments</th>
-                </tr>
-            </thead><tbody>`;
-            
-    if (commentsList.length === 0) extraHtml += `<tr><td colspan="6" style="text-align: center;">No comments.</td></tr>`;
-    else commentsList.forEach(s => { extraHtml += `<tr><td style="border: 1px solid #000; padding: 6px;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''}</td><td style="border: 1px solid #000; padding: 6px;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Captain_Comments}</td></tr>`; });
-    
-    extraHtml += `</tbody></table></div>`; 
-    addContainer.innerHTML = extraHtml;
-}
+// دوال سجل الحوادث
+function switchIncidentTab(t){ document.querySelectorAll('#incident-section .tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('#incident-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-inc-'+t).classList.add('active'); document.getElementById('tab-inc-'+t).classList.add('active'); }
+function updateIncidentNavCounter(){ const el=document.getElementById('nav-incident-counter'); if(el) el.innerText=globalIncidents.length>0?`${currentIncidentIndex+1} / ${globalIncidents.length}`:`0 / 0`; }
+function clearIncidentForm(){ currentIncidentIndex=-1; currentIncidentEditId=null; document.getElementById('incidentForm').reset(); document.getElementById('incDate').value=new Date().toISOString().split('T')[0]; document.getElementById('submitIncBtn').innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة'; updateIncidentNavCounter(); }
+function navIncidents(d){ if(!globalIncidents||globalIncidents.length===0) return alert("لا توجد وقائع."); if(d==='first') currentIncidentIndex=0; else if(d==='last') currentIncidentIndex=globalIncidents.length-1; else if(d==='next'&&currentIncidentIndex<globalIncidents.length-1) currentIncidentIndex++; else if(d==='prev'&&currentIncidentIndex>0) currentIncidentIndex--; if(currentIncidentIndex>=0&&currentIncidentIndex<globalIncidents.length){ let i=globalIncidents[currentIncidentIndex]; currentIncidentEditId=i.ID||i.id; document.getElementById('incDate').value=i.Date?String(i.Date).split('T')[0]:''; document.getElementById('incTime').value=i.Time||''; document.getElementById('incLocation').value=i.Location||''; document.getElementById('incCar').value=i.CAR||''; document.getElementById('incFlightNo').value=i.Flight_No||''; document.getElementById('incReg').value=i.REG||''; document.getElementById('incChar').value=i.Characterization||'Equipment Accident'; document.getElementById('incRiskSev').value=i.Risk_Severity||'Minor'; document.getElementById('incDesc').value=i.Description||''; document.getElementById('submitIncBtn').innerHTML='<i class="fa-solid fa-pen-to-square"></i> تعديل الواقعة'; updateIncidentNavCounter(); } }
+function submitIncident(e){ e.preventDefault(); const b=document.getElementById('submitIncBtn'), m=document.getElementById('incMsg'); let isE=currentIncidentEditId!==null, nId=isE?currentIncidentEditId:"INC-"+Date.now(); let obj={id:nId,date:document.getElementById('incDate').value,time:document.getElementById('incTime').value,location:document.getElementById('incLocation').value,personnel:document.getElementById('incPersonnel').value,equipmentNo:document.getElementById('incEquipmentNo').value,driver:document.getElementById('incDriver').value,eqOwner:document.getElementById('incEqOwner').value,status:document.getElementById('incStatus').value,causes:document.getElementById('incCauses').value,charaterization:document.getElementById('incChar').value,riskSeverity:document.getElementById('incRiskSev').value,riskProb:document.getElementById('incRiskProb').value,car:document.getElementById('incCar').value,flightNo:document.getElementById('incFlightNo').value,reg:document.getElementById('incReg').value,orgVia:document.getElementById('incOrgVia').value,viaDst:document.getElementById('incViaDst').value,preparedBy:document.getElementById('incPreparedBy').value,hazardDesc:document.getElementById('incHazardDesc').value,description:document.getElementById('incDesc').value,actionTaken:document.getElementById('incAction').value,recommendation:document.getElementById('incRecommendation').value,position:document.getElementById('incPosition').value,injuryType:document.getElementById('incInjuryType').value,causesDetails:""}; safePost({action:isE?"updateIncident":"submitIncident",incidentData:obj},b,m,"تم الحفظ!",()=>{ let map={ID:obj.id,Date:obj.date,Time:obj.time,Location:obj.location,Characterization:obj.charaterization,Risk_Severity:obj.riskSeverity,Prepared_By:obj.preparedBy}; if(isE){ let ix=globalIncidents.findIndex(i=>(i.ID||i.id)===nId); if(ix!==-1) globalIncidents[ix]=map; }else{ globalIncidents.unshift(map); } renderSavedIncidents(); setTimeout(()=>clearIncidentForm(),1500); }); }
+function renderSavedIncidents(){ const tb=document.getElementById('saved-inc-tbody'); if(!tb) return; tb.innerHTML=""; globalIncidents.forEach((i,x)=>{ tb.innerHTML+=`<tr><td dir="ltr">${i.Date?String(i.Date).split('T')[0]:'-'}</td><td>${i.Location||'-'}</td><td>${i.Characterization||'-'}</td><td>${i.Risk_Severity||'-'}</td><td>${i.Prepared_By||'-'}</td><td><button onclick="deleteIncidentRecord(${x})" style="background:#dc3545;color:#fff;border:none;padding:4px 8px;border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
+function deleteIncidentRecord(x){ if(!confirm("تأكيد الحذف؟")) return; let it=globalIncidents[x]; globalIncidents.splice(x,1); renderSavedIncidents(); safePost({action:"deleteIncident",id:it.ID||it.id}); }
 
-function exportModernPDF() { html2pdf().set({ margin: 0.3, filename: 'Captain_Surveys_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'in', format: 'a4' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '.avoid-page-break'] } }).from(document.getElementById('printable-report')).save(); }
+// دوال SPI
+function switchSpiTab(t){ document.querySelectorAll('#spi-section .tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('#spi-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-spi-'+t).classList.add('active'); document.getElementById('tab-spi-'+t).classList.add('active'); }
+function buildSpiEntryForm(){ const c=document.getElementById('spi-dynamic-inputs'); if(!c) return; c.innerHTML=''; spiCategories.forEach(cat=>{ let h=`<h4 style="color:#28a745; margin-top:20px; border-bottom:2px solid #eee;">${cat.name}</h4><div class="form-grid">`; cat.items.forEach(s=>{ let id="spi_"+s.replace(/[^a-zA-Z0-9]/g,''); h+=`<div class="form-group"><label style="font-size:0.8rem;direction:ltr;">${s}</label><input type="number" id="${id}" data-spi="${s}" value="0" min="0" required></div>`; }); h+=`</div>`; c.innerHTML+=h; }); }
+function submitSPI(e){ e.preventDefault(); const b=document.getElementById('submitSpiBtn'), m=document.getElementById('spiMsg'); let mv=parseInt(document.getElementById('spiMovements').value)||0, md={"Movements":mv}; document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(i=>{ md[i.getAttribute('data-spi')]=parseInt(i.value)||0; }); let obj={id:"SPI-"+Date.now(),year:document.getElementById('spiYear').value,month:document.getElementById('spiMonth').value,group:"ECAA_SPI_Matrix",name:"OperationalSPI",target:"0",actual:JSON.stringify(md),status:"Submitted",actionPlan:mv.toString(),preparedBy:"Safety Officer"}; safePost({action:"submitSPI",spiData:obj},b,m,"تم الحفظ!",()=>{ globalSpiData.push({Year:obj.year,Month:obj.month,Indicator_Name:obj.name,Actual_Value:obj.actual}); document.getElementById('spiForm').reset(); }); }
+function generateSpiReport(){ const c=document.getElementById('spi-matrix-container'); let y=document.getElementById('spiReportYear').value, mp={}; globalSpiData.forEach(r=>{ if(r.Indicator_Name==="OperationalSPI"&&String(r.Year)===y){ try{ mp[r.Month]=JSON.parse(r.Actual_Value); }catch(e){} } }); let h=`<table class="report-table spi-matrix-table" style="min-width:800px;font-size:12px;"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366;color:#fff;">Total Events</th></tr></thead><tbody><tr><td>Number of aircraft movements</td>`; let tm=0, mDc=[]; for(let i=1;i<=12;i++){ let m=mp[i]?mp[i].Movements||0:0; tm+=m; mDc.push(m); h+=`<td style="font-weight:bold;background:#e8f5e9;">${m||'-'}</td>`; } h+=`<td style="font-weight:bold;background:#003366;color:#fff;">${tm}</td></tr>`; spiCategories.forEach(cat=>{ h+=`<tr><td colspan="14" style="background:#f4fcf6;color:#28a745;font-weight:bold;text-align:right;">${cat.name}</td></tr>`; cat.items.forEach(spi=>{ let ts=0, rh=`<tr><td>${spi}</td>`; for(let i=1;i<=12;i++){ let v=mp[i]?mp[i][spi]||0:0; ts+=v; rh+=`<td>${v||'-'}</td>`; } rh+=`<td style="font-weight:bold;color:#003366;">${ts}</td></tr>`; h+=rh; }); }); h+=`</tbody></table>`; c.innerHTML=h; if(window.spiChartInstance) window.spiChartInstance.destroy(); window.spiChartInstance=new Chart(document.getElementById('spiTrendChart').getContext('2d'),{type:'line',data:{labels:["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],datasets:[{label:'Aircraft Movements',data:mDc,borderColor:'#28a745',backgroundColor:'rgba(40,167,69,0.2)',tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false}}); }
 
-// ==========================================
-// 4. الفحص اليومي الأيزو
-// ==========================================
-function buildDailyChecklist() {
-    const grid = document.getElementById('checklist-container'); if (!grid) return; grid.innerHTML = ""; let checkIndex = 0;
-    Object.keys(dailyChecklistDataISO).forEach(colKey => {
-        let colData = dailyChecklistDataISO[colKey]; let colHTML = `<div class="checklist-column">`;
-        const renderSection = (title, items) => {
-            colHTML += `<div class="checklist-header">${title}</div>`;
-            items.forEach(item => { let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join(''); colHTML += `<div class="check-item"><div class="check-item-row"><input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})"><label for="chk_${checkIndex}">${item}</label></div><div id="inputs_${checkIndex}" class="check-inputs"><input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة..."><div style="display:flex; gap:5px;"><input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;"><select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${rOpts}</select></div></div></div>`; checkIndex++; });
-        };
-        renderSection(colData.title, colData.items); if (colData.title2) renderSection(colData.title2, colData.items2); if (colData.title3) renderSection(colData.title3, colData.items3);
-        colHTML += `</div>`; grid.innerHTML += colHTML;
-    });
-}
-buildDailyChecklist();
-window.toggleInputs = function(idx) { const chk = document.getElementById('chk_' + idx), inputs = document.getElementById('inputs_' + idx); if (chk && inputs) inputs.style.display = chk.checked ? 'flex' : 'none'; };
-function switchDailyTab(tab) { document.querySelectorAll('#daily-inspection-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#daily-inspection-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-daily-' + tab).classList.add('active'); document.getElementById('tab-daily-' + tab).classList.add('active'); }
-function updateDailyNavCounter() { const el = document.getElementById('nav-daily-counter'); if(el) el.innerText = globalDailyInspections.length > 0 ? `${currentDailyIndex + 1} / ${globalDailyInspections.length}` : `0 / 0`; }
-function clearDailyFormForNew() {
-    currentDailyIndex = -1; isDailyEditMode = false; currentDailyEditId = null; document.getElementById('dailyForm').reset();
-    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(chk => chk.checked = false); document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
-    let btn = document.getElementById('submitDailyBtn'); if (btn) { btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الجولة'; btn.style.backgroundColor = "var(--primary)"; }
-    let now = new Date().toISOString(); document.getElementById('dailyDate').value = now.split('T')[0]; document.getElementById('dailyTime').value = now.split('T')[1].substring(0, 5); updateDailyNavCounter();
-}
-function navDaily(direction) {
-    if (!globalDailyInspections || globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة.");
-    if (direction === 'first') currentDailyIndex = 0; else if (direction === 'last') currentDailyIndex = globalDailyInspections.length - 1;
-    else if (direction === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++; else if (direction === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
-    if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) loadDailyInspectionToForm(currentDailyIndex);
-}
-function loadDailyInspectionToForm(idx) {
-    if (idx < 0 || idx >= globalDailyInspections.length) return;
-    currentDailyIndex = idx; isDailyEditMode = true; let rep = globalDailyInspections[idx]; currentDailyEditId = rep.id;
-    document.getElementById('dailyDate').value = rep.date || ''; document.getElementById('dailyTime').value = rep.time || ''; document.getElementById('dailyShift').value = rep.shift || 'صباحي'; document.getElementById('dailyInspector').value = rep.inspector || '';
-    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(chk => chk.checked = false); document.querySelectorAll('.check-inputs').forEach(el => { el.style.display = 'none'; el.querySelectorAll('input').forEach(inp => inp.value = ''); });
-    if (rep.findings && rep.findings.length > 0) {
-        rep.findings.forEach(f => {
-            document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, cIdx) => {
-                let parts = chk.value.split('|'); if (parts[0] === f.category && parts[1] === f.item) {
-                    chk.checked = true; toggleInputs(cIdx);
-                    let noteEl = document.getElementById(`note_${cIdx}`), locEl = document.getElementById(`loc_${cIdx}`), respEl = document.getElementById(`resp_${cIdx}`);
-                    if (noteEl) noteEl.value = f.note || f.Corrective_Action || ''; if (locEl) locEl.value = f.location || f.Location || ''; if (respEl) respEl.value = f.responsible || f.Responsible || '';
-                }
-            });
-        });
-    }
-    let btn = document.getElementById('submitDailyBtn'); if (btn) { btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تحديث'; btn.style.backgroundColor = "#e67e22"; } updateDailyNavCounter(); window.scrollTo({ top: document.getElementById('dailyForm').offsetTop - 30, behavior: 'smooth' });
-}
-function submitDailyInspection(e) {
-    if (e) e.preventDefault(); const btn = document.getElementById('submitDailyBtn'), msg = document.getElementById('dailyMsg'); let findings = [];
-    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach((chk, idx) => { if (chk.checked) { let parts = chk.value.split('|'); findings.push({ category: parts[0], item: parts[1], location: document.getElementById(`loc_${idx}`).value || "-", responsible: document.getElementById(`resp_${idx}`).value || "-", note: document.getElementById(`note_${idx}`).value || "تالف", status: "مفتوح" }); } });
-    let reportId = isDailyEditMode && currentDailyEditId ? currentDailyEditId : Date.now();
-    let rep = { id: reportId, date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings };
-    safePost({ action: isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection", reportData: rep }, btn, msg, "تم الحفظ بنجاح!", () => {
-        if (isDailyEditMode) { let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId)); if (existingIdx !== -1) globalDailyInspections[existingIdx] = rep; } else { globalDailyInspections.unshift(rep); } renderSavedDaily(); setTimeout(() => clearDailyFormForNew(), 1500);
-    });
-}
-function renderSavedDaily() {
-    const tbody = document.getElementById('saved-daily-tbody'); if (!tbody) return; tbody.innerHTML = "";
-    globalDailyInspections.forEach((rep, idx) => { let fCount = rep.findings ? rep.findings.length : 0; let countBadge = fCount > 0 ? `<span style="color:#dc3545; font-weight:bold;">${fCount} ملاحظة</span>` : `<span style="color:#28a745; font-weight:bold;">سليم</span>`; tbody.innerHTML += `<tr><td dir="ltr">${rep.date || '-'}</td><td>${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td>${countBadge}</td><td><button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#003366; color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">تعديل</button> <button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
-}
-function deleteDailyInspectionRecord(idx) { if (!confirm("تأكيد الحذف؟")) return; let repId = globalDailyInspections[idx].id; globalDailyInspections.splice(idx, 1); renderSavedDaily(); updateDailyNavCounter(); safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } }); }
-function generateIsoDailyReport() {
-    let targetD = document.getElementById('isoReportDate').value;
-    let targetS = document.getElementById('isoReportShift').value; 
-    
-    if (!targetD) return alert("اختر تاريخ اليوم أولاً لإصدار التقرير.");
+// دوال الـ FOD (حفظ متسلسل لتجنب أخطاء جوجل)
+function switchFodTab(t){ document.querySelectorAll('#fod-section .tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('#fod-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-fod-'+t).classList.add('active'); document.getElementById('tab-fod-'+t).classList.add('active'); }
+function generateFodInputRows(){ const m=document.getElementById('fodInputMonth').value; if(!m) return alert("اختر الشهر"); document.getElementById('fodForm').style.display='block'; const tb=document.getElementById('fod-input-tbody'); tb.innerHTML=''; fodLocations.forEach((it,i)=>{ tb.innerHTML+=`<tr><td><input type="date" id="fod_date_${i}" required style="width:100%;"></td><td><b>${it.loc}</b></td><td>${it.area}</td><td><input type="number" step="0.001" id="fod_p_${i}" required style="width:100%;"></td><td><input type="number" step="0.001" id="fod_m_${i}" required style="width:100%;"></td></tr>`; }); }
+async function submitFOD(e){ if(e) e.preventDefault(); const btn=document.getElementById('submitFodBtn'), msg=document.getElementById('fodMsg'); btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; msg.style.color="#003366"; msg.innerText="جاري الإرسال..."; let sc=0, locArr=[]; for(let i=0; i<fodLocations.length; i++){ let it=fodLocations[i], d=document.getElementById(`fod_date_${i}`)?.value||"", p=parseFloat(document.getElementById(`fod_p_${i}`)?.value)||0, m=parseFloat(document.getElementById(`fod_m_${i}`)?.value)||0, nId="FOD-"+Date.now()+"-"+i; let obj={id:nId,date:d,location:it.loc,area:it.area,plastic:p,metal:m}; try{ await fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:"submitFOD",fodData:obj})}); locArr.push({ID:nId,Date:d,Location:it.loc,Area:it.area,Plastic:p,Metal:m}); sc++; }catch(err){console.error(err);} } btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر'; if(sc>0){ globalFod=[...globalFod,...locArr]; msg.style.color="green"; msg.innerText="✅ تم الحفظ بنجاح!"; setTimeout(()=>{document.getElementById('fodForm').style.display='none'; msg.innerText='';},1500); }else{ msg.style.color="red"; msg.innerText="❌ حدث خطأ!"; } }
+function generateFodPrintReport(){ const m=document.getElementById('fodReportMonth').value; if(!m) return alert("اختر الشهر"); let filt=globalFod.filter(f=>{ let rd=f.Date||f.date||''; return (typeof rd==='string'?rd:new Date(rd).toISOString()).split('T')[0].startsWith(m); }); const tb=document.getElementById('fod-print-tbody'); tb.innerHTML=''; let tp=0, tm=0; fodLocations.forEach(loc=>{ let rc=filt.find(f=>(f.Location||f.location)===loc.loc), p=rc?parseFloat(rc.Plastic||rc.plastic||0):0, met=rc?parseFloat(rc.Metal||rc.metal||0):0; tp+=p; tm+=met; tb.innerHTML+=`<tr><td style="border:1px solid #777;padding:12px;">${rc?String(rc.Date||rc.date).split('T')[0]:'---'}</td><td style="border:1px solid #777;padding:12px;">${loc.loc}</td><td style="border:1px solid #777;padding:12px;">${loc.area}</td><td style="border:1px solid #777;padding:12px;">${p>0?p.toFixed(3)+' kg':'---'}</td><td style="border:1px solid #777;padding:12px;">${met>0?met.toFixed(3)+' kg':'---'}</td><td style="border:1px solid #777;padding:12px;">---</td></tr>`; }); tb.innerHTML+=`<tr style="background:#fafafa;font-weight:bold;"><td colspan="3" style="border:1px solid #777;padding:12px;">Total</td><td style="border:1px solid #777;padding:12px;">${tp.toFixed(3)} kg</td><td style="border:1px solid #777;padding:12px;">${tm.toFixed(3)} kg</td><td style="border:1px solid #777;padding:12px;">${(tp+tm).toFixed(3)} kg</td></tr>`; document.getElementById('printable-fod-report').style.display='block'; }
+function exportFodPDF(){ html2pdf().set({margin:0.2,filename:'FOD_Report.pdf',image:{type:'jpeg',quality:1},html2canvas:{scale:2},jsPDF:{orientation:'landscape'},pagebreak:{avoid:['tr','table']}}).from(document.getElementById('printable-fod-report')).save(); }
 
-    // البحث عن الجولة المسجلة في المصفوفة (تطابق التاريخ والوردية)
-    let rep = globalDailyInspections.find(r => {
-        let rDateStr = String(r.date).split('T')[0]; // ضمان تطابق صيغة التاريخ
-        return rDateStr === targetD && r.shift === targetS;
-    });
+// دوال التقرير الشهري المجمع
+function formatTrendDifference(dV, iHb, un=""){ let n=parseFloat(dV); if(isNaN(n)||n===0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`; let iP=n>0, fV=Math.abs(n).toFixed(un.includes("KG")?3:0), iG=iHb?iP:!iP, clr=iG?"#28a745":"#dc3545", aI=iP?"fa-arrow-up":"fa-arrow-down"; return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`; }
+function getPreviousMonthStr(ms){ let [y,m]=ms.split('-'); let d=new Date(y,parseInt(m)-2); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function getMonthlyDetailedStats(ms){ let [y,m]=ms.split('-'), mN=parseInt(m).toString(), s={ms:ms,mov:0,acc:0,inc:0,fT:0,fO:0,fC:0,surv:[],fTot:0,incList:[],fDept:{}}; let sR=globalSpiData.find(r=>String(r.Year)===String(y)&&String(r.Month)===mN&&r.Indicator_Name==="OperationalSPI"); if(sR){try{s.mov=parseInt(JSON.parse(sR.Actual_Value).Movements)||0;}catch(e){}} globalIncidents.forEach(i=>{ let idt=i.Date?String(i.Date).split('T')[0]:''; if(idt.startsWith(ms)){ if(i.Risk_Severity==='Catastrophic') s.acc++; else s.inc++; s.incList.push(i); } }); globalDailyInspections.forEach(d=>{ let ddt=d.date?String(d.date).split('T')[0]:''; if(ddt.startsWith(ms)){ d.findings.forEach(f=>{ s.fT++; if(f.status==='مغلق') s.fC++; else s.fO++; s.fDept[f.responsible||f.Responsible]=(s.fDept[f.responsible||f.Responsible]||0)+1; }); } }); globalSurveys.forEach(sv=>{ let sdt=sv.Date?String(sv.Date).split('T')[0]:''; if(sdt.startsWith(ms)) s.surv.push(sv); }); globalFod.forEach(f=>{ let rd=f.Date||f.date||'', fdt=(typeof rd==='string')?rd.split('T')[0]:new Date(rd).toISOString().split('T')[0]; if(fdt.startsWith(ms)){ s.fTot+=(parseFloat(f.Plastic||f.plastic||0)+parseFloat(f.Metal||f.metal||0)); } }); return s; }
+function generateFullMonthlyReport(){ const cm=document.getElementById('mainReportMonth').value; if(!cm) return alert("اختر الشهر!"); const pm=getPreviousMonthStr(cm), cDO=new Date(cm+"-01"), pDO=new Date(pm+"-01"); document.getElementById('mr-title-date').innerText=cDO.toLocaleString('en-US',{month:'long',year:'numeric'}); document.getElementById('th-curr-month').innerText=cDO.toLocaleString('ar-EG',{month:'long',year:'numeric'}); document.getElementById('th-prev-month').innerText=pDO.toLocaleString('ar-EG',{month:'long',year:'numeric'}); let cS=getMonthlyDetailedStats(cm), pS=getMonthlyDetailedStats(pm); const tb=document.getElementById('mr-general-tbody'); tb.innerHTML=''; const kp=[{l:"1- عدد التحركات الجوية",p:pS.mov,c:cS.mov,h:true,u:""},{l:"2- عدد الحوادث",p:pS.acc,c:cS.acc,h:false,u:""},{l:"3- عدد الوقائع",p:pS.inc,c:cS.inc,h:false,u:""},{l:"4- حالات عدم المطابقة",p:pS.fT,c:cS.fT,h:false,u:""},{l:"5- حالات عدم المطابقة المعلقة",p:pS.fO,c:cS.fO,h:false,u:""},{l:"6- حالات عدم المطابقة التي تم تلافيها",p:pS.fC,c:cS.fC,h:true,u:""},{l:"7- استبيان الطيارين",p:pS.surv.length,c:cS.surv.length,h:true,u:""},{l:"8- كمية F.O.D",p:pS.fTot,c:cS.fTot,h:false,u:"KG",isF:true}]; kp.forEach(i=>{ let d=i.c-i.p, tH=formatTrendDifference(d,i.h,i.u), cD=i.isF?i.c.toFixed(3)+" "+i.u:i.c, pD=i.isF?i.p.toFixed(3)+" "+i.u:i.p; tb.innerHTML+=`<tr><td style="border:1px solid #000;padding:8px;text-align:right;font-weight:bold;">${i.l}</td><td style="border:1px solid #000;padding:8px;direction:ltr;">${pD}</td><td style="border:1px solid #000;padding:8px;direction:ltr;font-weight:bold;background:#fdfdfd;">${cD}</td><td style="border:1px solid #000;padding:8px;text-align:center;">${tH}</td></tr>`; }); if(monthlyChart1) monthlyChart1.destroy(); if(monthlyChart2) monthlyChart2.destroy(); Chart.defaults.font.family="'Cairo', sans-serif"; monthlyChart1=new Chart(document.getElementById('mrChart1').getContext('2d'),{type:'bar',data:{labels:Object.keys(cS.fDept),datasets:[{label:'المخاطر طبقاً للإدارة',data:Object.values(cS.fDept),backgroundColor:'#003366',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false}}); let iTC={}; cS.incList.forEach(i=>{ let ct=i.Characterization?i.Characterization.split('/')[0].trim():'Other'; iTC[ct]=(iTC[ct]||0)+1; }); monthlyChart2=new Chart(document.getElementById('mrChart2').getContext('2d'),{type:'bar',data:{labels:Object.keys(iTC),datasets:[{label:'الوقائع',data:Object.values(iTC),backgroundColor:'#dc3545',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false}}); document.getElementById('mr-incidents-count-text').innerText=`تم حصر عدد (${cS.inc+cS.acc}) وقائع/حوادث :`; const iL=document.getElementById('mr-incidents-list'); iL.innerHTML=""; let gI={}; cS.incList.forEach(i=>{ let ct=i.Characterization?i.Characterization.split('/')[0].trim():'Other'; if(!gI[ct]) gI[ct]=[]; gI[ct].push(i); }); let cC='A'; for(let ct in gI){ iL.innerHTML+=`<div class="avoid-page-break" style="background:#eef2f7;color:#003366;font-weight:bold;padding:6px 12px;margin-top:15px;border-left:4px solid #003366;display:flex;justify-content:space-between;"><span>${cC}) ${ct}.</span><span>Total: ${gI[ct].length}</span></div>`; let t=`<table class="avoid-page-break" style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:15px;font-size:12px;">`; gI[ct].forEach((i,x)=>{ let dt=i.Date?String(i.Date).split('T')[0]:'', ds=i.Description?i.Description.replace(/\n/g,'<br>'):'-', ac=i.Action_Taken?i.Action_Taken.replace(/\n/g,'<br>'):'-'; t+=`<tr><td style="border:1px solid #000;padding:8px;width:5%;text-align:center;font-weight:bold;">0${x+1}</td><td style="border:1px solid #000;padding:8px;width:65%;"><strong style="color:#003366;">Desc:</strong><div>${ds}</div><strong style="color:#28a745;">Action:</strong><div>${ac}</div></td><td style="border:1px solid #000;padding:8px;width:15%;text-align:center;">${dt}</td><td style="border:1px solid #000;padding:8px;width:15%;font-size:11px;"><b>Air:</b> ${i.CAR||'-'}<br><b>Agent:</b> ${i.Equipment_Owned||'-'}</td></tr>`; }); t+=`</table>`; iL.innerHTML+=t; cC=String.fromCharCode(cC.charCodeAt(0)+1); } document.getElementById('mr-survey-summary-text').innerText=`تم عمل عدد (${cS.surv.length}) استعلام طيارين خلال شهر ${cDO.toLocaleString('ar-EG',{month:'long'})}.`; let mS={"Excellent":{},"Good":{},"Poor":{},"N/A":{},"Blank":{}}; criteriaList.forEach(c=>{mS["Excellent"][c]=0;mS["Good"][c]=0;mS["Poor"][c]=0;mS["N/A"][c]=0;mS["Blank"][c]=0;}); let aC={}, eTC={"Excellent":0,"Good":0,"Poor":0,"N/A":0,"Blank":0}, cL=[], pEL=[]; cS.surv.forEach(s=>{ if(s.CAR) aC[s.CAR]=(aC[s.CAR]||0)+1; let sP=[]; criteriaList.forEach(c=>{ let v=s[c]||"Blank"; if(mS[v]) mS[v][c]++; if(eTC[v]!==undefined) eTC[v]++; if(v==="Poor") sP.push(c); }); if(s.Captain_Comments&&s.Captain_Comments.trim()!=="") cL.push(s); if(sP.length>0) pEL.push({flight:s,criteria:sP}); }); if(mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy(); mrSurveyAirChartInstance=new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'),{type:'bar',data:{labels:Object.keys(aC),datasets:[{label:'الاستبيانات',data:Object.values(aC),backgroundColor:'#003366',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false}}); if(mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy(); mrSurveyEvalChartInstance=new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'),{type:'doughnut',data:{labels:['Excellent','Good','Poor','N/A','Blank'],datasets:[{data:Object.values(eTC),backgroundColor:['#28a745','#ffc107','#dc3545','#6c757d','#003366']}]},options:{responsive:true,maintainAspectRatio:false}}); let mH=`<table class="avoid-page-break" style="width:100%;border-collapse:collapse;border:1px solid #777;font-size:11px;text-align:center;direction:ltr;"><thead><tr style="background:#003366;color:#fff;"><th style="padding:8px;border:1px solid #999;text-align:left;width:40%;">Evaluation Criteria</th><th style="padding:8px;border:1px solid #999;background:#28a745;">Excellent</th><th style="padding:8px;border:1px solid #999;background:#ffc107;color:#000;">Good</th><th style="padding:8px;border:1px solid #999;background:#dc3545;">Poor</th><th style="padding:8px;border:1px solid #999;background:#6c757d;">N/A</th><th style="padding:8px;border:1px solid #999;background:#1a2a6c;">Blank</th></tr></thead><tbody>`; criteriaList.forEach(c=>{ mH+=`<tr><td style="padding:6px 10px;border:1px solid #ccc;text-align:left;font-weight:bold;background:#f9f9f9;">${c}</td><td style="padding:6px;border:1px solid #ccc;font-weight:bold;color:${mS["Excellent"][c]>0?'#28a745':'#aaa'};">${mS["Excellent"][c]||0}</td><td style="padding:6px;border:1px solid #ccc;font-weight:bold;color:${mS["Good"][c]>0?'#ffc107':'#aaa'};">${mS["Good"][c]||0}</td><td style="padding:6px;border:1px solid #ccc;font-weight:bold;color:${mS["Poor"][c]>0?'#dc3545':'#aaa'};">${mS["Poor"][c]||0}</td><td style="padding:6px;border:1px solid #ccc;color:#555;">${mS["N/A"][c]||0}</td><td style="padding:6px;border:1px solid #ccc;color:#555;">${mS["Blank"][c]||0}</td></tr>`; }); mH+=`</tbody></table>`; if(pEL.length>0){ mH+=`<div class="avoid-page-break" style="margin-top:25px;direction:ltr;text-align:left;"><h4 style="color:#dc3545;margin-bottom:8px;border-bottom:2px solid #dc3545;padding-bottom:4px;">⚠️ Poor Evaluations:</h4><table style="width:100%;border-collapse:collapse;border:1px solid #dc3545;font-size:11px;"><thead style="background:#f8d7da;color:#721c24;"><tr><th style="border:1px solid #dc3545;padding:6px;">Airline</th><th style="border:1px solid #dc3545;padding:6px;">FLTNO</th><th style="border:1px solid #dc3545;padding:6px;">Date</th><th style="border:1px solid #dc3545;padding:6px;">REG</th><th style="border:1px solid #dc3545;padding:6px;width:45%;">Deficient Areas (Poor)</th></tr></thead><tbody>`; pEL.forEach(p=>{ mH+=`<tr><td style="border:1px solid #dc3545;padding:6px;font-weight:bold;">${p.flight.CAR||'-'}</td><td style="border:1px solid #dc3545;padding:6px;">${p.flight.Flight_NO||'-'}</td><td style="border:1px solid #dc3545;padding:6px;">${p.flight.Date?String(p.flight.Date).split('T')[0]:''}</td><td style="border:1px solid #dc3545;padding:6px;font-weight:bold;">${p.flight.REG||'-'}</td><td style="border:1px solid #dc3545;padding:6px;color:#dc3545;font-weight:bold;">${p.criteria.join(', ')}</td></tr>`; }); mH+=`</tbody></table></div>`; }else{ mH+=`<p class="avoid-page-break" style="margin-top:20px;color:#28a745;font-weight:bold;direction:ltr;text-align:left;">✅ No Poor evaluations.</p>`; } document.getElementById('mr-survey-matrix-container').innerHTML=mH; let cH=`<table class="avoid-page-break" style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:11px;direction:ltr;text-align:left;"><thead style="background:#e6e6e6;"><tr><th style="border:1px solid #000;padding:6px;">Airline</th><th style="border:1px solid #000;padding:6px;">FLTNO</th><th style="border:1px solid #000;padding:6px;">Type</th><th style="border:1px solid #000;padding:6px;">Date</th><th style="border:1px solid #000;padding:6px;">REG</th><th style="border:1px solid #000;padding:6px;width:45%;">Comments</th></tr></thead><tbody>`; if(cL.length===0) cH+=`<tr><td colspan="6" style="text-align:center;">No comments.</td></tr>`; else cL.forEach(s=>{ cH+=`<tr class="avoid-page-break"><td style="border:1px solid #000;padding:6px;font-weight:bold;">${s.CAR||'-'}</td><td style="border:1px solid #000;padding:6px;">${s.Flight_NO||'-'}</td><td style="border:1px solid #000;padding:6px;">${s.TYPE||'-'}</td><td style="border:1px solid #000;padding:6px;">${s.Date?String(s.Date).split('T')[0]:''}</td><td style="border:1px solid #000;padding:6px;font-weight:bold;">${s.REG||'-'}</td><td style="border:1px solid #000;padding:6px;">${s.Captain_Comments}</td></tr>`; }); cH+=`</tbody></table>`; document.getElementById('mr-survey-comments-container').innerHTML=cH; const fD=document.getElementById('mr-fod-details'); let fF=globalFod.filter(f=>{ let rd=f.Date||f.date||''; return (typeof rd==='string'?rd:new Date(rd).toISOString()).split('T')[0].startsWith(cm); }); if(fF.length===0&&cS.fTot===0){ fD.innerHTML="<p style='text-align:center;'>No F.O.D records.</p>"; }else{ let tp=0, tm=0, fR=''; fodLocations.forEach(loc=>{ let rc=fF.find(f=>(f.Location||f.location)===loc.loc), p=rc?parseFloat(rc.Plastic||rc.plastic||0):0, m=rc?parseFloat(rc.Metal||rc.metal||0):0; tp+=p; tm+=m; let dD=rc&&(rc.Date||rc.date)?String(rc.Date||rc.date).split('T')[0].split('-').reverse().join('/'):'---'; fR+=`<tr class="avoid-page-break"><td style="border:1px solid #777;padding:8px;">${dD}</td><td style="border:1px solid #777;padding:8px;font-weight:bold;">${loc.loc}</td><td style="border:1px solid #777;padding:8px;">${loc.area}</td><td style="border:1px solid #777;padding:8px;">${p>0?p.toFixed(3)+' kg':'---'}</td><td style="border:1px solid #777;padding:8px;">${m>0?m.toFixed(3)+' kg':'---'}</td><td style="border:1px solid #777;padding:8px;">---</td></tr>`; }); fD.innerHTML=`<table class="avoid-page-break" style="width:100%;border-collapse:collapse;text-align:center;border:1px solid #777;font-size:11px;"><thead><tr style="background:#e6e6e6;color:#000;"><th rowspan="2" style="border:1px solid #777;padding:8px;">Day</th><th rowspan="2" style="border:1px solid #777;padding:8px;">Location</th><th rowspan="2" style="border:1px solid #777;padding:8px;width:14%;">Area in M²</th><th colspan="2" style="border:1px solid #777;padding:6px;">FOD quantity</th><th rowspan="2" style="border:1px solid #777;padding:8px;">Total</th></tr><tr style="background:#e6e6e6;color:#000;"><th style="border:1px solid #777;padding:6px;">Plastic</th><th style="border:1px solid #777;padding:6px;">Metal</th></tr></thead><tbody>${fR}<tr style="background:#fafafa;font-weight:bold;"><td colspan="3" style="border:1px solid #777;padding:8px;">Total</td><td style="border:1px solid #777;padding:8px;">${tp.toFixed(3)} kg</td><td style="border:1px solid #777;padding:8px;">${tm.toFixed(3)} kg</td><td style="border:1px solid #777;padding:8px;color:#003366;">${(tp+tm).toFixed(3)} kg</td></tr></tbody></table>`; } document.getElementById('printable-main-report').style.display='block'; window.scrollTo({top:document.getElementById('printable-main-report').offsetTop-30,behavior:'smooth'}); }
+function exportMainReportPDF(){ const el=document.getElementById('printable-main-report'); if(el.style.display==='none') return alert("قم بتجهيز التقرير أولاً!"); window.scrollTo(0,0); html2pdf().set({margin:[0.3,0.3,0.3,0.3],filename:'Monthly_Report.pdf',image:{type:'jpeg',quality:1},html2canvas:{scale:2},jsPDF:{unit:'in',format:'a4',orientation:'portrait'},pagebreak:{mode:'css',avoid:['tr','table','h3','h4','.avoid-page-break']}}).from(el).save(); }
 
-    // صمام أمان: لو مفيش جولة محفوظة لليوم ده، النظام هيرفض يطلع التقرير الوهمي
-    if (!rep) {
-        alert("لا توجد جولة تفتيش محفوظة بهذا التاريخ وهذه الوردية! تأكد من حفظ الجولة في قاعدة البيانات أولاً.");
-        document.getElementById('printable-daily-report').style.display = 'none';
-        return;
-    }
-
-    document.getElementById('iso-date-val').innerText = targetD.split('-').reverse().join(' / ');
-    
-    if (targetS === 'صباحي') { 
-        document.getElementById('iso-shift-am').innerHTML = '✔'; 
-        document.getElementById('iso-shift-pm').innerHTML = ''; 
-    } else { 
-        document.getElementById('iso-shift-am').innerHTML = ''; 
-        document.getElementById('iso-shift-pm').innerHTML = '✔'; 
-    }
-
-    let findingList = rep.findings || [];
-
-    const matrix = document.getElementById('iso-matrix-container'); 
-    matrix.innerHTML = "";
-    
-    let maxItemsCount = 0; 
-    Object.keys(dailyChecklistDataISO).forEach(colKey => { 
-        let count = 0, c = dailyChecklistDataISO[colKey]; 
-        count += (c.items ? c.items.length : 0) + (c.items2 ? c.items2.length : 0) + (c.items3 ? c.items3.length : 0); 
-        count += 1; if(c.title2) count += 1; if(c.title3) count += 1; 
-        if (count > maxItemsCount) maxItemsCount = count; 
-    });
-
-    const flatLists = {}; 
-    Object.keys(dailyChecklistDataISO).forEach(colKey => { 
-        let c = dailyChecklistDataISO[colKey], arr = []; 
-        const injectSection = (title, items) => { 
-            arr.push({ isHeader: true, text: title }); 
-            items.forEach(it => { 
-                let hasFinding = findingList.some(f => {
-                    return (f.category || "").trim() === title.trim() && (f.item || "").trim() === it.trim();
-                });
-                arr.push({ isHeader: false, text: it, isSafe: !hasFinding }); 
-            }); 
-        }; 
-        injectSection(c.title, c.items); 
-        if (c.title2) injectSection(c.title2, c.items2); 
-        if (c.title3) injectSection(c.title3, c.items3); 
-        flatLists[colKey] = arr; 
-    });
-
-    let matrixHtml = ""; 
-    for (let rowIdx = 0; rowIdx < maxItemsCount; rowIdx++) { 
-        Object.keys(dailyChecklistDataISO).forEach(colKey => { 
-            let cellData = flatLists[colKey][rowIdx]; 
-            if (cellData) { 
-                if (cellData.isHeader) { 
-                    matrixHtml += `<div style="border: 1px solid #000; background:#e6e6e6; padding: 4px; font-weight: bold; text-align: center;">${cellData.text}</div>`; 
-                } else { 
-                    let boxSign = cellData.isSafe ? "✔" : "✘"; 
-                    let boxColor = cellData.isSafe ? "#000" : "#dc3545";
-                    let textColor = cellData.isSafe ? "#000" : "#dc3545";
-                    let textDecor = cellData.isSafe ? "none" : "line-through";
-                    
-                    matrixHtml += `<div style="border: 1px solid #000; padding: 3px 5px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
-                        <span style="color: ${textColor}; text-decoration: ${textDecor}; font-weight: ${cellData.isSafe ? 'normal' : 'bold'};">${cellData.text}</span>
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; text-align:center; line-height:10px; font-size:10px; font-weight:bold; color: ${boxColor};">${boxSign}</span>
-                    </div>`; 
-                } 
-            } else { 
-                matrixHtml += `<div style="border: 1px solid #000; background: #fff;"></div>`; 
-            } 
-        }); 
-    }
-    
-    matrix.innerHTML = matrixHtml; 
-    
-    const isoFindingsThead = document.getElementById('iso-findings-tbody'); 
-    isoFindingsThead.innerHTML = "";
-    
-    if (findingList.length === 0) { 
-        isoFindingsThead.innerHTML = `<tr><td colspan="5" style="border: 1px solid #000; padding: 12px; text-align: center; color: green; font-weight: bold; font-size: 1.1rem;">المنطقة مطابقة وسليمة (لا توجد ملاحظات)</td></tr>`; 
-    } else { 
-        findingList.forEach((f, index) => { 
-            isoFindingsThead.innerHTML += `<tr>
-                <td style="border: 1px solid #000; padding: 6px;">${index + 1}</td>
-                <td style="border: 1px solid #000; padding: 6px;">${f.location || '-'}</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: right; color:#dc3545; font-weight: bold;">
-                    ${f.category} - ${f.item} <br> 
-                    <span style="color:#333; font-weight:normal;">(${f.note || 'ملاحظة عدم مطابقة'})</span>
-                </td>
-                <td style="border: 1px solid #000; padding: 6px;">${f.responsible || '-'}</td>
-                <td style="border: 1px solid #000; padding: 6px; color:#dc3545; font-weight: bold;">مفتوح</td>
-            </tr>`; 
-        }); 
-    }
-    
-    document.getElementById('printable-daily-report').style.display = 'block';
-}
-function exportIsoDailyPDF() { let el = document.getElementById('printable-daily-report'); if (el.style.display === 'none') return alert("قم بعرض النموذج أولاً"); let reportDate = document.getElementById('isoReportDate').value; html2pdf().set({ margin: 0.3, filename: `AS_F_01_01_${reportDate}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '#iso-matrix-container'] } }).from(el).save(); }
-
-// ==========================================
-// 5. سجل الحوادث
-// ==========================================
-function switchIncidentTab(tab) { document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-inc-' + tab).classList.add('active'); document.getElementById('tab-inc-' + tab).classList.add('active'); }
-function updateIncidentNavCounter() { const el = document.getElementById('nav-incident-counter'); if(el) el.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`; }
-function clearIncidentForm() { currentIncidentIndex = -1; currentIncidentEditId = null; document.getElementById('incidentForm').reset(); document.getElementById('incDate').value = new Date().toISOString().split('T')[0]; document.getElementById('submitIncBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة'; updateIncidentNavCounter(); }
-function navIncidents(direction) {
-    if (!globalIncidents || globalIncidents.length === 0) return alert("لا توجد وقائع مسجلة.");
-    if (direction === 'first') currentIncidentIndex = 0; else if (direction === 'last') currentIncidentIndex = globalIncidents.length - 1; else if (direction === 'next' && currentIncidentIndex < globalIncidents.length - 1) currentIncidentIndex++; else if (direction === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
-    if (currentIncidentIndex >= 0 && currentIncidentIndex < globalIncidents.length) {
-        let inc = globalIncidents[currentIncidentIndex]; currentIncidentEditId = inc.ID || inc.id;
-        document.getElementById('incDate').value = inc.Date ? String(inc.Date).split('T')[0] : ''; document.getElementById('incTime').value = inc.Time || ''; document.getElementById('incLocation').value = inc.Location || ''; document.getElementById('incCar').value = inc.CAR || ''; document.getElementById('incFlightNo').value = inc.Flight_No || ''; document.getElementById('incReg').value = inc.REG || ''; document.getElementById('incChar').value = inc.Characterization || 'Equipment Accident'; document.getElementById('incRiskSev').value = inc.Risk_Severity || 'Minor'; document.getElementById('incDesc').value = inc.Description || ''; document.getElementById('submitIncBtn').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تعديل الواقعة'; updateIncidentNavCounter();
-    }
-}
-function submitIncident(e) {
-    e.preventDefault(); const btn = document.getElementById('submitIncBtn'), msg = document.getElementById('incMsg'); let isEdit = currentIncidentEditId !== null, newId = isEdit ? currentIncidentEditId : "INC-" + Date.now();
-    let incObj = { id: newId, date: document.getElementById('incDate').value, time: document.getElementById('incTime').value, location: document.getElementById('incLocation').value, personnel: document.getElementById('incPersonnel').value, equipmentNo: document.getElementById('incEquipmentNo').value, driver: document.getElementById('incDriver').value, eqOwner: document.getElementById('incEqOwner').value, status: document.getElementById('incStatus').value, causes: document.getElementById('incCauses').value, charaterization: document.getElementById('incChar').value, riskSeverity: document.getElementById('incRiskSev').value, riskProb: document.getElementById('incRiskProb').value, car: document.getElementById('incCar').value, flightNo: document.getElementById('incFlightNo').value, reg: document.getElementById('incReg').value, orgVia: document.getElementById('incOrgVia').value, viaDst: document.getElementById('incViaDst').value, preparedBy: document.getElementById('incPreparedBy').value, hazardDesc: document.getElementById('incHazardDesc').value, description: document.getElementById('incDesc').value, actionTaken: document.getElementById('incAction').value, recommendation: document.getElementById('incRecommendation').value, position: document.getElementById('incPosition').value, injuryType: document.getElementById('incInjuryType').value, causesDetails: "" };
-    safePost({ action: isEdit ? "updateIncident" : "submitIncident", incidentData: incObj }, btn, msg, "تم الحفظ بنجاح!", () => {
-        let mapped = { ID: incObj.id, Date: incObj.date, Time: incObj.time, Location: incObj.location, Characterization: incObj.charaterization, Risk_Severity: incObj.riskSeverity, Prepared_By: incObj.preparedBy };
-        if (isEdit) { let idx = globalIncidents.findIndex(i => (i.ID || i.id) === newId); if (idx !== -1) globalIncidents[idx] = mapped; } else { globalIncidents.unshift(mapped); }
-        renderSavedIncidents(); setTimeout(() => clearIncidentForm(), 1500);
-    });
-}
-function renderSavedIncidents() { const tbody = document.getElementById('saved-inc-tbody'); if (!tbody) return; tbody.innerHTML = ""; globalIncidents.forEach((inc, idx) => { tbody.innerHTML += `<tr><td dir="ltr">${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td><td>${inc.Location || '-'}</td><td>${inc.Characterization || '-'}</td><td>${inc.Risk_Severity || '-'}</td><td>${inc.Prepared_By || '-'}</td><td><button onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
-function deleteIncidentRecord(idx) { if(!confirm("تأكيد الحذف؟")) return; let item = globalIncidents[idx]; globalIncidents.splice(idx, 1); renderSavedIncidents(); safePost({ action: "deleteIncident", id: item.ID || item.id }); }
-
-// ==========================================
-// 6. الـ SPI
-// ==========================================
-function switchSpiTab(tab) { document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-spi-' + tab).classList.add('active'); document.getElementById('tab-spi-' + tab).classList.add('active'); }
-function buildSpiEntryForm() { const container = document.getElementById('spi-dynamic-inputs'); if(!container) return; container.innerHTML = ''; spiCategories.forEach(cat => { let catHtml = `<h4 style="color:#28a745; margin-top:20px; border-bottom:2px solid #eee;">${cat.name}</h4><div class="form-grid">`; cat.items.forEach((spi) => { let safeId = "spi_" + spi.replace(/[^a-zA-Z0-9]/g, ''); catHtml += `<div class="form-group"><label style="font-size:0.8rem; direction:ltr;">${spi}</label><input type="number" id="${safeId}" data-spi="${spi}" value="0" min="0" required></div>`; }); catHtml += `</div>`; container.innerHTML += catHtml; }); }
-function submitSPI(e) {
-    e.preventDefault(); const btn = document.getElementById('submitSpiBtn'), msg = document.getElementById('spiMsg'); let movementsVal = parseInt(document.getElementById('spiMovements').value) || 0, monthData = { "Movements": movementsVal };
-    document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(input => { monthData[input.getAttribute('data-spi')] = parseInt(input.value) || 0; });
-    let spiDataObj = { id: "SPI-" + Date.now(), year: document.getElementById('spiYear').value, month: document.getElementById('spiMonth').value, group: "ECAA_SPI_Matrix", name: "OperationalSPI", target: "0", actual: JSON.stringify(monthData), status: "Submitted", actionPlan: movementsVal.toString(), preparedBy: "Safety Officer" };
-    safePost({ action: "submitSPI", spiData: spiDataObj }, btn, msg, "تم الحفظ!", () => { globalSpiData.push({ Year: spiDataObj.year, Month: spiDataObj.month, Indicator_Name: spiDataObj.name, Actual_Value: spiDataObj.actual }); document.getElementById('spiForm').reset(); });
-}
-function generateSpiReport() {
-    const container = document.getElementById('spi-matrix-container'); let selectedYear = document.getElementById('spiReportYear').value, monthlySpiParsed = {};
-    globalSpiData.forEach(row => { if (row.Indicator_Name === "OperationalSPI" && String(row.Year) === selectedYear) { try { monthlySpiParsed[row.Month] = JSON.parse(row.Actual_Value); } catch (e) {} } });
-    let tableHtml = `<table class="report-table spi-matrix-table" style="min-width: 800px; font-size:12px;"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366; color:#fff;">Total Events</th></tr></thead><tbody><tr><td>Number of aircraft movements</td>`;
-    let totalMov = 0, movDataForChart = []; for (let i = 1; i <= 12; i++) { let m = monthlySpiParsed[i] ? monthlySpiParsed[i].Movements || 0 : 0; totalMov += m; movDataForChart.push(m); tableHtml += `<td style="font-weight:bold; background:#e8f5e9;">${m || '-'}</td>`; } tableHtml += `<td style="font-weight:bold; background:#003366; color:#fff;">${totalMov}</td></tr>`;
-    spiCategories.forEach(cat => { tableHtml += `<tr><td colspan="14" style="background:#f4fcf6; color:#28a745; font-weight:bold; text-align:right;">${cat.name}</td></tr>`; cat.items.forEach(spi => { let totalSpi = 0; let rowHtml = `<tr><td>${spi}</td>`; for (let i = 1; i <= 12; i++) { let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0; totalSpi += val; rowHtml += `<td>${val || '-'}</td>`; } rowHtml += `<td style="font-weight:bold; color:#003366;">${totalSpi}</td></tr>`; tableHtml += rowHtml; }); });
-    tableHtml += `</tbody></table>`; container.innerHTML = tableHtml;
-    if(window.spiChartInstance) window.spiChartInstance.destroy(); window.spiChartInstance = new Chart(document.getElementById('spiTrendChart').getContext('2d'), { type: 'line', data: { labels: ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"], datasets: [{ label: 'Aircraft Movements', data: movDataForChart, borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.2)', tension: 0.3, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
-}
-
-// ==========================================
-// 7. الـ FOD
-// ==========================================
-function switchFodTab(tab) { document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-fod-' + tab).classList.add('active'); document.getElementById('tab-fod-' + tab).classList.add('active'); }
-function generateFodInputRows() { const month = document.getElementById('fodInputMonth').value; if(!month) return alert("اختر الشهر"); document.getElementById('fodForm').style.display = 'block'; const tbody = document.getElementById('fod-input-tbody'); tbody.innerHTML = ''; fodLocations.forEach((item, index) => { tbody.innerHTML += `<tr><td><input type="date" id="fod_date_${index}" required style="width:100%;"></td><td><b>${item.loc}</b></td><td>${item.area}</td><td><input type="number" step="0.001" id="fod_p_${index}" required style="width:100%;"></td><td><input type="number" step="0.001" id="fod_m_${index}" required style="width:100%;"></td></tr>`; }); }
-async function submitFOD(e) {
-    if (e) e.preventDefault(); 
-    const btn = document.getElementById('submitFodBtn');
-    const msg = document.getElementById('fodMsg'); 
-    
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-    msg.style.color = "#003366";
-    msg.innerText = "جاري إرسال البيانات لجوجل...";
-
-    let successCount = 0;
-    let localFodArray = [];
-
-    // إرسال البيانات صف بصف لضمان توافقها مع Google Apps Script
-    for (let index = 0; index < fodLocations.length; index++) {
-        let item = fodLocations[index];
-        let dateEl = document.getElementById(`fod_date_${index}`);
-        let pEl = document.getElementById(`fod_p_${index}`);
-        let mEl = document.getElementById(`fod_m_${index}`);
-
-        let d = dateEl ? dateEl.value : "";
-        let p = pEl ? parseFloat(pEl.value) || 0 : 0;
-        let m = mEl ? parseFloat(mEl.value) || 0 : 0;
-        let newId = "FOD-" + Date.now() + "-" + index;
-
-        let singleFodObj = {
-            id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m
-        };
-
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "submitFOD", fodData: singleFodObj })
-            });
-            localFodArray.push({ ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m });
-            successCount++;
-        } catch (err) {
-            console.error("خطأ في حفظ الـ FOD:", err);
-        }
-    }
-
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
-    
-    if (successCount > 0) {
-        globalFod = [...globalFod, ...localFodArray];
-        msg.style.color = "green";
-        msg.innerText = "✅ تم حفظ بيانات الـ FOD بنجاح!";
-        setTimeout(() => { document.getElementById('fodForm').style.display = 'none'; msg.innerText = ''; }, 1500);
-    } else {
-        msg.style.color = "red";
-        msg.innerText = "❌ حدث خطأ، يرجى التحقق من الاتصال بالإنترنت.";
-    }
-}
-function generateFodPrintReport() {
-    const m = document.getElementById('fodReportMonth').value; if (!m) return alert("اختر الشهر");
-    let filtered = globalFod.filter(f => { let rawDate = f.Date || f.date || ''; return (typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString()).split('T')[0].startsWith(m); });
-    const tbody = document.getElementById('fod-print-tbody'); tbody.innerHTML = ''; let totalP = 0, totalM = 0;
-    fodLocations.forEach(locItem => { let rec = filtered.find(f => (f.Location || f.location) === locItem.loc), p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, met = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0; totalP += p; totalM += met; tbody.innerHTML += `<tr><td style="border:1px solid #777; padding:12px;">${rec ? String(rec.Date||rec.date).split('T')[0] : '---'}</td><td style="border:1px solid #777; padding:12px;">${locItem.loc}</td><td style="border:1px solid #777; padding:12px;">${locItem.area}</td><td style="border:1px solid #777; padding:12px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border:1px solid #777; padding:12px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td><td style="border:1px solid #777; padding:12px;">---</td></tr>`; });
-    tbody.innerHTML += `<tr style="background:#fafafa; font-weight:bold;"><td colspan="3" style="border:1px solid #777; padding:12px;">Total</td><td style="border:1px solid #777; padding:12px;">${totalP.toFixed(3)} kg</td><td style="border:1px solid #777; padding:12px;">${totalM.toFixed(3)} kg</td><td style="border:1px solid #777; padding:12px;">${(totalP+totalM).toFixed(3)} kg</td></tr>`; document.getElementById('printable-fod-report').style.display = 'block';
-}
-function exportFodPDF() { html2pdf().set({ margin: 0.2, filename: 'FOD_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' }, pagebreak: { avoid: ['tr', 'table'] } }).from(document.getElementById('printable-fod-report')).save(); }
-
-// ==========================================
-// 8. التقرير الشهري المجمع
-// ==========================================
-function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
-    let num = parseFloat(diffVal); if (isNaN(num) || num === 0) return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right"></i></span>`;
-    let isPositiveDiff = num > 0, formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0), isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff, color = isGoodOutcome ? "#28a745" : "#dc3545", arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
-    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 4px;">${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i></span>`;
-}
-function getPreviousMonthStr(monthStr) { let [year, month] = monthStr.split('-'); let d = new Date(year, parseInt(month) - 2); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
-function getMonthlyDetailedStats(monthStr) {
-    let [y, m] = monthStr.split('-'), mNum = parseInt(m).toString(), stats = { monthStr: monthStr, movements: 0, accidents: 0, incidents: 0, findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [], fodTotal: 0, incidentsList: [], findingsByDept: {} };
-    let spiRow = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mNum && r.Indicator_Name === "OperationalSPI"); if (spiRow) { try { let parsed = JSON.parse(spiRow.Actual_Value); stats.movements = parseInt(parsed.Movements) || 0; } catch(e){} }
-    globalIncidents.forEach(inc => { let iDate = inc.Date ? String(inc.Date).split('T')[0] : ''; if (iDate.startsWith(monthStr)) { if (inc.Risk_Severity === 'Catastrophic') stats.accidents++; else stats.incidents++; stats.incidentsList.push(inc); } });
-    globalDailyInspections.forEach(d => { let dDate = d.date ? String(d.date).split('T')[0] : ''; if (dDate.startsWith(monthStr)) { d.findings.forEach(f => { stats.findingsTotal++; if (f.status === 'مغلق') stats.findingsClosed++; else stats.findingsOpen++; stats.findingsByDept[f.responsible || f.Responsible] = (stats.findingsByDept[f.responsible || f.Responsible] || 0) + 1; }); } });
-    globalSurveys.forEach(s => { let sDate = s.Date ? String(s.Date).split('T')[0] : ''; if (sDate.startsWith(monthStr)) stats.surveys.push(s); });
-    globalFod.forEach(f => { let rawDate = f.Date || f.date || '', fDate = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0]; if (fDate.startsWith(monthStr)) { let p = parseFloat(f.Plastic || f.plastic || 0), met = parseFloat(f.Metal || f.metal || 0); stats.fodTotal += (p + met); } });
-    return stats;
-}
-// ==========================================
-// 8. التقرير الشهري المجمع (شامل تصنيف الـ Poor)
-// ==========================================
-function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
-    let num = parseFloat(diffVal); if (isNaN(num) || num === 0) return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right"></i></span>`;
-    let isPositiveDiff = num > 0, formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0), isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff, color = isGoodOutcome ? "#28a745" : "#dc3545", arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
-    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 4px;">${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i></span>`;
-}
-function getPreviousMonthStr(monthStr) { let [year, month] = monthStr.split('-'); let d = new Date(year, parseInt(month) - 2); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
-function getMonthlyDetailedStats(monthStr) {
-    let [y, m] = monthStr.split('-'), mNum = parseInt(m).toString(), stats = { monthStr: monthStr, movements: 0, accidents: 0, incidents: 0, findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [], fodTotal: 0, incidentsList: [], findingsByDept: {} };
-    let spiRow = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mNum && r.Indicator_Name === "OperationalSPI"); if (spiRow) { try { let parsed = JSON.parse(spiRow.Actual_Value); stats.movements = parseInt(parsed.Movements) || 0; } catch(e){} }
-    globalIncidents.forEach(inc => { let iDate = inc.Date ? String(inc.Date).split('T')[0] : ''; if (iDate.startsWith(monthStr)) { if (inc.Risk_Severity === 'Catastrophic') stats.accidents++; else stats.incidents++; stats.incidentsList.push(inc); } });
-    globalDailyInspections.forEach(d => { let dDate = d.date ? String(d.date).split('T')[0] : ''; if (dDate.startsWith(monthStr)) { d.findings.forEach(f => { stats.findingsTotal++; if (f.status === 'مغلق') stats.findingsClosed++; else stats.findingsOpen++; stats.findingsByDept[f.responsible || f.Responsible] = (stats.findingsByDept[f.responsible || f.Responsible] || 0) + 1; }); } });
-    globalSurveys.forEach(s => { let sDate = s.Date ? String(s.Date).split('T')[0] : ''; if (sDate.startsWith(monthStr)) stats.surveys.push(s); });
-    globalFod.forEach(f => { let rawDate = f.Date || f.date || '', fDate = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0]; if (fDate.startsWith(monthStr)) { let p = parseFloat(f.Plastic || f.plastic || 0), met = parseFloat(f.Metal || f.metal || 0); stats.fodTotal += (p + met); } });
-    return stats;
-}
-
-function generateFullMonthlyReport() {
-    const currMonthStr = document.getElementById('mainReportMonth').value; 
-    if (!currMonthStr) return alert("اختر الشهر أولاً لإصدار التقرير الشامل!");
-
-    const prevMonthStr = getPreviousMonthStr(currMonthStr);
-    const currDateObj = new Date(currMonthStr + "-01");
-    const prevDateObj = new Date(prevMonthStr + "-01");
-
-    document.getElementById('mr-title-date').innerText = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    document.getElementById('th-curr-month').innerText = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
-    document.getElementById('th-prev-month').innerText = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
-
-    let currStats = getMonthlyDetailedStats(currMonthStr);
-    let prevStats = getMonthlyDetailedStats(prevMonthStr);
-
-    const tbody = document.getElementById('mr-general-tbody'); 
-    tbody.innerHTML = '';
-    const kpiComparisonList = [
-        { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" },
-        { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" },
-        { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" },
-        { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" },
-        { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" },
-        { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" },
-        { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" },
-        { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true }
-    ];
-
-    kpiComparisonList.forEach(item => {
-        let diff = item.curr - item.prev, trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit), currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr, prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
-        tbody.innerHTML += `<tr><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td></tr>`;
-    });
-
-    if (monthlyChart1) monthlyChart1.destroy(); if (monthlyChart2) monthlyChart2.destroy(); Chart.defaults.font.family = "'Cairo', sans-serif";
-    monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), { type: 'bar', data: { labels: Object.keys(currStats.findingsByDept), datasets: [{ label: 'المخاطر طبقاً للإدارة', data: Object.values(currStats.findingsByDept), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-    
-    let incTypesCount = {}; currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other'; incTypesCount[cat] = (incTypesCount[cat] || 0) + 1; });
-    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), { type: 'bar', data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-    document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
-    const incList = document.getElementById('mr-incidents-list'); incList.innerHTML = "";
-    let groupedInc = {};
-    currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident'; if (!groupedInc[cat]) groupedInc[cat] = []; groupedInc[cat].push(inc); });
-    let catChar = 'A';
-    for (let cat in groupedInc) {
-        incList.innerHTML += `<div class="avoid-page-break" style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
-        let tbl = `<table class="avoid-page-break" style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
-        groupedInc[cat].forEach((inc, idx) => {
-            let d = inc.Date ? String(inc.Date).split('T')[0] : '', desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-', action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
-            tbl += `<tr><td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td><td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;"><strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div><strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div></td><td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td><td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;"><b>Airline:</b> ${inc.CAR || '-'}<br><b>Agent:</b> ${inc.Equipment_Owned || '-'}</td></tr>`;
-        });
-        tbl += `</table>`; incList.innerHTML += tbl; catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
-    }
-
-    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currDateObj.toLocaleString('ar-EG', { month: 'long' })}.`;
-    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
-    criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
-    let airlinesCount = {}, evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [], poorEvaluationsList = [];
-
-    currStats.surveys.forEach(s => {
-        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
-        let sPoorCriteria = [];
-        criteriaList.forEach(crit => { 
-            let val = s[crit] || "Blank"; 
-            if (matrixScores[val]) matrixScores[val][crit]++; 
-            if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++; 
-            if (val === "Poor") sPoorCriteria.push(crit);
-        });
-        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
-        if (sPoorCriteria.length > 0) poorEvaluationsList.push({ flight: s, criteria: sPoorCriteria });
-    });
-
-    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
-    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
-    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-    let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 11px; text-align: center; direction: ltr;"><thead><tr style="background:#003366; color:#fff;"><th style="padding: 8px; border: 1px solid #999; text-align:left; width: 40%;">Evaluation Criteria</th><th style="padding: 8px; border: 1px solid #999; background:#28a745;">Excellent</th><th style="padding: 8px; border: 1px solid #999; background:#ffc107; color:#000;">Good</th><th style="padding: 8px; border: 1px solid #999; background:#dc3545;">Poor</th><th style="padding: 8px; border: 1px solid #999; background:#6c757d;">N/A</th><th style="padding: 8px; border: 1px solid #999; background:#1a2a6c;">Blank</th></tr></thead><tbody>`;
-    criteriaList.forEach(crit => {
-        matrixHtml += `<tr><td style="padding: 6px 10px; border: 1px solid #ccc; text-align: left; font-weight: bold; background:#f9f9f9;">${crit}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Excellent"][crit] > 0 ? '#28a745' : '#aaa'};">${matrixScores["Excellent"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Good"][crit] > 0 ? '#ffc107' : '#aaa'};">${matrixScores["Good"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Poor"][crit] > 0 ? '#dc3545' : '#aaa'};">${matrixScores["Poor"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["N/A"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["Blank"][crit] || 0}</td></tr>`;
-    });
-    matrixHtml += `</tbody></table>`;
-    
-    // إضافة جدول التقييمات הضعيفة (Poor) لوحدها
-    if (poorEvaluationsList.length > 0) {
-        matrixHtml += `<div class="avoid-page-break" style="margin-top: 25px; direction: ltr; text-align: left;">
-            <h4 style="color:#dc3545; margin-bottom:8px; border-bottom: 2px solid #dc3545; padding-bottom: 4px;">⚠️ Poor Evaluations Recorded:</h4>
-            <table style="width:100%; border-collapse: collapse; border: 1px solid #dc3545; font-size: 11px;">
-                <thead style="background: #f8d7da; color: #721c24;">
-                    <tr>
-                        <th style="border: 1px solid #dc3545; padding: 6px;">Airline</th>
-                        <th style="border: 1px solid #dc3545; padding: 6px;">FLTNO</th>
-                        <th style="border: 1px solid #dc3545; padding: 6px;">Date</th>
-                        <th style="border: 1px solid #dc3545; padding: 6px;">REG</th>
-                        <th style="border: 1px solid #dc3545; padding: 6px; width: 45%;">Deficient Areas (Poor)</th>
-                    </tr>
-                </thead><tbody>`;
-        poorEvaluationsList.forEach(p => {
-            let dStr = p.flight.Date ? String(p.flight.Date).split('T')[0] : '';
-            matrixHtml += `<tr>
-                <td style="border: 1px solid #dc3545; padding: 6px; font-weight: bold;">${p.flight.CAR || '-'}</td>
-                <td style="border: 1px solid #dc3545; padding: 6px;">${p.flight.Flight_NO || '-'}</td>
-                <td style="border: 1px solid #dc3545; padding: 6px;">${dStr}</td>
-                <td style="border: 1px solid #dc3545; padding: 6px; font-weight: bold;">${p.flight.REG || '-'}</td>
-                <td style="border: 1px solid #dc3545; padding: 6px; color: #dc3545; font-weight: bold;">${p.criteria.join(', ')}</td>
-            </tr>`;
-        });
-        matrixHtml += `</tbody></table></div>`;
-    } else {
-        matrixHtml += `<p class="avoid-page-break" style="margin-top: 20px; color:#28a745; font-weight:bold; direction:ltr; text-align:left;">✅ No Poor evaluations recorded for this month.</p>`;
-    }
-
-    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
-
-    let commentsHtml = `<table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;"><thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">Date</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th></tr></thead><tbody>`;
-    if (commentsList.length === 0) commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded.</td></tr>`;
-    else commentsList.forEach(s => { commentsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''}</td><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td></tr>`; });
-    commentsHtml += `</tbody></table>`;
-    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
-
-    const fodDiv = document.getElementById('mr-fod-details');
-    let filteredFod = globalFod.filter(f => { let rawDate = f.Date || f.date || ''; return (typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString()).split('T')[0].startsWith(currMonthStr); });
-
-    if (filteredFod.length === 0 && currStats.fodTotal === 0) {
-        fodDiv.innerHTML = "<p style='color: #777; text-align: center; font-style: italic;'>No F.O.D records for this month.</p>";
-    } else {
-        let totalP = 0, totalM = 0, fodRowsHtml = '';
-        fodLocations.forEach(locItem => {
-            let rec = filteredFod.find(f => (f.Location || f.location) === locItem.loc), p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
-            totalP += p; totalM += m;
-            let dDisplay = rec && (rec.Date || rec.date) ? String(rec.Date||rec.date).split('T')[0].split('-').reverse().join('/') : '---';
-            fodRowsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td><td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td><td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td><td style="border: 1px solid #777; padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">---</td></tr>`;
-        });
-        let grossTotal = totalP + totalM;
-        fodDiv.innerHTML = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;"><thead><tr style="background: #e6e6e6; color: #000;"><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Location</th><th rowspan="2" style="border: 1px solid #777; padding: 8px; width: 14%;">Area in M²</th><th colspan="2" style="border: 1px solid #777; padding: 6px;">FOD quantity</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Total</th></tr><tr style="background: #e6e6e6; color: #000;"><th style="border: 1px solid #777; padding: 6px;">Plastic</th><th style="border: 1px solid #777; padding: 6px;">Metal</th></tr></thead><tbody>${fodRowsHtml}<tr style="background: #fafafa; font-weight: bold; border-top: 2px solid #000;"><td colspan="3" style="border: 1px solid #777; padding: 8px;">Total</td><td style="border: 1px solid #777; padding: 8px;">${totalP.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px;">${totalM.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px; color: #003366;">${grossTotal.toFixed(3)} kg</td></tr></tbody></table>`;
-    }
-
-    document.getElementById('printable-main-report').style.display = 'block';
-    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
-}
-
-function exportMainReportPDF() { 
-    const el = document.getElementById('printable-main-report'); 
-    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); 
-    window.scrollTo(0, 0); 
-    html2pdf().set({ 
-        margin: [0.3, 0.3, 0.3, 0.3], 
-        filename: 'Air_Side_Monthly_Report.pdf', 
-        image: { type: 'jpeg', quality: 1 }, 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', 'h4', '.avoid-page-break'] }
-    }).from(el).save(); 
-}
-
-    // 4. استبيان الكابتن (رسوم بيانية + المصفوفة المقلوبة الأفقية)
-    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currDateObj.toLocaleString('ar-EG', { month: 'long' })}.`;
-    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
-    criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
-    let airlinesCount = {}, evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [];
-
-    currStats.surveys.forEach(s => {
-        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
-        criteriaList.forEach(crit => { let val = s[crit] || "Blank"; if (matrixScores[val]) matrixScores[val][crit]++; if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++; });
-        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
-    });
-
-    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
-    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
-    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-    // رسم المصفوفة المقلوبة في التقرير الشهري
-    let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 11px; text-align: center; direction: ltr;">
-        <thead>
-            <tr style="background:#003366; color:#fff;">
-                <th style="padding: 8px; border: 1px solid #999; text-align:left; width: 40%;">Evaluation Criteria (عناصر التقييم)</th>
-                <th style="padding: 8px; border: 1px solid #999; background:#28a745;">Excellent</th>
-                <th style="padding: 8px; border: 1px solid #999; background:#ffc107; color:#000;">Good</th>
-                <th style="padding: 8px; border: 1px solid #999; background:#dc3545;">Poor</th>
-                <th style="padding: 8px; border: 1px solid #999; background:#6c757d;">N/A</th>
-                <th style="padding: 8px; border: 1px solid #999; background:#1a2a6c;">Blank</th>
-            </tr>
-        </thead><tbody>`;
-            
-    criteriaList.forEach(crit => {
-        matrixHtml += `<tr>
-            <td style="padding: 6px 10px; border: 1px solid #ccc; text-align: left; font-weight: bold; background:#f9f9f9;">${crit}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Excellent"][crit] > 0 ? '#28a745' : '#aaa'};">${matrixScores["Excellent"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Good"][crit] > 0 ? '#ffc107' : '#aaa'};">${matrixScores["Good"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Poor"][crit] > 0 ? '#dc3545' : '#aaa'};">${matrixScores["Poor"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["N/A"][crit] || 0}</td>
-            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["Blank"][crit] || 0}</td>
-        </tr>`;
-    });
-    matrixHtml += `</tbody></table>`;
-    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
-
-    let commentsHtml = `<table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
-        <thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline NAME</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">DateTime</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th></tr></thead><tbody>`;
-    if (commentsList.length === 0) commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded.</td></tr>`;
-    else commentsList.forEach(s => { commentsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''} ${s.Time || ''}</td><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td></tr>`; });
-    commentsHtml += `</tbody></table>`;
-    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
-
-    // 5. تقرير الـ FOD
-    const fodDiv = document.getElementById('mr-fod-details');
-    let filteredFod = globalFod.filter(f => { let rawDate = f.Date || f.date || ''; return (typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString()).split('T')[0].startsWith(currMonthStr); });
-
-    if (filteredFod.length === 0 && currStats.fodTotal === 0) {
-        fodDiv.innerHTML = "<p style='color: #777; text-align: center; font-style: italic;'>No F.O.D records for this month.</p>";
-    } else {
-        let totalP = 0, totalM = 0, fodRowsHtml = '';
-        fodLocations.forEach(locItem => {
-            let rec = filteredFod.find(f => (f.Location || f.location) === locItem.loc);
-            let p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
-            totalP += p; totalM += m;
-            let dDisplay = rec && (rec.Date || rec.date) ? String(rec.Date||rec.date).split('T')[0].split('-').reverse().join('/') : '---';
-            fodRowsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td><td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td><td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td><td style="border: 1px solid #777; padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">---</td></tr>`;
-        });
-        let grossTotal = totalP + totalM;
-        fodDiv.innerHTML = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;"><thead><tr style="background: #e6e6e6; color: #000;"><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Location</th><th rowspan="2" style="border: 1px solid #777; padding: 8px; width: 14%;">Area in M²</th><th colspan="2" style="border: 1px solid #777; padding: 6px;">FOD quantity</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Total</th></tr><tr style="background: #e6e6e6; color: #000;"><th style="border: 1px solid #777; padding: 6px;">Plastic</th><th style="border: 1px solid #777; padding: 6px;">Metal</th></tr></thead><tbody>${fodRowsHtml}<tr style="background: #fafafa; font-weight: bold; border-top: 2px solid #000;"><td colspan="3" style="border: 1px solid #777; padding: 8px;">Total</td><td style="border: 1px solid #777; padding: 8px;">${totalP.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px;">${totalM.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px; color: #003366;">${grossTotal.toFixed(3)} kg</td></tr></tbody></table>`;
-    }
-
-    document.getElementById('printable-main-report').style.display = 'block';
-    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
-}
-
-
-// ==========================================
-// 9. الدليل والمستخدمين والأسطول
-// ==========================================
-function populateUsersDropdown(arr) { const datalist = document.getElementById('usersList'), userInp = document.getElementById('loginUser'); if (!datalist) return; datalist.innerHTML = ''; arr.forEach(u => { let opt = document.createElement('option'); opt.value = u.Username; datalist.appendChild(opt); }); if (userInp) userInp.value = "Admin"; }
-function renderDirectory() { const tbody = document.getElementById('directory-tbody'); if (!tbody) return; tbody.innerHTML = ""; globalDirectory.forEach((item, i) => { tbody.innerHTML += `<tr><td>${i+1}</td><td>${item.Name||'-'}</td><td>${item.Role||'-'}</td><td dir="ltr">${item.Ext||'-'}</td><td dir="ltr">${item.Mobile||'-'}</td><td>-</td></tr>`; }); }
-function filterDirectory() { let val = document.getElementById('dirSearch').value.toLowerCase(), tbody = document.getElementById('directory-tbody'); tbody.innerHTML = ''; globalDirectory.forEach((item, i) => { if((item.Name||'').toLowerCase().includes(val) || (item.Role||'').toLowerCase().includes(val)) tbody.innerHTML += `<tr><td>${i+1}</td><td>${item.Name||'-'}</td><td>${item.Role||'-'}</td><td dir="ltr">${item.Ext||'-'}</td><td dir="ltr">${item.Mobile||'-'}</td><td>-</td></tr>`; }); }
-function openDirModal() { document.getElementById('dirModal').style.display = 'flex'; } function closeDirModal() { document.getElementById('dirModal').style.display = 'none'; }
-function saveDirEntry(e) { e.preventDefault(); let obj = { id: "DIR-"+Date.now(), dept: document.getElementById('dirDept').value, name: document.getElementById('dirName').value, role: document.getElementById('dirRole').value, ext: document.getElementById('dirExt').value, mobile: document.getElementById('dirMobile').value }; safePost({ action: "manageDirectory", subAction: "add", dirData: obj }, document.getElementById('dirSubmitBtn'), document.getElementById('dirMsg'), "تم الحفظ!", () => { globalDirectory.push(obj); renderDirectory(); document.getElementById('dirForm').reset(); setTimeout(() => closeDirModal(), 1000); }); }
-function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; } function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
-function saveNewAircraft() { let reg = document.getElementById('newReg').value.toUpperCase(), type = document.getElementById('newType').value.toUpperCase(), airline = document.getElementById('newAirline').value.toUpperCase(); safePost({ action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: document.getElementById('newHandling').value, country: document.getElementById('newCountry').value }, document.querySelector('#addModal .submit-btn'), document.getElementById('modalMsg'), "تم!", () => { globalFleetData.unshift({REG: reg, TYPE: type, CAR: airline}); setTimeout(() => { closeAddModal(); document.getElementById('newReg').value=""; }, 1000); }); }
-function addUser(e) { e.preventDefault(); let role = document.getElementById('newUserRole').value, user = document.getElementById('newUsername').value, pass = document.getElementById('newUserPass').value; safePost({ action: "addUser", role: role, username: user, password: pass }, document.querySelector('#account-management-section .submit-btn'), document.getElementById('userMsg'), "تم!", () => { globalUsers.push({Role: role, Username: user, Password: pass}); document.getElementById('users-tbody').innerHTML += `<tr><td>#</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`; }); }
+// دوال الأدمن والدليل
+function populateUsersDropdown(arr){ const dl=document.getElementById('usersList'), uI=document.getElementById('loginUser'); if(!dl) return; dl.innerHTML=''; arr.forEach(u=>{ let op=document.createElement('option'); op.value=u.Username; dl.appendChild(op); }); if(uI) uI.value="Admin"; }
+function renderDirectory(){ const tb=document.getElementById('directory-tbody'); if(!tb) return; tb.innerHTML=""; globalDirectory.forEach((it,i)=>{ tb.innerHTML+=`<tr><td>${i+1}</td><td>${it.Name||'-'}</td><td>${it.Role||'-'}</td><td dir="ltr">${it.Ext||'-'}</td><td dir="ltr">${it.Mobile||'-'}</td><td>-</td></tr>`; }); }
+function filterDirectory(){ let v=document.getElementById('dirSearch').value.toLowerCase(), tb=document.getElementById('directory-tbody'); tb.innerHTML=''; globalDirectory.forEach((it,i)=>{ if((it.Name||'').toLowerCase().includes(v)||(it.Role||'').toLowerCase().includes(v)) tb.innerHTML+=`<tr><td>${i+1}</td><td>${it.Name||'-'}</td><td>${it.Role||'-'}</td><td dir="ltr">${it.Ext||'-'}</td><td dir="ltr">${it.Mobile||'-'}</td><td>-</td></tr>`; }); }
+function openDirModal(){ document.getElementById('dirModal').style.display='flex'; } function closeDirModal(){ document.getElementById('dirModal').style.display='none'; }
+function saveDirEntry(e){ e.preventDefault(); let obj={id:"DIR-"+Date.now(),dept:document.getElementById('dirDept').value,name:document.getElementById('dirName').value,role:document.getElementById('dirRole').value,ext:document.getElementById('dirExt').value,mobile:document.getElementById('dirMobile').value}; safePost({action:"manageDirectory",subAction:"add",dirData:obj},document.getElementById('dirSubmitBtn'),document.getElementById('dirMsg'),"تم الحفظ!",()=>{globalDirectory.push(obj);renderDirectory();document.getElementById('dirForm').reset();setTimeout(()=>closeDirModal(),1000);}); }
+function openFleetModal(){ document.getElementById('addModal').style.display='flex'; } function closeAddModal(){ document.getElementById('addModal').style.display='none'; }
+function saveNewAircraft(){ let reg=document.getElementById('newReg').value.toUpperCase(), type=document.getElementById('newType').value.toUpperCase(), airline=document.getElementById('newAirline').value.toUpperCase(); safePost({action:"addNewAircraft",reg:reg,acType:type,airline:airline,handling:document.getElementById('newHandling').value,country:document.getElementById('newCountry').value},document.querySelector('#addModal .submit-btn'),document.getElementById('modalMsg'),"تم!",()=>{globalFleetData.unshift({REG:reg,TYPE:type,CAR:airline});setTimeout(()=>{closeAddModal();document.getElementById('newReg').value="";},1000);}); }
+function addUser(e){ e.preventDefault(); let r=document.getElementById('newUserRole').value, u=document.getElementById('newUsername').value, p=document.getElementById('newUserPass').value; safePost({action:"addUser",role:r,username:u,password:p},document.querySelector('#account-management-section .submit-btn'),document.getElementById('userMsg'),"تم!",()=>{globalUsers.push({Role:r,Username:u,Password:p});document.getElementById('users-tbody').innerHTML+=`<tr><td>#</td><td>${r}</td><td>${u}</td><td>${p}</td></tr>`;}); }
