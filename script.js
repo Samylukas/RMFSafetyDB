@@ -790,20 +790,6 @@ function exportMainReportPDF() {
     window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
 }
 
-function exportMainReportPDF() { 
-    const el = document.getElementById('printable-main-report'); 
-    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); 
-    window.scrollTo(0, 0); 
-    html2pdf().set({ 
-        margin: [0.3, 0.3, 0.3, 0.3], 
-        filename: 'Air_Side_Monthly_Report.pdf', 
-        image: { type: 'jpeg', quality: 1 }, 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', '.avoid-page-break'] }
-    }).from(el).save(); 
-}
-function exportMainReportPDF() { const el = document.getElementById('printable-main-report'); if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); window.scrollTo(0, 0); html2pdf().set({ margin: 0.3, filename: 'Monthly_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(el).save(); }
 
 // ==========================================
 // 9. الدليل والمستخدمين والأسطول
