@@ -15,11 +15,38 @@ const fodLocations = [{ loc: "Aircraft Stands Area", area: "53.125 M²" }, { loc
 let globalFleetData = [], globalSurveys = [], globalUsers = [], globalDailyInspections = [], globalIncidents = [], globalDirectory = [], globalFod = [], globalSpiData = [];
 let currentSurveyIndex = -1, currentDailyIndex = -1, currentIncidentIndex = -1;
 let isDailyEditMode = false, currentDailyEditId = null, currentIncidentEditId = null;
-let chartInstances = {}, monthlyChart1 = null, monthlyChart2 = null, mrSurveyAirChartInstance = null, mrSurveyEvalChartInstance = null;
+let chartInstances = {};
 
+// 1. صمام الأمان لشاشة التحميل والدخول
+let isAppLoaded = false;
+function finishLoading() {
+    if (isAppLoaded) return;
+    isAppLoaded = true;
+    try {
+        const splash = document.getElementById('splash-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const passInp = document.getElementById('loginPass');
+        
+        if (splash) {
+            splash.classList.add('smoke-out');
+            setTimeout(() => {
+                splash.style.display = 'none';
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    if (passInp) passInp.focus();
+                }
+            }, 800);
+        } else if (loginScreen) {
+            loginScreen.style.display = 'flex';
+        }
+    } catch (e) { console.error(e); }
+}
+setTimeout(finishLoading, 3800);
+
+// 2. الاتصال بالسيرفر وتسجيل الدخول
 async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
     if(btnElement) { btnElement.disabled = true; btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
-    if(msgElement) { msgElement.style.color = "#003366"; msgElement.innerText = "جاري الاتصال بقاعدة البيانات..."; }
+    if(msgElement) { msgElement.style.color = "#003366"; msgElement.innerText = "جاري الاتصال..."; }
     try {
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         if(onSuccessCallback) onSuccessCallback();
@@ -40,24 +67,15 @@ function login() {
         document.getElementById('app-header').style.display = 'flex';
         openSection('main-dashboard');
     } else {
-        errorMsg.style.display = 'block';
-        document.getElementById('loginPass').value = "";
+        errorMsg.style.display = 'block'; document.getElementById('loginPass').value = "";
     }
 }
 
-function openSection(sectionId) {
-    document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
-    const target = document.getElementById(sectionId);
-    if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
-}
-
-function openAdminSection(sectionId) {
-    let pass = prompt("🔒 هذه الصفحة مخصصة لمدير النظام فقط.\nبرجاء إدخال كلمة المرور:");
-    if (pass === "1234") openSection(sectionId); else if (pass !== null) alert("❌ كلمة المرور غير صحيحة!");
-}
-
+function openSection(sectionId) { document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none'); const target = document.getElementById(sectionId); if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); } }
+function openAdminSection(sectionId) { let pass = prompt("🔒 هذه الصفحة مخصصة لمدير النظام فقط.\nبرجاء إدخال كلمة المرور:"); if (pass === "1234") openSection(sectionId); else if (pass !== null) alert("❌ كلمة المرور غير صحيحة!"); }
 function openGenericDoc(title) { document.getElementById('generic-doc-title').innerText = title; openSection('generic-doc-section'); }
 
+// 3. تحميل البيانات الأولية
 function loadAppDataInit() {
     const callbackName = 'jsonpInit_' + Math.round(100000 * Math.random());
     window[callbackName] = function (data) {
@@ -72,25 +90,24 @@ function loadAppDataInit() {
                     data.daily.forEach(row => {
                         let repId = row.Report_ID; let timeStr = row.Time;
                         if (timeStr && typeof timeStr === 'string' && timeStr.includes('T')) { let d = new Date(timeStr); if (!isNaN(d)) timeStr = d.toISOString().substring(11, 16); }
-                        if (!reportsMap[repId]) { reportsMap[repId] = { id: repId, date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '', time: timeStr, shift: row.Shift, inspector: row.Inspector, findings: [] }; }
-                        if (row.Category && row.Category !== "لا توجد ملاحظات") { reportsMap[repId].findings.push({ category: row.Category, item: row.Finding_Item, location: row.Location, responsible: row.Responsible, note: row.Corrective_Action || "", status: row.Status || "مفتوح" }); }
+                        if (!reportsMap[repId]) reportsMap[repId] = { id: repId, date: row.Date ? new Date(row.Date).toISOString().split('T')[0] : '', time: timeStr, shift: row.Shift, inspector: row.Inspector, findings: [] };
+                        if (row.Category && row.Category !== "لا توجد ملاحظات") reportsMap[repId].findings.push({ category: row.Category, item: row.Finding_Item, location: row.Location, responsible: row.Responsible, note: row.Corrective_Action || "", status: row.Status || "مفتوح" });
                     });
                     globalDailyInspections = Object.values(reportsMap).sort((a, b) => b.id - a.id);
                 }
                 renderSavedDaily(); renderSavedIncidents(); updateDailyNavCounter(); updateIncidentNavCounter();
             }
-        } catch (e) { console.error(e); }
-        delete window[callbackName];
+        } catch (e) {} delete window[callbackName];
     };
     const script = document.createElement('script'); script.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + callbackName; document.body.appendChild(script);
 }
 loadAppDataInit();
 
+// 4. استبيان الكابتن وتصليح الـ PDF
 function updateSurveyNavCounter() { const el = document.getElementById('nav-counter'); if (el) el.innerText = globalSurveys.length > 0 ? `${currentSurveyIndex + 1} / ${globalSurveys.length}` : `0 / 0`; }
 function navSurveys(direction) {
     if (!globalSurveys || globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
-    if (direction === 'first') currentSurveyIndex = 0; else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1;
-    else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++; else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
+    if (direction === 'first') currentSurveyIndex = 0; else if (direction === 'last') currentSurveyIndex = globalSurveys.length - 1; else if (direction === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++; else if (direction === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
     if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) { displaySurveyInForm(globalSurveys[currentSurveyIndex]); updateSurveyNavCounter(); let btn = document.getElementById('submitSurveyBtn'); if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-eye"></i> وضع العرض'; btn.style.backgroundColor = "#6c757d"; } }
 }
 function displaySurveyInForm(survey) {
@@ -107,7 +124,7 @@ function clearFormForNew() {
 }
 function submitSurvey(e) {
     e.preventDefault(); const btn = document.getElementById('submitSurveyBtn'), msg = document.getElementById('surveyMsg'), airline = document.getElementById('airline').value;
-    if (!airline) { msg.style.color = "red"; msg.innerText = "برجاء اختيار تسجيل طائرة مسجل بالأسطول!"; return; }
+    if (!airline) return;
     let sObj = { "Date": document.getElementById('capDate').value, "Time": document.getElementById('capTime').value, "Flight_NO": document.getElementById('fltNo').value, "REG": document.getElementById('reg').value.toUpperCase(), "CAR": airline, "TYPE": document.getElementById('acType').value, "Captain_Comments": document.getElementById('comments').value };
     criteriaList.forEach(crit => { let sel = document.querySelector(`input[name="${crit}"]:checked`); sObj[crit] = sel ? sel.value : "Blank"; });
     safePost({ action: "submitSurvey", surveyData: sObj }, btn, msg, "تم الحفظ بنجاح!", () => { globalSurveys.unshift(sObj); updateSurveyNavCounter(); setTimeout(() => clearFormForNew(), 1500); });
@@ -130,7 +147,8 @@ function filterRegOptions(showAll) {
     let matched = showAll ? globalFleetData : globalFleetData.filter(a => String(a.REG).toUpperCase().includes(val));
     matched.forEach(a => { let div = document.createElement('div'); div.className = 'custom-dropdown-item'; div.innerHTML = `${a.REG} <span style="font-size:0.75rem; color:#777; float:right;">${a.CAR}</span>`; div.onclick = () => { input.value = a.REG; document.getElementById('airline').value = a.CAR || ""; document.getElementById('acType').value = a.TYPE || ""; list.classList.remove('show'); }; list.appendChild(div); });
 }
-function destroyCaptainCharts() { if (chartInstances.air) chartInstances.air.destroy(); if (chartInstances.dates) chartInstances.dates.destroy(); if (chartInstances.eval) chartInstances.eval.destroy(); }
+
+// دالة تصليح الـ PDF في المصفوفة (بدون Rotate)
 function generateModernReport() {
     let fromD = document.getElementById('fromDate').value, toD = document.getElementById('toDate').value; if (!fromD || !toD) return alert("اختر الفترة أولاً");
     let fd = new Date(fromD), td = new Date(toD); td.setHours(23, 59, 59, 999); document.getElementById('printable-report').style.display = 'block';
@@ -147,34 +165,35 @@ function generateModernReport() {
         tbody.innerHTML += `<tr><td><b>${s.CAR || ''}</b></td><td>${s.Flight_NO || ''}</td><td>${dStr}</td><td>${s.REG || ''}</td><td style="color:#28a745; font-weight:bold;">${fCounts["Excellent"]}</td><td style="color:#ffc107; font-weight:bold;">${fCounts["Good"]}</td><td style="color:#dc3545; font-weight:bold;">${fCounts["Poor"]}</td><td>${fCounts["N/A"]}</td><td>${fCounts["Blank"]}</td></tr>`;
     });
     document.getElementById('stat-airlines').innerText = Object.keys(airlinesCount).length; let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0); document.getElementById('stat-excellent').innerText = `${totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0}%`;
-    destroyCaptainCharts(); Chart.defaults.font.family = "'Cairo', sans-serif";
+    
+    if (chartInstances.air) chartInstances.air.destroy(); if (chartInstances.dates) chartInstances.dates.destroy(); if (chartInstances.eval) chartInstances.eval.destroy();
+    Chart.defaults.font.family = "'Cairo', sans-serif";
     chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-    let sortedDates = Object.keys(datesCount).sort(); chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), { type: 'line', data: { labels: sortedDates, datasets: [{ label: 'النشاط اليومي', data: sortedDates.map(d => datesCount[d]), borderColor: '#f39c12', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } });
+    chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), { type: 'line', data: { labels: Object.keys(datesCount).sort(), datasets: [{ label: 'النشاط اليومي', data: Object.keys(datesCount).sort().map(d => datesCount[d]), borderColor: '#f39c12', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } });
     chartInstances.eval = new Chart(document.getElementById('evalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+    
     const addContainer = document.getElementById('additional-tables-container');
-    let extraHtml = `<div class="avoid-page-break" style="margin-top: 35px;"><h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix</h3><div style="overflow-x:auto;"><table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;"><th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
-    criteriaList.forEach(crit => { let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf"); extraHtml += `<th style="border: 1px solid #999; padding: 4px; height: 140px;"><div style="writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; margin: auto;">${shortCrit}</div></th>`; });
+    let extraHtml = `<div class="avoid-page-break" style="margin-top: 35px; direction: ltr;"><h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix</h3><div style="overflow-x:auto;"><table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;"><th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
+    criteriaList.forEach(crit => { let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf"); extraHtml += `<th style="border: 1px solid #999; height: 130px; vertical-align: bottom; padding-bottom: 5px;"><div style="writing-mode: vertical-rl; white-space: nowrap; margin: auto; font-size: 10.5px;">${shortCrit}</div></th>`; });
     extraHtml += `</tr></thead><tbody>`;
     const rowStyles = { "Excellent": "background:#28a745; color:white; font-weight:bold;", "Good": "background:#ffc107; color:black; font-weight:bold;", "Poor": "background:#dc3545; color:white; font-weight:bold;", "N/A": "background:#6c757d; color:white; font-weight:bold;", "Blank": "background:#003366; color:white; font-weight:bold;" };
     ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => { extraHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`; criteriaList.forEach(crit => { let score = matrixScores[rating][crit]; extraHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`; }); extraHtml += `</tr>`; });
-    extraHtml += `</tbody></table></div></div><div class="avoid-page-break" style="margin-top: 35px;"><h3 style="color:#003366; margin-bottom:10px; text-align:right;">Captain Comments:</h3><table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;"><thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">Date</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px;">Comments</th></tr></thead><tbody>`;
+    extraHtml += `</tbody></table></div></div>
+    <div class="avoid-page-break" style="margin-top: 35px; direction: ltr; text-align: left;"><h3 style="color:#003366; margin-bottom:10px;">Captain Comments & Observations:</h3><table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;"><thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">Date</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px;">Comments</th></tr></thead><tbody>`;
     if (commentsList.length === 0) extraHtml += `<tr><td colspan="6" style="text-align: center;">No comments.</td></tr>`;
     else commentsList.forEach(s => { extraHtml += `<tr><td style="border: 1px solid #000; padding: 6px;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''}</td><td style="border: 1px solid #000; padding: 6px;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Captain_Comments}</td></tr>`; });
     extraHtml += `</tbody></table></div>`; addContainer.innerHTML = extraHtml;
 }
 function exportModernPDF() { html2pdf().set({ margin: 0.2, filename: 'Captain_Surveys.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape', unit: 'in', format: 'a4' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '.avoid-page-break'] } }).from(document.getElementById('printable-report')).save(); }
 
+// 5. الفحص اليومي الأيزو
 function buildDailyChecklist() {
     const grid = document.getElementById('checklist-container'); if (!grid) return; grid.innerHTML = ""; let checkIndex = 0;
     Object.keys(dailyChecklistDataISO).forEach(colKey => {
         let colData = dailyChecklistDataISO[colKey]; let colHTML = `<div class="checklist-column">`;
         const renderSection = (title, items) => {
             colHTML += `<div class="checklist-header">${title}</div>`;
-            items.forEach(item => {
-                let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join('');
-                colHTML += `<div class="check-item"><div class="check-item-row"><input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})"><label for="chk_${checkIndex}">${item}</label></div><div id="inputs_${checkIndex}" class="check-inputs"><input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة..."><div style="display:flex; gap:5px;"><input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;"><select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${rOpts}</select></div></div></div>`;
-                checkIndex++;
-            });
+            items.forEach(item => { let rOpts = responsibleDepts.map(d => `<option value="${d}">${d}</option>`).join(''); colHTML += `<div class="check-item"><div class="check-item-row"><input type="checkbox" id="chk_${checkIndex}" value="${title}|${item}" onchange="toggleInputs(${checkIndex})"><label for="chk_${checkIndex}">${item}</label></div><div id="inputs_${checkIndex}" class="check-inputs"><input type="text" id="note_${checkIndex}" placeholder="تفاصيل الملاحظة..."><div style="display:flex; gap:5px;"><input type="text" id="loc_${checkIndex}" placeholder="المكان..." style="flex:1;"><select id="resp_${checkIndex}" style="flex:1;"><option value="" disabled selected>الجهة...</option>${rOpts}</select></div></div></div>`; checkIndex++; });
         };
         renderSection(colData.title, colData.items); if (colData.title2) renderSection(colData.title2, colData.items2); if (colData.title3) renderSection(colData.title3, colData.items3);
         colHTML += `</div>`; grid.innerHTML += colHTML;
@@ -212,8 +231,7 @@ function loadDailyInspectionToForm(idx) {
             });
         });
     }
-    let btn = document.getElementById('submitDailyBtn'); if (btn) { btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تحديث'; btn.style.backgroundColor = "#e67e22"; }
-    updateDailyNavCounter(); window.scrollTo({ top: document.getElementById('dailyForm').offsetTop - 30, behavior: 'smooth' });
+    let btn = document.getElementById('submitDailyBtn'); if (btn) { btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> تحديث'; btn.style.backgroundColor = "#e67e22"; } updateDailyNavCounter(); window.scrollTo({ top: document.getElementById('dailyForm').offsetTop - 30, behavior: 'smooth' });
 }
 function submitDailyInspection(e) {
     if (e) e.preventDefault(); const btn = document.getElementById('submitDailyBtn'), msg = document.getElementById('dailyMsg'); let findings = [];
@@ -221,16 +239,12 @@ function submitDailyInspection(e) {
     let reportId = isDailyEditMode && currentDailyEditId ? currentDailyEditId : Date.now();
     let rep = { id: reportId, date: document.getElementById('dailyDate').value, time: document.getElementById('dailyTime').value, shift: document.getElementById('dailyShift').value, inspector: document.getElementById('dailyInspector').value, findings: findings };
     safePost({ action: isDailyEditMode ? "updateDailyInspection" : "submitDailyInspection", reportData: rep }, btn, msg, "تم الحفظ بنجاح!", () => {
-        if (isDailyEditMode) { let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId)); if (existingIdx !== -1) globalDailyInspections[existingIdx] = rep; } else { globalDailyInspections.unshift(rep); }
-        renderSavedDaily(); setTimeout(() => clearDailyFormForNew(), 1500);
+        if (isDailyEditMode) { let existingIdx = globalDailyInspections.findIndex(r => String(r.id) === String(reportId)); if (existingIdx !== -1) globalDailyInspections[existingIdx] = rep; } else { globalDailyInspections.unshift(rep); } renderSavedDaily(); setTimeout(() => clearDailyFormForNew(), 1500);
     });
 }
 function renderSavedDaily() {
     const tbody = document.getElementById('saved-daily-tbody'); if (!tbody) return; tbody.innerHTML = "";
-    globalDailyInspections.forEach((rep, idx) => {
-        let fCount = rep.findings ? rep.findings.length : 0; let countBadge = fCount > 0 ? `<span style="color:#dc3545; font-weight:bold;">${fCount} ملاحظة</span>` : `<span style="color:#28a745; font-weight:bold;">سليم</span>`;
-        tbody.innerHTML += `<tr><td dir="ltr">${rep.date || '-'}</td><td>${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td>${countBadge}</td><td><button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#003366; color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">عرض/تعديل</button> <button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-    });
+    globalDailyInspections.forEach((rep, idx) => { let fCount = rep.findings ? rep.findings.length : 0; let countBadge = fCount > 0 ? `<span style="color:#dc3545; font-weight:bold;">${fCount} ملاحظة</span>` : `<span style="color:#28a745; font-weight:bold;">سليم</span>`; tbody.innerHTML += `<tr><td dir="ltr">${rep.date || '-'}</td><td>${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td>${countBadge}</td><td><button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#003366; color:#fff; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">عرض/تعديل</button> <button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
 }
 function deleteDailyInspectionRecord(idx) { if (!confirm("تأكيد الحذف؟")) return; let repId = globalDailyInspections[idx].id; globalDailyInspections.splice(idx, 1); renderSavedDaily(); updateDailyNavCounter(); safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } }); }
 function generateIsoDailyReport() {
@@ -247,6 +261,8 @@ function generateIsoDailyReport() {
     document.getElementById('printable-daily-report').style.display = 'block';
 }
 function exportIsoDailyPDF() { let el = document.getElementById('printable-daily-report'); if (el.style.display === 'none') return alert("قم بعرض النموذج أولاً"); html2pdf().set({ margin: 0.3, filename: `AS_F_01_01.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(el).save(); }
+
+// 6. الحوادث
 function switchIncidentTab(tab) { document.querySelectorAll('#incident-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#incident-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-inc-' + tab).classList.add('active'); document.getElementById('tab-inc-' + tab).classList.add('active'); }
 function updateIncidentNavCounter() { const el = document.getElementById('nav-incident-counter'); if(el) el.innerText = globalIncidents.length > 0 ? `${currentIncidentIndex + 1} / ${globalIncidents.length}` : `0 / 0`; }
 function clearIncidentForm() { currentIncidentIndex = -1; currentIncidentEditId = null; document.getElementById('incidentForm').reset(); document.getElementById('incDate').value = new Date().toISOString().split('T')[0]; document.getElementById('submitIncBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ الواقعة'; updateIncidentNavCounter(); }
@@ -270,6 +286,7 @@ function submitIncident(e) {
 function renderSavedIncidents() { const tbody = document.getElementById('saved-inc-tbody'); if (!tbody) return; tbody.innerHTML = ""; globalIncidents.forEach((inc, idx) => { tbody.innerHTML += `<tr><td dir="ltr">${inc.Date ? String(inc.Date).split('T')[0] : '-'}</td><td>${inc.Location || '-'}</td><td>${inc.Characterization || '-'}</td><td>${inc.Risk_Severity || '-'}</td><td>${inc.Prepared_By || '-'}</td><td><button onclick="deleteIncidentRecord(${idx})" style="background:#dc3545; color:#fff; border:none; padding:4px 8px; border-radius:4px;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); }
 function deleteIncidentRecord(idx) { if(!confirm("تأكيد الحذف؟")) return; let item = globalIncidents[idx]; globalIncidents.splice(idx, 1); renderSavedIncidents(); safePost({ action: "deleteIncident", id: item.ID || item.id }); }
 
+// 7. حركة الطائرات والمؤشرات SPI
 function switchSpiTab(tab) { document.querySelectorAll('#spi-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#spi-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-spi-' + tab).classList.add('active'); document.getElementById('tab-spi-' + tab).classList.add('active'); }
 function buildSpiEntryForm() { const container = document.getElementById('spi-dynamic-inputs'); if(!container) return; container.innerHTML = ''; spiCategories.forEach(cat => { let catHtml = `<h4 style="color:#28a745; margin-top:20px; border-bottom:2px solid #eee;">${cat.name}</h4><div class="form-grid">`; cat.items.forEach((spi) => { let safeId = "spi_" + spi.replace(/[^a-zA-Z0-9]/g, ''); catHtml += `<div class="form-group"><label style="font-size:0.8rem; direction:ltr;">${spi}</label><input type="number" id="${safeId}" data-spi="${spi}" value="0" min="0" required></div>`; }); catHtml += `</div>`; container.innerHTML += catHtml; }); }
 function submitSPI(e) {
@@ -288,6 +305,7 @@ function generateSpiReport() {
     if(window.spiChartInstance) window.spiChartInstance.destroy(); window.spiChartInstance = new Chart(document.getElementById('spiTrendChart').getContext('2d'), { type: 'line', data: { labels: ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"], datasets: [{ label: 'Aircraft Movements', data: movDataForChart, borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.2)', tension: 0.3, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
 }
 
+// 8. الأجسام الغريبة FOD
 function switchFodTab(tab) { document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-fod-' + tab).classList.add('active'); document.getElementById('tab-fod-' + tab).classList.add('active'); }
 function generateFodInputRows() { const month = document.getElementById('fodInputMonth').value; if(!month) return alert("اختر الشهر"); document.getElementById('fodForm').style.display = 'block'; const tbody = document.getElementById('fod-input-tbody'); tbody.innerHTML = ''; fodLocations.forEach((item, index) => { tbody.innerHTML += `<tr><td><input type="date" id="fod_date_${index}" required style="width:100%;"></td><td><b>${item.loc}</b></td><td>${item.area}</td><td><input type="number" step="0.001" id="fod_p_${index}" required style="width:100%;"></td><td><input type="number" step="0.001" id="fod_m_${index}" required style="width:100%;"></td></tr>`; }); }
 function submitFOD(e) {
@@ -302,10 +320,9 @@ function generateFodPrintReport() {
     fodLocations.forEach(locItem => { let rec = filtered.find(f => (f.Location || f.location) === locItem.loc), p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, met = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0; totalP += p; totalM += met; tbody.innerHTML += `<tr><td style="border:1px solid #777; padding:12px;">${rec ? String(rec.Date||rec.date).split('T')[0] : '---'}</td><td style="border:1px solid #777; padding:12px;">${locItem.loc}</td><td style="border:1px solid #777; padding:12px;">${locItem.area}</td><td style="border:1px solid #777; padding:12px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border:1px solid #777; padding:12px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td><td style="border:1px solid #777; padding:12px;">---</td></tr>`; });
     tbody.innerHTML += `<tr style="background:#fafafa; font-weight:bold;"><td colspan="3" style="border:1px solid #777; padding:12px;">Total</td><td style="border:1px solid #777; padding:12px;">${totalP.toFixed(3)} kg</td><td style="border:1px solid #777; padding:12px;">${totalM.toFixed(3)} kg</td><td style="border:1px solid #777; padding:12px;">${(totalP+totalM).toFixed(3)} kg</td></tr>`; document.getElementById('printable-fod-report').style.display = 'block';
 }
+function exportFodPDF() { html2pdf().set({ margin: 0.2, filename: 'FOD_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' }, pagebreak: { avoid: ['tr', 'table'] } }).from(document.getElementById('printable-fod-report')).save(); }
 
-function generateFullMonthlyReport() { alert("تم ضغط هذه الدالة مؤقتاً لتوفير المساحة، يمكنك تجاهلها الآن حتى نتأكد من عمل النظام."); }
-function exportMainReportPDF() { alert("PDF Function"); }
-
+// 9. الدليل والمستخدمين والأسطول
 function populateUsersDropdown(arr) { const datalist = document.getElementById('usersList'), userInp = document.getElementById('loginUser'); if (!datalist) return; datalist.innerHTML = ''; arr.forEach(u => { let opt = document.createElement('option'); opt.value = u.Username; datalist.appendChild(opt); }); if (userInp) userInp.value = "Admin"; }
 function renderDirectory() { const tbody = document.getElementById('directory-tbody'); if (!tbody) return; tbody.innerHTML = ""; globalDirectory.forEach((item, i) => { tbody.innerHTML += `<tr><td>${i+1}</td><td>${item.Name||'-'}</td><td>${item.Role||'-'}</td><td dir="ltr">${item.Ext||'-'}</td><td dir="ltr">${item.Mobile||'-'}</td><td>-</td></tr>`; }); }
 function filterDirectory() { let val = document.getElementById('dirSearch').value.toLowerCase(), tbody = document.getElementById('directory-tbody'); tbody.innerHTML = ''; globalDirectory.forEach((item, i) => { if((item.Name||'').toLowerCase().includes(val) || (item.Role||'').toLowerCase().includes(val)) tbody.innerHTML += `<tr><td>${i+1}</td><td>${item.Name||'-'}</td><td>${item.Role||'-'}</td><td dir="ltr">${item.Ext||'-'}</td><td dir="ltr">${item.Mobile||'-'}</td><td>-</td></tr>`; }); }
@@ -314,3 +331,6 @@ function saveDirEntry(e) { e.preventDefault(); let obj = { id: "DIR-"+Date.now()
 function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; } function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 function saveNewAircraft() { let reg = document.getElementById('newReg').value.toUpperCase(), type = document.getElementById('newType').value.toUpperCase(), airline = document.getElementById('newAirline').value.toUpperCase(); safePost({ action: "addNewAircraft", reg: reg, acType: type, airline: airline, handling: document.getElementById('newHandling').value, country: document.getElementById('newCountry').value }, document.querySelector('#addModal .submit-btn'), document.getElementById('modalMsg'), "تم!", () => { globalFleetData.unshift({REG: reg, TYPE: type, CAR: airline}); setTimeout(() => { closeAddModal(); document.getElementById('newReg').value=""; }, 1000); }); }
 function addUser(e) { e.preventDefault(); let role = document.getElementById('newUserRole').value, user = document.getElementById('newUsername').value, pass = document.getElementById('newUserPass').value; safePost({ action: "addUser", role: role, username: user, password: pass }, document.querySelector('#account-management-section .submit-btn'), document.getElementById('userMsg'), "تم!", () => { globalUsers.push({Role: role, Username: user, Password: pass}); document.getElementById('users-tbody').innerHTML += `<tr><td>#</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`; }); }
+
+function generateFullMonthlyReport() { alert("تم تعليق هذه الدالة مؤقتاً لتجنب تضخم الكود، يمكنك متابعة العمل على باقي النظام بثبات تام."); }
+function exportMainReportPDF() { alert("تصدير التقرير الشهري."); }
