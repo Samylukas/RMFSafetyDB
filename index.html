@@ -43,8 +43,10 @@
               <i class="fa-solid fa-user"></i>
           </div>
           <div class="input-group">
-              <input type="password" id="loginPass" placeholder="كلمة المرور" required autofocus onkeypress="if(event.key === 'Enter') login()">
-              <i class="fa-solid fa-lock"></i>
+<div style="position: relative; width: 100%;">
+    <input type="password" id="loginPass" placeholder="كلمة المرور" style="width: 100%; padding-left: 40px;" required>
+    <i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #777; z-index: 10; font-size: 1.1rem;"></i>
+</div>              <i class="fa-solid fa-lock"></i>
           </div>
           <button class="login-btn" onclick="login()">دخول</button>
           <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
