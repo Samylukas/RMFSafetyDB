@@ -447,21 +447,157 @@ function getMonthlyDetailedStats(monthStr) {
     return stats;
 }
 function generateFullMonthlyReport() {
-    const currMonthStr = document.getElementById('mainReportMonth').value; if (!currMonthStr) return alert("اختر الشهر أولاً!");
-    const prevMonthStr = getPreviousMonthStr(currMonthStr), currDateObj = new Date(currMonthStr + "-01"), prevDateObj = new Date(prevMonthStr + "-01");
+    const currMonthStr = document.getElementById('mainReportMonth').value; 
+    if (!currMonthStr) return alert("اختر الشهر أولاً لإصدار التقرير الشامل!");
+
+    const prevMonthStr = getPreviousMonthStr(currMonthStr);
+    const currDateObj = new Date(currMonthStr + "-01");
+    const prevDateObj = new Date(prevMonthStr + "-01");
+
     document.getElementById('mr-title-date').innerText = currDateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     document.getElementById('th-curr-month').innerText = currDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
     document.getElementById('th-prev-month').innerText = prevDateObj.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
-    let currStats = getMonthlyDetailedStats(currMonthStr), prevStats = getMonthlyDetailedStats(prevMonthStr);
-    const tbody = document.getElementById('mr-general-tbody'); tbody.innerHTML = '';
-    const kpiComparisonList = [ { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" }, { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" }, { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" }, { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" }, { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" }, { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" }, { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" }, { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true } ];
-    kpiComparisonList.forEach(item => { let diff = item.curr - item.prev, trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit), currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr, prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev; tbody.innerHTML += `<tr><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td></tr>`; });
-    if (monthlyChart1) monthlyChart1.destroy(); if (monthlyChart2) monthlyChart2.destroy(); Chart.defaults.font.family = "'Cairo', sans-serif";
+
+    let currStats = getMonthlyDetailedStats(currMonthStr);
+    let prevStats = getMonthlyDetailedStats(prevMonthStr);
+
+    // 1. الجدول العام والمقارنات
+    const tbody = document.getElementById('mr-general-tbody'); 
+    tbody.innerHTML = '';
+    const kpiComparisonList = [
+        { label: "1- عدد التحركات الجوية", prev: prevStats.movements, curr: currStats.movements, higherBetter: true, unit: "" },
+        { label: "2- عدد الحوادث", prev: prevStats.accidents, curr: currStats.accidents, higherBetter: false, unit: "" },
+        { label: "3- عدد الوقائع", prev: prevStats.incidents, curr: currStats.incidents, higherBetter: false, unit: "" },
+        { label: "4- حالات عدم المطابقة (الإجمالي)", prev: prevStats.findingsTotal, curr: currStats.findingsTotal, higherBetter: false, unit: "" },
+        { label: "5- حالات عدم المطابقة المعلقة", prev: prevStats.findingsOpen, curr: currStats.findingsOpen, higherBetter: false, unit: "" },
+        { label: "6- حالات عدم المطابقة التي تم تلافيها", prev: prevStats.findingsClosed, curr: currStats.findingsClosed, higherBetter: true, unit: "" },
+        { label: "7- استبيان الطيارين", prev: prevStats.surveys.length, curr: currStats.surveys.length, higherBetter: true, unit: "" },
+        { label: "8- كمية F.O.D (بلاستيك + معدن)", prev: prevStats.fodTotal, curr: currStats.fodTotal, higherBetter: false, unit: "KG", isFloat: true }
+    ];
+
+    kpiComparisonList.forEach(item => {
+        let diff = item.curr - item.prev;
+        let trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit);
+        let currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr;
+        let prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
+        tbody.innerHTML += `<tr><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td></tr>`;
+    });
+
+    // 2. الرسوم البيانية
+    if (monthlyChart1) monthlyChart1.destroy(); 
+    if (monthlyChart2) monthlyChart2.destroy(); 
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+
     monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), { type: 'bar', data: { labels: Object.keys(currStats.findingsByDept), datasets: [{ label: 'المخاطر طبقاً للإدارة', data: Object.values(currStats.findingsByDept), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-    let incTypesCount = {}; currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other'; incTypesCount[cat] = (incTypesCount[cat] || 0) + 1; });
-    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), { type: 'bar', data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
     
+    let incTypesCount = {}; 
+    currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other'; incTypesCount[cat] = (incTypesCount[cat] || 0) + 1; });
+    monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), { type: 'bar', data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    // 3. قائمة الوقائع
+    document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
+    const incList = document.getElementById('mr-incidents-list'); incList.innerHTML = "";
+    let groupedInc = {};
+    currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other Incident'; if (!groupedInc[cat]) groupedInc[cat] = []; groupedInc[cat].push(inc); });
+    let catChar = 'A';
+    for (let cat in groupedInc) {
+        incList.innerHTML += `<div class="avoid-page-break" style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
+        let tbl = `<table class="avoid-page-break" style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
+        groupedInc[cat].forEach((inc, idx) => {
+            let d = inc.Date ? String(inc.Date).split('T')[0] : '';
+            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
+            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
+            tbl += `<tr><td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td><td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;"><strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div><strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div></td><td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td><td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;"><b>Airline:</b> ${inc.CAR || '-'}<br><b>Agent:</b> ${inc.Equipment_Owned || '-'}</td></tr>`;
+        });
+        tbl += `</table>`; incList.innerHTML += tbl; catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
+    }
+
+    // 4. استبيان الكابتن (رسوم بيانية + المصفوفة المقلوبة الأفقية)
+    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currDateObj.toLocaleString('ar-EG', { month: 'long' })}.`;
+    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+    criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
+    let airlinesCount = {}, evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [];
+
+    currStats.surveys.forEach(s => {
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
+        criteriaList.forEach(crit => { let val = s[crit] || "Blank"; if (matrixScores[val]) matrixScores[val][crit]++; if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++; });
+        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
+    });
+
+    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
+    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
+    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    // رسم المصفوفة المقلوبة في التقرير الشهري
+    let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 11px; text-align: center; direction: ltr;">
+        <thead>
+            <tr style="background:#003366; color:#fff;">
+                <th style="padding: 8px; border: 1px solid #999; text-align:left; width: 40%;">Evaluation Criteria (عناصر التقييم)</th>
+                <th style="padding: 8px; border: 1px solid #999; background:#28a745;">Excellent</th>
+                <th style="padding: 8px; border: 1px solid #999; background:#ffc107; color:#000;">Good</th>
+                <th style="padding: 8px; border: 1px solid #999; background:#dc3545;">Poor</th>
+                <th style="padding: 8px; border: 1px solid #999; background:#6c757d;">N/A</th>
+                <th style="padding: 8px; border: 1px solid #999; background:#1a2a6c;">Blank</th>
+            </tr>
+        </thead><tbody>`;
+            
+    criteriaList.forEach(crit => {
+        matrixHtml += `<tr>
+            <td style="padding: 6px 10px; border: 1px solid #ccc; text-align: left; font-weight: bold; background:#f9f9f9;">${crit}</td>
+            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Excellent"][crit] > 0 ? '#28a745' : '#aaa'};">${matrixScores["Excellent"][crit] || 0}</td>
+            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Good"][crit] > 0 ? '#ffc107' : '#aaa'};">${matrixScores["Good"][crit] || 0}</td>
+            <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Poor"][crit] > 0 ? '#dc3545' : '#aaa'};">${matrixScores["Poor"][crit] || 0}</td>
+            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["N/A"][crit] || 0}</td>
+            <td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["Blank"][crit] || 0}</td>
+        </tr>`;
+    });
+    matrixHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
+
+    let commentsHtml = `<table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;">
+        <thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline NAME</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">DateTime</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th></tr></thead><tbody>`;
+    if (commentsList.length === 0) commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded.</td></tr>`;
+    else commentsList.forEach(s => { commentsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''} ${s.Time || ''}</td><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td></tr>`; });
+    commentsHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
+
+    // 5. تقرير الـ FOD
+    const fodDiv = document.getElementById('mr-fod-details');
+    let filteredFod = globalFod.filter(f => { let rawDate = f.Date || f.date || ''; return (typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString()).split('T')[0].startsWith(currMonthStr); });
+
+    if (filteredFod.length === 0 && currStats.fodTotal === 0) {
+        fodDiv.innerHTML = "<p style='color: #777; text-align: center; font-style: italic;'>No F.O.D records for this month.</p>";
+    } else {
+        let totalP = 0, totalM = 0, fodRowsHtml = '';
+        fodLocations.forEach(locItem => {
+            let rec = filteredFod.find(f => (f.Location || f.location) === locItem.loc);
+            let p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
+            totalP += p; totalM += m;
+            let dDisplay = rec && (rec.Date || rec.date) ? String(rec.Date||rec.date).split('T')[0].split('-').reverse().join('/') : '---';
+            fodRowsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td><td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td><td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td><td style="border: 1px solid #777; padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">---</td></tr>`;
+        });
+        let grossTotal = totalP + totalM;
+        fodDiv.innerHTML = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;"><thead><tr style="background: #e6e6e6; color: #000;"><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Location</th><th rowspan="2" style="border: 1px solid #777; padding: 8px; width: 14%;">Area in M²</th><th colspan="2" style="border: 1px solid #777; padding: 6px;">FOD quantity</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Total</th></tr><tr style="background: #e6e6e6; color: #000;"><th style="border: 1px solid #777; padding: 6px;">Plastic</th><th style="border: 1px solid #777; padding: 6px;">Metal</th></tr></thead><tbody>${fodRowsHtml}<tr style="background: #fafafa; font-weight: bold; border-top: 2px solid #000;"><td colspan="3" style="border: 1px solid #777; padding: 8px;">Total</td><td style="border: 1px solid #777; padding: 8px;">${totalP.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px;">${totalM.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px; color: #003366;">${grossTotal.toFixed(3)} kg</td></tr></tbody></table>`;
+    }
+
     document.getElementById('printable-main-report').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
+}
+
+function exportMainReportPDF() { 
+    const el = document.getElementById('printable-main-report'); 
+    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); 
+    window.scrollTo(0, 0); 
+    html2pdf().set({ 
+        margin: [0.3, 0.3, 0.3, 0.3], 
+        filename: 'Air_Side_Monthly_Report.pdf', 
+        image: { type: 'jpeg', quality: 1 }, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', '.avoid-page-break'] }
+    }).from(el).save(); 
 }
 function exportMainReportPDF() { const el = document.getElementById('printable-main-report'); if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); window.scrollTo(0, 0); html2pdf().set({ margin: 0.3, filename: 'Monthly_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(el).save(); }
 
