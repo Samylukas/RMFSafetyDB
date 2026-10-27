@@ -1,5 +1,128 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzPecq0b8ryKc8N2CqC8N46LBgG-lWzczxHiPOKAOtNgpwAjz8Ro284t2ice8vt1HQY/exec";
 
+// قائمة البنود الـ 45 بالترتيب الهندسي والترتيب المطابق لورقة الأيزو (AS-F-01-01)
+const dailyChecklistDataISO = {
+    col1: {
+        title: "المناطق المرصوفة",
+        items: [
+            "شروخ",
+            "حفر(علي الأقل 5 بوصة عرض) (3بوصة عمق)",
+            "هبوط",
+            "تآكل",
+            "مطاط",
+            "نباتات",
+            "أجسام غريبة FOD",
+            "أخرى"
+        ],
+        title2: "المناطق الغير مرصوفة",
+        items2: [
+            "غير مستوية",
+            "نباتات",
+            "عوائق",
+            "أجسام غريبة FOD",
+            "أخرى"
+        ],
+        title3: "المساعدات الملاحية",
+        items3: [
+            "البيكون الدوار بالبرج لا يعمل",
+            "كم الريح غير مطابق",
+            "PAPI غير مطابق",
+            "السارينة لاتعمل",
+            "لمبات العوائق غير مضاءة",
+            "أخرى"
+        ]
+    },
+    col2: {
+        title: "التخطيط (Marking)",
+        items: [
+            "غير مطابق / واضح والمدرج RWY",
+            "محور المدرج مغطي بالمطاط",
+            "غير مطابق / واضح في Holding Position",
+            "غير مطابق / واضح في الـ TXY",
+            "غير مطابق / واضح في الترمك"
+        ],
+        title2: "اللافتات الإرشادية",
+        items2: [
+            "غير مطابقة .",
+            "غير مضاءة",
+            "محجوبة بواسطة النباتات.",
+            "قاعدتها الخرسانية أعلي من مستوي الأرض",
+            "القواعد الغير قابلة للكسر.",
+            "أخرى"
+        ],
+        title3: "الإنارة",
+        items3: [
+            "لمبات مكسورة/ تالفة علي المدرج RWY",
+            "لمبات مكسورة/ تالفة علي الممرات TXY",
+            "لمبات مكسورة/ تالفة على الترمك",
+            "إنارة وحدات Floodlight غير مطابقة أو أقل من (20لاكس)",
+            "اللمبات الغاطسة غير مضاءة",
+            "لمبات وحدات الإقتراب غير مطابقة",
+            "لمبات العوائق غير مضاءة",
+            "لمبات مكسورة / تالفة لإنارة الطرق الخدمية داخل Airside",
+            "أخرى"
+        ]
+    },
+    col3: {
+        title: "عملية تموين الوقود",
+        items: [
+            "وقوف غير سليم علي الطائرة",
+            "الهروب السريع غير متوفر",
+            "النظام الإطفائي غير مكتمل",
+            "DEAD MAN غير مستعمل",
+            "سلك التأريض غير موصل",
+            "زر الطوارئ لايعمل",
+            "عدد المشغلين غير كاف",
+            "المشغل لا يرتدي مهمات السلامة",
+            "أختبار العينة لا يتم إجراؤه",
+            "منطقة العمل غير محددة",
+            "حساسات المصعد لا تعمل",
+            "ملصقات عدم التدخين والـ Jet A",
+            "الـ Clear Exit غير متوفرة للسيارة",
+            "البيكون لا يعمل",
+            "السائبة العامة للسيارة غير لائقة",
+            "عدم توافر المواد الماصة للوقود.",
+            "إستخدام تليفون محمول في حدود 15 م أثناء التموين.",
+            "أخرى"
+        ],
+        title2: "أخطار الحياة البرية",
+        items2: [
+            "مشاهدة حيوانات برية / طيور مقيمة / نافقة",
+            "وجود مصادر جذب للحياة البرية",
+            "أخرى"
+        ]
+    },
+    col4: {
+        title: "التحركات الأرضية ووقوف وإيواء الطائرات ومناولة الحقائب",
+        items: [
+            "سائق المعدة لا يحمل تصريح قيادة على المهبط",
+            "رخصة المعدة غير متوفرة.",
+            "عدم الإلتزام بالسرعات المقررة",
+            "عدم إستخدام طريق الخدمة .",
+            "إستخدام أكثر من 3 مقطورة أثناء الخدمة",
+            "عدم تجميع الـ FOD الناتج من تحميل الحقائب",
+            "إرتفاع الحقائب يتعدي 3 صفوف",
+            "الأقماع غير موضوعة علي حدود الطائرة",
+            "المعدة الأرضية غير مجهزة بليكون.",
+            "المعدة الأرضية غير مطابقة .",
+            "طفايات الحريق غير سارية.",
+            "عملية الدفع للخلف تتم بسرعة غير مناسبة",
+            "عدم إتباع تعليمات سلامة التحركات علي المهبط",
+            "وجود أشخاص غير مصرح لهم.",
+            "وجود معدات غير مصرح بها.",
+            "عدم إرتداء مهمات الوقاية الشخصية",
+            "أخرى"
+        ],
+        title2: "الإنقاذ والإطفاء",
+        items2: [
+            "عدم صلاحية الإتصالات",
+            "عدم الإستجابة السريعة للأفراد.",
+            "نقص في عدد مشغلي سيارة الإطفاء",
+            "أخرى"
+        ]
+    }
+};
+
 const criteriaList = [
     "Communication Tower", "Communication Ground", "VOR-DME", "RNP APR 33_15", "Aeronautical Beacon", 
     "Approach Lighting System", "PAPI System", "Wind Cone", "Apron Marking", "Apron Lighting", 
@@ -13,37 +136,6 @@ const spiCategories = [
     { name: "Safety Operational Issues", items: ["Bird Strike", "Wildlife Strike", "FOD Occurrence", "Runway Incursion", "Exceeding Speed"] },
     { name: "Technical & Ground Issues", items: ["Fuel Spill/Leakage", "Equipment Breakdown", "Navigation Aids Failure", "Lighting System Fault"] }
 ];
-
-const dailyChecklistData = {
-    col1: { 
-        title: "المناطق المرصوفة", 
-        items: ["شروخ", "حفر(علي الأقل 5 بوصة عرض)", "هبوط", "تآكل", "مطاط", "نباتات", "أجسام غريبة FOD", "أخري"], 
-        title2: "المناطق الغير مرصوفة", 
-        items2: ["غير مستوية", "نباتات", "عوائق", "أجسام غريبة FOD", "أخري"], 
-        title3: "المساعدات الملاحية", 
-        items3: ["البيكون الدوار بالبرج لا يعمل", "كم الريح غير مطابق", "PAPI غير مطابق", "السارينة لاتعمل", "لمبات العوائق غير مضاءة", "أخري"] 
-    },
-    col2: { 
-        title: "التخطيط (Marking)", 
-        items: ["غير مطابق / واضح بالمدرج RWY", "محور المدرج مغطي بالمطاط", "غيرمطابق/ واضح في Holding Position", "غير مطابق / واضح في الـ TXY", "غير مطابق / واضح في الترمك"], 
-        title2: "اللافتات الإرشادية", 
-        items2: ["غير مطابقة.", "غير مضاءة", "محجوبة بواسطة النباتات.", "قاعدتها الخرسانية أعلي من مستوي الأرض", "القواعد الغير قابلة للكسر.", "أخرى"], 
-        title3: "الإنارة", 
-        items3: ["لمبات مكسورة/ تالفة علي المدرج RWY", "لمبات مكسورة/ تالفة علي الممرات TXY", "لمبات مكسورة/ تالفة على الترمك", "إنارة وحدات Floodlight غير مطابقة", "اللمبات الغاطسة غير مضاءة", "أخرى"] 
-    },
-    col3: { 
-        title: "عملية تموين الوقود", 
-        items: ["وقوف غير سليم علي الطائرة", "الهروب السريع غير متوفر", "النظام الإطفائي غير مكتمل", "الـDEAD MAN غير مستعمل", "سلك التأريض غير موصل", "زر الطوارئ لايعمل", "عدد المشغلين غير كاف", "أخرى"], 
-        title2: "أخطار الحياة البرية", 
-        items2: ["مشاهدة حيوانات برية /طيور مقيمة / نافقة", "وجود مصادر جذب للحياة البرية", "أخرى"] 
-    },
-    col4: { 
-        title: "التحركات ووقوف الطائرات", 
-        items: ["سائق المعدة لا يحمل تصريح قيادة على المهبط", "رخصة المعدة غير متوفرة.", "عدم الإلتزام بالسرعات المقررة", "عدم إستخدام طريق الخدمة .", "عدم تجميع الFOD", "أخرى"], 
-        title2: "الإنقاذ والإطفاء", 
-        items2: ["عدم صلاحية الإتصالات", "عدم الإستجابة السريعة للأفراد.", "أخرى"] 
-    }
-};
 
 const responsibleDepts = ["العمليات", "الهندسة المدنية", "الهندسة الكهربية", "الإنقاذ والإطفاء", "شركات الطيران / الوكالات", "الإرشاد", "أخرى"];
 
@@ -618,7 +710,7 @@ function exportModernPDF() {
 }
 
 // ==========================================
-// 2. الفحص اليومي (Daily Inspections)
+// 2. الفحص اليومي (Daily Inspections) الأيزو المعتمد
 // ==========================================
 function buildDailyChecklist() {
     const grid = document.getElementById('checklist-container');
@@ -626,8 +718,8 @@ function buildDailyChecklist() {
     grid.innerHTML = "";
     let checkIndex = 0;
 
-    Object.keys(dailyChecklistData).forEach(colKey => {
-        let colData = dailyChecklistData[colKey];
+    Object.keys(dailyChecklistDataISO).forEach(colKey => {
+        let colData = dailyChecklistDataISO[colKey];
         let colHTML = `<div class="checklist-column">`;
 
         const renderSection = (title, items) => {
@@ -782,7 +874,7 @@ function submitDailyInspection(e) {
                 item: parts[1],
                 location: document.getElementById(`loc_${idx}`).value || "-",
                 responsible: document.getElementById(`resp_${idx}`).value || "-",
-                note: document.getElementById(`note_${idx}`).value || "تم الرصد",
+                note: document.getElementById(`note_${idx}`).value || "تالف",
                 status: "مفتوح"
             });
         }
@@ -858,53 +950,124 @@ function deleteDailyInspectionRecord(idx) {
     safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } });
 }
 
-function generateDailyPrintReport() {
-    let fromD = document.getElementById('dailyFromDate').value;
-    let toD = document.getElementById('dailyToDate').value;
-    if(!fromD || !toD) return alert("اختر الفترة أولاً");
+// ========================================================
+// دالة إنشاء مصفوفة الـ HTML المطابقة لورقة الأيزو AS-F-01-01
+// ========================================================
+function generateIsoDailyReport() {
+    let targetD = document.getElementById('isoReportDate').value;
+    let targetS = document.getElementById('isoReportShift').value;
 
-    let fd = new Date(fromD);
-    let td = new Date(toD);
-    td.setHours(23, 59, 59, 999);
+    if (!targetD) return alert("اختر تاريخ اليوم أولاً.");
 
-    let filtered = globalDailyInspections.filter(r => {
-        let sd = new Date(r.date);
-        return sd >= fd && sd <= td;
+    let targetDateStr = targetD.split('-').reverse().join(' / ');
+    document.getElementById('iso-date-val').innerText = targetDateStr;
+
+    if (targetS === 'صباحي') {
+        document.getElementById('iso-shift-am').innerHTML = '✔';
+        document.getElementById('iso-shift-pm').innerHTML = '';
+    } else {
+        document.getElementById('iso-shift-am').innerHTML = '';
+        document.getElementById('iso-shift-pm').innerHTML = '✔';
+    }
+
+    let rep = globalDailyInspections.find(r => r.date === targetD && r.shift === targetS);
+    let findingList = rep ? rep.findings : [];
+
+    const matrix = document.getElementById('iso-matrix-container');
+    matrix.innerHTML = "";
+
+    let maxItemsCount = 0;
+    Object.keys(dailyChecklistDataISO).forEach(colKey => {
+        let count = 0;
+        let c = dailyChecklistDataISO[colKey];
+        count += c.items ? c.items.length : 0;
+        count += c.items2 ? c.items2.length : 0;
+        count += c.items3 ? c.items3.length : 0;
+        if (count > maxItemsCount) maxItemsCount = count;
     });
 
-    const cTbody = document.getElementById('corrective-tbody');
-    cTbody.innerHTML = '';
-    let counter = 1;
+    const flatLists = {};
+    Object.keys(dailyChecklistDataISO).forEach(colKey => {
+        let c = dailyChecklistDataISO[colKey];
+        let arr = [];
+        
+        const injectSection = (title, items) => {
+            arr.push({ isHeader: true, text: title });
+            items.forEach(it => {
+                let hasFinding = findingList.some(f => f.category === title && f.item === it);
+                arr.push({ isHeader: false, text: it, checked: !hasFinding }); 
+            });
+        };
 
-    filtered.forEach(rep => {
-        rep.findings.forEach(f => {
-            cTbody.innerHTML += `
-                <tr class="avoid-page-break">
-                    <td style="text-align:center;">${counter++}</td>
-                    <td style="direction:ltr;">${rep.date}</td>
-                    <td>${f.location || f.Location || '-'}</td>
-                    <td>${f.item || f.Finding_Item || '-'} - ${f.note || f.Corrective_Action || '-'}</td>
-                    <td>${f.responsible || f.Responsible || '-'}</td>
-                    <td>-</td>
-                    <td style="color:${f.status === 'مغلق' ? 'green' : 'red'}; font-weight:bold;">${f.status || 'مفتوح'}</td>
-                </tr>
-            `;
+        injectSection(c.title, c.items);
+        if (c.title2) injectSection(c.title2, c.items2);
+        if (c.title3) injectSection(c.title3, c.items3);
+
+        flatLists[colKey] = arr;
+    });
+
+    let matrixHtml = "";
+    for (let rowIdx = 0; rowIdx < maxItemsCount; rowIdx++) {
+        Object.keys(dailyChecklistDataISO).forEach(colKey => {
+            let cellData = flatLists[colKey][rowIdx];
+            if (cellData) {
+                if (cellData.isHeader) {
+                    matrixHtml += `<div style="border: 0.5px solid #000; background:#e6e6e6; padding: 4px; font-weight: bold; text-align: center;">${cellData.text}</div>`;
+                } else {
+                    let boxSign = cellData.checked ? "✔" : " ";
+                    let crossClass = cellData.checked ? "" : "text-decoration: line-through; color: #dc3545;";
+                    matrixHtml += `
+                        <div style="border: 0.5px solid #000; padding: 3px 5px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                            <span style="${crossClass}">${cellData.text}</span>
+                            <span style="display:inline-block; width:10px; height:10px; border:0.5px solid #000; text-align:center; line-height:8px; font-size:7.5px; font-weight:bold;">${boxSign}</span>
+                        </div>`;
+                }
+            } else {
+                matrixHtml += `<div style="border: 0.5px solid #000; background: #fff;"></div>`;
+            }
         });
-    });
+    }
 
-    if(counter === 1) cTbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>سليم 100% ولا توجد ملاحظات لهذه الفترة</td></tr>";
+    matrix.innerHTML = matrixHtml;
+
+    const isoFindingsThead = document.getElementById('iso-findings-tbody');
+    isoFindingsThead.innerHTML = "";
+
+    if (findingList.length === 0) {
+        isoFindingsThead.innerHTML = `<tr><td colspan="5" style="border: 1px solid #000; padding: 8px; text-align: center; color: green; font-weight: bold;">سليم 100% (ولا توجد أي ملاحظات بعدم المطابقة)</td></tr>`;
+    } else {
+        findingList.forEach((f, index) => {
+            isoFindingsThead.innerHTML += `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 4px;">0${index+1}</td>
+                    <td style="border: 1px solid #000; padding: 4px;">${f.location || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 4px; text-align: right; color:#dc3545; font-weight: bold;">${f.category} - ${f.item} (${f.note || 'تالف'})</td>
+                    <td style="border: 1px solid #000; padding: 4px;">${f.responsible || '-'}</td>
+                    <td style="border: 1px solid #000; padding: 4px;">جاري المتابعة (${f.status || 'مفتوح'})</td>
+                </tr>`;
+        });
+    }
+
     document.getElementById('printable-daily-report').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('printable-daily-report').offsetTop - 30, behavior: 'smooth' });
 }
 
-function exportDailyPDF() {
-    html2pdf().set({ 
-        margin: 0.3, 
-        filename: 'Daily_Inspection_Report.pdf', 
+function exportIsoDailyPDF() {
+    const el = document.getElementById('printable-daily-report');
+    if (el.style.display === 'none') return alert("قم بتوليد النموذج وعرضه أولاً قبل التصدير!");
+    
+    let reportDate = document.getElementById('isoReportDate').value;
+    let filename = `DAILY_INSPECTION_AS_F_01_01_${reportDate}.pdf`;
+
+    window.scrollTo(0, 0);
+    html2pdf().set({
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: filename,
         image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { orientation: 'landscape', unit: 'in', format: 'a4' },
-        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', '.avoid-page-break'] }
-    }).from(document.getElementById('printable-daily-report')).save();
+        html2canvas: { scale: 2.2, useCORS: true }, 
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', '#iso-matrix-container'] }
+    }).from(el).save();
 }
 
 // ==========================================
@@ -1168,6 +1331,9 @@ function generateSpiReport() {
             let totalSpi = 0;
             let rowHtml = `<tr><td>${spi}</td>`;
             for (let i = 1; i <= 12; i++) {
+                let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
+                totalSpi += val;
+                rowHtml += `<td>${val || '-'}</td>`;for (let i = 1; i <= 12; i++) {
                 let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
                 totalSpi += val;
                 rowHtml += `<td>${val || '-'}</td>`;
@@ -1436,7 +1602,6 @@ function generateFullMonthlyReport() {
         options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Overall Rating' } } }
     });
 
-    // استخدام vertical-rl لكتابة الحروف صحيحة بدون تقطيع
     let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;"><thead><tr style="background:#f2f4f8;">`;
     matrixHtml += `<th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
     criteriaList.forEach(crit => {
