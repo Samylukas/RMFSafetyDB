@@ -72,11 +72,134 @@ function buildSpiEntryForm(){ const c=document.getElementById('spi-dynamic-input
 function submitSPI(e){ e.preventDefault(); const b=document.getElementById('submitSpiBtn'), m=document.getElementById('spiMsg'); let mv=parseInt(document.getElementById('spiMovements').value)||0, md={"Movements":mv}; document.querySelectorAll('#spi-dynamic-inputs input[type="number"]').forEach(i=>{ md[i.getAttribute('data-spi')]=parseInt(i.value)||0; }); let obj={id:"SPI-"+Date.now(),year:document.getElementById('spiYear').value,month:document.getElementById('spiMonth').value,group:"ECAA_SPI_Matrix",name:"OperationalSPI",target:"0",actual:JSON.stringify(md),status:"Submitted",actionPlan:mv.toString(),preparedBy:"Safety Officer"}; safePost({action:"submitSPI",spiData:obj},b,m,"تم الحفظ!",()=>{ globalSpiData.push({Year:obj.year,Month:obj.month,Indicator_Name:obj.name,Actual_Value:obj.actual}); document.getElementById('spiForm').reset(); }); }
 function generateSpiReport(){ const c=document.getElementById('spi-matrix-container'); let y=document.getElementById('spiReportYear').value, mp={}; globalSpiData.forEach(r=>{ if(r.Indicator_Name==="OperationalSPI"&&String(r.Year)===y){ try{ mp[r.Month]=JSON.parse(r.Actual_Value); }catch(e){} } }); let h=`<table class="report-table spi-matrix-table" style="min-width:800px;font-size:12px;"><thead><tr><th>Safety issue / SPI</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>MAY</th><th>JUN</th><th>JUL</th><th>AUG</th><th>SEP</th><th>OCT</th><th>NOV</th><th>DEC</th><th style="background:#003366;color:#fff;">Total Events</th></tr></thead><tbody><tr><td>Number of aircraft movements</td>`; let tm=0, mDc=[]; for(let i=1;i<=12;i++){ let m=mp[i]?mp[i].Movements||0:0; tm+=m; mDc.push(m); h+=`<td style="font-weight:bold;background:#e8f5e9;">${m||'-'}</td>`; } h+=`<td style="font-weight:bold;background:#003366;color:#fff;">${tm}</td></tr>`; spiCategories.forEach(cat=>{ h+=`<tr><td colspan="14" style="background:#f4fcf6;color:#28a745;font-weight:bold;text-align:right;">${cat.name}</td></tr>`; cat.items.forEach(spi=>{ let ts=0, rh=`<tr><td>${spi}</td>`; for(let i=1;i<=12;i++){ let v=mp[i]?mp[i][spi]||0:0; ts+=v; rh+=`<td>${v||'-'}</td>`; } rh+=`<td style="font-weight:bold;color:#003366;">${ts}</td></tr>`; h+=rh; }); }); h+=`</tbody></table>`; c.innerHTML=h; if(window.spiChartInstance) window.spiChartInstance.destroy(); window.spiChartInstance=new Chart(document.getElementById('spiTrendChart').getContext('2d'),{type:'line',data:{labels:["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],datasets:[{label:'Aircraft Movements',data:mDc,borderColor:'#28a745',backgroundColor:'rgba(40,167,69,0.2)',tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false}}); }
 
-// دوال الـ FOD (حفظ متسلسل لتجنب أخطاء جوجل)
-function switchFodTab(t){ document.querySelectorAll('#fod-section .tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('#fod-section .tab-content').forEach(c=>c.classList.remove('active')); document.getElementById('btn-fod-'+t).classList.add('active'); document.getElementById('tab-fod-'+t).classList.add('active'); }
-function generateFodInputRows(){ const m=document.getElementById('fodInputMonth').value; if(!m) return alert("اختر الشهر"); document.getElementById('fodForm').style.display='block'; const tb=document.getElementById('fod-input-tbody'); tb.innerHTML=''; fodLocations.forEach((it,i)=>{ tb.innerHTML+=`<tr><td><input type="date" id="fod_date_${i}" required style="width:100%;"></td><td><b>${it.loc}</b></td><td>${it.area}</td><td><input type="number" step="0.001" id="fod_p_${i}" required style="width:100%;"></td><td><input type="number" step="0.001" id="fod_m_${i}" required style="width:100%;"></td></tr>`; }); }
-function submitFOD(e){ if(e) e.preventDefault(); const b=document.getElementById('submitFodBtn'), m=document.getElementById('fodMsg'); let fArr=[], lArr=[]; fodLocations.forEach((it,i)=>{ let d=document.getElementById(`fod_date_${i}`)?.value||"", p=parseFloat(document.getElementById(`fod_p_${i}`)?.value)||0, mt=parseFloat(document.getElementById(`fod_m_${i}`)?.value)||0, nId="FOD-"+Date.now()+"-"+i; fArr.push({id:nId,date:d,location:it.loc,area:it.area,plastic:p,metal:mt}); lArr.push({ID:nId,Date:d,Location:it.loc,Area:it.area,Plastic:p,Metal:mt}); }); safePost({action:"submitBulkFOD",fodDataArray:fArr},b,m,"تم الحفظ!",()=>{ globalFod=[...globalFod,...lArr]; setTimeout(()=>{document.getElementById('fodForm').style.display='none';},1500); }); }function exportFodPDF(){ html2pdf().set({margin:0.2,filename:'FOD_Report.pdf',image:{type:'jpeg',quality:1},html2canvas:{scale:2},jsPDF:{orientation:'landscape'},pagebreak:{avoid:['tr','table']}}).from(document.getElementById('printable-fod-report')).save(); }
+// ==========================================
+// دوال الـ FOD
+// ==========================================
+function switchFodTab(tab) {
+    document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-fod-' + tab).classList.add('active');
+    document.getElementById('tab-fod-' + tab).classList.add('active');
+}
 
+function generateFodInputRows() {
+    const month = document.getElementById('fodInputMonth').value;
+    if (!month) return alert("برجاء اختيار الشهر أولاً");
+    
+    document.getElementById('fodForm').style.display = 'block';
+    const tbody = document.getElementById('fod-input-tbody');
+    tbody.innerHTML = '';
+    
+    fodLocations.forEach((item, index) => {
+        tbody.innerHTML += `<tr>
+            <td><input type="date" id="fod_date_${index}" required style="width:100%;"></td>
+            <td><b>${item.loc}</b></td>
+            <td>${item.area}</td>
+            <td><input type="number" step="0.001" id="fod_p_${index}" required style="width:100%;"></td>
+            <td><input type="number" step="0.001" id="fod_m_${index}" required style="width:100%;"></td>
+        </tr>`;
+    });
+}
+
+// دالة الإرسال لسيرفر جوجل (تم تعديلها لترسل صف بصف كما هو مبرمج في السيرفر)
+async function submitFOD(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('submitFodBtn');
+    if(btn) { btn.disabled = true; btn.innerHTML = 'جاري الإرسال لسيرفر جوجل...'; }
+
+    let successCount = 0;
+    let localFodArray = [];
+
+    // إرسال البيانات لجوجل صف بصف بدلاً من مصفوفة واحدة
+    for (let i = 0; i < fodLocations.length; i++) {
+        let it = fodLocations[i];
+        let d = document.getElementById(`fod_date_${i}`).value;
+        let p = parseFloat(document.getElementById(`fod_p_${i}`).value) || 0;
+        let m = parseFloat(document.getElementById(`fod_m_${i}`).value) || 0;
+        let nId = "FOD-" + Date.now() + "-" + i;
+
+        let obj = { id: nId, date: d, location: it.loc, area: it.area, plastic: p, metal: m };
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "submitFOD", fodData: obj })
+            });
+            localFodArray.push({ ID: nId, Date: d, Location: it.loc, Area: it.area, Plastic: p, Metal: m });
+            successCount++;
+        } catch (err) { 
+            console.error("خطأ في الاتصال:", err); 
+        }
+    }
+
+    if(btn) { btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; }
+    
+    if (successCount > 0) {
+        globalFod = [...globalFod, ...localFodArray];
+        alert("تم حفظ البيانات في جوجل شيت بنجاح!");
+        document.getElementById('fodForm').style.display = 'none';
+    } else {
+        alert("فشل الاتصال بجوجل، تأكد من الإنترنت.");
+    }
+}
+
+// دالة زرار "عرض التقرير" 
+function generateFodPrintReport() {
+    const m = document.getElementById('fodReportMonth').value;
+    if (!m) return alert("برجاء اختيار الشهر أولاً لعرض التقرير");
+    
+    let filtered = globalFod.filter(f => {
+        let rd = f.Date || f.date || '';
+        if (!rd) return false;
+        let strDate = typeof rd === 'string' ? rd : new Date(rd).toISOString();
+        return strDate.split('T')[0].startsWith(m);
+    });
+
+    const tb = document.getElementById('fod-print-tbody');
+    if(!tb) return;
+    tb.innerHTML = '';
+    
+    let tp = 0, tm = 0;
+    fodLocations.forEach(loc => {
+        let rc = filtered.find(f => (f.Location || f.location) === loc.loc);
+        let p = rc ? parseFloat(rc.Plastic || rc.plastic || 0) : 0;
+        let met = rc ? parseFloat(rc.Metal || rc.metal || 0) : 0;
+        tp += p; tm += met;
+        
+        let dateDisplay = rc ? String(rc.Date || rc.date).split('T')[0] : '---';
+        
+        tb.innerHTML += `<tr>
+            <td style="border:1px solid #777;padding:12px;">${dateDisplay}</td>
+            <td style="border:1px solid #777;padding:12px;font-weight:bold;">${loc.loc}</td>
+            <td style="border:1px solid #777;padding:12px;">${loc.area}</td>
+            <td style="border:1px solid #777;padding:12px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+            <td style="border:1px solid #777;padding:12px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td>
+            <td style="border:1px solid #777;padding:12px;">---</td>
+        </tr>`;
+    });
+
+    tb.innerHTML += `<tr style="background:#fafafa;font-weight:bold;">
+        <td colspan="3" style="border:1px solid #777;padding:12px;">الإجمالي</td>
+        <td style="border:1px solid #777;padding:12px;">${tp.toFixed(3)} kg</td>
+        <td style="border:1px solid #777;padding:12px;">${tm.toFixed(3)} kg</td>
+        <td style="border:1px solid #777;padding:12px;color:#003366;">${(tp + tm).toFixed(3)} kg</td>
+    </tr>`;
+    
+    document.getElementById('printable-fod-report').style.display = 'block';
+}
+
+function exportFodPDF() {
+    html2pdf().set({
+        margin: 0.2,
+        filename: 'FOD_Report.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'landscape' },
+        pagebreak: { avoid: ['tr', 'table'] }
+    }).from(document.getElementById('printable-fod-report')).save();
+}
 // دوال التقرير الشهري المجمع
 function formatTrendDifference(dV, iHb, un=""){ let n=parseFloat(dV); if(isNaN(n)||n===0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`; let iP=n>0, fV=Math.abs(n).toFixed(un.includes("KG")?3:0), iG=iHb?iP:!iP, clr=iG?"#28a745":"#dc3545", aI=iP?"fa-arrow-up":"fa-arrow-down"; return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`; }
 function getPreviousMonthStr(ms){ let [y,m]=ms.split('-'); let d=new Date(y,parseInt(m)-2); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
