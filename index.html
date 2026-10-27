@@ -179,12 +179,12 @@
     </div>
   </div>
 
-  <!-- 2. قسم الفحص اليومي -->
+  <!-- 2. قسم الفحص اليومي (إصدار الأيزو AS-F-01-01) -->
   <div id="daily-inspection-section" class="content-area" style="display:none;">
     <button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
-    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">02 - الفحص اليومي لساحة الطيران</h1>
+    <h1 style="color: var(--primary); text-align: center; font-weight: 900; font-size: 2rem;">02 - الفحص اليومي لمنطقة التحركات الجوية</h1>
     <div class="nav-controls">
-      <button class="new-btn" onclick="clearDailyFormForNew()"><i class="fa-solid fa-plus"></i> فحص جديد</button>
+      <button class="new-btn" onclick="clearDailyFormForNew()"><i class="fa-solid fa-plus"></i> جولة تفتيش جديدة</button>
       <button class="nav-btn" onclick="navDaily('first')"><i class="fa-solid fa-angles-right"></i></button>
       <button class="nav-btn" onclick="navDaily('prev')"><i class="fa-solid fa-angle-right"></i></button>
       <div class="nav-counter" id="nav-daily-counter">0 / 0</div>
@@ -195,7 +195,7 @@
     <div class="survey-container">
       <div class="tabs-header">
         <button class="tab-btn active" onclick="switchDailyTab('entry')" id="btn-daily-entry"><i class="fa-solid fa-clipboard-check"></i> نموذج التفتيش (إدخال)</button>
-        <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> النماذج المحفوظة والطباعة</button>
+        <button class="tab-btn" onclick="switchDailyTab('report')" id="btn-daily-report"><i class="fa-solid fa-file-contract"></i> الجولات المحفوظة وطباعة AS-F-01-01</button>
       </div>
       
       <div id="tab-daily-entry" class="tab-content active">
@@ -203,7 +203,7 @@
           <div class="form-grid">
             <div class="form-group"><label>التاريخ</label><input type="date" id="dailyDate" required></div>
             <div class="form-group"><label>الوقت</label><input type="time" id="dailyTime" required></div>
-            <div class="form-group"><label>الوردية</label><select id="dailyShift" required><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option><option value="ليلي">ليلي</option></select></div>
+            <div class="form-group"><label>الوردية</label><select id="dailyShift" required><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option></select></div>
             <div class="form-group"><label>المفتش</label><input type="text" id="dailyInspector" required placeholder="اسم المفتش..."></div>
           </div>
           <div class="checklist-grid" id="checklist-container"></div>
@@ -214,26 +214,65 @@
       
       <div id="tab-daily-report" class="tab-content">
         <div class="report-wrapper" style="margin-top: 10px; margin-bottom: 30px;">
-            <h3 style="color: var(--primary); margin-bottom: 15px;">الجولات المسجلة:</h3>
+            <h3 style="color: var(--primary); margin-bottom: 15px;">الجولات اليومية المسجلة:</h3>
             <table class="report-table rtl-table" dir="rtl">
-              <thead><tr><th>التاريخ</th><th>الوقت</th><th>الوردية</th><th>المفتش</th><th>المخالفات</th><th>إجراء</th></tr></thead>
+              <thead><tr><th>التاريخ</th><th>الوقت</th><th>الوردية</th><th>المفتش</th><th>حالة الجولة</th><th>إجراء</th></tr></thead>
               <tbody id="saved-daily-tbody"></tbody>
             </table>
         </div>
+        
         <div class="report-filters" style="border-top: 2px solid #eee; padding-top: 20px;">
-          <h3 style="width: 100%; color: var(--primary); margin-bottom: 10px;">طباعة تقرير الملاحظات للفترة:</h3>
-          <input type="date" id="dailyFromDate"><input type="date" id="dailyToDate">
-          <button onclick="generateDailyPrintReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-print"></i> عرض التقرير</button>
-          <button onclick="exportDailyPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF)</button>
+          <h3 style="width: 100%; color: var(--primary); margin-bottom: 10px;">إصدار نموذج الفحص اليومي AS-F-01-01:</h3>
+          <p style="width: 100%; font-size: 0.9rem; color: #555; margin-bottom: 15px;">اختر تاريخ اليوم المراد تصدير النموذج الخاص به (رقم الأيزو AS-F-01-01) مع تحديد الوردية:</p>
+          <div class="form-group" style="flex:1;"><label>تاريخ اليوم</label><input type="date" id="isoReportDate"></div>
+          <div class="form-group" style="flex:1;"><label>الوردية</label><select id="isoReportShift"><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option></select></div>
+          <button onclick="generateIsoDailyReport()" class="submit-btn" style="width:auto; padding:10px;"><i class="fa-solid fa-eye"></i> عرض النموذج</button>
+          <button onclick="exportIsoDailyPDF()" class="submit-btn" style="width:auto; background:#d9534f; padding:10px;"><i class="fa-solid fa-file-pdf"></i> تصدير (PDF - AS-F-01-01)</button>
         </div>
-        <div id="printable-daily-report" style="display: none; background: #fff; padding:20px; direction: rtl; width: 100%; margin-top: 20px;">
-            <div id="printable-corrective-report">
-                <h3 style="color: #dc3545; text-align: right; margin-bottom: 10px;">تقرير الأخطار والملاحظات المرصودة:</h3>
-                <table class="report-table" style="font-size: 11px;">
-                  <thead><tr style="background:#003366; color:#fff;"><th>م</th><th>التاريخ</th><th>المكان</th><th>الملاحظة</th><th>الجهة المسئولة</th><th>الإجراء المتخذ</th><th>الحالة</th></tr></thead>
-                  <tbody id="corrective-tbody"></tbody>
+
+        <!-- معاينة نموذج AS-F-01-01 المطابق لورقة الأيزو -->
+        <div id="printable-daily-report" style="display: none; background: #fff; padding:30px; direction: rtl; width: 100%; margin-top: 20px; border: 2px solid #000; box-sizing: border-box; font-family: 'Arial', sans-serif; color: #000; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 15px;">
+                <div style="font-size: 11px; font-weight: bold; line-height: 1.4; text-align: right;">مطار مرسى علم الدولي<br>إدارة سلامة المطارات</div>
+                <div style="text-align: center;"><h2 style="font-size: 1.25rem; font-weight: 900; border-bottom: 1.5px solid #000; display: inline-block; padding-bottom: 2px; margin-bottom: 5px; font-family: 'Times New Roman', serif; text-decoration: underline;">قائمة الفحص اليومية لمنطقة التحركات الجوية</h2></div>
+                <div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 42px;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; font-size: 11px; font-weight: bold;">
+                <div>التاريخ: <span id="iso-date-val">2025 / 10 / 25</span></div>
+                <div style="display:flex; gap: 20px;">
+                    <div>وردية صباحي <span id="iso-shift-am" style="display: inline-block; width:12px; height:12px; border:1px solid #000; text-align:center; line-height:10px; font-size:9px;"></span></div>
+                    <div>وردية مسائي <span id="iso-shift-pm" style="display: inline-block; width:12px; height:12px; border:1px solid #000; text-align:center; line-height:10px; font-size:9px;"></span></div>
+                </div>
+            </div>
+
+            <!-- شبكة الأيزو للأعمدة الـ 4 -->
+            <div id="iso-matrix-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1.5px solid #000; font-size: 8.5px; border-collapse: collapse;"></div>
+
+            <div style="margin-top: 8px; font-size: 9px; font-weight: bold; text-align: right;">
+                * ملحوظة (كل نقطة بعدم المطابقة تكتب تفصيلاً):
+            </div>
+            
+            <!-- جدول الملاحظات التالفة/المخالفة بالأسفل -->
+            <div style="margin-top: 8px;">
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 8.5px; text-align: center;">
+                    <thead><tr style="background:#e6e6e6;">
+                        <th style="border:1px solid #000; padding: 3px; width: 5%;">م</th>
+                        <th style="border:1px solid #000; padding: 3px; width: 15%;">المنطقة / المكان</th>
+                        <th style="border:1px solid #000; padding: 3px; width: 50%;">تفاصيل عدم المطابقة (الملاحظة)</th>
+                        <th style="border:1px solid #000; padding: 3px; width: 15%;">الجهة المسئولة</th>
+                        <th style="border:1px solid #000; padding: 3px; width: 15%;">الإجراء المتخذ / حالة الملاحظة</th>
+                    </tr></thead>
+                    <tbody id="iso-findings-tbody"></tbody>
                 </table>
             </div>
+
+            <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center; font-size: 9px; font-weight: bold;">
+                <div>توقيع مفتش السلامة: ...................................</div>
+                <div>توقيع مدير إدارة السلامة: ...................................</div>
+            </div>
+
+            <div style="position: absolute; bottom: 8px; left: 15px; font-size: 8.5px; font-weight: bold; font-family: sans-serif;">AS-F-01-01</div>
         </div>
       </div>
     </div>
@@ -629,6 +668,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=22.0"></script>
+  <script src="script.js?v=23.0"></script>
 </body>
 </html>
