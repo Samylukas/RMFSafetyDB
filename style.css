@@ -12,54 +12,50 @@
 body { background-color: var(--bg-color); color: var(--text-color); direction: rtl; min-height: 100vh; overflow-x: hidden; }
 
 /* =========================================
-   الهيدر وشاشة التحميل (الطائرة)
-   ========================================= */
-.header { background: #ffffff; border-bottom: 3px solid var(--primary); padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.main-logo, .dept-logo { height: 65px !important; max-height: 65px !important; width: auto !important; object-fit: contain; }
-.header-titles { text-align: center; }
-.header-titles h1 { font-size: 1.25rem; color: var(--primary); font-family: sans-serif; margin-bottom: 2px; }
-.header-titles h2 { font-size: 1.05rem; color: #555; }
-
-#login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); display: flex; justify-content: center; align-items: center; z-index: 999999; }
-.login-box { background: #ffffff; padding: 35px 25px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); text-align: center; width: 90%; max-width: 380px; }
-.login-box img { height: 60px; margin-bottom: 15px; object-fit: contain; }
-.input-group { position: relative; margin-top: 15px; }
-.input-group input { width: 100%; padding: 11px 40px 11px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; }
-.input-group input:focus { border-color: var(--primary); }
-.input-group i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #777; }
-.login-btn { width: 100%; background-color: var(--primary); color: #fff; border: none; padding: 11px; margin-top: 20px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-
-/* =========================================
    شاشة التحميل (مدرج الهبوط وتأثير الدخان)
    ========================================= */
 #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; justify-content: center; align-items: center; z-index: 1000000; transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease; }
-.splash-logo { height: 110px; margin-bottom: 30px; } /* تكبير اللوجو */
+.splash-logo { height: 170px; margin-bottom: 50px; } /* تكبير اللوجو بشكل ملحوظ */
 
-.runway-container { display: flex; align-items: center; justify-content: space-between; position: relative; width: 350px; margin: 0 auto; }
-.runway-num { font-size: 1.2rem; font-weight: 900; color: #003366; }
+/* المدرج العريض والأرقام باللون الأبيض */
+.runway-container { position: relative; width: 400px; margin: 0 auto; }
+.runway-track { 
+    width: 100%; height: 45px; 
+    background: #003366; 
+    border-radius: 4px; 
+    display: flex; align-items: center; justify-content: space-between; 
+    position: relative; overflow: hidden;
+    padding: 0 15px;
+}
+/* خط منتصف المدرج (Dashed Line) */
+.runway-track::after { 
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 100%; height: 4px; 
+    background: repeating-linear-gradient(90deg, #fff, #fff 15px, transparent 15px, transparent 30px); 
+    z-index: 1;
+}
+.runway-num { font-size: 1.3rem; font-weight: 900; color: #ffffff; z-index: 2; }
 .left-num { transform: rotate(-90deg); }
 .right-num { transform: rotate(90deg); }
 
-.runway-track { flex: 1; height: 12px; background: #003366; margin: 0 10px; position: relative; border-radius: 2px; display: flex; align-items: center; justify-content: center; overflow: hidden;}
-/* خط منتصف المدرج (Dashed Line) */
-.runway-track::after { content: ''; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, #fff, #fff 12px, transparent 12px, transparent 24px); }
-
-/* الطيارة البرتقالي وهبوطها */
-.loading-airplane { position: absolute; color: #f39c12; font-size: 2rem; top: -14px; left: -15%; animation: landingAnim 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 10; }
+/* الطيارة البرتقالي وسرعة الهبوط (سريعة في الأول وبتبطء في الآخر) */
+.loading-airplane { 
+    position: absolute; color: #f39c12; font-size: 2.2rem; 
+    top: -12px; left: -10%; z-index: 10; 
+    animation: landingAnim 3.8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; 
+}
 
 @keyframes landingAnim { 
-    0% { left: -15%; top: -80px; transform: rotate(20deg) scale(1.3); opacity: 0; } 
-    20% { opacity: 1; }
-    50% { left: 15%; top: -14px; transform: rotate(0deg) scale(1); } /* تلمس المدرج */
-    100% { left: 85%; top: -14px; transform: rotate(0deg) scale(1); } /* تمشي لآخر المدرج */
+    0% { left: -20%; top: -120px; transform: rotate(25deg) scale(1.5); opacity: 0; } 
+    10% { opacity: 1; }
+    35% { left: 15%; top: -3px; transform: rotate(0deg) scale(1.1); } /* تلمس المدرج بسرعة */
+    100% { left: 85%; top: -3px; transform: rotate(0deg) scale(1); } /* تكمل ببطء لحد ما تقف */
 }
 
 /* تأثير التبخر الدخاني */
 .smoke-out { opacity: 0 !important; filter: blur(15px) !important; transform: scale(1.2) !important; pointer-events: none; }
 
-/* خلفية بيضاء لشاشة الدخول */
 #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff !important; display: flex; justify-content: center; align-items: center; z-index: 999999; }
-
 /* =========================================
    لوحة الإدارات والبطاقات 
    ========================================= */
