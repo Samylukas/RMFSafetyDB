@@ -234,7 +234,7 @@ function finishLoading() {
                     loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
                     if (passInp) passInp.focus();
                 }
-            }, 800); // 800 مللي ثانية وهي مدة التبخر
+            }, 800); // 800 مللي ثانية مدة التبخر
         } else if (loginScreen) {
             loginScreen.style.display = 'flex';
         }
@@ -243,10 +243,9 @@ function finishLoading() {
     }
 }
 
-// إجبار السيستم يشغل الدخان ويفتح الدخول بعد 3.8 ثانية (وقت وقوف الطيارة بالظبط)
-window.addEventListener('load', () => {
-    setTimeout(finishLoading, 3800);
-});
+// تشغيل العداد فوراً بدون انتظار المتصفح: 
+// 3800 مللي ثانية (وقت هبوط الطيارة) وبعدها يتبخر وتفتح شاشة الدخول
+setTimeout(finishLoading, 3800);
 
 function openSection(sectionId) {
     document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
