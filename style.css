@@ -208,3 +208,45 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .input-group i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #777; }
 .login-btn { width: 100%; background-color: var(--primary); color: #fff; border: none; padding: 12px; margin-top: 25px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
 .login-btn:hover { background-color: var(--primary-dark); }
+/* =========================================
+   إصلاح عك الهيدر واللوجوهات العملاقة
+   ========================================= */
+.header { 
+    background: #ffffff; 
+    border-bottom: 3px solid #003366; 
+    padding: 10px 25px; 
+    display: flex !important; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    width: 100%;
+}
+
+.main-logo, .dept-logo { 
+    height: 70px !important; 
+    max-height: 70px !important; 
+    width: auto !important; 
+    object-fit: contain; 
+}
+
+.header-titles { 
+    text-align: center; 
+    flex: 1; 
+}
+
+.header-titles h1 { 
+    font-size: 1.3rem; 
+    color: #003366; 
+    margin-bottom: 2px; 
+    font-weight: 900; 
+}
+
+.header-titles h2 { 
+    font-size: 1.1rem; 
+    color: #555; 
+}
+
+/* إصلاح كلمة PDF اللي طايرة في الشاشة من فوق */
+.sub-card {
+    position: relative; 
+}
