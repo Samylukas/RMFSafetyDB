@@ -297,16 +297,111 @@ function renderSavedDaily() {
 }
 function deleteDailyInspectionRecord(idx) { if (!confirm("تأكيد الحذف؟")) return; let repId = globalDailyInspections[idx].id; globalDailyInspections.splice(idx, 1); renderSavedDaily(); updateDailyNavCounter(); safePost({ action: "updateDailyInspection", reportData: { id: repId, findings: [] } }); }
 function generateIsoDailyReport() {
-    let targetD = document.getElementById('isoReportDate').value, targetS = document.getElementById('isoReportShift').value; if (!targetD) return alert("اختر تاريخ اليوم.");
+    let targetD = document.getElementById('isoReportDate').value;
+    let targetS = document.getElementById('isoReportShift').value; 
+    
+    if (!targetD) return alert("اختر تاريخ اليوم أولاً لإصدار التقرير.");
+
+    // البحث عن الجولة المسجلة في المصفوفة (تطابق التاريخ والوردية)
+    let rep = globalDailyInspections.find(r => {
+        let rDateStr = String(r.date).split('T')[0]; // ضمان تطابق صيغة التاريخ
+        return rDateStr === targetD && r.shift === targetS;
+    });
+
+    // صمام أمان: لو مفيش جولة محفوظة لليوم ده، النظام هيرفض يطلع التقرير الوهمي
+    if (!rep) {
+        alert("لا توجد جولة تفتيش محفوظة بهذا التاريخ وهذه الوردية! تأكد من حفظ الجولة في قاعدة البيانات أولاً.");
+        document.getElementById('printable-daily-report').style.display = 'none';
+        return;
+    }
+
     document.getElementById('iso-date-val').innerText = targetD.split('-').reverse().join(' / ');
-    if (targetS === 'صباحي') { document.getElementById('iso-shift-am').innerHTML = '✔'; document.getElementById('iso-shift-pm').innerHTML = ''; } else { document.getElementById('iso-shift-am').innerHTML = ''; document.getElementById('iso-shift-pm').innerHTML = '✔'; }
-    let rep = globalDailyInspections.find(r => String(r.date).split('T')[0] === targetD && r.shift === targetS); let findingList = rep && rep.findings ? rep.findings : [];
-    const matrix = document.getElementById('iso-matrix-container'); matrix.innerHTML = "";
-    let maxItemsCount = 0; Object.keys(dailyChecklistDataISO).forEach(colKey => { let count = 0, c = dailyChecklistDataISO[colKey]; count += (c.items ? c.items.length : 0) + (c.items2 ? c.items2.length : 0) + (c.items3 ? c.items3.length : 0); count += 1; if(c.title2) count += 1; if(c.title3) count += 1; if (count > maxItemsCount) maxItemsCount = count; });
-    const flatLists = {}; Object.keys(dailyChecklistDataISO).forEach(colKey => { let c = dailyChecklistDataISO[colKey], arr = []; const injectSection = (title, items) => { arr.push({ isHeader: true, text: title }); items.forEach(it => { let cleanTitle = title.trim().replace(/\s+/g, ' '); let cleanItem = it.trim().replace(/\s+/g, ' '); let hasFinding = findingList.some(f => { let fCat = (f.category || "").trim().replace(/\s+/g, ' '); let fIt = (f.item || "").trim().replace(/\s+/g, ' '); return fCat === cleanTitle && fIt === cleanItem; }); arr.push({ isHeader: false, text: it, checked: !hasFinding }); }); }; injectSection(c.title, c.items); if (c.title2) injectSection(c.title2, c.items2); if (c.title3) injectSection(c.title3, c.items3); flatLists[colKey] = arr; });
-    let matrixHtml = ""; for (let rowIdx = 0; rowIdx < maxItemsCount; rowIdx++) { Object.keys(dailyChecklistDataISO).forEach(colKey => { let cellData = flatLists[colKey][rowIdx]; if (cellData) { if (cellData.isHeader) { matrixHtml += `<div style="border: 0.5px solid #000; background:#e6e6e6; padding: 4px; font-weight: bold; text-align: center;">${cellData.text}</div>`; } else { let boxSign = cellData.checked ? "✔" : ""; let crossClass = cellData.checked ? "" : "text-decoration: line-through; color: #dc3545; font-weight: bold;"; matrixHtml += `<div style="border: 0.5px solid #000; padding: 3px 5px; display: flex; justify-content: space-between; align-items: center; background: #fff;"><span style="${crossClass}">${cellData.text}</span><span style="display:inline-block; width:12px; height:12px; border:1px solid #000; text-align:center; line-height:10px; font-size:9px; font-weight:bold; color: ${cellData.checked ? '#000' : '#dc3545'};">${boxSign}</span></div>`; } } else { matrixHtml += `<div style="border: 0.5px solid #000; background: #fff;"></div>`; } }); }
-    matrix.innerHTML = matrixHtml; const isoFindingsThead = document.getElementById('iso-findings-tbody'); isoFindingsThead.innerHTML = "";
-    if (findingList.length === 0) { isoFindingsThead.innerHTML = `<tr><td colspan="5" style="border: 1px solid #000; padding: 8px; text-align: center; color: green; font-weight: bold;">سليم 100% (لا توجد ملاحظات)</td></tr>`; } else { findingList.forEach((f, index) => { isoFindingsThead.innerHTML += `<tr><td style="border: 1px solid #000; padding: 4px;">0${index+1}</td><td style="border: 1px solid #000; padding: 4px;">${f.location || '-'}</td><td style="border: 1px solid #000; padding: 4px; text-align: right; color:#dc3545; font-weight: bold;">${f.category} - ${f.item} <br> <span style="color:#000; font-weight:normal;">(${f.note || 'ملاحظة عدم مطابقة'})</span></td><td style="border: 1px solid #000; padding: 4px;">${f.responsible || '-'}</td><td style="border: 1px solid #000; padding: 4px; color:#dc3545; font-weight: bold;">مفتوح</td></tr>`; }); }
+    
+    if (targetS === 'صباحي') { 
+        document.getElementById('iso-shift-am').innerHTML = '✔'; 
+        document.getElementById('iso-shift-pm').innerHTML = ''; 
+    } else { 
+        document.getElementById('iso-shift-am').innerHTML = ''; 
+        document.getElementById('iso-shift-pm').innerHTML = '✔'; 
+    }
+
+    let findingList = rep.findings || [];
+
+    const matrix = document.getElementById('iso-matrix-container'); 
+    matrix.innerHTML = "";
+    
+    let maxItemsCount = 0; 
+    Object.keys(dailyChecklistDataISO).forEach(colKey => { 
+        let count = 0, c = dailyChecklistDataISO[colKey]; 
+        count += (c.items ? c.items.length : 0) + (c.items2 ? c.items2.length : 0) + (c.items3 ? c.items3.length : 0); 
+        count += 1; if(c.title2) count += 1; if(c.title3) count += 1; 
+        if (count > maxItemsCount) maxItemsCount = count; 
+    });
+
+    const flatLists = {}; 
+    Object.keys(dailyChecklistDataISO).forEach(colKey => { 
+        let c = dailyChecklistDataISO[colKey], arr = []; 
+        const injectSection = (title, items) => { 
+            arr.push({ isHeader: true, text: title }); 
+            items.forEach(it => { 
+                let hasFinding = findingList.some(f => {
+                    return (f.category || "").trim() === title.trim() && (f.item || "").trim() === it.trim();
+                });
+                arr.push({ isHeader: false, text: it, isSafe: !hasFinding }); 
+            }); 
+        }; 
+        injectSection(c.title, c.items); 
+        if (c.title2) injectSection(c.title2, c.items2); 
+        if (c.title3) injectSection(c.title3, c.items3); 
+        flatLists[colKey] = arr; 
+    });
+
+    let matrixHtml = ""; 
+    for (let rowIdx = 0; rowIdx < maxItemsCount; rowIdx++) { 
+        Object.keys(dailyChecklistDataISO).forEach(colKey => { 
+            let cellData = flatLists[colKey][rowIdx]; 
+            if (cellData) { 
+                if (cellData.isHeader) { 
+                    matrixHtml += `<div style="border: 1px solid #000; background:#e6e6e6; padding: 4px; font-weight: bold; text-align: center;">${cellData.text}</div>`; 
+                } else { 
+                    let boxSign = cellData.isSafe ? "✔" : "✘"; 
+                    let boxColor = cellData.isSafe ? "#000" : "#dc3545";
+                    let textColor = cellData.isSafe ? "#000" : "#dc3545";
+                    let textDecor = cellData.isSafe ? "none" : "line-through";
+                    
+                    matrixHtml += `<div style="border: 1px solid #000; padding: 3px 5px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                        <span style="color: ${textColor}; text-decoration: ${textDecor}; font-weight: ${cellData.isSafe ? 'normal' : 'bold'};">${cellData.text}</span>
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; text-align:center; line-height:10px; font-size:10px; font-weight:bold; color: ${boxColor};">${boxSign}</span>
+                    </div>`; 
+                } 
+            } else { 
+                matrixHtml += `<div style="border: 1px solid #000; background: #fff;"></div>`; 
+            } 
+        }); 
+    }
+    
+    matrix.innerHTML = matrixHtml; 
+    
+    const isoFindingsThead = document.getElementById('iso-findings-tbody'); 
+    isoFindingsThead.innerHTML = "";
+    
+    if (findingList.length === 0) { 
+        isoFindingsThead.innerHTML = `<tr><td colspan="5" style="border: 1px solid #000; padding: 12px; text-align: center; color: green; font-weight: bold; font-size: 1.1rem;">المنطقة مطابقة وسليمة (لا توجد ملاحظات)</td></tr>`; 
+    } else { 
+        findingList.forEach((f, index) => { 
+            isoFindingsThead.innerHTML += `<tr>
+                <td style="border: 1px solid #000; padding: 6px;">${index + 1}</td>
+                <td style="border: 1px solid #000; padding: 6px;">${f.location || '-'}</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: right; color:#dc3545; font-weight: bold;">
+                    ${f.category} - ${f.item} <br> 
+                    <span style="color:#333; font-weight:normal;">(${f.note || 'ملاحظة عدم مطابقة'})</span>
+                </td>
+                <td style="border: 1px solid #000; padding: 6px;">${f.responsible || '-'}</td>
+                <td style="border: 1px solid #000; padding: 6px; color:#dc3545; font-weight: bold;">مفتوح</td>
+            </tr>`; 
+        }); 
+    }
+    
     document.getElementById('printable-daily-report').style.display = 'block';
 }
 function exportIsoDailyPDF() { let el = document.getElementById('printable-daily-report'); if (el.style.display === 'none') return alert("قم بعرض النموذج أولاً"); let reportDate = document.getElementById('isoReportDate').value; html2pdf().set({ margin: 0.3, filename: `AS_F_01_01_${reportDate}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '#iso-matrix-container'] } }).from(el).save(); }
