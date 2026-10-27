@@ -363,10 +363,61 @@ function generateSpiReport() {
 // ==========================================
 function switchFodTab(tab) { document.querySelectorAll('#fod-section .tab-btn').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('#fod-section .tab-content').forEach(c => c.classList.remove('active')); document.getElementById('btn-fod-' + tab).classList.add('active'); document.getElementById('tab-fod-' + tab).classList.add('active'); }
 function generateFodInputRows() { const month = document.getElementById('fodInputMonth').value; if(!month) return alert("اختر الشهر"); document.getElementById('fodForm').style.display = 'block'; const tbody = document.getElementById('fod-input-tbody'); tbody.innerHTML = ''; fodLocations.forEach((item, index) => { tbody.innerHTML += `<tr><td><input type="date" id="fod_date_${index}" required style="width:100%;"></td><td><b>${item.loc}</b></td><td>${item.area}</td><td><input type="number" step="0.001" id="fod_p_${index}" required style="width:100%;"></td><td><input type="number" step="0.001" id="fod_m_${index}" required style="width:100%;"></td></tr>`; }); }
-function submitFOD(e) {
-    if (e) e.preventDefault(); const btn = document.getElementById('submitFodBtn'), msg = document.getElementById('fodMsg'); let fodDataArray = [], localFodArray = [];
-    fodLocations.forEach((item, index) => { let d = document.getElementById(`fod_date_${index}`).value, p = parseFloat(document.getElementById(`fod_p_${index}`).value) || 0, m = parseFloat(document.getElementById(`fod_m_${index}`).value) || 0, newId = "FOD-" + Date.now() + "-" + index; fodDataArray.push({ id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m }); localFodArray.push({ ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m }); });
-    safePost({ action: "submitBulkFOD", fodDataArray: fodDataArray }, btn, msg, "تم الحفظ!", () => { globalFod = [...globalFod, ...localFodArray]; setTimeout(() => { document.getElementById('fodForm').style.display = 'none'; }, 1500); });
+async function submitFOD(e) {
+    if (e) e.preventDefault(); 
+    const btn = document.getElementById('submitFodBtn');
+    const msg = document.getElementById('fodMsg'); 
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+    msg.style.color = "#003366";
+    msg.innerText = "جاري إرسال البيانات لجوجل...";
+
+    let successCount = 0;
+    let localFodArray = [];
+
+    // إرسال البيانات صف بصف لضمان توافقها مع Google Apps Script
+    for (let index = 0; index < fodLocations.length; index++) {
+        let item = fodLocations[index];
+        let dateEl = document.getElementById(`fod_date_${index}`);
+        let pEl = document.getElementById(`fod_p_${index}`);
+        let mEl = document.getElementById(`fod_m_${index}`);
+
+        let d = dateEl ? dateEl.value : "";
+        let p = pEl ? parseFloat(pEl.value) || 0 : 0;
+        let m = mEl ? parseFloat(mEl.value) || 0 : 0;
+        let newId = "FOD-" + Date.now() + "-" + index;
+
+        let singleFodObj = {
+            id: newId, date: d, location: item.loc, area: item.area, plastic: p, metal: m
+        };
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "submitFOD", fodData: singleFodObj })
+            });
+            localFodArray.push({ ID: newId, Date: d, Location: item.loc, Area: item.area, Plastic: p, Metal: m });
+            successCount++;
+        } catch (err) {
+            console.error("خطأ في حفظ الـ FOD:", err);
+        }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الشهر';
+    
+    if (successCount > 0) {
+        globalFod = [...globalFod, ...localFodArray];
+        msg.style.color = "green";
+        msg.innerText = "✅ تم حفظ بيانات الـ FOD بنجاح!";
+        setTimeout(() => { document.getElementById('fodForm').style.display = 'none'; msg.innerText = ''; }, 1500);
+    } else {
+        msg.style.color = "red";
+        msg.innerText = "❌ حدث خطأ، يرجى التحقق من الاتصال بالإنترنت.";
+    }
 }
 function generateFodPrintReport() {
     const m = document.getElementById('fodReportMonth').value; if (!m) return alert("اختر الشهر");
