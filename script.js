@@ -102,42 +102,7 @@ function generateFodInputRows() {
 }
 
 // دالة الإرسال لسيرفر جوجل (تم تعديلها لترسل صف بصف كما هو مبرمج في السيرفر)
-async function submitFOD(e) {
-    if (e) e.preventDefault();
-    const btn = document.getElementById('submitFodBtn');
-    const msg = document.getElementById('fodMsg');
-    
-    if (btn) { btn.disabled = true; btn.innerHTML = 'جاري الإرسال لجوجل...'; }
-
-    let localFodArray = [];
-    
-    // إرسال البيانات صف بصف ببطء لتجنب رفض جوجل للطلبات المتزامنة
-    for (let i = 0; i < fodLocations.length; i++) {
-        let it = fodLocations[i];
-        let d = document.getElementById(`fod_date_${i}`).value || new Date().toISOString().split('T')[0];
-        let p = parseFloat(document.getElementById(`fod_p_${i}`).value) || 0;
-        let m = parseFloat(document.getElementById(`fod_m_${i}`).value) || 0;
-        let nId = "FOD-" + Date.now() + "-" + i;
-
-        let obj = { id: nId, date: d, location: it.loc, area: it.area, plastic: p, metal: m };
-        localFodArray.push({ ID: nId, Date: d, Location: it.loc, Area: it.area, Plastic: p, Metal: m });
-        
-        try {
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "submitFOD", fodData: obj }) // الكلمة السحرية اللي جوجل مستنيها
-            });
-        } catch(err) { console.error("خطأ:", err); }
-    }
-
-    if (btn) { btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; }
-    if (msg) { msg.style.color = "green"; msg.innerText = "تم التسجيل في جوجل شيت!"; }
-    
-    globalFod = [...globalFod, ...localFodArray];
-    setTimeout(() => { document.getElementById('fodForm').style.display = 'none'; if(msg) msg.innerText = ''; }, 1500);
-}
+async function submitFOD(e){ if(e) e.preventDefault(); const b=document.getElementById('submitFodBtn'), m=document.getElementById('fodMsg'); if(b){b.disabled=true; b.innerHTML='جاري الإرسال...';} let fArr=[], lArr=[]; fodLocations.forEach((it,i)=>{ let d=document.getElementById(`fod_date_${i}`)?.value||new Date().toISOString().split('T')[0], p=parseFloat(document.getElementById(`fod_p_${i}`)?.value)||0, mt=parseFloat(document.getElementById(`fod_m_${i}`)?.value)||0, nId="FOD-"+Date.now()+"-"+i; fArr.push({id:nId,date:d,location:it.loc,area:it.area,plastic:p,metal:mt}); lArr.push({ID:nId,Date:d,Location:it.loc,Area:it.area,Plastic:p,Metal:mt}); }); try{ await fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:"submitBulkFOD",fodDataArray:fArr})}); globalFod=[...globalFod,...lArr]; if(m){m.style.color="green";m.innerText="تم التسجيل في الشيت!";} setTimeout(()=>{document.getElementById('fodForm').style.display='none';},1500); }catch(err){console.error(err);} if(b){b.disabled=false; b.innerHTML='حفظ بيانات الشهر';} }
 // دوال التقرير الشهري المجمع
 function formatTrendDifference(dV, iHb, un=""){ let n=parseFloat(dV); if(isNaN(n)||n===0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`; let iP=n>0, fV=Math.abs(n).toFixed(un.includes("KG")?3:0), iG=iHb?iP:!iP, clr=iG?"#28a745":"#dc3545", aI=iP?"fa-arrow-up":"fa-arrow-down"; return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`; }
 function getPreviousMonthStr(ms){ let [y,m]=ms.split('-'); let d=new Date(y,parseInt(m)-2); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
