@@ -290,11 +290,11 @@
     <h1 style="color: #dc3545; text-align: center; font-weight: 900; font-size: 2rem;">سجل الحوادث والوقائع</h1>
     <div class="nav-controls">
       <button class="new-btn" onclick="clearIncidentForm()"><i class="fa-solid fa-plus"></i> واقعة جديدة</button>
-      <button class="nav-btn" onclick="navIncidents('first')"><i class="fa-solid fa-angles-right"></i></button>
-      <button class="nav-btn" onclick="navIncidents('prev')"><i class="fa-solid fa-angle-right"></i></button>
-      <div class="nav-counter" id="nav-incident-counter">0 / 0</div>
-      <button class="nav-btn" onclick="navIncidents('next')"><i class="fa-solid fa-angle-left"></i></button>
-      <button class="nav-btn" onclick="navIncidents('last')"><i class="fa-solid fa-angles-left"></i></button>
+      <button type="button" onclick="changeIncPage('first')" class="nav-btn"> « </button>
+<button type="button" onclick="changeIncPage('prev')" class="nav-btn"> ‹ </button>
+<span id="incPageIndicator" style="margin: 0 8px; font-weight: bold;"> 1 / 1 </span>
+<button type="button" onclick="changeIncPage('next')" class="nav-btn"> › </button>
+<button type="button" onclick="changeIncPage('last')" class="nav-btn"> » </button>
     </div>
     
     <div class="survey-container">
