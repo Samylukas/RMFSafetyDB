@@ -18,41 +18,23 @@
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
- <!-- شاشة التحميل -->
+<!-- شاشة التحميل -->
   <div id="splash-screen">
     <div class="splash-content" style="text-align: center;">
       <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
       <div class="runway-container">
-        <span class="runway-num left-num">33</span>
-        <div class="runway-track"></div>
-        <span class="runway-num right-num">15</span>
+        <div class="runway-track">
+          <span class="runway-num left-num">15</span>
+          <span class="runway-num right-num">33</span>
+        </div>
         <i class="fa-solid fa-plane loading-airplane"></i>
       </div>
     </div>
   </div>
 
-  <!-- شاشة تسجيل الدخول بخلفية بيضاء -->
-  <div id="login-screen" style="display: none;">
-      <div class="login-box" style="border: 1px solid #e1e4e8; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
-          <img src="LOGO-removebg-preview (1).png" alt="Logo">
-          <h2 style="color: var(--primary); margin-top: 10px;">تسجيل الدخول</h2>
-          <div class="input-group">
-              <input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" required autocomplete="off">
-              <datalist id="usersList"></datalist>
-              <i class="fa-solid fa-user"></i>
-          </div>
-          <div class="input-group">
-              <input type="password" id="loginPass" placeholder="كلمة المرور" required autofocus onkeypress="if(event.key === 'Enter') login()">
-              <i class="fa-solid fa-lock"></i>
-          </div>
-          <button class="login-btn" onclick="login()">دخول</button>
-          <p id="loginError" style="color: red; margin-top: 10px; display: none;">بيانات الدخول غير صحيحة!</p>
-      </div>
-  </div>
-
   <!-- شاشة تسجيل الدخول -->
   <div id="login-screen" style="display: none;">
-      <div class="login-box">
+      <div class="login-box" style="border: 1px solid #e1e4e8; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
           <img src="LOGO-removebg-preview (1).png" alt="Logo">
           <h2 style="color: var(--primary); margin-top: 10px;">تسجيل الدخول</h2>
           <div class="input-group">
