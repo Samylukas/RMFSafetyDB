@@ -132,20 +132,101 @@ function filterRegOptions(showAll) {
 }
 function destroyCaptainCharts() { if (chartInstances.air) chartInstances.air.destroy(); if (chartInstances.dates) chartInstances.dates.destroy(); if (chartInstances.eval) chartInstances.eval.destroy(); }
 function generateModernReport() {
-    let fromD = document.getElementById('fromDate').value, toD = document.getElementById('toDate').value; if (!fromD || !toD) return alert("اختر الفترة أولاً");
-    let fd = new Date(fromD), td = new Date(toD); td.setHours(23, 59, 59, 999); document.getElementById('printable-report').style.display = 'block';
+    let fromD = document.getElementById('fromDate').value, toD = document.getElementById('toDate').value; 
+    if (!fromD || !toD) return alert("اختر الفترة أولاً");
+    
+    let fd = new Date(fromD), td = new Date(toD); td.setHours(23, 59, 59, 999); 
+    document.getElementById('printable-report').style.display = 'block';
+    
     let filtered = globalSurveys.filter(s => { let sd = new Date(s.Date); return sd >= fd && sd <= td; });
-    document.getElementById('report-date-range').innerText = `الفترة من ${fromD} إلى ${toD}`; document.getElementById('stat-total').innerText = filtered.length;
+    document.getElementById('report-date-range').innerText = `الفترة من ${fromD} إلى ${toD}`; 
+    document.getElementById('stat-total').innerText = filtered.length;
+    
     let airlinesCount = {}, datesCount = {}, evalsCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [];
     const tbody = document.getElementById('flights-eval-tbody'); tbody.innerHTML = '';
-    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} }; criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
+    
+    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} }; 
+    criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
+    
     filtered.forEach(s => {
-        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1; let dStr = s.Date ? String(s.Date).split('T')[0] : 'Unknown'; datesCount[dStr] = (datesCount[dStr] || 0) + 1;
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1; 
+        let dStr = s.Date ? String(s.Date).split('T')[0] : 'Unknown'; datesCount[dStr] = (datesCount[dStr] || 0) + 1;
         let fCounts = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 };
-        criteriaList.forEach(crit => { let val = s[crit] || "Blank"; if(fCounts[val] !== undefined) fCounts[val]++; if(evalsCount[val] !== undefined) evalsCount[val]++; if(matrixScores[val]) matrixScores[val][crit]++; });
+        
+        criteriaList.forEach(crit => { 
+            let val = s[crit] || "Blank"; 
+            if(fCounts[val] !== undefined) fCounts[val]++; 
+            if(evalsCount[val] !== undefined) evalsCount[val]++; 
+            if(matrixScores[val]) matrixScores[val][crit]++; 
+        });
+        
         if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
+        
         tbody.innerHTML += `<tr><td><b>${s.CAR || ''}</b></td><td>${s.Flight_NO || ''}</td><td>${dStr}</td><td>${s.REG || ''}</td><td style="color:#28a745; font-weight:bold;">${fCounts["Excellent"]}</td><td style="color:#ffc107; font-weight:bold;">${fCounts["Good"]}</td><td style="color:#dc3545; font-weight:bold;">${fCounts["Poor"]}</td><td>${fCounts["N/A"]}</td><td>${fCounts["Blank"]}</td></tr>`;
     });
+    
+    document.getElementById('stat-airlines').innerText = Object.keys(airlinesCount).length; 
+    let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0); 
+    document.getElementById('stat-excellent').innerText = `${totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0}%`;
+    
+    destroyCaptainCharts(); Chart.defaults.font.family = "'Cairo', sans-serif";
+    chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+    let sortedDates = Object.keys(datesCount).sort(); 
+    chartInstances.dates = new Chart(document.getElementById('datesChart').getContext('2d'), { type: 'line', data: { labels: sortedDates, datasets: [{ label: 'النشاط اليومي', data: sortedDates.map(d => datesCount[d]), borderColor: '#f39c12', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } });
+    chartInstances.eval = new Chart(document.getElementById('evalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+    
+    const addContainer = document.getElementById('additional-tables-container');
+    
+    // إصلاح اتجاه النصوص والرأسية لتعمل بكفاءة مع الـ PDF
+    let extraHtml = `<div class="avoid-page-break" style="margin-top: 35px; direction: ltr;">
+        <h3 style="color:#003366; text-align:center; margin-bottom:12px; font-size:1.15rem;">Safety Captain Survey Report Evaluation Matrix</h3>
+        <div style="overflow-x:auto;">
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 10px; text-align: center;">
+                <thead>
+                    <tr style="background:#f2f4f8;">
+                        <th style="border: 1px solid #999; padding: 4px; width: 60px;">Rating</th>`;
+                        
+    criteriaList.forEach(crit => { 
+        let shortCrit = crit.replace("Communication", "Comm").replace("Performance", "Perf"); 
+        extraHtml += `<th style="border: 1px solid #999; height: 130px; vertical-align: bottom; padding-bottom: 5px;">
+            <div style="writing-mode: vertical-rl; white-space: nowrap; margin: auto; font-size: 10.5px;">${shortCrit}</div>
+        </th>`; 
+    });
+    
+    extraHtml += `</tr></thead><tbody>`;
+    const rowStyles = { "Excellent": "background:#28a745; color:white; font-weight:bold;", "Good": "background:#ffc107; color:black; font-weight:bold;", "Poor": "background:#dc3545; color:white; font-weight:bold;", "N/A": "background:#6c757d; color:white; font-weight:bold;", "Blank": "background:#003366; color:white; font-weight:bold;" };
+    
+    ["Excellent", "Good", "Poor", "N/A", "Blank"].forEach(rating => { 
+        extraHtml += `<tr><td style="${rowStyles[rating]} border: 1px solid #999; padding: 4px;">${rating}</td>`; 
+        criteriaList.forEach(crit => { 
+            let score = matrixScores[rating][crit]; 
+            extraHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: ${score > 0 ? '#fff' : '#fafafa'}; color: ${rating === 'Poor' && score > 0 ? '#dc3545' : '#000'}; font-weight:${score > 0 ? 'bold' : 'normal'};">${score}</td>`; 
+        }); 
+        extraHtml += `</tr>`; 
+    });
+    
+    // إجبار اتجاه اليسار للغة الإنجليزية في قسم الملاحظات
+    extraHtml += `</tbody></table></div></div>
+    <div class="avoid-page-break" style="margin-top: 35px; direction: ltr; text-align: left;">
+        <h3 style="color:#003366; margin-bottom:10px;">Captain Comments & Observations:</h3>
+        <table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px;">
+            <thead style="background: #e6e6e6;">
+                <tr>
+                    <th style="border: 1px solid #000; padding: 6px;">Airline</th>
+                    <th style="border: 1px solid #000; padding: 6px;">FLTNO</th>
+                    <th style="border: 1px solid #000; padding: 6px;">Type</th>
+                    <th style="border: 1px solid #000; padding: 6px;">Date</th>
+                    <th style="border: 1px solid #000; padding: 6px;">REG</th>
+                    <th style="border: 1px solid #000; padding: 6px;">Comments</th>
+                </tr>
+            </thead><tbody>`;
+            
+    if (commentsList.length === 0) extraHtml += `<tr><td colspan="6" style="text-align: center;">No comments.</td></tr>`;
+    else commentsList.forEach(s => { extraHtml += `<tr><td style="border: 1px solid #000; padding: 6px;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''}</td><td style="border: 1px solid #000; padding: 6px;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Captain_Comments}</td></tr>`; });
+    
+    extraHtml += `</tbody></table></div>`; 
+    addContainer.innerHTML = extraHtml;
+}
     document.getElementById('stat-airlines').innerText = Object.keys(airlinesCount).length; let totalEvals = Object.values(evalsCount).reduce((a, b) => a + b, 0); document.getElementById('stat-excellent').innerText = `${totalEvals > 0 ? Math.round((evalsCount["Excellent"] / totalEvals) * 100) : 0}%`;
     destroyCaptainCharts(); Chart.defaults.font.family = "'Cairo', sans-serif";
     chartInstances.air = new Chart(document.getElementById('airlinesChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
