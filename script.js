@@ -1325,9 +1325,6 @@ function generateSpiReport() {
             for (let i = 1; i <= 12; i++) {
                 let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
                 totalSpi += val;
-                rowHtml += `<td>${val || '-'}</td>`;for (let i = 1; i <= 12; i++) {
-                let val = monthlySpiParsed[i] ? monthlySpiParsed[i][spi] || 0 : 0;
-                totalSpi += val;
                 rowHtml += `<td>${val || '-'}</td>`;
             }
             rowHtml += `<td style="font-weight:bold; color:#003366;">${totalSpi}</td></tr>`;
