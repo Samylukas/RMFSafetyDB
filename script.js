@@ -20,42 +20,11 @@ let chartInstances = {}, monthlyChart1 = null, monthlyChart2 = null, mrSurveyAir
 // 1. شاشة البداية والدخول
 // ==========================================
 let isAppLoaded = false;
-function finishLoading() {
-    if (isAppLoaded) return;
-    isAppLoaded = true;
-    try {
-        const splash = document.getElementById('splash-screen');
-        const loginScreen = document.getElementById('login-screen');
-        const passInp = document.getElementById('loginPass');
-        
-        if (splash) {
-            splash.classList.add('smoke-out');
-            setTimeout(() => {
-                splash.style.display = 'none';
-                if (loginScreen) {
-                    loginScreen.style.display = 'flex';
-                    if (passInp) passInp.focus();
-                }
-            }, 800);
-        } else if (loginScreen) {
-            loginScreen.style.display = 'flex';
-        }
-    } catch (e) { console.error(e); }
-}
-setTimeout(finishLoading, 3800);
+// دالة عرض شاشة الدخول ومنع ظهور لوحة التحكم بعد السبلاش سكرين
+function finishLoading(){if(isAppLoaded)return;isAppLoaded=true;try{const splash=document.getElementById('splash-screen'),loginScreen=document.getElementById('login-screen'),passInp=document.getElementById('loginPass'),header=document.getElementById('app-header');if(header)header.style.display='none';if(loginScreen)loginScreen.style.display='flex';if(splash){splash.classList.add('smoke-out');setTimeout(()=>{splash.style.display='none';if(passInp)passInp.focus();},800);}else if(passInp){passInp.focus();}}catch(e){console.error(e);}}
 
-async function safePost(payload, btnElement, msgElement, successText, onSuccessCallback) {
-    if (btnElement) { btnElement.disabled = true; btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال...'; }
-    if (msgElement) { msgElement.style.color = "#003366"; msgElement.innerText = "جاري الاتصال بالسيرفر..."; }
-    try {
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-        if (onSuccessCallback) onSuccessCallback();
-        if (msgElement && successText) { msgElement.style.color = "green"; msgElement.innerText = "✅ " + successText; }
-    } catch (err) {
-        if (msgElement) { msgElement.style.color = "red"; msgElement.innerText = "❌ تعذر الاتصال بالسيرفر!"; }
-    }
-    setTimeout(() => { if (btnElement) { btnElement.disabled = false; btnElement.innerHTML = btnElement.dataset.origText; } if (msgElement) msgElement.innerText = ""; }, 2000);
-}
+// دالة إظهار وإخفاء كلمة المرور في نافذة الدخول
+function toggleLoginPassword(){const p=document.getElementById('loginPass'),i=document.getElementById('passToggleIcon');if(!p||!i)return;if(p.type==='password'){p.type='text';i.classList.remove('fa-eye');i.classList.add('fa-eye-slash');}else{p.type='password';i.classList.remove('fa-eye-slash');i.classList.add('fa-eye');}}
 
 function login() {
     const userField = document.getElementById('loginUser').value.trim();
