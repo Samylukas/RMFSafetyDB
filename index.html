@@ -671,6 +671,47 @@
     </div>
   </div>
 
-  <script src="script.js?v=23.0"></script>
+ <script src="script.js?v=30.0"></script>
+  
+  <!-- كود صمام الأمان الإجباري (مستقل عن أي ملفات خارجية) -->
+  <script>
+    var isTransitioned = false;
+    
+    function executeSplashTransition() {
+        if (isTransitioned) return;
+        isTransitioned = true;
+        
+        var splash = document.getElementById('splash-screen');
+        var login = document.getElementById('login-screen');
+        var passInp = document.getElementById('loginPass');
+        
+        if (splash) {
+            // تطبيق تأثير التبخر برمجياً لضمان تنفيذه 100%
+            splash.style.transition = "all 0.8s ease";
+            splash.style.opacity = "0";
+            splash.style.filter = "blur(15px)";
+            splash.style.transform = "scale(1.3)";
+            
+            // إخفاء التحميل وفتح الدخول بعد التبخر
+            setTimeout(function() {
+                splash.style.display = 'none';
+                if (login) {
+                    login.style.display = 'flex';
+                    if (passInp) passInp.focus();
+                }
+            }, 800);
+        }
+    }
+
+    // تعطيل الدالة القديمة عشان الشاشة ماتقفلش بدري قبل ما الطيارة تخلص حركتها
+    window.finishLoading = function() {
+        console.log("البيانات حملت، في انتظار انتهاء حركة الطائرة...");
+    };
+
+    // إجبار السيستم يتبخر ويفتح شاشة الدخول بعد 3.8 ثانية بالمللي (وقت وقوف الطيارة)
+    setTimeout(executeSplashTransition, 3800);
+  </script>
+</body>
+</html>
 </body>
 </html>
