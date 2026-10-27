@@ -215,11 +215,11 @@ async function safePost(payload, btnElement, msgElement, successText, onSuccessC
 }
 
 // ==========================================
-// شاشة البداية والدخول
+// شاشة البداية والدخول (صمام أمان وتأثير الدخان)
 // ==========================================
 let isAppLoaded = false;
 function finishLoading() {
-    if (isAppLoaded) return; // عشان متشتغلش مرتين
+    if (isAppLoaded) return;
     isAppLoaded = true;
     try {
         const splash = document.getElementById('splash-screen');
@@ -227,38 +227,26 @@ function finishLoading() {
         const passInp = document.getElementById('loginPass');
         
         if (splash) {
-            splash.classList.add('smoke-out'); // تبخر الشاشة
+            splash.classList.add('smoke-out'); // تشغيل تأثير التبخر الدخاني
             setTimeout(() => {
-                splash.style.display = 'none';
+                splash.style.display = 'none'; // إخفاء شاشة التحميل
                 if (loginScreen) {
-                    loginScreen.style.display = 'flex';
+                    loginScreen.style.display = 'flex'; // إظهار شاشة الدخول
                     if (passInp) passInp.focus();
                 }
-            }, 800); // وقت تأثير التبخر
+            }, 800); // 800 مللي ثانية وهي مدة التبخر
+        } else if (loginScreen) {
+            loginScreen.style.display = 'flex';
         }
     } catch (e) {
         console.error(e);
     }
 }
 
-// صمام أمان: إجبار السيستم يفتح شاشة الدخول بعد 4 ثواني بالظبط مهما حصل
-setTimeout(finishLoading, 4000);
-function login() {
-    const userField = document.getElementById('loginUser').value.trim();
-    const passField = document.getElementById('loginPass').value.trim();
-    const errorMsg = document.getElementById('loginError');
-
-    let validUser = globalUsers.find(u => u.Username === userField && String(u.Password) === passField);
-    
-    if (validUser || (globalUsers.length === 0 && passField === "1234") || (userField.toLowerCase() === "admin" && passField === "1234")) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-header').style.display = 'flex';
-        openSection('main-dashboard');
-    } else {
-        errorMsg.style.display = 'block';
-        document.getElementById('loginPass').value = "";
-    }
-}
+// إجبار السيستم يشغل الدخان ويفتح الدخول بعد 3.8 ثانية (وقت وقوف الطيارة بالظبط)
+window.addEventListener('load', () => {
+    setTimeout(finishLoading, 3800);
+});
 
 function openSection(sectionId) {
     document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
