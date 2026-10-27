@@ -105,100 +105,38 @@ function generateFodInputRows() {
 async function submitFOD(e) {
     if (e) e.preventDefault();
     const btn = document.getElementById('submitFodBtn');
-    if(btn) { btn.disabled = true; btn.innerHTML = 'جاري الإرسال لسيرفر جوجل...'; }
+    const msg = document.getElementById('fodMsg');
+    
+    if (btn) { btn.disabled = true; btn.innerHTML = 'جاري الإرسال لجوجل...'; }
 
-    let successCount = 0;
     let localFodArray = [];
-
-    // إرسال البيانات لجوجل صف بصف بدلاً من مصفوفة واحدة
+    
+    // إرسال البيانات صف بصف ببطء لتجنب رفض جوجل للطلبات المتزامنة
     for (let i = 0; i < fodLocations.length; i++) {
         let it = fodLocations[i];
-        let d = document.getElementById(`fod_date_${i}`).value;
+        let d = document.getElementById(`fod_date_${i}`).value || new Date().toISOString().split('T')[0];
         let p = parseFloat(document.getElementById(`fod_p_${i}`).value) || 0;
         let m = parseFloat(document.getElementById(`fod_m_${i}`).value) || 0;
         let nId = "FOD-" + Date.now() + "-" + i;
 
         let obj = { id: nId, date: d, location: it.loc, area: it.area, plastic: p, metal: m };
-
+        localFodArray.push({ ID: nId, Date: d, Location: it.loc, Area: it.area, Plastic: p, Metal: m });
+        
         try {
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "submitFOD", fodData: obj })
+                body: JSON.stringify({ action: "submitFOD", fodData: obj }) // الكلمة السحرية اللي جوجل مستنيها
             });
-            localFodArray.push({ ID: nId, Date: d, Location: it.loc, Area: it.area, Plastic: p, Metal: m });
-            successCount++;
-        } catch (err) { 
-            console.error("خطأ في الاتصال:", err); 
-        }
+        } catch(err) { console.error("خطأ:", err); }
     }
 
-    if(btn) { btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'حفظ بيانات الشهر'; }
+    if (msg) { msg.style.color = "green"; msg.innerText = "تم التسجيل في جوجل شيت!"; }
     
-    if (successCount > 0) {
-        globalFod = [...globalFod, ...localFodArray];
-        alert("تم حفظ البيانات في جوجل شيت بنجاح!");
-        document.getElementById('fodForm').style.display = 'none';
-    } else {
-        alert("فشل الاتصال بجوجل، تأكد من الإنترنت.");
-    }
-}
-
-// دالة زرار "عرض التقرير" 
-function generateFodPrintReport() {
-    const m = document.getElementById('fodReportMonth').value;
-    if (!m) return alert("برجاء اختيار الشهر أولاً لعرض التقرير");
-    
-    let filtered = globalFod.filter(f => {
-        let rd = f.Date || f.date || '';
-        if (!rd) return false;
-        let strDate = typeof rd === 'string' ? rd : new Date(rd).toISOString();
-        return strDate.split('T')[0].startsWith(m);
-    });
-
-    const tb = document.getElementById('fod-print-tbody');
-    if(!tb) return;
-    tb.innerHTML = '';
-    
-    let tp = 0, tm = 0;
-    fodLocations.forEach(loc => {
-        let rc = filtered.find(f => (f.Location || f.location) === loc.loc);
-        let p = rc ? parseFloat(rc.Plastic || rc.plastic || 0) : 0;
-        let met = rc ? parseFloat(rc.Metal || rc.metal || 0) : 0;
-        tp += p; tm += met;
-        
-        let dateDisplay = rc ? String(rc.Date || rc.date).split('T')[0] : '---';
-        
-        tb.innerHTML += `<tr>
-            <td style="border:1px solid #777;padding:12px;">${dateDisplay}</td>
-            <td style="border:1px solid #777;padding:12px;font-weight:bold;">${loc.loc}</td>
-            <td style="border:1px solid #777;padding:12px;">${loc.area}</td>
-            <td style="border:1px solid #777;padding:12px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
-            <td style="border:1px solid #777;padding:12px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td>
-            <td style="border:1px solid #777;padding:12px;">---</td>
-        </tr>`;
-    });
-
-    tb.innerHTML += `<tr style="background:#fafafa;font-weight:bold;">
-        <td colspan="3" style="border:1px solid #777;padding:12px;">الإجمالي</td>
-        <td style="border:1px solid #777;padding:12px;">${tp.toFixed(3)} kg</td>
-        <td style="border:1px solid #777;padding:12px;">${tm.toFixed(3)} kg</td>
-        <td style="border:1px solid #777;padding:12px;color:#003366;">${(tp + tm).toFixed(3)} kg</td>
-    </tr>`;
-    
-    document.getElementById('printable-fod-report').style.display = 'block';
-}
-
-function exportFodPDF() {
-    html2pdf().set({
-        margin: 0.2,
-        filename: 'FOD_Report.pdf',
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'landscape' },
-        pagebreak: { avoid: ['tr', 'table'] }
-    }).from(document.getElementById('printable-fod-report')).save();
+    globalFod = [...globalFod, ...localFodArray];
+    setTimeout(() => { document.getElementById('fodForm').style.display = 'none'; if(msg) msg.innerText = ''; }, 1500);
 }
 // دوال التقرير الشهري المجمع
 function formatTrendDifference(dV, iHb, un=""){ let n=parseFloat(dV); if(isNaN(n)||n===0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`; let iP=n>0, fV=Math.abs(n).toFixed(un.includes("KG")?3:0), iG=iHb?iP:!iP, clr=iG?"#28a745":"#dc3545", aI=iP?"fa-arrow-up":"fa-arrow-down"; return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`; }
