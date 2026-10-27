@@ -541,6 +541,25 @@ function getMonthlyDetailedStats(monthStr) {
     globalFod.forEach(f => { let rawDate = f.Date || f.date || '', fDate = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0]; if (fDate.startsWith(monthStr)) { let p = parseFloat(f.Plastic || f.plastic || 0), met = parseFloat(f.Metal || f.metal || 0); stats.fodTotal += (p + met); } });
     return stats;
 }
+// ==========================================
+// 8. التقرير الشهري المجمع (شامل تصنيف الـ Poor)
+// ==========================================
+function formatTrendDifference(diffVal, isHigherBetter, unit = "") {
+    let num = parseFloat(diffVal); if (isNaN(num) || num === 0) return `<span style="color: #6c757d; font-weight: bold;">0 ${unit} <i class="fa-solid fa-arrows-left-right"></i></span>`;
+    let isPositiveDiff = num > 0, formattedVal = Math.abs(num).toFixed(unit.includes("KG") ? 3 : 0), isGoodOutcome = isHigherBetter ? isPositiveDiff : !isPositiveDiff, color = isGoodOutcome ? "#28a745" : "#dc3545", arrowIcon = isPositiveDiff ? "fa-arrow-up" : "fa-arrow-down";
+    return `<span style="color: ${color}; font-weight: bold; direction: ltr; display: inline-flex; align-items: center; gap: 4px;">${formattedVal} ${unit} <i class="fa-solid ${arrowIcon}"></i></span>`;
+}
+function getPreviousMonthStr(monthStr) { let [year, month] = monthStr.split('-'); let d = new Date(year, parseInt(month) - 2); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+function getMonthlyDetailedStats(monthStr) {
+    let [y, m] = monthStr.split('-'), mNum = parseInt(m).toString(), stats = { monthStr: monthStr, movements: 0, accidents: 0, incidents: 0, findingsTotal: 0, findingsOpen: 0, findingsClosed: 0, surveys: [], fodTotal: 0, incidentsList: [], findingsByDept: {} };
+    let spiRow = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mNum && r.Indicator_Name === "OperationalSPI"); if (spiRow) { try { let parsed = JSON.parse(spiRow.Actual_Value); stats.movements = parseInt(parsed.Movements) || 0; } catch(e){} }
+    globalIncidents.forEach(inc => { let iDate = inc.Date ? String(inc.Date).split('T')[0] : ''; if (iDate.startsWith(monthStr)) { if (inc.Risk_Severity === 'Catastrophic') stats.accidents++; else stats.incidents++; stats.incidentsList.push(inc); } });
+    globalDailyInspections.forEach(d => { let dDate = d.date ? String(d.date).split('T')[0] : ''; if (dDate.startsWith(monthStr)) { d.findings.forEach(f => { stats.findingsTotal++; if (f.status === 'مغلق') stats.findingsClosed++; else stats.findingsOpen++; stats.findingsByDept[f.responsible || f.Responsible] = (stats.findingsByDept[f.responsible || f.Responsible] || 0) + 1; }); } });
+    globalSurveys.forEach(s => { let sDate = s.Date ? String(s.Date).split('T')[0] : ''; if (sDate.startsWith(monthStr)) stats.surveys.push(s); });
+    globalFod.forEach(f => { let rawDate = f.Date || f.date || '', fDate = (typeof rawDate === 'string') ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0]; if (fDate.startsWith(monthStr)) { let p = parseFloat(f.Plastic || f.plastic || 0), met = parseFloat(f.Metal || f.metal || 0); stats.fodTotal += (p + met); } });
+    return stats;
+}
+
 function generateFullMonthlyReport() {
     const currMonthStr = document.getElementById('mainReportMonth').value; 
     if (!currMonthStr) return alert("اختر الشهر أولاً لإصدار التقرير الشامل!");
@@ -556,7 +575,6 @@ function generateFullMonthlyReport() {
     let currStats = getMonthlyDetailedStats(currMonthStr);
     let prevStats = getMonthlyDetailedStats(prevMonthStr);
 
-    // 1. الجدول العام والمقارنات
     const tbody = document.getElementById('mr-general-tbody'); 
     tbody.innerHTML = '';
     const kpiComparisonList = [
@@ -571,25 +589,16 @@ function generateFullMonthlyReport() {
     ];
 
     kpiComparisonList.forEach(item => {
-        let diff = item.curr - item.prev;
-        let trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit);
-        let currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr;
-        let prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
+        let diff = item.curr - item.prev, trendHtml = formatTrendDifference(diff, item.higherBetter, item.unit), currDisplay = item.isFloat ? item.curr.toFixed(3) + " " + item.unit : item.curr, prevDisplay = item.isFloat ? item.prev.toFixed(3) + " " + item.unit : item.prev;
         tbody.innerHTML += `<tr><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold;">${item.label}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr;">${prevDisplay}</td><td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #fdfdfd;">${currDisplay}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;">${trendHtml}</td></tr>`;
     });
 
-    // 2. الرسوم البيانية
-    if (monthlyChart1) monthlyChart1.destroy(); 
-    if (monthlyChart2) monthlyChart2.destroy(); 
-    Chart.defaults.font.family = "'Cairo', sans-serif";
-
+    if (monthlyChart1) monthlyChart1.destroy(); if (monthlyChart2) monthlyChart2.destroy(); Chart.defaults.font.family = "'Cairo', sans-serif";
     monthlyChart1 = new Chart(document.getElementById('mrChart1').getContext('2d'), { type: 'bar', data: { labels: Object.keys(currStats.findingsByDept), datasets: [{ label: 'المخاطر طبقاً للإدارة', data: Object.values(currStats.findingsByDept), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
     
-    let incTypesCount = {}; 
-    currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other'; incTypesCount[cat] = (incTypesCount[cat] || 0) + 1; });
+    let incTypesCount = {}; currStats.incidentsList.forEach(inc => { let cat = inc.Characterization ? inc.Characterization.split('/')[0].trim() : 'Other'; incTypesCount[cat] = (incTypesCount[cat] || 0) + 1; });
     monthlyChart2 = new Chart(document.getElementById('mrChart2').getContext('2d'), { type: 'bar', data: { labels: Object.keys(incTypesCount), datasets: [{ label: 'الوقائع', data: Object.values(incTypesCount), backgroundColor: '#dc3545', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
 
-    // 3. قائمة الوقائع
     document.getElementById('mr-incidents-count-text').innerText = `تم حصر عدد (${currStats.incidents + currStats.accidents}) وقائع/حوادث كالتالي :`;
     const incList = document.getElementById('mr-incidents-list'); incList.innerHTML = "";
     let groupedInc = {};
@@ -599,13 +608,113 @@ function generateFullMonthlyReport() {
         incList.innerHTML += `<div class="avoid-page-break" style="background: #eef2f7; color: #003366; font-weight: bold; padding: 6px 12px; margin-top: 15px; border-left: 4px solid #003366; display: flex; justify-content: space-between;"><span>${catChar}) ${cat}.</span><span>Total: ${groupedInc[cat].length}</span></div>`;
         let tbl = `<table class="avoid-page-break" style="width:100%; border-collapse:collapse; border: 1px solid #000; margin-bottom:15px; font-size:12px;">`;
         groupedInc[cat].forEach((inc, idx) => {
-            let d = inc.Date ? String(inc.Date).split('T')[0] : '';
-            let desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-';
-            let action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
+            let d = inc.Date ? String(inc.Date).split('T')[0] : '', desc = inc.Description ? inc.Description.replace(/\n/g, '<br>') : '-', action = inc.Action_Taken ? inc.Action_Taken.replace(/\n/g, '<br>') : '-';
             tbl += `<tr><td style="border: 1px solid #000; padding:8px; width:5%; text-align:center; font-weight:bold; vertical-align:top;">0${idx+1}</td><td style="border: 1px solid #000; padding:8px; width:65%; vertical-align:top;"><strong style="color:#003366;">Description:</strong><div style="color:#333; margin-top:3px;">${desc}</div><strong style="color:#28a745; display:block; margin-top:8px;">Action Taken:</strong><div style="color:#333; margin-top:3px;">${action}</div></td><td style="border: 1px solid #000; padding:8px; width:15%; text-align:center; vertical-align:top;">${d}</td><td style="border: 1px solid #000; padding:8px; width:15%; vertical-align:top; font-size:11px;"><b>Airline:</b> ${inc.CAR || '-'}<br><b>Agent:</b> ${inc.Equipment_Owned || '-'}</td></tr>`;
         });
         tbl += `</table>`; incList.innerHTML += tbl; catChar = String.fromCharCode(catChar.charCodeAt(0) + 1);
     }
+
+    document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currDateObj.toLocaleString('ar-EG', { month: 'long' })}.`;
+    let matrixScores = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+    criteriaList.forEach(crit => { matrixScores["Excellent"][crit] = 0; matrixScores["Good"][crit] = 0; matrixScores["Poor"][crit] = 0; matrixScores["N/A"][crit] = 0; matrixScores["Blank"][crit] = 0; });
+    let airlinesCount = {}, evalsTotalCount = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, commentsList = [], poorEvaluationsList = [];
+
+    currStats.surveys.forEach(s => {
+        if (s.CAR) airlinesCount[s.CAR] = (airlinesCount[s.CAR] || 0) + 1;
+        let sPoorCriteria = [];
+        criteriaList.forEach(crit => { 
+            let val = s[crit] || "Blank"; 
+            if (matrixScores[val]) matrixScores[val][crit]++; 
+            if (evalsTotalCount[val] !== undefined) evalsTotalCount[val]++; 
+            if (val === "Poor") sPoorCriteria.push(crit);
+        });
+        if (s.Captain_Comments && s.Captain_Comments.trim() !== "") commentsList.push(s);
+        if (sPoorCriteria.length > 0) poorEvaluationsList.push({ flight: s, criteria: sPoorCriteria });
+    });
+
+    if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
+    mrSurveyAirChartInstance = new Chart(document.getElementById('mrSurveyAirChart').getContext('2d'), { type: 'bar', data: { labels: Object.keys(airlinesCount), datasets: [{ label: 'عدد الاستبيانات', data: Object.values(airlinesCount), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
+    mrSurveyEvalChartInstance = new Chart(document.getElementById('mrSurveyEvalChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Excellent', 'Good', 'Poor', 'N/A', 'Blank'], datasets: [{ data: Object.values(evalsTotalCount), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    let matrixHtml = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 11px; text-align: center; direction: ltr;"><thead><tr style="background:#003366; color:#fff;"><th style="padding: 8px; border: 1px solid #999; text-align:left; width: 40%;">Evaluation Criteria</th><th style="padding: 8px; border: 1px solid #999; background:#28a745;">Excellent</th><th style="padding: 8px; border: 1px solid #999; background:#ffc107; color:#000;">Good</th><th style="padding: 8px; border: 1px solid #999; background:#dc3545;">Poor</th><th style="padding: 8px; border: 1px solid #999; background:#6c757d;">N/A</th><th style="padding: 8px; border: 1px solid #999; background:#1a2a6c;">Blank</th></tr></thead><tbody>`;
+    criteriaList.forEach(crit => {
+        matrixHtml += `<tr><td style="padding: 6px 10px; border: 1px solid #ccc; text-align: left; font-weight: bold; background:#f9f9f9;">${crit}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Excellent"][crit] > 0 ? '#28a745' : '#aaa'};">${matrixScores["Excellent"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Good"][crit] > 0 ? '#ffc107' : '#aaa'};">${matrixScores["Good"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; color: ${matrixScores["Poor"][crit] > 0 ? '#dc3545' : '#aaa'};">${matrixScores["Poor"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["N/A"][crit] || 0}</td><td style="padding: 6px; border: 1px solid #ccc; color: #555;">${matrixScores["Blank"][crit] || 0}</td></tr>`;
+    });
+    matrixHtml += `</tbody></table>`;
+    
+    // إضافة جدول التقييمات הضعيفة (Poor) لوحدها
+    if (poorEvaluationsList.length > 0) {
+        matrixHtml += `<div class="avoid-page-break" style="margin-top: 25px; direction: ltr; text-align: left;">
+            <h4 style="color:#dc3545; margin-bottom:8px; border-bottom: 2px solid #dc3545; padding-bottom: 4px;">⚠️ Poor Evaluations Recorded:</h4>
+            <table style="width:100%; border-collapse: collapse; border: 1px solid #dc3545; font-size: 11px;">
+                <thead style="background: #f8d7da; color: #721c24;">
+                    <tr>
+                        <th style="border: 1px solid #dc3545; padding: 6px;">Airline</th>
+                        <th style="border: 1px solid #dc3545; padding: 6px;">FLTNO</th>
+                        <th style="border: 1px solid #dc3545; padding: 6px;">Date</th>
+                        <th style="border: 1px solid #dc3545; padding: 6px;">REG</th>
+                        <th style="border: 1px solid #dc3545; padding: 6px; width: 45%;">Deficient Areas (Poor)</th>
+                    </tr>
+                </thead><tbody>`;
+        poorEvaluationsList.forEach(p => {
+            let dStr = p.flight.Date ? String(p.flight.Date).split('T')[0] : '';
+            matrixHtml += `<tr>
+                <td style="border: 1px solid #dc3545; padding: 6px; font-weight: bold;">${p.flight.CAR || '-'}</td>
+                <td style="border: 1px solid #dc3545; padding: 6px;">${p.flight.Flight_NO || '-'}</td>
+                <td style="border: 1px solid #dc3545; padding: 6px;">${dStr}</td>
+                <td style="border: 1px solid #dc3545; padding: 6px; font-weight: bold;">${p.flight.REG || '-'}</td>
+                <td style="border: 1px solid #dc3545; padding: 6px; color: #dc3545; font-weight: bold;">${p.criteria.join(', ')}</td>
+            </tr>`;
+        });
+        matrixHtml += `</tbody></table></div>`;
+    } else {
+        matrixHtml += `<p class="avoid-page-break" style="margin-top: 20px; color:#28a745; font-weight:bold; direction:ltr; text-align:left;">✅ No Poor evaluations recorded for this month.</p>`;
+    }
+
+    document.getElementById('mr-survey-matrix-container').innerHTML = matrixHtml;
+
+    let commentsHtml = `<table class="avoid-page-break" style="width:100%; border-collapse: collapse; border: 1px solid #000; font-size: 11px; direction:ltr; text-align:left;"><thead style="background: #e6e6e6;"><tr><th style="border: 1px solid #000; padding: 6px;">Airline</th><th style="border: 1px solid #000; padding: 6px;">FLTNO</th><th style="border: 1px solid #000; padding: 6px;">Type</th><th style="border: 1px solid #000; padding: 6px;">Date</th><th style="border: 1px solid #000; padding: 6px;">REG</th><th style="border: 1px solid #000; padding: 6px; width: 45%;">Captain Comments</th></tr></thead><tbody>`;
+    if (commentsList.length === 0) commentsHtml += `<tr><td colspan="6" style="border: 1px solid #000; padding: 12px; text-align: center; color: #777;">No captain comments recorded.</td></tr>`;
+    else commentsList.forEach(s => { commentsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.CAR || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Flight_NO || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.TYPE || '-'}</td><td style="border: 1px solid #000; padding: 6px;">${s.Date ? String(s.Date).split('T')[0] : ''}</td><td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${s.REG || '-'}</td><td style="border: 1px solid #000; padding: 6px; text-align: justify; color: #333;">${s.Captain_Comments}</td></tr>`; });
+    commentsHtml += `</tbody></table>`;
+    document.getElementById('mr-survey-comments-container').innerHTML = commentsHtml;
+
+    const fodDiv = document.getElementById('mr-fod-details');
+    let filteredFod = globalFod.filter(f => { let rawDate = f.Date || f.date || ''; return (typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString()).split('T')[0].startsWith(currMonthStr); });
+
+    if (filteredFod.length === 0 && currStats.fodTotal === 0) {
+        fodDiv.innerHTML = "<p style='color: #777; text-align: center; font-style: italic;'>No F.O.D records for this month.</p>";
+    } else {
+        let totalP = 0, totalM = 0, fodRowsHtml = '';
+        fodLocations.forEach(locItem => {
+            let rec = filteredFod.find(f => (f.Location || f.location) === locItem.loc), p = rec ? parseFloat(rec.Plastic || rec.plastic || 0) : 0, m = rec ? parseFloat(rec.Metal || rec.metal || 0) : 0;
+            totalP += p; totalM += m;
+            let dDisplay = rec && (rec.Date || rec.date) ? String(rec.Date||rec.date).split('T')[0].split('-').reverse().join('/') : '---';
+            fodRowsHtml += `<tr class="avoid-page-break"><td style="border: 1px solid #777; padding: 8px;">${dDisplay}</td><td style="border: 1px solid #777; padding: 8px; text-align: left; font-weight: bold;">${locItem.loc}</td><td style="border: 1px solid #777; padding: 8px;">${locItem.area}</td><td style="border: 1px solid #777; padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td style="border: 1px solid #777; padding: 8px;">---</td></tr>`;
+        });
+        let grossTotal = totalP + totalM;
+        fodDiv.innerHTML = `<table class="avoid-page-break" style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 11px;"><thead><tr style="background: #e6e6e6; color: #000;"><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Day</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Location</th><th rowspan="2" style="border: 1px solid #777; padding: 8px; width: 14%;">Area in M²</th><th colspan="2" style="border: 1px solid #777; padding: 6px;">FOD quantity</th><th rowspan="2" style="border: 1px solid #777; padding: 8px;">Total</th></tr><tr style="background: #e6e6e6; color: #000;"><th style="border: 1px solid #777; padding: 6px;">Plastic</th><th style="border: 1px solid #777; padding: 6px;">Metal</th></tr></thead><tbody>${fodRowsHtml}<tr style="background: #fafafa; font-weight: bold; border-top: 2px solid #000;"><td colspan="3" style="border: 1px solid #777; padding: 8px;">Total</td><td style="border: 1px solid #777; padding: 8px;">${totalP.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px;">${totalM.toFixed(3)} kg</td><td style="border: 1px solid #777; padding: 8px; color: #003366;">${grossTotal.toFixed(3)} kg</td></tr></tbody></table>`;
+    }
+
+    document.getElementById('printable-main-report').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('printable-main-report').offsetTop - 30, behavior: 'smooth' });
+}
+
+function exportMainReportPDF() { 
+    const el = document.getElementById('printable-main-report'); 
+    if(el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً!"); 
+    window.scrollTo(0, 0); 
+    html2pdf().set({ 
+        margin: [0.3, 0.3, 0.3, 0.3], 
+        filename: 'Air_Side_Monthly_Report.pdf', 
+        image: { type: 'jpeg', quality: 1 }, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'css', avoid: ['tr', 'table', 'h3', 'h4', '.avoid-page-break'] }
+    }).from(el).save(); 
+}
 
     // 4. استبيان الكابتن (رسوم بيانية + المصفوفة المقلوبة الأفقية)
     document.getElementById('mr-survey-summary-text').innerText = `تم عمل عدد (${currStats.surveys.length}) استعلام طيارين خلال شهر ${currDateObj.toLocaleString('ar-EG', { month: 'long' })}.`;
