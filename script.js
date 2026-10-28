@@ -223,5 +223,5 @@ function saveNewAircraft(){let reg=document.getElementById('newReg').value.toUpp
 // دالة إضافة مستخدم جديد للنظام
 function addUser(e){e.preventDefault();let role=document.getElementById('newUserRole').value,user=document.getElementById('newUsername').value,pass=document.getElementById('newUserPass').value;safePost({action:"addUser",role:role,username:user,password:pass},document.querySelector('#account-management-section .submit-btn'),document.getElementById('userMsg'),"تم!",()=>{globalUsers.push({Role:role,Username:user,Password:pass});document.getElementById('users-tbody').innerHTML+=`<tr><td>#</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`;});}
 
-// بدء التشغيل التلقائي وتحميل التطبيق مع تفعيل الفيديو التمهيدي أو السبلاش
-document.addEventListener('DOMContentLoaded',()=>{buildDailyChecklist();buildEvaluationForm();setupCustomDropdown();loadAppDataInit();const vC=document.getElementById('intro-video-container');const v=document.getElementById('intro-video');if(vC&&v&&v.currentSrc&&!v.error){vC.style.display='flex';v.play().catch(e=>finishIntroVideo());}else{finishIntroVideo();}});
+// بدء التشغيل التلقائي وتحميل التطبيق مع إطلاق السبلاش سكرين فوراً بدون انتظار أو وميض
+document.addEventListener('DOMContentLoaded',()=>{buildDailyChecklist();buildEvaluationForm();setupCustomDropdown();loadAppDataInit();startSplashScreen();});
