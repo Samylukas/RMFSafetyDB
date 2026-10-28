@@ -33,8 +33,11 @@ function openSection(sId){document.querySelectorAll('.content-area').forEach(el=
 // دالة فتح أقسام الأدمن بدون طلب كلمة مرور أثناء التجريب
 function openAdminSection(sId){openSection(sId);}
 
-// دالة فتح المستندات العامة
-function openGenericDoc(title){const t=document.getElementById('generic-doc-title');if(t)t.innerText=title;openSection('generic-doc-section');}
+// دالة فتح المستندات العامة وتحديد جهة الرجوع تلقائياً سواء من الرئيسية أو سلامة المطارات
+let genericBackTarget='main-dashboard';function openGenericDoc(t,bT){genericBackTarget=bT||'main-dashboard';const el=document.getElementById('generic-doc-title');if(el)el.innerText=t;openSection('generic-doc-section');}
+
+// دالة الرجوع الذكية من شاشات المستندات إلى القسم الذي دخلت منه مباشرة
+function goBackFromGenericDoc(){openSection(genericBackTarget||'main-dashboard');}
 
 // دالة تحميل البيانات مع الحفظ والاسترجاع التلقائي من الكاش لمنع فراغ السجل نهائياً
 function loadAppDataInit(){try{const cInc=localStorage.getItem('rmf_incidents');if(cInc)globalIncidents=JSON.parse(cInc);renderSavedIncidents();}catch(e){}const cb='jsonpInit_'+Math.round(100000*Math.random());window[cb]=function(d){try{if(d&&d.status==="success"){globalFleetData=d.fleet?d.fleet.reverse():[];globalSurveys=d.surveys?d.surveys.reverse():[];globalUsers=d.users||[];if(d.incidents&&d.incidents.length>0){globalIncidents=d.incidents;localStorage.setItem('rmf_incidents',JSON.stringify(globalIncidents));}globalDirectory=d.directory||[];globalFod=d.fod||[];globalSpiData=d.spi||[];sortIncidentsByDate();if(d.daily&&d.daily.length>0){let rMap={};d.daily.forEach(row=>{let repId=row.Report_ID,timeStr=row.Time;if(timeStr&&typeof timeStr==='string'&&timeStr.includes('T')){let dt=new Date(timeStr);if(!isNaN(dt))timeStr=dt.toISOString().substring(11,16);}if(!rMap[repId])rMap[repId]={id:repId,date:row.Date?new Date(row.Date).toISOString().split('T')[0]:'',time:timeStr,shift:row.Shift,inspector:row.Inspector,findings:[]};if(row.Category&&row.Category!=="لا توجد ملاحظات")rMap[repId].findings.push({category:row.Category,item:row.Finding_Item,location:row.Location,responsible:row.Responsible,note:row.Corrective_Action||"",status:row.Status||"مفتوح"});});globalDailyInspections=Object.values(rMap).sort((a,b)=>b.id-a.id);}populateUsersDropdown(globalUsers);renderDirectory();updateSurveyNavCounter();buildSpiEntryForm();renderSavedDaily();renderSavedIncidents();updateDailyNavCounter();}}catch(e){console.error(e);}finally{delete window[cb];}};const s=document.createElement('script');s.src=API_URL+"?action=getAppData&_t="+Date.now()+"&callback="+cb;document.body.appendChild(s);}
