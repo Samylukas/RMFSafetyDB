@@ -14,16 +14,13 @@
 </head>
 <body>
 
-<!-- فيديو البداية الاختياري قبل السبلاش سكرين -->
-<div id="intro-video-container"><video id="intro-video" muted playsinline onended="finishIntroVideo()"><source src="intro.mp4" type="video/mp4"></video><button onclick="finishIntroVideo()" style="position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.6);color:#fff;border:1px solid #fff;padding:6px 14px;border-radius:4px;cursor:pointer;z-index:1000000;">تخطي الفيديو ⏭</button></div>
-
 <!-- أزرار التمرير السريع للأعلى والأسفل -->
 <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button><button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-<!-- شاشة التحميل الأصلية بحركة الطائرة ومدرج الهبوط 15-33 -->
-<div id="splash-screen" style="display:none;"><div class="splash-content" style="text-align:center;"><img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport"><div class="runway-container"><div class="runway-track"><span class="runway-num left-num">15</span><span class="runway-num right-num">33</span></div><i class="fa-solid fa-plane loading-airplane"></i></div></div></div>
+<!-- شاشة التحميل الأصلية بحركة الطائرة ومدرج الهبوط 15-33 تظهر فوراً لمنع وميض الموقع -->
+<div id="splash-screen" style="display:flex;"><div class="splash-content" style="text-align:center;"><img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport"><div class="runway-container"><div class="runway-track"><span class="runway-num left-num">15</span><span class="runway-num right-num">33</span></div><i class="fa-solid fa-plane loading-airplane"></i></div></div></div>
 
-<!-- شاشة تسجيل الدخول المعتمدة مع قراءة المستخدمين وزر العين والدخول بـ Enter -->
+  <!-- شاشة تسجيل الدخول المعتمدة مع قراءة المستخدمين وزر العين والدخول بـ Enter -->
 <div id="login-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,51,102,0.05);z-index:99999;justify-content:center;align-items:center;"><div class="login-box" style="background:#fff;padding:30px;border-radius:12px;border:1px solid #ddd;box-shadow:0 15px 35px rgba(0,0,0,0.15);width:90%;max-width:380px;text-align:center;"><img src="LOGO-removebg-preview (1).png" style="height:55px;margin-bottom:10px;"><h2 style="color:#003366;margin:0 0 20px 0;font-size:1.4rem;">تسجيل الدخول للنظام</h2><div class="input-group" style="position:relative;margin-bottom:15px;"><input type="text" id="loginUser" list="usersList" placeholder="اسم المستخدم" style="width:100%;padding:10px 35px 10px 10px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;"><datalist id="usersList"></datalist><i class="fa-solid fa-user" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#777;"></i></div><div class="input-group" style="position:relative;margin-bottom:20px;"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')login();" style="width:100%;padding:10px 35px 10px 35px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;"><i class="fa-solid fa-lock" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#777;"></i><i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#777;"></i></div><button class="login-btn" onclick="login()" style="width:100%;background:#003366;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><p id="loginError" style="color:#dc3545;margin-top:10px;font-size:0.85rem;display:none;">⚠️ اسم المستخدم أو كلمة المرور غير صحيحة!</p></div></div>
 
 <!-- الهيدر والترويسة الرسمية للإدارة العامة للسلامة والمطابقة -->
