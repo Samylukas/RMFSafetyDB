@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>#splash-screen,#login-screen{display:none!important;}#app-header{display:flex!important;}#main-dashboard{display:block!important;}</style>
+  <style>#login-screen{display:none!important;}</style>
 </head>
 <body>
 
@@ -18,15 +18,32 @@
   <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
   <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
+  <!-- شاشة التحميل الأصلية بحركة الطائرة ومدرج الهبوط -->
+  <div id="splash-screen">
+    <div class="splash-content" style="text-align:center;">
+      <img src="LOGO-removebg-preview (1).png" class="splash-logo" alt="Marsa Alam Airport">
+      <div class="runway-container">
+        <div class="runway-track">
+          <span class="runway-num left-num">15</span>
+          <span class="runway-num right-num">33</span>
+        </div>
+        <i class="fa-solid fa-plane loading-airplane"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة تسجيل الدخول المعطلة مؤقتاً للتجريب -->
+  <div id="login-screen" style="display:none;"></div>
+
   <!-- الهيدر والترويسة الرسمية للمطار -->
-  <div class="header" id="app-header">
+  <div class="header" id="app-header" style="display:none;">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo">
     <div class="header-titles"><h1>General Department of Safety and Compliance</h1><h2>الإدارة العامة للسلامة والمطابقة</h2></div>
     <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo">
   </div>
 
   <!-- لوحة الإدارات المركزية الرئيسية -->
-  <div id="main-dashboard" class="content-area">
+  <div id="main-dashboard" class="content-area" style="display:none;">
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size:1.2rem;color:#777;font-family:sans-serif;">Central Departments</span></h1>
     <div class="departments-grid">
       <div class="dept-card" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-plane-circle-check dept-icon"></i><h3 class="dept-title">إدارة سلامة المطارات</h3><div class="dept-subtitle">Airport Safety Department</div></div>
@@ -397,7 +414,35 @@
   <div id="addModal" class="modal"><div class="modal-content" style="text-align:right;"><span class="close-modal" onclick="closeAddModal()">&times;</span><h3 style="color:var(--primary);text-align:center;">إضافة طائرة جديدة</h3><div class="form-group"><label>REG:</label><input type="text" id="newReg" oninput="this.value=this.value.toUpperCase()"></div><div class="form-group"><label>Type:</label><input type="text" id="newType" style="text-transform:uppercase;"></div><div class="form-group"><label>Airline:</label><input type="text" id="newAirline" style="text-transform:uppercase;"></div><div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div><div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div><button type="button" class="submit-btn" style="margin-top:15px;" onclick="saveNewAircraft()">حفظ</button><p id="modalMsg" style="text-align:center;font-weight:bold;margin-top:10px;"></p></div></div>
   <div id="dirModal" class="modal"><div class="modal-content" style="text-align:right;"><span class="close-modal" onclick="closeDirModal()">&times;</span><h3 id="dirModalTitle" style="color:var(--primary);text-align:center;">جهة إتصال</h3><form id="dirForm" onsubmit="saveDirEntry(event)"><input type="hidden" id="dirId"><div class="form-group"><label>القسم:</label><input type="text" id="dirDept" required></div><div class="form-group"><label>الإسم:</label><input type="text" id="dirName" required></div><div class="form-group"><label>الوظيفة:</label><input type="text" id="dirRole" required></div><div class="form-group"><label>أرضي:</label><input type="text" id="dirExt"></div><div class="form-group"><label>موبايل:</label><input type="text" id="dirMobile"></div><button type="submit" class="submit-btn" id="dirSubmitBtn" style="margin-top:15px;">حفظ في الدليل</button><p id="dirMsg" style="text-align:center;font-weight:bold;margin-top:10px;"></p></form></div></div>
 
-  <!-- تحميل ملف الجافاسكريبت المحدث -->
-  <script src="script.js?v=31.0"></script>
+  <!-- تحميل ملف الجافاسكريبت الرئيسي -->
+  <script src="script.js?v=33.0"></script>
+
+  <!-- كود تشغيل السبلاش والتبخر والانتقال المباشر للرئيسية بدون شاشة دخول -->
+  <script>
+    var isTransitioned = false;
+    function executeSplashTransition() {
+      if (isTransitioned) return;
+      isTransitioned = true;
+      var splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.transition = "all 0.8s ease";
+        splash.style.opacity = "0";
+        splash.style.filter = "blur(15px)";
+        splash.style.transform = "scale(1.3)";
+        setTimeout(function() {
+          splash.style.display = 'none';
+          var header = document.getElementById('app-header');
+          if (header) header.style.display = 'flex';
+          if (typeof openSection === 'function') {
+            openSection('main-dashboard');
+          } else {
+            var md = document.getElementById('main-dashboard');
+            if (md) md.style.display = 'block';
+          }
+        }, 800);
+      }
+    }
+    setTimeout(executeSplashTransition, 3800);
+  </script>
 </body>
 </html>
