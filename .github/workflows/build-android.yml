@@ -26,7 +26,11 @@ jobs:
         run: |
           mkdir -p www
           cp index.html www/
+          cp style.css www/ 2>/dev/null || true
+          cp script.js www/ 2>/dev/null || true
           cp *.png www/ 2>/dev/null || true
+          cp *.jpg www/ 2>/dev/null || true
+          cp *.jpeg www/ 2>/dev/null || true
           npm init -y
           npm install @capacitor/core @capacitor/android
           npm install -D @capacitor/cli
@@ -35,6 +39,7 @@ jobs:
         run: |
           npx cap init "SafetyApp" "com.marsa.safety" --web-dir "www"
           npx cap add android
+          npx cap sync android
           cd android
           ./gradlew assembleDebug
 
