@@ -80,8 +80,8 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .submenu-grid .sub-card:nth-child(4) { border: 2px solid #28a745; background: #f4fcf6; } .submenu-grid .sub-card:nth-child(4) .sub-icon { color: #28a745; }
 .submenu-grid .sub-card:nth-child(5) { border: 2px solid #17a2b8; background: #f0fbfc; } .submenu-grid .sub-card:nth-child(5) .sub-icon { color: #17a2b8; }
 .submenu-grid .sub-card:nth-child(6) { border: 2px solid #6f42c1; background: #f9f6fc; } .submenu-grid .sub-card:nth-child(6) .sub-icon { color: #6f42c1; }
-.submenu-grid .sub-card:nth-child(7) .sub-icon { color: #20c997; }
-.submenu-grid .sub-card:nth-child(8) .sub-icon { color: #fd7e14; }
+.submenu-grid .sub-card:nth-child(7) { border: 2px solid #20c997; background: #f0fdf9; } .submenu-grid .sub-card:nth-child(7) .sub-icon { color: #20c997; }
+.submenu-grid .sub-card:nth-child(8) { border: 2px solid #003366; background: #f4f8fc; } .submenu-grid .sub-card:nth-child(8) .sub-icon { color: #003366; }
 .submenu-grid .sub-card:nth-child(9) .sub-icon { color: #d63384; }
 .submenu-grid .sub-card:nth-child(10) .sub-icon { color: #d9534f; }
 .pdf-badge { position: absolute; top: 10px; left: 10px; background: var(--danger); color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
