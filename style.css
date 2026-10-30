@@ -145,3 +145,32 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .header-titles { text-align: center; flex: 1; }
 .header-titles h1 { font-size: 1.3rem; color: #003366; margin-bottom: 2px; font-weight: 900; }
 .header-titles h2 { font-size: 1.1rem; color: #555; }
+/* ضبط داشبورد الاستبيانات على شاشات الموبايل */
+@media (max-width: 768px) {
+  /* جعل الكروت الثلاثة العلوية تلتف بمرونة */
+  .stats-cards {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  /* تحويل شبكة الشارتات من 3 أعمدة إلى عمود واحد رأسي كامل الوضوح */
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  /* إعطاء كل رسم بياني ارتفاعاً مناسباً ومستقلاً لمنع التداخل */
+  .chart-container {
+    height: 270px !important;
+    width: 100% !important;
+  }
+  
+  /* تمكين التمرير الأفقي السلس للجدول بدون كسر عرض الشاشة */
+  .report-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .report-table {
+    min-width: 550px !important;
+  }
+}
