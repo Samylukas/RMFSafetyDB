@@ -1,12 +1,30 @@
-:root { --primary: #003366; --primary-dark: #001f3f; --secondary: #f39c12; --danger: #dc3545; --success: #28a745; --bg-color: #f4f7f6; --text-color: #333; }
+:root {
+  --primary: #003366;
+  --primary-dark: #001f3f;
+  --secondary: #f39c12;
+  --danger: #dc3545;
+  --success: #28a745;
+  --bg-color: #f4f7f6;
+  --text-color: #333;
+}
+
 * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
 body { background-color: var(--bg-color); color: var(--text-color); direction: rtl; min-height: 100vh; overflow-x: hidden; }
 
-/* شاشة بداية الفيديو مع توحيد اللون الخلفي الرمادي الاستوديو لإلغاء أي فوارق بصرية */
-#video-splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #dcdcdc !important; z-index: 999999; display: flex; justify-content: center; align-items: center; overflow: hidden; transition: opacity 0.8s ease; }
-#video-splash-screen video { width: 100% !important; height: 100% !important; object-fit: contain !important; background-color: #dcdcdc !important; }
+/* شاشة التحميل والمدرج */
+#splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; display: flex; justify-content: center; align-items: center; z-index: 1000000; transition: all 0.8s ease; }
+.splash-logo { height: 170px; margin-bottom: 50px; }
+.runway-container { position: relative; width: 400px; margin: 0 auto; }
+.runway-track { width: 100%; height: 45px; background: #003366; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; padding: 0 10px; }
+.runway-track::after { content: ''; position: absolute; left: 45px; right: 45px; top: 50%; transform: translateY(-50%); height: 4px; background: repeating-linear-gradient(90deg, #fff, #fff 15px, transparent 15px, transparent 30px); z-index: 1; }
+.runway-num { font-size: 1.3rem; font-weight: 900; color: #ffffff; z-index: 2; display: inline-block; width: 30px; text-align: center; }
+.left-num { transform: rotate(-90deg); }
+.right-num { transform: rotate(90deg); }
+.loading-airplane { position: absolute; color: #f39c12; font-size: 2.2rem; top: -12px; left: -10%; z-index: 10; animation: landingAnim 3.8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
+@keyframes landingAnim { 0% { left: -20%; top: -120px; transform: rotate(25deg) scale(1.5); opacity: 0; } 10% { opacity: 1; } 35% { left: 15%; top: -3px; transform: rotate(0deg) scale(1.1); } 100% { left: 85%; top: -3px; transform: rotate(0deg) scale(1); } }
+.smoke-out { opacity: 0 !important; filter: blur(15px) !important; transform: scale(1.3) !important; pointer-events: none; }
 
-/* لوحة الإدارات والبطاقات المركزية */
+/* لوحة الإدارات والبطاقات */
 .content-area { padding: 30px 20px; max-width: 1240px; margin: auto; }
 .welcome-text { text-align: center; color: var(--primary); font-size: 2rem; font-weight: 900; margin-bottom: 25px; }
 .departments-grid, .submenu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -22,7 +40,6 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .departments-grid .dept-card:nth-child(4) { border-top: 5px solid #c0392b; } .departments-grid .dept-card:nth-child(4) .dept-icon { color: #c0392b; }
 .departments-grid .dept-card:nth-child(5) { border-top: 5px solid #003366; } .departments-grid .dept-card:nth-child(5) .dept-icon { color: #003366; }
 
-/* تنسيق كروت سلامة المطارات الثمانية الموحدة */
 .submenu-grid .sub-card:nth-child(1) { border: 2px solid #003366; background: #f4f8fc; } .submenu-grid .sub-card:nth-child(1) .sub-icon { color: #003366; }
 .submenu-grid .sub-card:nth-child(2) { border: 2px solid #f39c12; background: #fdfbf7; } .submenu-grid .sub-card:nth-child(2) .sub-icon { color: #f39c12; }
 .submenu-grid .sub-card:nth-child(3) { border: 2px solid #dc3545; background: #fff5f5; } .submenu-grid .sub-card:nth-child(3) .sub-icon { color: #dc3545; }
@@ -35,7 +52,7 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .back-btn { background: #6c757d; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
 .back-btn:hover { background: #5a6268; }
 
-/* النماذج والأزرار العامة */
+/* النماذج والأزرار */
 .survey-container { background: #ffffff; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); padding: 25px; margin-top: 20px; }
 .tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 25px; flex-wrap: wrap; }
 .tab-btn { background: #f1f3f5; border: none; padding: 10px 22px; border-radius: 8px; font-size: 1rem; font-weight: 700; color: #555; cursor: pointer; flex: 1; min-width: 150px;}
@@ -53,7 +70,7 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .inc-textarea { min-height: 80px; resize: vertical; }
 .submit-btn { background: var(--primary); color: #ffffff; border: none; padding: 13px; border-radius: 8px; font-size: 1.1rem; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; transition: background 0.25s;}
 
-/* حقل حروف التسجيل المنسدل المخصص */
+/* حقل التسجيل المنسدل */
 .custom-dropdown-container { position: relative; flex: 1; display: flex; align-items: center; }
 .custom-dropdown-input { width: 100%; padding-left: 35px !important; }
 .custom-dropdown-arrow { position: absolute; left: 10px; cursor: pointer; color: var(--primary); font-size: 1.1rem; z-index: 10; padding: 5px; }
@@ -62,7 +79,7 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .custom-dropdown-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; text-align: left; direction: ltr; } 
 .custom-dropdown-item:hover { background: #f8f9fa; }
 
-/* بطاقات تقييم بنود استبيان الكابتن */
+/* تقييم استبيان الكابتن */
 .eval-section { margin-top: 20px; }
 .eval-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
 .eval-card { background: #fdfdfd; border: 1px solid #e1e4e8; padding: 12px 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
@@ -76,7 +93,7 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .radio-group input[type="radio"]:checked + label.lbl-n { background: #6c757d; color: #fff; border-color: #6c757d; }
 .radio-group input[type="radio"]:checked + label.lbl-b { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-/* شبكة الفحص اليومي */
+/* الفحص اليومي */
 .checklist-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 15px !important; margin-bottom: 25px !important; align-items: start !important; }
 @media (max-width: 1200px) { .checklist-grid { grid-template-columns: repeat(2, 1fr) !important; } }
 @media (max-width: 700px) { .checklist-grid { grid-template-columns: 1fr !important; } }
@@ -89,13 +106,26 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .check-inputs { display: none; flex-direction: column; gap: 8px; margin-top: 10px; background: #fff; padding: 10px; border: 1px dashed #ccc; border-radius: 6px; width: 100%; box-sizing: border-box;}
 .check-inputs input, .check-inputs select { width: 100%; padding: 8px; box-sizing: border-box; font-size: 0.85rem;}
 
-/* جداول التقارير ونظام الفلترة */
+/* نموذج الحوادث */
+#incident-section .survey-container { width: 100% !important; max-width: 100% !important; }
+#incidentForm .form-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; }
+@media (max-width: 1200px) { #incidentForm .form-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+@media (max-width: 768px) { #incidentForm .form-grid { grid-template-columns: 1fr !important; } }
+
+/* الجداول والتقارير */
 .report-filters { background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
 .report-wrapper { overflow-x: auto; margin-top: 20px; }
 .report-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd; }
 .report-table th, .report-table td { padding: 10px 12px; border: 1px solid #e1e4e8; text-align: center; }
 .report-table thead tr { background: var(--primary); color: #ffffff; }
 .rtl-table { direction: rtl; }
+
+/* النوافذ وأزرار التمرير */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10000; }
+.modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; }
+.close-modal { position: absolute; left: 15px; top: 10px; font-size: 1.8rem; cursor: pointer; color: #777; }
+.scroll-btn { position: fixed; left: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; z-index: 99; }
+#scrollTop { bottom: 75px; } #scrollBottom { bottom: 20px; }
 
 /* شاشة تسجيل الدخول */
 #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff !important; display: flex; justify-content: center; align-items: center; z-index: 999999; }
@@ -109,35 +139,100 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
 .login-btn { width: 100%; background-color: var(--primary); color: #fff; border: none; padding: 12px; margin-top: 25px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
 .login-btn:hover { background-color: var(--primary-dark); }
 
-/* الهيدر والترويسة */
+/* الهيدر */
 .header { background: #ffffff; border-bottom: 3px solid #003366; padding: 10px 25px; display: flex !important; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); width: 100%; }
 .main-logo, .dept-logo { height: 70px !important; max-height: 70px !important; width: auto !important; object-fit: contain; }
 .header-titles { text-align: center; flex: 1; }
 .header-titles h1 { font-size: 1.3rem; color: #003366; margin-bottom: 2px; font-weight: 900; }
 .header-titles h2 { font-size: 1.1rem; color: #555; }
-
-/* حاوية جداول السيرفي الإضافية لمنع الاختفاء وتمكين التمرير */
-#additional-tables-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; margin-top: 25px; }
-#additional-tables-container table { min-width: 650px !important; }
-
-/* إزالة أي إطار متداخل حول التقرير الشهري */
-#printable-main-report { border: none !important; outline: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important; }
-
-/* التجاوب الشامل مع شاشات الموبايل */
+/* ضبط داشبورد الاستبيانات على شاشات الموبايل */
 @media (max-width: 768px) {
-  .nav-controls { display: flex !important; flex-wrap: nowrap !important; justify-content: center !important; gap: 4px !important; }
-  .nav-btn, .new-btn { padding: 6px 9px !important; font-size: 0.8rem !important; }
-  .nav-counter { padding: 6px 10px !important; font-size: 0.8rem !important; }
-  .stats-cards { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
-  .stat-card { padding: 8px 4px !important; }
-  .stat-card h3 { font-size: 1.2rem !important; }
-  .stat-card p { font-size: 0.68rem !important; }
-  .charts-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; }
-  .chart-container { width: 100% !important; height: 250px !important; }
+  /* جعل الكروت الثلاثة العلوية تلتف بمرونة */
+  .stats-cards {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
   
-  /* تحويل جدول إدخال الحوادث لكروت رأسية واضحة على شاشة الهاتف */
-  .iso-input-table, .iso-input-table tbody, .iso-input-table tr, .iso-input-table td { display: block !important; width: 100% !important; box-sizing: border-box !important; }
-  .iso-input-table td.lbl { background: #eef3f8 !important; font-weight: bold; padding: 6px 10px !important; border-bottom: none !important; margin-top: 8px; border-radius: 4px 4px 0 0; }
-  .iso-input-table td:not(.lbl) { padding: 4px 10px 8px 10px !important; border-top: none !important; margin-bottom: 5px; border-radius: 0 0 4px 4px; }
-  .report-wrapper { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  /* تحويل شبكة الشارتات من 3 أعمدة إلى عمود واحد رأسي كامل الوضوح */
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  /* إعطاء كل رسم بياني ارتفاعاً مناسباً ومستقلاً لمنع التداخل */
+  .chart-container {
+    height: 270px !important;
+    width: 100% !important;
+  }
+  
+  /* تمكين التمرير الأفقي السلس للجدول بدون كسر عرض الشاشة */
+  .report-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .report-table {
+    min-width: 550px !important;
+  }
+}
+/* تصغير الفيديو وتوسيطه على الموبايل واللاب بدون قص */
+#video-splash-screen video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important; /* يمنع الزووم والقص نهائياً */
+  background-color: #ffffff !important; /* خلفية متناسقة مع الفيديو */
+}
+/* =========================================
+   إصلاحات شاملة لشاشات الموبايل (Responsive Fixes)
+   ========================================= */
+@media (max-width: 768px) {
+  /* 1. منع تكسر أزرار التنقل وجعلها في صف واحد متناسق */
+  .nav-controls {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+  .nav-btn, .new-btn {
+    padding: 6px 9px !important;
+    font-size: 0.8rem !important;
+  }
+  .nav-counter {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* 2. ترتيب كروت الإحصائيات الثلاثة بالتساوي دون خروج عن الشاشة */
+  .stats-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .stat-card {
+    padding: 10px 4px !important;
+  }
+  .stat-card h3 {
+    font-size: 1.25rem !important;
+  }
+  .stat-card p {
+    font-size: 0.7rem !important;
+  }
+
+  /* 3. جعل الشارتات تترتب رأسياً كاملة الحجم على الموبايل */
+  .charts-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+  .chart-container {
+    width: 100% !important;
+    height: 250px !important;
+    min-height: 250px !important;
+  }
+
+  /* 4. تمكين التمرير الأفقي للجداول بدون كسر عرض الصفحة */
+  .report-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
 }
