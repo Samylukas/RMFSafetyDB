@@ -175,11 +175,28 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
   }
 }
 /* تصغير الفيديو وتوسيطه على الموبايل واللاب بدون قص */
+/* شاشة بداية الفيديو مع خلفية بيضاء نقية وإلغاء أي إطار رمادي */
+#video-splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff !important;
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: opacity 0.8s ease;
+}
+
 #video-splash-screen video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important; /* يمنع الزووم والقص نهائياً */
-  background-color: #ffffff !important; /* خلفية متناسقة مع الفيديو */
+  object-fit: contain !important;
+  background-color: #ffffff !important;
+  filter: brightness(1.18) contrast(1.15) !important; /* يحول الرمادي في الفيديو لأبيض ناصع ويدمجه تماماً مع الشاشة */
 }
 /* =========================================
    إصلاحات شاملة لشاشات الموبايل (Responsive Fixes)
