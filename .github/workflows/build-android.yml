@@ -31,6 +31,7 @@ jobs:
           cp *.png www/ 2>/dev/null || true
           cp *.jpg www/ 2>/dev/null || true
           cp *.jpeg www/ 2>/dev/null || true
+          cp *.mp4 www/ 2>/dev/null || true
           npm init -y
           npm install @capacitor/core @capacitor/android
           npm install -D @capacitor/cli
