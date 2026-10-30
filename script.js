@@ -22,8 +22,31 @@ let currentLoggedInUser = null;
 
 function handleLogoTripleClick(){logoTripleClickCounter++;if(logoTripleClickCounter===1){logoTripleClickTimer=setTimeout(()=>{logoTripleClickCounter=0;},900);}else if(logoTripleClickCounter===3){clearTimeout(logoTripleClickTimer);logoTripleClickCounter=0;openAdminSection('account-management-section');}}
 
-function startSplashScreen(){const splash=document.getElementById('splash-screen');if(!splash)return showLoginScreen();splash.style.display='flex';setTimeout(()=>{splash.style.transition="all 0.8s ease";splash.style.opacity="0";splash.style.filter="blur(15px)";splash.style.transform="scale(1.2)";setTimeout(()=>{splash.style.display='none';showLoginScreen();},800);},3800);}
+// دالة تشغيل فيديو البداية والانتقال التلقائي لشاشة الدخول بعد 10 ثوانٍ أو عند انتهاء الفيديو
+function startSplashScreen(){
+  const vSplash = document.getElementById('video-splash-screen');
+  const video = document.getElementById('introVideo');
+  if(!vSplash) return showLoginScreen();
+  
+  // تشغيل الفيديو تلقائياً
+  if(video) {
+    video.play().catch(()=>{});
+    video.onended = endVideoSplash;
+  }
+  // مؤقت أمان 10 ثوانٍ كحد أقصى
+  setTimeout(endVideoSplash, 10000);
+}
 
+// دالة إنهاء فيديو البداية والانتقال لشاشة الدخول
+function endVideoSplash(){
+  const vSplash = document.getElementById('video-splash-screen');
+  if(!vSplash || vSplash.style.display === 'none') return;
+  vSplash.style.opacity = '0';
+  setTimeout(()=>{
+    vSplash.style.display = 'none';
+    showLoginScreen();
+  }, 800);
+}
 function showLoginScreen(){const loginScreen=document.getElementById('login-screen');if(loginScreen){loginScreen.style.display='flex';}const passInp=document.getElementById('loginPass');if(passInp){passInp.focus();}}
 
 function login(){const u=(document.getElementById('loginUser')?.value||'').trim();const p=(document.getElementById('loginPass')?.value||'').trim();const err=document.getElementById('loginError');let foundUser=globalUsers.find(user=>user.Username===u&&String(user.Password)===p);if(!foundUser){if(u.toLowerCase()==='admin'&&p==='1234')foundUser={Role:'Admin',Username:'Admin'};else if((u.toLowerCase()==='safety'||u==='سلامة المطارات')&&p==='1234')foundUser={Role:'Airport Safety',Username:u};else if((u.toLowerCase()==='osh'||u==='السلامة والصحة المهنية')&&p==='1234')foundUser={Role:'OSH',Username:u};else if((u.toLowerCase()==='env'||u==='البيئة والحياة البرية')&&p==='1234')foundUser={Role:'Environment',Username:u};else if((u.toLowerCase()==='fire'||u==='الحماية المدنية')&&p==='1234')foundUser={Role:'Civil Defense',Username:u};else if(globalUsers.length===0&&p==='1234')foundUser={Role:'Admin',Username:u};}if(foundUser){currentLoggedInUser=foundUser;const lS=document.getElementById('login-screen');if(lS)lS.style.display='none';const hdr=document.getElementById('app-header');if(hdr)hdr.style.display='flex';if(err)err.style.display='none';const bBtn=document.getElementById('backToMainBtn');const r=(foundUser.Role||'').toLowerCase();if(r.includes('admin')){if(bBtn)bBtn.style.display='inline-block';openSection('main-dashboard');}else if(r.includes('safety')||r.includes('مطارات')){if(bBtn)bBtn.style.display='none';openSection('airport-safety-dashboard');}else if(r.includes('osh')||r.includes('صحة')||r.includes('مهنية')){openGenericDoc('السلامة والصحة المهنية','main-dashboard');}else if(r.includes('env')||r.includes('بيئة')||r.includes('برية')){openGenericDoc('البيئة والحياة البرية','main-dashboard');}else if(r.includes('fire')||r.includes('حماية')||r.includes('مدنية')){openGenericDoc('الحماية المدنية','main-dashboard');}else{if(bBtn)bBtn.style.display='inline-block';openSection('main-dashboard');}}else{if(err)err.style.display='block';const pInp=document.getElementById('loginPass');if(pInp){pInp.value='';pInp.focus();}}}
