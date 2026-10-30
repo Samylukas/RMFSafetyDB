@@ -174,8 +174,6 @@ body { background-color: var(--bg-color); color: var(--text-color); direction: r
     min-width: 550px !important;
   }
 }
-/* تصغير الفيديو وتوسيطه على الموبايل واللاب بدون قص */
-/* شاشة بداية الفيديو مع خلفية بيضاء نقية وإلغاء أي إطار رمادي */
 /* شاشة بداية الفيديو مع خلفية رمادية استوديو متجانسة وحفظ ألوان اللوجو الأصلية 100% */
 #video-splash-screen {
   position: fixed;
