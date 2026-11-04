@@ -93,7 +93,6 @@
         <div class="sub-card" onclick="openSection('fod-section')" style="border-top: 4px solid #fd7e14;"><i class="fa-solid fa-circle-exclamation sub-icon" style="color:#fd7e14;"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
         <div class="sub-card" onclick="openSection('quarterly-inspection-section')" style="border-top: 4px solid #20c997;"><i class="fa-solid fa-magnifying-glass-chart sub-icon" style="color:#20c997;"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarterly Airside Inspection</div></div>
         <div class="sub-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')" style="border-top: 4px solid #6c757d;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6c757d;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
-        <div class="sub-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;"><i class="fa-solid fa-plane-departure sub-icon" style="color:#003366;"></i><h3 class="sub-title">جدول الرحلات</h3><div class="sub-subtitle">Flight Schedule</div></div>
     </div>
 </div>
 
@@ -118,18 +117,19 @@
 <div id="addModal" class="modal"><div class="modal-content" style="text-align:right;"><span class="close-modal" onclick="closeAddModal()">&times;</span><h3 style="color:var(--primary);text-align:center;">إضافة طائرة جديدة</h3><div class="form-group"><label>REG:</label><input type="text" id="newReg" oninput="this.value=this.value.toUpperCase()"></div><div class="form-group"><label>Type:</label><input type="text" id="newType" style="text-transform:uppercase;"></div><div class="form-group"><label>Airline:</label><input type="text" id="newAirline" style="text-transform:uppercase;"></div><div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div><div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div><button type="button" class="submit-btn" style="margin-top:15px;" onclick="saveNewAircraft()">حفظ</button><p id="modalMsg" style="text-align:center;font-weight:bold;margin-top:10px;"></p></div></div>
 
 <!-- ================== جدول الرحلات ================== -->
-<div id="flight-schedule-section" class="content-area" style="display:none;">
-    <button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة الرئيسية</button>
-    <h1 class="section-main-title" style="color: #17a2b8;">جدول الرحلات اليومي</h1>
-    <p id="schedule-info" class="section-sub-title">جاري البحث عن أحدث جدول في الإيميل...</p>
+<div id="flight-schedule-section" class="content-area" style="display:none; font-family: 'Cairo', sans-serif;">
+    <button class="back-btn" onclick="goBackToDashboard()" style="font-family: 'Cairo', sans-serif;"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة الرئيسية</button>
+    
+    <h1 class="section-main-title" style="color: #003366; font-family: 'Cairo', sans-serif; font-weight: 900; margin-bottom: 5px;">جدول الرحلات اليومي</h1>
+    <p id="schedule-info" class="section-sub-title" style="font-family: 'Cairo', sans-serif; color: #444; margin-bottom: 15px;">جاري البحث عن أحدث جدول في الإيميل...</p>
     
     <div style="text-align: center; margin-bottom: 15px;">
-        <button type="button" class="submit-btn" onclick="loadFlightScheduleData()" style="background:#17a2b8;">
+        <button type="button" class="submit-btn" onclick="loadFlightScheduleData()" style="background: #003366; font-family: 'Cairo', sans-serif; font-weight: 700; width: 100%; max-width: 100%; border-radius: 8px; padding: 12px; font-size: 1rem; box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2);">
             <i class="fa-solid fa-rotate-right"></i> تحديث الجدول الآن
         </button>
     </div>
 
-    <div id="pdf-viewer-container" style="width: 100%; height: 75vh; border: 2px solid #ccc; border-radius: 8px; overflow: hidden; display: none;">
+    <div id="pdf-viewer-container" style="width: 100%; height: 75vh; border: 2px solid #003366; border-radius: 8px; overflow: hidden; display: none;">
         <iframe id="schedule-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 </div>
