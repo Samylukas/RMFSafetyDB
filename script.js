@@ -207,8 +207,10 @@ function openFlightSchedule() {
     loadFlightScheduleData();
 }
 
+let currentScheduleData = { english: null, arabic: null };
+
 async function loadFlightScheduleData() {
-    const infoText = document.getElementById('schedule-info');
+    const info = document.getElementById('schedule-info');
     const container = document.getElementById('pdf-viewer-container');
     const iframe = document.getElementById('schedule-iframe');
     const btn = event?.target?.closest('button');
@@ -217,37 +219,69 @@ async function loadFlightScheduleData() {
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء الجدول...';
     }
-
-    infoText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري سحب أحدث ملف PDF من الإيميل...';
-    container.style.display = 'none';
+    if (info) info.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري سحب أحدث ملف PDF من الإيميل...';
+    if (container) container.style.display = 'none';
 
     try {
-        // إرسال الطلب للسيرفر (تأكد أنك أضفت أمر fetchFlightSchedule في Code.gs)
-        let response = await fetch(API_URL, {
+        let res = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify({ action: "fetchFlightSchedule" }),
             headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
-        
-        let data = await response.json();
+        let data = await res.json();
 
         if (data.status === "success") {
+            currentScheduleData.english = data.english || (data.pdfBase64 ? { fileName: data.fileName, pdfBase64: data.pdfBase64 } : null);
+            currentScheduleData.arabic = data.arabic || null;
+            let activeDoc = currentScheduleData.arabic || currentScheduleData.english;
+
+            if (!activeDoc || !activeDoc.pdfBase64) {
+                if (info) info.innerHTML = '❌ تم العثور على الإيميل ولكن تعذر استخراج ملف PDF.';
+                return;
+            }
+
             let fileDate = new Date(data.date).toLocaleString('ar-EG');
-            infoText.innerHTML = `✅ تم سحب أحدث جدول بنجاح<br><span style="font-size:0.9rem; color:#555;">اسم الملف: ${data.fileName} | وقت الإرسال: ${fileDate}</span>`;
-            
-            // عرض الـ PDF في المتصفح باستخدام الـ Base64
-            iframe.src = "data:application/pdf;base64," + data.pdfBase64;
-            container.style.display = 'block';
+            let toggleBtns = '';
+            if (currentScheduleData.arabic && currentScheduleData.english) {
+                toggleBtns = `
+                <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+                    <button type="button" id="sch-btn-ar" onclick="switchScheduleLang('arabic')" style="background:#003366; color:#fff; border:none; padding:6px 14px; border-radius:5px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-language"></i> الجدول العربي</button>
+                    <button type="button" id="sch-btn-en" onclick="switchScheduleLang('english')" style="background:#6c757d; color:#fff; border:none; padding:6px 14px; border-radius:5px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-plane"></i> English Schedule</button>
+                </div>`;
+            }
+
+            if (info) info.innerHTML = `✅ تم سحب أحدث جدول بنجاح<br><span style="font-size:0.9rem; color:#555;">اسم الملف: <b>${activeDoc.fileName}</b> | وقت الإرسال: ${fileDate}</span>${toggleBtns}`;
+            iframe.src = "data:application/pdf;base64," + activeDoc.pdfBase64;
+            if (container) container.style.display = 'block';
         } else {
-            infoText.innerHTML = `❌ عذراً: ${data.message}`;
+            if (info) info.innerHTML = `❌ عذراً: ${data.message}`;
         }
     } catch (err) {
         console.error(err);
-        infoText.innerHTML = `❌ حدث خطأ في الاتصال بخادم الإيميل.`;
+        if (info) info.innerHTML = `❌ حدث خطأ في الاتصال بخادم الإيميل.`;
     } finally {
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> تحديث الجدول الآن';
+        }
+    }
+}
+
+function switchScheduleLang(lang) {
+    const iframe = document.getElementById('schedule-iframe');
+    const btnAr = document.getElementById('sch-btn-ar');
+    const btnEn = document.getElementById('sch-btn-en');
+    if (!currentScheduleData[lang] || !currentScheduleData[lang].pdfBase64) {
+        return alert(lang === 'arabic' ? 'النسخة العربية غير متوفرة!' : 'English schedule is not available!');
+    }
+    iframe.src = "data:application/pdf;base64," + currentScheduleData[lang].pdfBase64;
+    if (btnAr && btnEn) {
+        if (lang === 'arabic') {
+            btnAr.style.backgroundColor = "#003366";
+            btnEn.style.backgroundColor = "#6c757d";
+        } else {
+            btnEn.style.backgroundColor = "#003366";
+            btnAr.style.backgroundColor = "#6c757d";
         }
     }
 }
