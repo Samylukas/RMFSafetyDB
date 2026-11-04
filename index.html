@@ -32,37 +32,52 @@
 <!-- اللوحة الرئيسية -->
 <div id="main-dashboard" class="content-area" style="display:none;">
     <h1 class="welcome-text" style="margin-bottom:30px;">الإدارات المركزية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Central Departments</span></h1>
-    <div class="departments-grid">
-        <div class="dept-card" onclick="openGenericDoc('الحماية المدنية', 'main-dashboard')" style="border-top:4px solid #dc3545;">
-            <i class="fa-solid fa-fire-extinguisher dept-icon" style="color:#dc3545;"></i>
-            <h3 class="dept-title">الحماية المدنية</h3>
-            <div class="dept-subtitle">Civil Defense</div>
-        </div>
-        <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية', 'main-dashboard')" style="border-top:4px solid #28a745;">
-            <i class="fa-solid fa-dove dept-icon" style="color:#28a745;"></i>
-            <h3 class="dept-title">البيئة والحياة البرية</h3>
-            <div class="dept-subtitle">Environment & Wildlife</div>
-        </div>
-        <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية', 'main-dashboard')" style="border-top:4px solid #fd7e14;">
-            <i class="fa-solid fa-helmet-safety dept-icon" style="color:#fd7e14;"></i>
-            <h3 class="dept-title">السلامة والصحة المهنية</h3>
-            <div class="dept-subtitle">Occupational Safety & Health</div>
-        </div>
+    
+    <!-- تم إضافة max-width لضمان تقسيم الكروت 3 فوق و 3 تحت -->
+    <div class="departments-grid" style="max-width: 950px; margin: 0 auto;">
+        
+        <!-- 1. إدارة سلامة المطارات (الأول يميناً) -->
         <div class="dept-card" onclick="openSection('airport-safety-dashboard')" style="border-top:4px solid #003366;">
             <i class="fa-solid fa-plane-circle-check dept-icon" style="color:#003366;"></i>
             <h3 class="dept-title">إدارة سلامة المطارات</h3>
             <div class="dept-subtitle">Airport Safety Department</div>
         </div>
-        <div class="dept-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')" style="border-top:4px solid #17a2b8;">
-            <i class="fa-solid fa-phone-volume dept-icon" style="color:#17a2b8;"></i>
-            <h3 class="dept-title">دليل هاتف المطار</h3>
-            <div class="dept-subtitle">Airport Phone Directory</div>
+
+        <!-- 2. السلامة والصحة المهنية (في المنتصف) -->
+        <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية', 'main-dashboard')" style="border-top:4px solid #fd7e14;">
+            <i class="fa-solid fa-helmet-safety dept-icon" style="color:#fd7e14;"></i>
+            <h3 class="dept-title">السلامة والصحة المهنية</h3>
+            <div class="dept-subtitle">Occupational Safety & Health</div>
         </div>
+
+        <!-- 3. البيئة والحياة البرية (الأخير يساراً في الصف الأول) -->
+        <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية', 'main-dashboard')" style="border-top:4px solid #28a745;">
+            <i class="fa-solid fa-dove dept-icon" style="color:#28a745;"></i>
+            <h3 class="dept-title">البيئة والحياة البرية</h3>
+            <div class="dept-subtitle">Environment & Wildlife</div>
+        </div>
+
+        <!-- 4. الحماية المدنية (الأول يميناً في الصف الثاني) -->
+        <div class="dept-card" onclick="openGenericDoc('الحماية المدنية', 'main-dashboard')" style="border-top:4px solid #dc3545;">
+            <i class="fa-solid fa-fire-extinguisher dept-icon" style="color:#dc3545;"></i>
+            <h3 class="dept-title">الحماية المدنية</h3>
+            <div class="dept-subtitle">Civil Defense</div>
+        </div>
+
+        <!-- 5. جدول الرحلات (في منتصف الصف الثاني) -->
         <div class="dept-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;">
             <i class="fa-solid fa-plane-departure dept-icon" style="color: #003366;"></i>
             <h3 class="dept-title">جدول الرحلات</h3>
             <div class="dept-subtitle">Flight Schedule</div>
         </div>
+
+        <!-- 6. دليل هاتف المطار (الأخير يساراً في الصف الثاني) -->
+        <div class="dept-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')" style="border-top:4px solid #17a2b8;">
+            <i class="fa-solid fa-phone-volume dept-icon" style="color:#17a2b8;"></i>
+            <h3 class="dept-title">دليل هاتف المطار</h3>
+            <div class="dept-subtitle">Airport Phone Directory</div>
+        </div>
+
     </div>
 </div>
 
