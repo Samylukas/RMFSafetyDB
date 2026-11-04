@@ -202,13 +202,9 @@ function exportDailyPNG(){const btn=event?.target?.closest('button')||document.q
 let currentScheduleData={english:null,arabic:null};function openFlightSchedule(){openSection('flight-schedule-section');loadFlightScheduleData();}async function loadFlightScheduleData(){const info=document.getElementById('schedule-info'),container=document.getElementById('pdf-viewer-container'),iframe=document.getElementById('schedule-iframe');info.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> جاري فحص الإيميل وسحب الجداول...';container.style.display='none';try{let res=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:"fetchFlightSchedule"}),headers:{"Content-Type":"text/plain;charset=utf-8"}});let data=await res.json();if(data.status==="success"){currentScheduleData.english=data.english;currentScheduleData.arabic=data.arabic;let dStr=new Date(data.date).toLocaleString('ar-EG');info.innerHTML=`✅ تم تحديث الجداول | تاريخ الإرسال: ${dStr}`;if(data.arabic)switchScheduleLang('arabic');else if(data.english)switchScheduleLang('english');container.style.display='block';}else{info.innerHTML=`❌ ${data.message}`;}}catch(e){info.innerHTML='❌ حدث خطأ أثناء الاتصال بالإيميل.';}}function switchScheduleLang(lang){const iframe=document.getElementById('schedule-iframe'),btnAr=document.getElementById('btn-sch-ar'),btnEn=document.getElementById('btn-sch-en');if(!currentScheduleData[lang]||!currentScheduleData[lang].pdfBase64){return alert(lang==='arabic'?'ملف (إخطار رحلات مطار مرسي علم) غير موجود في هذا الإيميل!':'ملف (RMF Weekly Schedule) غير موجود في هذا الإيميل!');}iframe.src="data:application/pdf;base64,"+currentScheduleData[lang].pdfBase64;if(lang==='arabic'){btnAr.style.backgroundColor="#003366";btnEn.style.backgroundColor="#6c757d";}else{btnEn.style.backgroundColor="#003366";btnAr.style.backgroundColor="#6c757d";}}
 
 // فتح قسم جدول الرحلات وتحميل البيانات تلقائياً
-// فتح قسم جدول الرحلات وتحميل البيانات تلقائياً
-function openFlightSchedule() {
-    openSection('flight-schedule-section');
-    loadFlightScheduleData();
-}
+function openFlightSchedule(){openSection('flight-schedule-section');loadFlightScheduleData();}
 
-async function loadFlightScheduleData() {
+async function loadFlightScheduleData(){
     window.currentScheduleData = window.currentScheduleData || { english: null, arabic: null };
     const info = document.getElementById('schedule-info');
     const container = document.getElementById('pdf-viewer-container');
@@ -231,7 +227,7 @@ async function loadFlightScheduleData() {
         let data = await res.json();
 
         if (data.status === "success") {
-            window.currentScheduleData.english = data.english || (data.pdfBase64 ? { fileName: data.fileName, pdfBase64: data.pdfBase64 } : null);
+            window.currentScheduleData.english = data.english || null;
             window.currentScheduleData.arabic = data.arabic || null;
             let activeDoc = window.currentScheduleData.arabic || window.currentScheduleData.english;
 
@@ -249,7 +245,10 @@ async function loadFlightScheduleData() {
                     '</div>';
             }
 
-            if (info) info.innerHTML = '✅ تم سحب أحدث جدول بنجاح<br><span style="font-size:0.9rem; color:#555;">اسم الملف: <b>' + activeDoc.fileName + '</b> | وقت الإرسال: ' + fileDate + '</span>' + toggleBtns;
+            if (info) {
+                info.innerHTML = '✅ تم سحب أحدث جدول بنجاح<br><span style="font-size:0.9rem; color:#555;">اسم الملف: <b id="sch-active-filename">' + activeDoc.fileName + '</b> | وقت الإرسال: ' + fileDate + '</span>' + toggleBtns;
+            }
+
             iframe.src = "data:application/pdf;base64," + activeDoc.pdfBase64;
             if (container) container.style.display = 'block';
         } else {
@@ -265,18 +264,25 @@ async function loadFlightScheduleData() {
         }
     }
 }
+
 function switchScheduleLang(lang) {
     if (!window.currentScheduleData) return;
     const targetDoc = window.currentScheduleData[lang];
     if (!targetDoc || !targetDoc.pdfBase64) {
-        return alert(lang === 'arabic' ? 'النسخة العربية غير متوفرة في هذا الإيميل!' : 'النسخة الإنجليزية (RMF Weekly Schedule) غير متوفرة في هذا الإيميل!');
+        return alert(lang === 'arabic' ? 'النسخة العربية غير متوفرة في هذا الإيميل!' : 'النسخة الإنجليزية (RMF Weekly Schedule) غير متوفرة!');
     }
 
     const iframe = document.getElementById('schedule-iframe');
     const btnAr = document.getElementById('sch-btn-ar');
     const btnEn = document.getElementById('sch-btn-en');
+    const activeFileNameEl = document.getElementById('sch-active-filename');
 
-    // تحويل Base64 إلى Blob لضمان إعادة تحميل عارض الـ PDF في المتصفح فوراً وبأعلى سرعة
+    // 1. تحديث نص اسم الملف الظاهر أعلى الجدول
+    if (activeFileNameEl && targetDoc.fileName) {
+        activeFileNameEl.innerText = targetDoc.fileName;
+    }
+
+    // 2. تحديث عرض الـ PDF
     try {
         const byteCharacters = atob(targetDoc.pdfBase64);
         const byteNumbers = new Uint8Array(byteCharacters.length);
@@ -289,7 +295,7 @@ function switchScheduleLang(lang) {
         if (iframe) iframe.src = "data:application/pdf;base64," + targetDoc.pdfBase64;
     }
 
-    // تلوين الزر النشط لتوضيح الجدول المعروض حالياً
+    // 3. تبديل ألوان الأزرار
     if (btnAr && btnEn) {
         if (lang === 'arabic') {
             btnAr.style.backgroundColor = '#003366';
