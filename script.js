@@ -251,3 +251,54 @@ async function loadFlightScheduleData() {
         }
     }
 }
+
+// فتح قسم جدول الرحلات وتحميل البيانات تلقائياً
+function openFlightSchedule() {
+    openSection('flight-schedule-section');
+    loadFlightScheduleData();
+}
+
+async function loadFlightScheduleData() {
+    const infoText = document.getElementById('schedule-info');
+    const container = document.getElementById('pdf-viewer-container');
+    const iframe = document.getElementById('schedule-iframe');
+    const btn = event?.target?.closest('button');
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء الجدول...';
+    }
+
+    infoText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري سحب أحدث ملف PDF من الإيميل...';
+    container.style.display = 'none';
+
+    try {
+        // إرسال الطلب للسيرفر (تأكد أنك أضفت أمر fetchFlightSchedule في Code.gs)
+        let response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "fetchFlightSchedule" }),
+            headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+        
+        let data = await response.json();
+
+        if (data.status === "success") {
+            let fileDate = new Date(data.date).toLocaleString('ar-EG');
+            infoText.innerHTML = `✅ تم سحب أحدث جدول بنجاح<br><span style="font-size:0.9rem; color:#555;">اسم الملف: ${data.fileName} | وقت الإرسال: ${fileDate}</span>`;
+            
+            // عرض الـ PDF في المتصفح باستخدام الـ Base64
+            iframe.src = "data:application/pdf;base64," + data.pdfBase64;
+            container.style.display = 'block';
+        } else {
+            infoText.innerHTML = `❌ عذراً: ${data.message}`;
+        }
+    } catch (err) {
+        console.error(err);
+        infoText.innerHTML = `❌ حدث خطأ في الاتصال بخادم الإيميل.`;
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> تحديث الجدول الآن';
+        }
+    }
+}
