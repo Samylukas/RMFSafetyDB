@@ -17,19 +17,70 @@
 
 <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button><button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-<!-- شاشة البداية بالفيديو الاحترافي 10 ثوانٍ -->
+<!-- شاشة البداية بالفيديو الاحترافي -->
 <div id="video-splash-screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:999999;display:flex;justify-content:center;align-items:center;overflow:hidden;transition:opacity 0.8s ease;">
   <video id="introVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;">
     <source src="intro.mp4" type="video/mp4">
   </video>
-  <!-- زر تخطي اختياري أنيق -->
   <button type="button" onclick="endVideoSplash()" style="position:absolute;bottom:25px;left:20px;background:rgba(0,0,0,0.5);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;z-index:1000000;">تخطي <i class="fa-solid fa-forward"></i></button>
 </div>
+
 <div id="login-screen"><div class="login-box" style="background:#fff;padding:30px 25px;border-radius:12px;border:1px solid #ddd;box-shadow:0 15px 35px rgba(0,0,0,0.15);width:90%;max-width:380px;text-align:center;box-sizing:border-box;"><img src="LOGO-removebg-preview (1).png" style="height:55px;margin-bottom:10px;object-fit:contain;"><h2 style="color:#003366;margin:0 0 20px 0;font-size:1.4rem;">تسجيل الدخول للنظام</h2><div class="input-group" style="position:relative;margin-bottom:15px;text-align:right;"><input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" style="width:100%;padding:10px 40px 10px 15px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><datalist id="usersList"></datalist><i class="fa-solid fa-user" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i></div><div class="input-group" style="position:relative;margin-bottom:20px;text-align:right;"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')login();" style="width:100%;padding:10px 40px 10px 40px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><i class="fa-solid fa-lock" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i><i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position:absolute;left:14px!important;right:auto!important;top:50%;transform:translateY(-50%);cursor:pointer;color:#777;z-index:10;font-size:1.05rem;"></i></div><button type="button" class="login-btn" onclick="login()" style="width:100%;background:#003366;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><p id="loginError" style="color:#dc3545;margin-top:10px;font-size:0.85rem;display:none;">⚠️ اسم المستخدم أو كلمة المرور غير صحيحة!</p></div></div>
 
 <div class="header" id="app-header" style="display:none;"><img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo" onclick="handleLogoTripleClick()" title="اضغط 3 مرات للدخول لإدارة الحسابات" style="cursor:pointer;max-height:50px;object-fit:contain;"><div class="header-titles"><h1>General Department of Safety and Compliance</h1><h2>الإدارة العامة للسلامة والمطابقة</h2></div><div style="display:flex;align-items:center;gap:12px;"><button type="button" onclick="logout()" title="تسجيل الخروج" style="background:#dc3545;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.85rem;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button><img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo" style="max-height:50px;object-fit:contain;"></div></div>
 
-<div id="airport-safety-dashboard" class="content-area" style="display:none;"><button class="back-btn" id="backToMainBtn" onclick="openSection('main-dashboard')" style="display:none;"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button><h1 class="welcome-text" style="margin-bottom:30px;">إدارة سلامة المطارات <br><span style="font-size:1.2rem;color:#777;font-family:sans-serif;">Airport Safety Department</span></h1><div class="submenu-grid"><div class="sub-card" onclick="openSection('captain-survey-section')"><i class="fa-solid fa-clipboard-user sub-icon"></i><h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div><div class="sub-card" onclick="openSection('daily-inspection-section')"><i class="fa-solid fa-list-check sub-icon"></i><h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div></div><div class="sub-card" onclick="openSection('incident-section')"><i class="fa-solid fa-triangle-exclamation sub-icon"></i><h3 class="sub-title">03 - سجل الحوادث والوقائع</h3><div class="sub-subtitle">Incidents & Accidents</div></div><div class="sub-card" onclick="openSection('spi-section')"><i class="fa-solid fa-chart-line sub-icon"></i><h3 class="sub-title">مؤشرات الأداء والحركة</h3><div class="sub-subtitle">Movements & SPIs</div></div><div class="sub-card" onclick="openSection('monthly-report-section')"><i class="fa-solid fa-file-invoice sub-icon"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div><div class="sub-card" onclick="openSection('fod-section')"><i class="fa-solid fa-circle-exclamation sub-icon"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div><div class="sub-card" onclick="openSection('quarterly-inspection-section')"><i class="fa-solid fa-magnifying-glass-chart sub-icon"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarterly Airside Inspection</div></div><div class="sub-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')"><i class="fa-solid fa-phone-volume sub-icon"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div><div class="sub-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;"><i class="fa-solid fa-plane-departure sub-icon" style="color: #003366;"></i><h3 class="sub-title">جدول الرحلات</h3><div class="sub-subtitle">Flight Schedule</div></div></div></div>
+<!-- اللوحة الرئيسية -->
+<div id="main-dashboard" class="content-area" style="display:none;">
+    <h1 class="welcome-text" style="margin-bottom:30px;">الإدارات المركزية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Central Departments</span></h1>
+    <div class="departments-grid">
+        <div class="dept-card" onclick="openGenericDoc('الحماية المدنية', 'main-dashboard')" style="border-top:4px solid #dc3545;">
+            <i class="fa-solid fa-fire-extinguisher dept-icon" style="color:#dc3545;"></i>
+            <h3 class="dept-title">الحماية المدنية</h3>
+            <div class="dept-subtitle">Civil Defense</div>
+        </div>
+        <div class="dept-card" onclick="openGenericDoc('البيئة والحياة البرية', 'main-dashboard')" style="border-top:4px solid #28a745;">
+            <i class="fa-solid fa-dove dept-icon" style="color:#28a745;"></i>
+            <h3 class="dept-title">البيئة والحياة البرية</h3>
+            <div class="dept-subtitle">Environment & Wildlife</div>
+        </div>
+        <div class="dept-card" onclick="openGenericDoc('السلامة والصحة المهنية', 'main-dashboard')" style="border-top:4px solid #fd7e14;">
+            <i class="fa-solid fa-helmet-safety dept-icon" style="color:#fd7e14;"></i>
+            <h3 class="dept-title">السلامة والصحة المهنية</h3>
+            <div class="dept-subtitle">Occupational Safety & Health</div>
+        </div>
+        <div class="dept-card" onclick="openSection('airport-safety-dashboard')" style="border-top:4px solid #003366;">
+            <i class="fa-solid fa-plane-circle-check dept-icon" style="color:#003366;"></i>
+            <h3 class="dept-title">إدارة سلامة المطارات</h3>
+            <div class="dept-subtitle">Airport Safety Department</div>
+        </div>
+        <div class="dept-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')" style="border-top:4px solid #17a2b8;">
+            <i class="fa-solid fa-phone-volume dept-icon" style="color:#17a2b8;"></i>
+            <h3 class="dept-title">دليل هاتف المطار</h3>
+            <div class="dept-subtitle">Airport Phone Directory</div>
+        </div>
+        <div class="dept-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;">
+            <i class="fa-solid fa-plane-departure dept-icon" style="color: #003366;"></i>
+            <h3 class="dept-title">جدول الرحلات</h3>
+            <div class="dept-subtitle">Flight Schedule</div>
+        </div>
+    </div>
+</div>
+
+<div id="airport-safety-dashboard" class="content-area" style="display:none;">
+    <button class="back-btn" id="backToMainBtn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button>
+    <h1 class="welcome-text" style="margin-bottom:30px;">إدارة سلامة المطارات <br><span style="font-size:1.2rem;color:#777;font-family:sans-serif;">Airport Safety Department</span></h1>
+    <div class="submenu-grid">
+        <div class="sub-card" onclick="openSection('captain-survey-section')" style="border-top: 4px solid #e67e22;"><i class="fa-solid fa-clipboard-user sub-icon" style="color:#e67e22;"></i><h3 class="sub-title">01 - استبيان الكابتن</h3><div class="sub-subtitle">Captain Survey</div></div>
+        <div class="sub-card" onclick="openSection('daily-inspection-section')" style="border-top: 4px solid #28a745;"><i class="fa-solid fa-list-check sub-icon" style="color:#28a745;"></i><h3 class="sub-title">02 - الفحص اليومي</h3><div class="sub-subtitle">Daily Air-Side Inspection</div></div>
+        <div class="sub-card" onclick="openSection('incident-section')" style="border-top: 4px solid #dc3545;"><i class="fa-solid fa-triangle-exclamation sub-icon" style="color:#dc3545;"></i><h3 class="sub-title">03 - سجل الحوادث والوقائع</h3><div class="sub-subtitle">Incidents & Accidents</div></div>
+        <div class="sub-card" onclick="openSection('spi-section')" style="border-top: 4px solid #17a2b8;"><i class="fa-solid fa-chart-line sub-icon" style="color:#17a2b8;"></i><h3 class="sub-title">مؤشرات الأداء والحركة</h3><div class="sub-subtitle">Movements & SPIs</div></div>
+        <div class="sub-card" onclick="openSection('monthly-report-section')" style="border-top: 4px solid #6f42c1;"><i class="fa-solid fa-file-invoice sub-icon" style="color:#6f42c1;"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
+        <div class="sub-card" onclick="openSection('fod-section')" style="border-top: 4px solid #fd7e14;"><i class="fa-solid fa-circle-exclamation sub-icon" style="color:#fd7e14;"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
+        <div class="sub-card" onclick="openSection('quarterly-inspection-section')" style="border-top: 4px solid #20c997;"><i class="fa-solid fa-magnifying-glass-chart sub-icon" style="color:#20c997;"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarterly Airside Inspection</div></div>
+        <div class="sub-card" onclick="window.open('https://samylukas.github.io/RMF-Tel/', '_blank')" style="border-top: 4px solid #6c757d;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6c757d;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
+        <div class="sub-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;"><i class="fa-solid fa-plane-departure sub-icon" style="color:#003366;"></i><h3 class="sub-title">جدول الرحلات</h3><div class="sub-subtitle">Flight Schedule</div></div>
+    </div>
+</div>
 
 <div id="quarterly-inspection-section" class="content-area" style="display:none;"><button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button><h1 class="welcome-text" style="margin-bottom:25px;">التفتيش الربع سنوي <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Quarterly Airside Inspection</span></h1><div class="departments-grid" style="max-width:700px;margin:0 auto 30px auto;"><div class="dept-card" onclick="openQuarterlyCompany('ground')" style="border-top:4px solid #003366;"><i class="fa-solid fa-truck-ramp-box dept-icon" style="color:#003366;"></i><h3 class="dept-title">شركة الخدمات الأرضية</h3><div class="dept-subtitle">Ground Handling Company</div></div><div class="dept-card" onclick="openQuarterlyCompany('fuel')" style="border-top:4px solid #e67e22;"><i class="fa-solid fa-gas-pump dept-icon" style="color:#e67e22;"></i><h3 class="dept-title">شركة تموين الوقود</h3><div class="dept-subtitle">Fuel Supply Company</div></div></div><div id="quarterly-company-box" style="display:none;max-width:850px;margin:0 auto;background:#fff;padding:25px;border-radius:10px;border:1px solid #ddd;box-shadow:0 4px 15px rgba(0,0,0,0.06);"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:20px;"><h3 id="quarterly-company-title" style="color:#003366;margin:0;">تقرير التفتيش</h3><button type="button" onclick="document.getElementById('quarterly-company-box').style.display='none'" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button></div><form id="quarterlyUploadForm" onsubmit="event.preventDefault(); uploadQuarterlyPdf();" style="background:#f8f9fa;padding:15px;border-radius:8px;border:1px dashed #003366;margin-bottom:25px;"><input type="hidden" id="quarterlyCompanyType"><div class="form-grid"><div class="form-group"><label>تاريخ التفتيش:</label><input type="date" id="quarterlyDate" required></div><div class="form-group"><label>الربع السنوي:</label><select id="quarterlyQuarter" required><option value="Q1">الربع الأول (Q1)</option><option value="Q2">الربع الثاني (Q2)</option><option value="Q3">الربع الثالث (Q3)</option><option value="Q4">الربع الرابع (Q4)</option></select></div><div class="form-group"><label>اسم المفتش:</label><input type="text" id="quarterlyInspector" placeholder="اسم مفتش السلامة..." required></div><div class="form-group"><label>ملف التقرير (PDF فقط):</label><input type="file" id="quarterlyPdfFile" accept="application/pdf" required style="padding:6px;background:#fff;"></div></div><button type="submit" class="submit-btn" id="uploadQuarterlyBtn" style="margin-top:15px;background:#003366;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع وحفظ تقرير التفتيش (PDF)</button><p id="quarterlyUploadMsg" style="text-align:center;margin-top:10px;font-weight:bold;"></p></form><h4 style="color:#003366;margin-bottom:10px;">التقارير المرفوعة والمحفوظة:</h4><table class="report-table rtl-table" style="width:100%;font-size:11px;"><thead><tr><th>التاريخ</th><th>الربع</th><th>المفتش</th><th>المستند</th><th>إجراء</th></tr></thead><tbody id="quarterly-reports-tbody"></tbody></table></div></div>
 
@@ -50,9 +101,11 @@
 <div id="generic-doc-section" class="content-area" style="display:none;"><button class="back-btn" onclick="goBackFromGenericDoc()"><i class="fa-solid fa-arrow-right"></i> رجوع</button><h1 class="welcome-text" id="generic-doc-title">عنوان القسم</h1><div style="background:#fff;padding:40px;text-align:center;border-radius:12px;max-width:600px;margin:auto;"><i class="fa-solid fa-file-pdf" style="font-size:4rem;color:#d9534f;margin-bottom:15px;"></i><h2 style="color:var(--primary);">لا توجد مستندات مرفوعة حالياً</h2></div></div>
 
 <div id="addModal" class="modal"><div class="modal-content" style="text-align:right;"><span class="close-modal" onclick="closeAddModal()">&times;</span><h3 style="color:var(--primary);text-align:center;">إضافة طائرة جديدة</h3><div class="form-group"><label>REG:</label><input type="text" id="newReg" oninput="this.value=this.value.toUpperCase()"></div><div class="form-group"><label>Type:</label><input type="text" id="newType" style="text-transform:uppercase;"></div><div class="form-group"><label>Airline:</label><input type="text" id="newAirline" style="text-transform:uppercase;"></div><div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div><div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div><button type="button" class="submit-btn" style="margin-top:15px;" onclick="saveNewAircraft()">حفظ</button><p id="modalMsg" style="text-align:center;font-weight:bold;margin-top:10px;"></p></div></div>
+
 <!-- ================== جدول الرحلات ================== -->
 <div id="flight-schedule-section" class="content-area" style="display:none;">
-<button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة الرئيسية</button>  <h1 class="section-main-title" style="color: #17a2b8;">جدول الرحلات اليومي</h1>
+    <button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة الرئيسية</button>
+    <h1 class="section-main-title" style="color: #17a2b8;">جدول الرحلات اليومي</h1>
     <p id="schedule-info" class="section-sub-title">جاري البحث عن أحدث جدول في الإيميل...</p>
     
     <div style="text-align: center; margin-bottom: 15px;">
@@ -65,6 +118,7 @@
         <iframe id="schedule-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 </div>
+
 <script>
   setTimeout(function(){
     var sp = document.getElementById('splash-screen');
