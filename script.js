@@ -265,7 +265,41 @@ async function loadFlightScheduleData() {
         }
     }
 }
+function switchScheduleLang(lang) {
+    if (!window.currentScheduleData) return;
+    const targetDoc = window.currentScheduleData[lang];
+    if (!targetDoc || !targetDoc.pdfBase64) {
+        return alert(lang === 'arabic' ? 'النسخة العربية غير متوفرة في هذا الإيميل!' : 'النسخة الإنجليزية (RMF Weekly Schedule) غير متوفرة في هذا الإيميل!');
+    }
 
+    const iframe = document.getElementById('schedule-iframe');
+    const btnAr = document.getElementById('sch-btn-ar');
+    const btnEn = document.getElementById('sch-btn-en');
+
+    // تحويل Base64 إلى Blob لضمان إعادة تحميل عارض الـ PDF في المتصفح فوراً وبأعلى سرعة
+    try {
+        const byteCharacters = atob(targetDoc.pdfBase64);
+        const byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const blob = new Blob([byteNumbers], { type: 'application/pdf' });
+        if (iframe) iframe.src = URL.createObjectURL(blob);
+    } catch (e) {
+        if (iframe) iframe.src = "data:application/pdf;base64," + targetDoc.pdfBase64;
+    }
+
+    // تلوين الزر النشط لتوضيح الجدول المعروض حالياً
+    if (btnAr && btnEn) {
+        if (lang === 'arabic') {
+            btnAr.style.backgroundColor = '#003366';
+            btnEn.style.backgroundColor = '#6c757d';
+        } else {
+            btnEn.style.backgroundColor = '#003366';
+            btnAr.style.backgroundColor = '#6c757d';
+        }
+    }
+}
 function exportDailyPNG(){const btn=event?.target?.closest('button');let origHtml=btn?btn.innerHTML:'';if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> استخراج...';}let target=document.getElementById('printable-daily-report')||document.getElementById('as-f-01-01-container');if(!target||target.style.display==='none'){if(btn){btn.disabled=false;btn.innerHTML=origHtml;}return alert("يرجى الضغط على زر (عرض النموذج) أولاً!");}let dt=(document.getElementById('isoReportDate')?.value||new Date().toISOString().split('T')[0]);const doCapture=()=>{html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false}).then(cvs=>{cvs.toBlob(blob=>{if(btn){btn.disabled=false;btn.innerHTML=origHtml;}if(!blob)return alert("تعذر استخراج الصورة.");let u=URL.createObjectURL(blob),a=document.createElement('a');a.download=`AS_F_01_01_${dt}.png`;a.href=u;document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(u);},1000);},'image/png');}).catch(err=>{if(btn){btn.disabled=false;btn.innerHTML=origHtml;}alert("خطأ أثناء إنشاء الصورة!");});};if(typeof html2canvas==='undefined'){let s=document.createElement('script');s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=doCapture;document.head.appendChild(s);}else{doCapture();}}window.exportDailyPNG=exportDailyPNG;window.exportIsoform=exportDailyPNG;document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('button').forEach(b=>{if(b.innerText&&b.innerText.includes('PNG')){b.onclick=exportDailyPNG;}});});
 
 function goBackToDashboard(){if(currentLoggedInUser&&(currentLoggedInUser.Role||'').toLowerCase().includes('safety')){openSection('airport-safety-dashboard');}else if(document.getElementById('airport-safety-dashboard')&&document.getElementById('airport-safety-dashboard').style.display!=='none'){openSection('airport-safety-dashboard');}else{openSection('main-dashboard');}}
