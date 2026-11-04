@@ -57,7 +57,22 @@
 <div id="generic-doc-section" class="content-area" style="display:none;"><button class="back-btn" onclick="goBackFromGenericDoc()"><i class="fa-solid fa-arrow-right"></i> رجوع</button><h1 class="welcome-text" id="generic-doc-title">عنوان القسم</h1><div style="background:#fff;padding:40px;text-align:center;border-radius:12px;max-width:600px;margin:auto;"><i class="fa-solid fa-file-pdf" style="font-size:4rem;color:#d9534f;margin-bottom:15px;"></i><h2 style="color:var(--primary);">لا توجد مستندات مرفوعة حالياً</h2></div></div>
 
 <div id="addModal" class="modal"><div class="modal-content" style="text-align:right;"><span class="close-modal" onclick="closeAddModal()">&times;</span><h3 style="color:var(--primary);text-align:center;">إضافة طائرة جديدة</h3><div class="form-group"><label>REG:</label><input type="text" id="newReg" oninput="this.value=this.value.toUpperCase()"></div><div class="form-group"><label>Type:</label><input type="text" id="newType" style="text-transform:uppercase;"></div><div class="form-group"><label>Airline:</label><input type="text" id="newAirline" style="text-transform:uppercase;"></div><div class="form-group"><label>Handling:</label><input type="text" id="newHandling"></div><div class="form-group"><label>Country:</label><input type="text" id="newCountry"></div><button type="button" class="submit-btn" style="margin-top:15px;" onclick="saveNewAircraft()">حفظ</button><p id="modalMsg" style="text-align:center;font-weight:bold;margin-top:10px;"></p></div></div>
+<!-- ================== جدول الرحلات ================== -->
+<div id="flight-schedule-section" class="content-area" style="display:none;">
+    <button class="back-btn" onclick="openSection('main-departments-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة الرئيسية</button>
+    <h1 class="section-main-title" style="color: #17a2b8;">جدول الرحلات اليومي</h1>
+    <p id="schedule-info" class="section-sub-title">جاري البحث عن أحدث جدول في الإيميل...</p>
+    
+    <div style="text-align: center; margin-bottom: 15px;">
+        <button type="button" class="submit-btn" onclick="loadFlightScheduleData()" style="background:#17a2b8;">
+            <i class="fa-solid fa-rotate-right"></i> تحديث الجدول الآن
+        </button>
+    </div>
 
+    <div id="pdf-viewer-container" style="width: 100%; height: 75vh; border: 2px solid #ccc; border-radius: 8px; overflow: hidden; display: none;">
+        <iframe id="schedule-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+</div>
 <script>
   setTimeout(function(){
     var sp = document.getElementById('splash-screen');
