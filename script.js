@@ -175,6 +175,10 @@ let monthlyChart1 = null;
 let monthlyChart2 = null;
 let mrSurveyAirChartInstance = null;
 let mrSurveyEvalChartInstance = null;
+let mrSpiTrendInstance = null;
+let mrSpiCatInstance = null;
+let mrSpiApronInstance = null;
+let mrSpiWfInstance = null;
 
 // المتغيرات الخاصة بجدول الرحلات
 window.currentScheduleData = window.currentScheduleData || { english: null, arabic: null };
@@ -195,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAppDataInit();
   startSplashScreen();
 
-  // ضبط التواريخ التلقائية لتكون تاريخ اليوم الحالي
   const today = new Date().toISOString().split('T')[0];
   if (document.getElementById('isoReportDate') && !document.getElementById('isoReportDate').value) {
     document.getElementById('isoReportDate').value = today;
@@ -251,7 +254,6 @@ function login() {
 
   let foundUser = globalUsers.find(user => user.Username === u && String(user.Password) === p);
 
-  // مستخدمين افتراضيين للطوارئ
   if (!foundUser) {
     if (u.toLowerCase() === 'admin' && p === '1234') foundUser = { Role: 'Admin', Username: 'Admin' };
     else if ((u.toLowerCase() === 'safety' || u === 'سلامة المطارات') && p === '1234') foundUser = { Role: 'Airport Safety', Username: u };
@@ -380,7 +382,6 @@ function safePost(payload, btn, msgEl, successMsg, callback) {
 }
 
 function loadAppDataInit() {
-  // استرجاع الكاش المحلي مؤقتاً لسرعة التحميل
   try {
     const cInc = localStorage.getItem('rmf_incidents');
     if (cInc) {
@@ -1037,7 +1038,7 @@ async function generateSpiReport() {
   const matrixBox = document.getElementById('spi-matrix-container');
   if (!matrixBox) return;
 
-  let tbl = '<table class="report-table" style="width:100%;border-collapse:collapse;font-size:11px;font-family:Cairo,sans-serif;direction:ltr;text-align:left;border:1px solid #ccc;box-shadow:0 3px 12px rgba(0,0,0,0.06);">';
+  let tbl = '<table class="report-table" style="width:100%; min-width:850px; border-collapse:collapse; font-size:11px; font-family:Cairo,sans-serif; direction:ltr; text-align:left; border:1px solid #ccc; box-shadow:0 3px 12px rgba(0,0,0,0.06);">';
   tbl += '<thead><tr style="background:#003366;color:#ffffff;text-align:center;"><th style="padding:10px 8px;text-align:left;min-width:320px;border:1px solid #1a4a75;font-size:12px;">Safety issue / SPI</th>';
   mNames.forEach(m => {
     tbl += `<th style="padding:8px 4px;border:1px solid #1a4a75;min-width:42px;font-size:11px;">${m}</th>`;
@@ -1400,7 +1401,12 @@ function generateModernReport() {
     });
   }
 
-  let eH = `<div class="avoid-page-break" style="margin-top:35px;direction:ltr;"><h3 style="color:#003366;text-align:center;margin-bottom:12px;font-size:1.2rem;">Safety Captain Survey Report Evaluation Matrix</h3><table style="width:100%;border-collapse:collapse;border:1px solid #777;font-size:11px;text-align:center;"><thead><tr style="background:#003366;color:#fff;"><th style="padding:8px;border:1px solid #999;text-align:left;width:40%;">Evaluation Criteria</th><th style="padding:8px;border:1px solid #999;background:#28a745;">Excellent</th><th style="padding:8px;border:1px solid #999;background:#ffc107;color:#000;">Good</th><th style="padding:8px;border:1px solid #999;background:#dc3545;">Poor</th><th style="padding:8px;border:1px solid #999;background:#6c757d;">N/A</th><th style="padding:8px;border:1px solid #999;background:#1a2a6c;">Blank</th></tr></thead><tbody>`;
+  let eH = `<div class="avoid-page-break" style="margin-top:35px;direction:ltr;">
+    <h3 style="color:#003366;text-align:center;margin-bottom:12px;font-size:1.2rem;">Safety Captain Survey Report Evaluation Matrix</h3>
+    <div style="width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:15px; border:1px solid #ccc; border-radius:6px;">
+      <table style="width:100%; min-width:650px; border-collapse:collapse; font-size:11px; text-align:center;">
+        <thead><tr style="background:#003366;color:#fff;"><th style="padding:8px;text-align:left;width:40%;">Evaluation Criteria</th><th style="padding:8px;background:#28a745;">Excellent</th><th style="padding:8px;background:#ffc107;color:#000;">Good</th><th style="padding:8px;background:#dc3545;">Poor</th><th style="padding:8px;background:#6c757d;">N/A</th><th style="padding:8px;background:#1a2a6c;">Blank</th></tr></thead>
+        <tbody>`;
   criteriaList.forEach(crit => {
     eH += `<tr>
       <td style="padding:6px 10px;border:1px solid #ccc;text-align:left;font-weight:bold;background:#f9f9f9;">${crit}</td>
@@ -1411,22 +1417,16 @@ function generateModernReport() {
       <td style="padding:6px;border:1px solid #ccc;color:#555;">${mS["Blank"][crit] || 0}</td>
     </tr>`;
   });
-  eH += `</tbody></table></div>
+  eH += `</tbody></table></div></div>
   <div class="avoid-page-break" style="margin-top:35px;direction:ltr;text-align:left;">
     <h3 style="color:#003366;margin-bottom:10px;">Captain Comments & Observations:</h3>
-    <table class="avoid-page-break" style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:11px;">
-      <thead style="background:#e6e6e6;">
-        <tr>
-          <th style="border:1px solid #000;padding:6px;">Airline</th>
-          <th style="border:1px solid #000;padding:6px;">FLTNO</th>
-          <th style="border:1px solid #000;padding:6px;">Type</th>
-          <th style="border:1px solid #000;padding:6px;">Date</th>
-          <th style="border:1px solid #000;padding:6px;">REG</th>
-          <th style="border:1px solid #000;padding:6px;">Comments</th>
-        </tr>
-      </thead>
-      <tbody>`;
-  if (cList.length === 0) eH += `<tr><td colspan="6" style="text-align:center;">No comments.</td></tr>`;
+    <div style="width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:15px; border:1px solid #000; border-radius:6px;">
+      <table class="avoid-page-break" style="width:100%; min-width:650px; border-collapse:collapse; font-size:11px;">
+        <thead style="background:#e6e6e6;">
+          <tr><th style="padding:6px;border:1px solid #000;">Airline</th><th style="padding:6px;border:1px solid #000;">FLTNO</th><th style="padding:6px;border:1px solid #000;">Type</th><th style="padding:6px;border:1px solid #000;">Date</th><th style="padding:6px;border:1px solid #000;">REG</th><th style="padding:6px;border:1px solid #000;">Comments</th></tr>
+        </thead>
+        <tbody>`;
+  if (cList.length === 0) eH += `<tr><td colspan="6" style="text-align:center;padding:10px;">No comments.</td></tr>`;
   else cList.forEach(s => {
     eH += `<tr>
       <td style="border:1px solid #000;padding:6px;">${s.CAR || '-'}</td>
@@ -1437,7 +1437,7 @@ function generateModernReport() {
       <td style="border:1px solid #000;padding:6px;">${s.Captain_Comments}</td>
     </tr>`;
   });
-  eH += `</tbody></table></div>`;
+  eH += `</tbody></table></div></div>`;
   document.getElementById('additional-tables-container').innerHTML = eH;
 }
 
@@ -2647,14 +2647,10 @@ function deleteQuarterlyDoc(cType, idx) {
   try { localStorage.setItem('rmf_quarterly_docs', JSON.stringify(globalQuarterlyDocs)); } catch (e) {}
   renderQuarterlyReports(cType);
 }
+
 // =============================================================================
 // 12. قسم التقرير الشهري الشامل (مدمج بمؤشرات SPI التراكمية YTD والتوقيع الجديد)
 // =============================================================================
-let mrSpiTrendInstance = null;
-let mrSpiCatInstance = null;
-let mrSpiApronInstance = null;
-let mrSpiWfInstance = null;
-
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
   if (isNaN(n) || n === 0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`;
@@ -2848,7 +2844,6 @@ async function generateFullMonthlyReport() {
   const mEngName = cDO.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const mArabicName = cDO.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
 
-  // ستايل احترافي لمنع الإطارات المشوهة وضبط مقاسات الشارتات بدقة
   let oldFix = document.getElementById('mr-page-rules-style');
   if (oldFix) oldFix.remove();
   let st = document.createElement('style');
@@ -2926,7 +2921,7 @@ async function generateFullMonthlyReport() {
   `;
   document.head.appendChild(st);
 
-  // 1. صفحة الغلاف الفخمة (بدون تكرار العنوان المكتوب داخل الصورة)
+  // 1. صفحة الغلاف (report cover.jpg مع شارة التاريخ بالإنجليزية فقط)
   let p1Html = `
     <div class="mr-page" style="text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 12px;">
@@ -2947,10 +2942,9 @@ async function generateFullMonthlyReport() {
              style="width: 100%; max-width: 680px; max-height: 400px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
 
-      <!-- الإبقاء فقط على شارة الشهر والسنة أسفل الصورة مباشرة -->
       <div style="margin: 20px auto 10px auto;">
-        <div style="display: inline-block; background: #003366; color: #ffffff; padding: 9px 34px; border-radius: 25px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,51,102,0.25); letter-spacing: 0.5px;">
-          ${mArabicName} - ${mEngName}
+        <div style="display: inline-block; background: #003366; color: #ffffff; padding: 8px 34px; border-radius: 25px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,51,102,0.25); font-family: sans-serif; letter-spacing: 0.5px;">
+          ${mEngName}
         </div>
       </div>
 
@@ -2967,7 +2961,7 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 2. الصفحة الثانية: مؤشرات الأداء العامة والتحليل البياني للمخالفات
+  // 2. الصفحة الثانية: مؤشرات الأداء العامة
   let kpRows = '';
   const kp = [
     { l: "عدد التحركات الجوية", p: pS.mov, c: cS.mov, h: true, u: "" },
@@ -3028,7 +3022,7 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 3. الصفحة الثالثة (الجديدة): مؤشرات الأداء التشغيلية والتحركات التراكمية حتى تاريخ التقرير (SPIs YTD)
+  // 3. الصفحة الثالثة: مؤشرات الأداء التشغيلية والتحركات التراكمية YTD
   let p3SpiHtml = `
     <div class="mr-page">
       <div class="mr-section-header">
@@ -3235,7 +3229,7 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 6. الصفحة السادسة: حصر الأجسام الغريبة FOD والتوقيع الأخير بالإنجليزية على اليسار
+  // 6. الصفحة السادسة: حصر وتصنيف FOD والتوقيع الأخير بالإنجليزية على اليسار
   let fF = globalFod.filter(f => {
     let rd = f.Date || f.date || '';
     return (typeof rd === 'string' ? rd : new Date(rd).toISOString()).split('T')[0].startsWith(cm);
@@ -3342,16 +3336,13 @@ async function generateFullMonthlyReport() {
     });
   }
 
-  // -----------------------------------------------------------
-  // رسم مخططات قسم مؤشرات الأداء التراكمية YTD حتى شهر التقرير
-  // -----------------------------------------------------------
+  // مخططات قسم مؤشرات الأداء التراكمية YTD حتى شهر التقرير
   const mNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   const ytdMonths = mNames.slice(0, mInt);
   const spiRec = (window.globalSpiRecords && window.globalSpiRecords[curYear]) ? window.globalSpiRecords[curYear] : { movements: {}, events: {} };
   
   const ytdMovData = ytdMonths.map((_, i) => (spiRec.movements && spiRec.movements[i + 1]) ? Number(spiRec.movements[i + 1]) : 0);
 
-  // شارت تحركات الطائرات YTD
   if (mrSpiTrendInstance) mrSpiTrendInstance.destroy();
   let spiTrendEl = document.getElementById('mrSpiTrendChart');
   if (spiTrendEl) {
@@ -3381,7 +3372,6 @@ async function generateFullMonthlyReport() {
     });
   }
 
-  // حساب البنود التراكمية YTD
   const ytdCatTotals = {}, ytdItemTotals = {};
   SPI_CONFIG.forEach(cO => {
     let cSum = 0;
@@ -3398,7 +3388,6 @@ async function generateFullMonthlyReport() {
 
   const pal = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#34495e'];
 
-  // باي شارت 1: التصنيفات
   if (mrSpiCatInstance) mrSpiCatInstance.destroy();
   let spiCatEl = document.getElementById('mrSpiCatChart');
   if (spiCatEl) {
@@ -3419,7 +3408,6 @@ async function generateFullMonthlyReport() {
     });
   }
 
-  // باي شارت 2: الممرات والساحة Taxiway & Apron
   if (mrSpiApronInstance) mrSpiApronInstance.destroy();
   let spiApronEl = document.getElementById('mrSpiApronChart');
   if (spiApronEl) {
@@ -3445,7 +3433,6 @@ async function generateFullMonthlyReport() {
     });
   }
 
-  // باي شارت 3: المهبط والحياة البرية و FOD
   if (mrSpiWfInstance) mrSpiWfInstance.destroy();
   let spiWfEl = document.getElementById('mrSpiWfChart');
   if (spiWfEl) {
@@ -3655,9 +3642,8 @@ async function sendReportViaEmail() {
   const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
 
   try {
-    // التقاط صورة للتقرير بالكامل
     const canvas = await html2canvas(el, {
-      scale: 1.5, // دقة ممتازة لرسائل الإيميل وتمنع كبر حجم الملف
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -3666,7 +3652,6 @@ async function sendReportViaEmail() {
 
     const imgData = canvas.toDataURL('image/jpeg', 0.85);
 
-    // نص الإيميل الافتتاحي
     let hB = `
       <div dir="rtl" style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;">
         <h2 style="color: #003366; border-bottom: 2px solid #003366; padding-bottom: 8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
@@ -3674,7 +3659,6 @@ async function sendReportViaEmail() {
         نرفق لسيادتكم التقرير الشهري الشامل لمؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}).</p>
         <p>يرجى الاطلاع على صورة التقرير المرفقة أدناه.</p>
         
-        <!-- الصورة المحقونة داخل الإيميل -->
         <div style="text-align: center; margin: 20px 0;">
            <img src="cid:monthlyReportImage" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" alt="التقرير الشهري">
         </div>
@@ -3709,6 +3693,7 @@ async function sendReportViaEmail() {
     }
   }
 }
+
 // =============================================================================
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
 // =============================================================================
