@@ -3639,25 +3639,53 @@ window.exportMainReportPDF = exportMainReportImage;
 async function sendReportViaEmail() {
   const m = document.getElementById('mainReportMonth')?.value;
   if (!m) return alert("اختر الشهر أولاً لتجهيز التقرير!");
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
-  let s = getMonthlyDetailedStats(m);
+  
+  const el = document.getElementById('printable-main-report');
+  if (!el || el.style.display === 'none') {
+    return alert("يرجى الضغط على زر (تجهيز التقرير الشامل) أولاً!");
+  }
 
-  let hB = `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;line-height:1.6;">
-    <h2 style="color:#003366;border-bottom:2px solid #003366;padding-bottom:8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
-    <p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم ملخص مؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}):</p>
-    <table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;" border="1" cellpadding="8">
-      <tr style="background:#003366;color:#fff;"><th>مؤشر الأداء</th><th>القيمة</th></tr>
-      <tr><td>عدد التحركات الجوية</td><td>${s.mov}</td></tr>
-      <tr><td>عدد الحوادث</td><td>${s.acc}</td></tr>
-      <tr><td>عدد الوقائع</td><td>${s.inc}</td></tr>
-      <tr><td>إجمالي حالات عدم المطابقة</td><td>${s.fT} (المغلقة: ${s.fC} | المعلقة: ${s.fO})</td></tr>
-      <tr><td>استبيانات الطيارين</td><td>${s.surv.length}</td></tr>
-      <tr><td>إجمالي كميات FOD</td><td>${s.fTot.toFixed(3)} KG</td></tr>
-    </table>
-    <p><b>مُعِد التقرير:</b> ${prepBy}</p>
-  </div>`;
+  const btn = (typeof event !== 'undefined' && event) ? event.target?.closest('button') : null;
+  let origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال التقرير...';
+  }
+
+  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
 
   try {
+    // التقاط صورة للتقرير بالكامل
+    const canvas = await html2canvas(el, {
+      scale: 1.5, // دقة ممتازة لرسائل الإيميل وتمنع كبر حجم الملف
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+
+    // نص الإيميل الافتتاحي
+    let hB = `
+      <div dir="rtl" style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;">
+        <h2 style="color: #003366; border-bottom: 2px solid #003366; padding-bottom: 8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
+        <p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>
+        نرفق لسيادتكم التقرير الشهري الشامل لمؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}).</p>
+        <p>يرجى الاطلاع على صورة التقرير المرفقة أدناه.</p>
+        
+        <!-- الصورة المحقونة داخل الإيميل -->
+        <div style="text-align: center; margin: 20px 0;">
+           <img src="cid:monthlyReportImage" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" alt="التقرير الشهري">
+        </div>
+
+        <p>وتفضلوا بقبول فائق الاحترام والتقدير،،<br>
+        <b>مُعِد التقرير:</b> ${prepBy}<br>
+        <b>إدارة سلامة المطارات</b><br>
+        <b>مطار مرسى علم الدولي</b></p>
+      </div>
+    `;
+
     await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -3665,12 +3693,20 @@ async function sendReportViaEmail() {
       body: JSON.stringify({
         action: "sendReportEmail",
         subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`,
-        htmlBody: hB
+        htmlBody: hB,
+        imageData: imgData,
+        imageName: `Airside_Safety_Report_${m}.jpg`
       })
     });
-    alert("✅ تم إرسال التقرير بنجاح إلى إدارة السلامة والمطابقة!");
+    alert("✅ تم إرسال التقرير الشامل بنجاح إلى إدارة السلامة والمطابقة!");
   } catch (err) {
-    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل.");
+    console.error(err);
+    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل أو فشل معالجة الصورة.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
   }
 }
 // =============================================================================
