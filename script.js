@@ -2647,7 +2647,7 @@ function deleteQuarterlyDoc(cType, idx) {
 }
 
 // =============================================================================
-// 12. قسم التقرير الشهري الشامل (Monthly Report Module - Restored & Synced)
+// 12. قسم التقرير الشهري الشامل (Monthly Report Module - Executive Redesign)
 // =============================================================================
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
@@ -2673,7 +2673,7 @@ function getMonthlyDetailedStats(ms) {
   let mInt = parseInt(mN);
   let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {} };
 
-  // 1. قراءة حركة الطائرات للشهر من منظومة SPI المعتمدة
+  // 1. قراءة حركة الطائرات الحية من شيت وسجلات SPI
   let movFound = 0;
   if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].movements) {
     movFound = Number(window.globalSpiRecords[y].movements[mInt]) || 0;
@@ -2695,7 +2695,7 @@ function getMonthlyDetailedStats(ms) {
   }
   s.mov = movFound;
 
-  // 2. إحصائيات الحوادث والوقائع
+  // 2. الحوادث والوقائع
   if (globalIncidents) {
     globalIncidents.forEach(i => {
       let idt = i.Date ? String(i.Date).split('T')[0] : '';
@@ -2707,7 +2707,7 @@ function getMonthlyDetailedStats(ms) {
     });
   }
 
-  // 3. إحصائيات الفحص اليومي
+  // 3. الفحص اليومي
   if (globalDailyInspections) {
     globalDailyInspections.forEach(d => {
       let ddt = d.date ? String(d.date).split('T')[0] : '';
@@ -2732,7 +2732,7 @@ function getMonthlyDetailedStats(ms) {
     });
   }
 
-  // 5. كميات الأجسام الغريبة FOD
+  // 5. الأجسام الغريبة FOD
   if (globalFod) {
     globalFod.forEach(f => {
       let rd = f.Date || f.date || '';
@@ -2749,13 +2749,12 @@ function getMonthlyDetailedStats(ms) {
 function generateFullMonthlyReport() {
   const cm = document.getElementById('mainReportMonth')?.value;
   if (!cm) return alert("اختر الشهر أولاً لإصدار التقرير!");
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || '';
+  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
   const pm = getPreviousMonthStr(cm);
   const cDO = new Date(cm + "-01");
   let cS = getMonthlyDetailedStats(cm);
   let pS = getMonthlyDetailedStats(pm);
 
-  // حصر المخالفات الفريدة بدون تكرار
   const getUniqF = (mStr) => {
     let uM = {};
     if (globalDailyInspections) {
@@ -2803,45 +2802,125 @@ function generateFullMonthlyReport() {
   const mEngName = cDO.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const mArabicName = cDO.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
 
-  // ستايل طباعة وعرض التقرير
+  // حقن قواعد التنسيق لمنع الإطارات المشوهة وفصل الصفحات بدقة
   let oldFix = document.getElementById('mr-page-rules-style');
   if (oldFix) oldFix.remove();
   let st = document.createElement('style');
   st.id = 'mr-page-rules-style';
   st.innerHTML = `
-    #printable-main-report { font-family: 'Cairo', sans-serif !important; direction: rtl !important; box-sizing: border-box !important; width: 100% !important; max-width: 900px !important; margin: 0 auto !important; padding: 15px 20px !important; background: #fff !important; }
+    #printable-main-report {
+      font-family: 'Cairo', sans-serif !important;
+      direction: rtl !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 860px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
     #printable-main-report * { box-sizing: border-box !important; }
-    #printable-main-report h1, #printable-main-report h2, #printable-main-report h3, #printable-main-report h4 { text-align: center !important; margin: 8px auto !important; }
-    #printable-main-report table { font-size: 9.5px !important; margin: 0 auto 15px auto !important; width: 100% !important; border-collapse: collapse !important; }
-    #printable-main-report th, #printable-main-report td { padding: 6px 8px !important; text-align: center; }
-    canvas#mrChart1, canvas#mrChart2, canvas#mrSurveyAirChart, canvas#mrSurveyEvalChart { width: 100% !important; max-height: 220px !important; height: 220px !important; display: block !important; margin: 0 auto !important; }
-    .mr-page-break { page-break-before: always !important; break-before: page !important; margin-top: 30px !important; padding-top: 20px !important; border-top: 1px dashed #ddd; }
+    .mr-page {
+      page-break-after: always !important;
+      break-after: page !important;
+      padding: 30px 25px !important;
+      background: #ffffff !important;
+      min-height: 1060px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      box-sizing: border-box !important;
+    }
+    .mr-page:last-child {
+      page-break-after: auto !important;
+      break-after: auto !important;
+      min-height: auto !important;
+    }
+    .mr-section-header {
+      background: #003366 !important;
+      color: #ffffff !important;
+      padding: 8px 14px !important;
+      border-radius: 6px !important;
+      font-size: 13px !important;
+      font-weight: bold !important;
+      margin-bottom: 15px !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+    .mr-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      font-size: 10px !important;
+      margin-bottom: 15px !important;
+    }
+    .mr-table th {
+      background: #f0f4f8 !important;
+      color: #003366 !important;
+      font-weight: bold !important;
+      border: 1px solid #b0c4de !important;
+      padding: 7px 6px !important;
+      text-align: center !important;
+    }
+    .mr-table td {
+      border: 1px solid #dcdcdc !important;
+      padding: 6px 8px !important;
+      text-align: center !important;
+    }
+    canvas#mrChart1, canvas#mrChart2, canvas#mrSurveyAirChart, canvas#mrSurveyEvalChart {
+      width: 100% !important;
+      height: 190px !important;
+      max-height: 190px !important;
+      display: block !important;
+    }
   `;
   document.head.appendChild(st);
 
-  // 1. الغلاف الرسمي
+  // 1. صفحة الغلاف الفخمة المستقلة (Dedicated Executive Cover Page)
   let p1Html = `
-    <div style="border-bottom: 2px solid #003366; padding-bottom: 20px; margin-bottom: 25px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="text-align: right; flex: 1;">
-          <h2 style="color: #003366; font-size: 19px; font-weight: 900; margin: 0 0 5px 0;">الإدارة العامة للمطابقة والسلامة</h2>
-          <h3 style="color: #222; font-size: 16px; font-weight: bold; margin: 0;">إدارة سلامة المطارات</h3>
+    <div class="mr-page" style="text-align: center; justify-content: space-between;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 12px;">
+        <div style="text-align: right;">
+          <h2 style="color: #003366; font-size: 17px; font-weight: 900; margin: 0;">مطار مرسى علم الدولي</h2>
+          <h3 style="color: #003366; font-size: 15px; font-weight: bold; margin: 4px 0 0 0;">الإدارة العامة للسلامة والمطابقة</h3>
+          <h4 style="color: #555; font-size: 13px; margin: 3px 0 0 0;">إدارة سلامة المطارات</h4>
         </div>
-        <div style="flex: 1; text-align: left;">
+        <div>
           <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 65px; object-fit: contain;">
         </div>
       </div>
-      <div style="margin: 25px auto 15px auto; text-align: center;">
-        <h1 style="color: #003366; font-size: 24px; font-weight: 900; margin: 0;">التقرير الشهري لمنطقة التحركات الجوية</h1>
-        <h3 style="color: #555; font-size: 18px; margin: 5px 0 0 0; font-family: sans-serif;">${mEngName}</h3>
+
+      <div style="margin: 20px auto; width: 100%;">
+        <img src="Gemini_Generated_Image_vgja40vgja.jpg.jpg" 
+             onerror="if(!this.tried1){this.tried1=true;this.src='Gemini_Generated_Image_vgja40vgja.jpg';}else if(!this.tried2){this.tried2=true;this.src='Gemini_Generated_Image_vgja40vgja40vgja.jpg.jpg';}" 
+             alt="Airport Safety" 
+             style="width: 100%; max-width: 660px; max-height: 380px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
-      <div style="text-align: left; direction: ltr; font-size: 12px; font-weight: bold; color: #003366; margin-top: 15px;">
-        Prepared by: <span style="font-size: 14px; color: #222;">${prepBy || 'Safety Manager'}</span>
+
+      <div style="margin: 15px auto;">
+        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0; letter-spacing: -0.5px;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;">Airside Safety Monthly Report</h2>
+        <div style="display: inline-block; background: #003366; color: #ffffff; padding: 7px 28px; border-radius: 25px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 10px rgba(0,51,102,0.25);">
+          ${mArabicName} - ${mEngName}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #003366; padding-top: 12px; font-size: 11.5px; color: #333;">
+        <div style="text-align: right;">
+          <span style="color: #777;">الجهة المصدرة:</span><br>
+          <strong style="color: #003366; font-size: 12.5px;">الإدارة العامة للسلامة والمطابقة</strong>
+        </div>
+        <div style="text-align: left; direction: ltr;">
+          <span style="color: #777;">Prepared By:</span><br>
+          <strong style="color: #003366; font-size: 13.5px;">${prepBy}</strong>
+        </div>
       </div>
     </div>
   `;
 
-  // 2. جدول مؤشرات الأداء والاتجاهات
+  // 2. الصفحة الثانية: مؤشرات الأداء والتحليل البياني
   let kpRows = '';
   const kp = [
     { l: "عدد التحركات الجوية", p: pS.mov, c: cS.mov, h: true, u: "" },
@@ -2857,51 +2936,58 @@ function generateFullMonthlyReport() {
   kp.forEach(i => {
     let d = i.c - i.p;
     let tH = formatTrendDifference(d, i.h, i.u);
-    let cD = i.isF ? i.c.toFixed(3) + " " + i.u : i.c;
-    let pD = i.isF ? i.p.toFixed(3) + " " + i.u : i.p;
+    let cD = i.isF ? i.c.toFixed(3) + " " + i.u : (i.c > 0 ? i.c.toLocaleString() : '0');
+    let pD = i.isF ? i.p.toFixed(3) + " " + i.u : (i.p > 0 ? i.p.toLocaleString() : '0');
     kpRows += `<tr>
-      <td style="border: 1px solid #000; padding: 8px 10px; text-align: right; font-weight: bold; font-size: 11px;">${i.l}</td>
-      <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-size: 11px;">${pD}</td>
-      <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #f9fbfd; font-size: 11px;">${cD}</td>
-      <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${tH}</td>
+      <td style="border: 1px solid #dcdcdc; padding: 7px 10px; text-align: right; font-weight: bold; font-size: 11px;">${i.l}</td>
+      <td style="border: 1px solid #dcdcdc; padding: 7px; direction: ltr; font-size: 11px;">${pD}</td>
+      <td style="border: 1px solid #dcdcdc; padding: 7px; direction: ltr; font-weight: bold; background: #f9fbfd; font-size: 11px;">${cD}</td>
+      <td style="border: 1px solid #dcdcdc; padding: 7px; text-align: center; font-size: 11px;">${tH}</td>
     </tr>`;
   });
 
   let p2Html = `
-    <div>
-      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">أولاً: مؤشرات الأداء العامة</h2>
-      <table style="width: 100%; border: 1px solid #000; margin-bottom: 25px; border-collapse: collapse; text-align: center;">
-        <thead style="background: #e6e6e6; color: #000;">
-          <tr>
-            <th style="border: 1px solid #000; padding: 8px; width: 40%;">البيان</th>
-            <th style="border: 1px solid #000; padding: 8px;">الشهر السابق</th>
-            <th style="border: 1px solid #000; padding: 8px;">الشهر الحالي</th>
-            <th style="border: 1px solid #000; padding: 8px; width: 25%;">الفرق والاتجاه</th>
-          </tr>
-        </thead>
-        <tbody>${kpRows}</tbody>
-      </table>
-
-      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right; margin-top: 30px;">ثانياً: الحصــــــــــــر التفصيلي</h2>
-      <h4 style="color: #333; text-align: right; margin-bottom: 8px; font-size: 13px;">حصر المخالفات والأخطار طبقاً للإدارة والنوع:</h4>
-      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
-          <canvas id="mrChart1"></canvas>
+    <div class="mr-page">
+      <div>
+        <div class="mr-section-header">
+          <span>أولاً: مؤشرات الأداء العامة لمنطقة التحركات الجوية</span>
+          <span style="font-size: 10.5px; opacity: 0.9;">مقارنة مع الشهر السابق</span>
         </div>
-        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
-          <canvas id="mrChart2"></canvas>
+        <table class="mr-table">
+          <thead>
+            <tr>
+              <th style="width: 42%; text-align: right; padding-right: 12px;">البيان</th>
+              <th style="width: 18%;">الشهر السابق</th>
+              <th style="width: 18%;">الشهر الحالي</th>
+              <th style="width: 22%;">الفرق والاتجاه</th>
+            </tr>
+          </thead>
+          <tbody>${kpRows}</tbody>
+        </table>
+
+        <div class="mr-section-header" style="margin-top: 25px;">
+          <span>ثانياً: الحصر والتحليل البياني للمخالفات والوقائع</span>
+          <span style="font-size: 10.5px; opacity: 0.9;">الرصد والإدارات المسؤولة</span>
+        </div>
+        <div style="display: flex; gap: 15px; margin-top: 10px;">
+          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">المخالفات المرصودة طبقاً للإدارة المسؤولة</h5>
+            <canvas id="mrChart1"></canvas>
+          </div>
+          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">تصنيف الوقائع والحوادث المسجلة</h5>
+            <canvas id="mrChart2"></canvas>
+          </div>
         </div>
       </div>
+      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
+        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 2
+      </div>
     </div>
-    <div class="mr-page-break"></div>
   `;
 
-  // 3. جدول الوقائع والحوادث المسجلة
-  let iLHtml = `
-    <h4 style="color: #003366; text-align: right; margin-bottom: 10px; font-size: 14px; border-bottom: 2px solid #003366; padding-bottom: 5px;">حصر الوقائع والحوادث المسجلة خلال الشهر:</h4>
-    <p style="font-weight: bold; color: #003366; text-align: right; margin-bottom: 15px; font-size: 12px;">تم حصر عدد (${cS.inc + cS.acc}) واقعة / حادثة كالتالي :</p>
-  `;
-
+  // 3. الصفحة الثالثة: حصر وسجل الوقائع والحوادث المسجلة
+  let iLHtml = '';
   let gI = {};
   cS.incList.forEach(i => {
     let ct = i.Characterization ? i.Characterization.split('/')[0].trim() : 'Others';
@@ -2909,70 +2995,76 @@ function generateFullMonthlyReport() {
     gI[ct].push(i);
   });
 
-  let cIdx = 1;
-  for (let ct in gI) {
-    iLHtml += `
-      <div style="background: #003366; color: #fff; font-weight: bold; padding: 6px 12px; margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px; direction: ltr;">
-        <span>${ct} (${cIdx})</span>
-        <span>Total: ${gI[ct].length}</span>
+  if (Object.keys(gI).length === 0) {
+    iLHtml = `
+      <div style="background: #e8f5e9; border: 1.5px solid #28a745; padding: 30px; border-radius: 8px; text-align: center; margin: 40px auto; max-width: 600px;">
+        <i class="fa-solid fa-shield-halved" style="color: #28a745; font-size: 3rem; margin-bottom: 10px;"></i>
+        <h3 style="color: #155724; margin: 0 0 6px 0;">سجل آمن 100%</h3>
+        <p style="color: #28a745; margin: 0; font-weight: bold; font-size: 12px;">لم يتم تسجيل أي حوادث أو وقائع في منطقة التحركات الجوية خلال شهر ${mArabicName}.</p>
       </div>
-      <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 12px; font-size: 10px; direction: ltr; text-align: left;">
-        <thead>
-          <tr style="background: #f9f9f9;">
-            <th style="border: 1px solid #000; padding: 6px; width: 5%; text-align: center;">Seq</th>
-            <th style="border: 1px solid #000; padding: 6px; width: 55%; text-align: center;">Description / Action Taken</th>
-            <th style="border: 1px solid #000; padding: 6px; width: 15%; text-align: center;">Date</th>
-            <th style="border: 1px solid #000; padding: 6px; width: 25%; text-align: center;">Flight Information</th>
-          </tr>
-        </thead>
-        <tbody>
     `;
-
-    gI[ct].forEach((i, x) => {
-      let dt = i.Date ? String(i.Date).split('T')[0] : '';
-      let ds = i.Description ? i.Description.replace(/\n/g, '<br>') : '-';
-      let ac = i.Action_Taken ? i.Action_Taken.replace(/\n/g, '<br>') : '-';
-      let dsDir = /[\u0600-\u06FF]/.test(ds) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
-      let acDir = /[\u0600-\u06FF]/.test(ac) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
-      let fInfo = `<b>Airline:</b> ${i.CAR || '-'}<br><b>Local Agent:</b> ${i.Equipment_Owned || '-'}<br><b>FLT NO:</b> ${i.Flight_No || '-'}<br><b>REG:</b> ${i.REG || '-'}`;
-
+  } else {
+    let cIdx = 1;
+    for (let ct in gI) {
       iLHtml += `
-        <tr>
-          <td style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle; font-size: 11px;">0${x + 1}</td>
-          <td style="border: 1px solid #000; padding: 8px 12px; vertical-align: middle;">
-            <div style="text-align: center; margin-bottom: 4px;"><strong style="color: #003366; text-decoration: underline;">الوصف / Description</strong></div>
-            <div style="${dsDir} margin-bottom: 12px; line-height: 1.5;">${ds}</div>
-            <div style="text-align: center; margin-bottom: 4px;"><strong style="color: #28a745; text-decoration: underline;">الإجراء المتخذ / Action Taken</strong></div>
-            <div style="${acDir} line-height: 1.5;">${ac}</div>
-          </td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; font-weight: bold;">${dt}</td>
-          <td style="border: 1px solid #000; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.6; font-size: 9.5px;">${fInfo}</td>
-        </tr>
+        <div style="background: #003366; color: #fff; font-weight: bold; padding: 6px 12px; margin-top: 12px; border-radius: 4px; display: flex; justify-content: space-between; font-size: 11px; direction: ltr;">
+          <span>${ct} (${cIdx})</span>
+          <span>Count: ${gI[ct].length}</span>
+        </div>
+        <table class="mr-table" style="direction: ltr; text-align: left; margin-bottom: 12px;">
+          <thead>
+            <tr>
+              <th style="width: 5%; text-align: center;">Seq</th>
+              <th style="width: 55%; text-align: center;">Description / Action Taken</th>
+              <th style="width: 15%; text-align: center;">Date</th>
+              <th style="width: 25%; text-align: center;">Flight Information</th>
+            </tr>
+          </thead>
+          <tbody>
       `;
-    });
-    iLHtml += `</tbody></table>`;
-    cIdx++;
+      gI[ct].forEach((i, x) => {
+        let dt = i.Date ? String(i.Date).split('T')[0] : '';
+        let ds = i.Description ? i.Description.replace(/\n/g, '<br>') : '-';
+        let ac = i.Action_Taken ? i.Action_Taken.replace(/\n/g, '<br>') : '-';
+        let dsDir = /[\u0600-\u06FF]/.test(ds) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+        let acDir = /[\u0600-\u06FF]/.test(ac) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+        let fInfo = `<b>Airline:</b> ${i.CAR || '-'}<br><b>Local Agent:</b> ${i.Equipment_Owned || '-'}<br><b>FLT NO:</b> ${i.Flight_No || '-'}<br><b>REG:</b> ${i.REG || '-'}`;
+
+        iLHtml += `
+          <tr>
+            <td style="text-align: center; font-weight: bold; vertical-align: middle; font-size: 11px;">0${x + 1}</td>
+            <td style="padding: 8px 10px; vertical-align: middle;">
+              <div style="text-align: center; margin-bottom: 3px;"><strong style="color: #003366; text-decoration: underline; font-size: 10px;">الوصف / Description</strong></div>
+              <div style="${dsDir} margin-bottom: 10px; line-height: 1.4; font-size: 9.5px;">${ds}</div>
+              <div style="text-align: center; margin-bottom: 3px;"><strong style="color: #28a745; text-decoration: underline; font-size: 10px;">الإجراء المتخذ / Action Taken</strong></div>
+              <div style="${acDir} line-height: 1.4; font-size: 9.5px; color: #155724;">${ac}</div>
+            </td>
+            <td style="text-align: center; vertical-align: middle; font-weight: bold;">${dt}</td>
+            <td style="text-align: left; vertical-align: middle; line-height: 1.5; font-size: 9px;">${fInfo}</td>
+          </tr>
+        `;
+      });
+      iLHtml += `</tbody></table>`;
+      cIdx++;
+    }
   }
 
-  // 4. استبيانات الطيارين والمصفوفة
   let p3Html = `
-    <div class="mr-page-break">
-      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">ثالثاً: استبيان الطيارين</h2>
-      <p style="font-weight: bold; color: #003366; text-align: right; margin-bottom: 15px; font-size: 12px;">تم عمل عدد (${cS.surv.length}) استبيان طيارين خلال شهر ${mArabicName}.</p>
-      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
-          <canvas id="mrSurveyAirChart"></canvas>
+    <div class="mr-page">
+      <div>
+        <div class="mr-section-header">
+          <span>ثالثاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span>
+          <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الوقائع: ${cS.inc + cS.acc}</span>
         </div>
-        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
-          <canvas id="mrSurveyEvalChart"></canvas>
-        </div>
+        ${iLHtml}
       </div>
-      <h4 style="color: #003366; margin: 15px 0 10px 0; text-align: center; font-size: 14px;">مصفوفة تقييم استبيانات الطيارين</h4>
-      <div id="mr-survey-matrix-box"></div>
-      <div id="mr-survey-comments-box" style="margin-top: 20px;"></div>
+      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
+        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 3
+      </div>
     </div>
   `;
 
+  // 4. الصفحة الرابعة: استبيان الطيارين
   let mS = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
   criteriaList.forEach(c => {
     mS["Excellent"][c] = 0; mS["Good"][c] = 0; mS["Poor"][c] = 0; mS["N/A"][c] = 0; mS["Blank"][c] = 0;
@@ -2989,15 +3081,15 @@ function generateFullMonthlyReport() {
   });
 
   let mH = `
-    <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 9.5px; text-align: center; direction: ltr;">
+    <table class="mr-table" style="direction: ltr; text-align: center; font-size: 8.5px;">
       <thead>
         <tr style="background: #003366; color: #fff;">
-          <th style="padding: 4px 6px; border: 1px solid #999; text-align: left; width: 40%;">Evaluation Criteria</th>
-          <th style="padding: 4px; border: 1px solid #999; background: #28a745; width: 12%;">Excellent</th>
-          <th style="padding: 4px; border: 1px solid #999; background: #ffc107; color: #000; width: 12%;">Good</th>
-          <th style="padding: 4px; border: 1px solid #999; background: #dc3545; width: 12%;">Poor</th>
-          <th style="padding: 4px; border: 1px solid #999; background: #6c757d; width: 12%;">N/A</th>
-          <th style="padding: 4px; border: 1px solid #999; background: #1a2a6c; width: 12%;">Blank</th>
+          <th style="padding: 4px 6px; text-align: left; width: 40%; background: #003366; color: #fff;">Evaluation Criteria</th>
+          <th style="padding: 4px; background: #28a745; color: #fff; width: 12%;">Excellent</th>
+          <th style="padding: 4px; background: #ffc107; color: #000; width: 12%;">Good</th>
+          <th style="padding: 4px; background: #dc3545; color: #fff; width: 12%;">Poor</th>
+          <th style="padding: 4px; background: #6c757d; color: #fff; width: 12%;">N/A</th>
+          <th style="padding: 4px; background: #1a2a6c; color: #fff; width: 12%;">Blank</th>
         </tr>
       </thead>
       <tbody>
@@ -3005,54 +3097,83 @@ function generateFullMonthlyReport() {
   criteriaList.forEach(c => {
     mH += `
       <tr>
-        <td style="padding: 4px 6px; border: 1px solid #ccc; text-align: left; font-weight: bold; background: #f9f9f9;">${c}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'}; font-weight: bold;">${mS["Excellent"][c] || 0}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'}; font-weight: bold;">${mS["Good"][c] || 0}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'}; font-weight: bold;">${mS["Poor"][c] || 0}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; color: #777;">${mS["N/A"][c] || 0}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; color: #777;">${mS["Blank"][c] || 0}</td>
+        <td style="padding: 3px 6px; text-align: left; font-weight: bold; background: #fbfbfb;">${c}</td>
+        <td style="padding: 3px; color: ${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'}; font-weight: bold;">${mS["Excellent"][c] || 0}</td>
+        <td style="padding: 3px; color: ${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'}; font-weight: bold;">${mS["Good"][c] || 0}</td>
+        <td style="padding: 3px; color: ${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'}; font-weight: bold;">${mS["Poor"][c] || 0}</td>
+        <td style="padding: 3px; color: #777;">${mS["N/A"][c] || 0}</td>
+        <td style="padding: 3px; color: #777;">${mS["Blank"][c] || 0}</td>
       </tr>
     `;
   });
   mH += `</tbody></table>`;
 
   let cH = `
-    <div style="direction: ltr; text-align: left; margin-top: 20px;">
-      <h4 style="color: #003366; text-align: left; margin-bottom: 8px; font-size: 13px;">Captain Comments & Observations:</h4>
-      <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 10px; direction: ltr; text-align: left;">
-        <thead style="background: #003366; color: #fff;">
+    <div style="direction: ltr; text-align: left; margin-top: 15px;">
+      <h5 style="color: #003366; margin-bottom: 6px; font-size: 11px;">Captain Comments & Observations:</h5>
+      <table class="mr-table" style="direction: ltr; text-align: left; font-size: 9px;">
+        <thead>
           <tr>
-            <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 15%;">Airline</th>
-            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">FLT NO</th>
-            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">Type</th>
-            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">Date</th>
-            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">REG</th>
-            <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 37%;">Comments</th>
+            <th style="width: 15%;">Airline</th>
+            <th style="width: 12%; text-align: center;">FLT NO</th>
+            <th style="width: 12%; text-align: center;">Type</th>
+            <th style="width: 12%; text-align: center;">Date</th>
+            <th style="width: 12%; text-align: center;">REG</th>
+            <th style="width: 37%;">Comments</th>
           </tr>
         </thead>
         <tbody>
   `;
   if (cL.length === 0) {
-    cH += `<tr><td colspan="6" style="padding: 10px; text-align: center; color: #777; border: 1px solid #000;">No comments recorded for this month.</td></tr>`;
+    cH += `<tr><td colspan="6" style="padding: 8px; text-align: center; color: #777;">No comments recorded for this month.</td></tr>`;
   } else {
     cL.forEach(s => {
       let cmt = s.Captain_Comments || '-';
       let cmtDir = /[\u0600-\u06FF]/.test(cmt) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
       cH += `
         <tr>
-          <td style="padding: 6px; border: 1px solid #000; font-weight: bold;">${s.CAR || '-'}</td>
-          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.Flight_NO || '-'}</td>
-          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.TYPE || '-'}</td>
-          <td style="padding: 6px; border: 1px solid #000; text-align: center;" dir="ltr">${s.Date ? String(s.Date).split('T')[0] : ''}</td>
-          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.REG || '-'}</td>
-          <td style="padding: 6px; border: 1px solid #000; ${cmtDir}">${cmt}</td>
+          <td style="font-weight: bold;">${s.CAR || '-'}</td>
+          <td style="text-align: center;">${s.Flight_NO || '-'}</td>
+          <td style="text-align: center;">${s.TYPE || '-'}</td>
+          <td style="text-align: center;" dir="ltr">${s.Date ? String(s.Date).split('T')[0] : ''}</td>
+          <td style="text-align: center;">${s.REG || '-'}</td>
+          <td style="${cmtDir}">${cmt}</td>
         </tr>
       `;
     });
   }
   cH += `</tbody></table></div>`;
 
-  // 5. حصر الأجسام الغريبة FOD
+  let p4Html = `
+    <div class="mr-page">
+      <div>
+        <div class="mr-section-header">
+          <span>رابعاً: استبيان الطيارين (Pilot Safety Surveys)</span>
+          <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الاستبيانات: ${cS.surv.length}</span>
+        </div>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">مشاركات شركات الطيران</h5>
+            <canvas id="mrSurveyAirChart"></canvas>
+          </div>
+          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">توزيع التقييم العام للخدمات</h5>
+            <canvas id="mrSurveyEvalChart"></canvas>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 8px;">
+          <h5 style="color: #003366; margin: 0; font-size: 12px; font-weight: bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5>
+        </div>
+        ${mH}
+        ${cH}
+      </div>
+      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
+        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 4
+      </div>
+    </div>
+  `;
+
+  // 5. الصفحة الخامسة: حصر وتصنيف FOD والتوقيعات
   let fF = globalFod.filter(f => {
     let rd = f.Date || f.date || '';
     return (typeof rd === 'string' ? rd : new Date(rd).toISOString()).split('T')[0].startsWith(cm);
@@ -3066,65 +3187,79 @@ function generateFullMonthlyReport() {
     let dD = rc && (rc.Date || rc.date) ? String(rc.Date || rc.date).split('T')[0] : '---';
     fR += `
       <tr>
-        <td style="border: 1px solid #777; padding: 6px;" dir="ltr">${dD}</td>
-        <td style="border: 1px solid #777; padding: 6px; text-align: left; font-weight: bold;">${loc.loc}</td>
-        <td style="border: 1px solid #777; padding: 6px;">${loc.area}</td>
-        <td style="border: 1px solid #777; padding: 6px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
-        <td style="border: 1px solid #777; padding: 6px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td>
-        <td style="border: 1px solid #777; padding: 6px;">---</td>
+        <td style="padding: 8px;" dir="ltr">${dD}</td>
+        <td style="padding: 8px; text-align: left; font-weight: bold;">${loc.loc}</td>
+        <td style="padding: 8px;">${loc.area}</td>
+        <td style="padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+        <td style="padding: 8px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td>
+        <td style="padding: 8px; font-weight: bold;">${(p + met) > 0 ? (p + met).toFixed(3) + ' kg' : '---'}</td>
       </tr>
     `;
   });
 
-  let p4Html = `
-    <div class="mr-page-break">
-      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">رابعاً: حصر وتصنيف الأجسام الغريبة FOD</h2>
-      <div style="direction: ltr; text-align: left; margin-top: 15px;">
-        <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 10.5px; direction: ltr;">
+  let p5Html = `
+    <div class="mr-page">
+      <div>
+        <div class="mr-section-header">
+          <span>خامساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span>
+          <span style="font-size: 10.5px; opacity: 0.9;">شهر ${mArabicName}</span>
+        </div>
+        <table class="mr-table" style="direction: ltr; text-align: center; font-size: 10px;">
           <thead>
-            <tr style="background: #003366; color: #fff;">
-              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Date</th>
-              <th rowspan="2" style="border: 1px solid #777; padding: 6px; text-align: left; width: 30%;">Location</th>
-              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Area</th>
-              <th colspan="2" style="border: 1px solid #777; padding: 6px; width: 25%;">FOD Quantity</th>
-              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Total</th>
+            <tr>
+              <th rowspan="2" style="width: 15%;">Date</th>
+              <th rowspan="2" style="width: 32%; text-align: left;">Location</th>
+              <th rowspan="2" style="width: 15%;">Area</th>
+              <th colspan="2" style="width: 24%;">FOD Quantity</th>
+              <th rowspan="2" style="width: 14%;">Total</th>
             </tr>
-            <tr style="background: #003366; color: #fff;">
-              <th style="border: 1px solid #777; padding: 4px;">Plastic (kg)</th>
-              <th style="border: 1px solid #777; padding: 4px;">Metal (kg)</th>
+            <tr>
+              <th>Plastic (kg)</th>
+              <th>Metal (kg)</th>
             </tr>
           </thead>
           <tbody>
             ${fR}
-            <tr style="background: #fafafa; font-weight: bold;">
-              <td colspan="3" style="border: 1px solid #777; padding: 8px; text-align: left;">Total Weight</td>
-              <td style="border: 1px solid #777; padding: 8px;">${tp.toFixed(3)} kg</td>
-              <td style="border: 1px solid #777; padding: 8px;">${tm.toFixed(3)} kg</td>
-              <td style="border: 1px solid #777; padding: 8px; color: #003366; font-size: 11.5px;">${(tp + tm).toFixed(3)} kg</td>
+            <tr style="background: #f0f4f8; font-weight: bold;">
+              <td colspan="3" style="text-align: left; padding: 10px;">Total Weight</td>
+              <td style="padding: 10px; color: #003366;">${tp.toFixed(3)} kg</td>
+              <td style="padding: 10px; color: #003366;">${tm.toFixed(3)} kg</td>
+              <td style="padding: 10px; color: #28a745; font-size: 12px;">${(tp + tm).toFixed(3)} kg</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div style="margin-top: 50px; text-align: center; font-size: 18px; font-weight: bold; color: #003366; font-family: cursive;">Best Regards</div>
-      <div style="margin-top: 30px; text-align: left; direction: ltr; padding-left: 15px;">
-        <div style="display: inline-block; text-align: center; min-width: 180px;">
-          <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 6px;">إدارة سلامة المطارات</div>
-          <div style="font-size: 13px; font-weight: bold; color: #222;">${(prepBy && prepBy !== 'إدارة سلامة المطارات') ? prepBy : ''}</div>
+
+      <div style="margin-top: 50px;">
+        <div style="text-align: center; font-size: 20px; font-weight: bold; color: #003366; font-family: cursive; margin-bottom: 25px;">
+          Best Regards
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 20px;">
+          <div style="text-align: center; min-width: 200px;">
+            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">مُعِد التقرير</div>
+            <div style="font-size: 14px; font-weight: 900; color: #222;">${prepBy}</div>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;">مدير سلامة المطارات</div>
+          </div>
+          <div style="text-align: center; min-width: 200px;">
+            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">اعتماد</div>
+            <div style="font-size: 14px; font-weight: 900; color: #222;">الإدارة العامة للسلامة والمطابقة</div>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;">مطار مرسى علم الدولي</div>
+          </div>
+        </div>
+        <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px;">
+          الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 5
         </div>
       </div>
     </div>
   `;
 
-  // حقن كامل محتوى التقرير
   const repMain = document.getElementById('printable-main-report');
   if (repMain) {
-    repMain.innerHTML = p1Html + p2Html + '<div id="mr-incidents-list-container" style="direction:ltr;">' + iLHtml + '</div>' + p3Html + p4Html;
-    document.getElementById('mr-survey-matrix-box').innerHTML = mH;
-    document.getElementById('mr-survey-comments-box').innerHTML = cH;
+    repMain.innerHTML = p1Html + p2Html + p3Html + p4Html + p5Html;
     repMain.style.display = 'block';
   }
 
-  // رسم وتحديث المخططات الأربعة
+  // رسم وتحديث المخططات الأربعة بدقة
   if (monthlyChart1) monthlyChart1.destroy();
   if (monthlyChart2) monthlyChart2.destroy();
   Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -3193,51 +3328,13 @@ function exportMainReportPDF() {
   if (!el || el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً بالضغط على 'تجهيز التقرير الشامل'!");
   const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
   html2pdf().set({
-    margin: [5, 5, 5, 5],
+    margin: [0, 0, 0, 0],
     filename: `Airside_Safety_Monthly_Report_${monthName}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'table'] }
+    pagebreak: { mode: ['css', 'legacy'] }
   }).from(el).save();
-}
-
-async function sendReportViaEmail() {
-  const m = document.getElementById('mainReportMonth')?.value;
-  if (!m) return alert("اختر الشهر أولاً لتجهيز التقرير!");
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'إدارة سلامة المطارات';
-  let s = getMonthlyDetailedStats(m);
-
-  let hB = `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;line-height:1.6;">
-    <h2 style="color:#003366;border-bottom:2px solid #003366;padding-bottom:8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
-    <p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم ملخص مؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}):</p>
-    <table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;" border="1" cellpadding="8">
-      <tr style="background:#003366;color:#fff;"><th>مؤشر الأداء</th><th>القيمة</th></tr>
-      <tr><td>عدد التحركات الجوية</td><td>${s.mov}</td></tr>
-      <tr><td>عدد الحوادث</td><td>${s.acc}</td></tr>
-      <tr><td>عدد الوقائع</td><td>${s.inc}</td></tr>
-      <tr><td>إجمالي حالات عدم المطابقة</td><td>${s.fT} (المغلقة: ${s.fC} | المعلقة: ${s.fO})</td></tr>
-      <tr><td>استبيانات الطيارين</td><td>${s.surv.length}</td></tr>
-      <tr><td>إجمالي كميات FOD</td><td>${s.fTot.toFixed(3)} KG</td></tr>
-    </table>
-    <p><b>مُعِد التقرير:</b> ${prepBy}</p>
-  </div>`;
-
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: "sendReportEmail",
-        subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`,
-        htmlBody: hB
-      })
-    });
-    alert("✅ تم إرسال التقرير بنجاح إلى إدارة السلامة والمطابقة!");
-  } catch (err) {
-    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل.");
-  }
 }
 // =============================================================================
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
