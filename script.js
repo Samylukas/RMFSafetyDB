@@ -2900,8 +2900,8 @@ function generateFullMonthlyReport() {
       </div>
 
       <div style="margin: 15px auto;">
-        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0; letter-spacing: -0.5px;">التقرير الشهري لمنطقة التحركات الجوية</h1>
-        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;">Airside Safety Monthly Report</h2>
+        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0; letter-spacing: -0.5px;"></h1>
+        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;"></h2>
         <div style="display: inline-block; background: #003366; color: #ffffff; padding: 7px 28px; border-radius: 25px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 10px rgba(0,51,102,0.25);">
           ${mArabicName} - ${mEngName}
         </div>
@@ -3241,9 +3241,9 @@ function generateFullMonthlyReport() {
             <div style="font-size: 11px; color: #666; margin-top: 3px;">مدير سلامة المطارات</div>
           </div>
           <div style="text-align: center; min-width: 200px;">
-            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">اعتماد</div>
-            <div style="font-size: 14px; font-weight: 900; color: #222;">الإدارة العامة للسلامة والمطابقة</div>
-            <div style="font-size: 11px; color: #666; margin-top: 3px;">مطار مرسى علم الدولي</div>
+            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;"></div>
+            <div style="font-size: 14px; font-weight: 900; color: #222;"></div>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;"></div>
           </div>
         </div>
         <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px;">
