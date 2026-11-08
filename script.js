@@ -2645,10 +2645,14 @@ function deleteQuarterlyDoc(cType, idx) {
   try { localStorage.setItem('rmf_quarterly_docs', JSON.stringify(globalQuarterlyDocs)); } catch (e) {}
   renderQuarterlyReports(cType);
 }
+// =============================================================================
+// 12. قسم التقرير الشهري الشامل (مدمج بمؤشرات SPI التراكمية YTD والتوقيع الجديد)
+// =============================================================================
+let mrSpiTrendInstance = null;
+let mrSpiCatInstance = null;
+let mrSpiApronInstance = null;
+let mrSpiWfInstance = null;
 
-// =============================================================================
-// 12. قسم التقرير الشهري الشامل (مربوط بحركة التحركات الحية وتصدير كصورة PNG)
-// =============================================================================
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
   if (isNaN(n) || n === 0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`;
@@ -2667,7 +2671,6 @@ function getPreviousMonthStr(ms) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// دالة مساعدة لضمان توافر بيانات سنة التحركات في الذاكرة
 async function ensureSpiYearData(year) {
   const yStr = String(year || '2026');
   if (window.globalSpiRecords && window.globalSpiRecords[yStr] && window.globalSpiRecords[yStr].movements) {
@@ -2711,19 +2714,16 @@ function getMonthlyDetailedStats(ms) {
   let mInt = parseInt(mN);
   let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {} };
 
-  // 1. استخراج حركة الطائرات المعتمدة
   let movFound = 0;
   if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].movements) {
     movFound = Number(window.globalSpiRecords[y].movements[mInt]) || 0;
   }
-  // قاعدة أرقام 2026 الثابتة كخط أمان بديل
   if (!movFound && y === '2026') {
     const base2026 = { 1: 1333, 2: 1314, 3: 1620, 4: 1509, 5: 1534, 6: 1415, 7: 1571, 8: 1689, 9: 1662, 10: 1804, 11: 0, 12: 0 };
     movFound = base2026[mInt] || 0;
   }
   s.mov = movFound;
 
-  // 2. الحوادث والوقائع
   if (globalIncidents) {
     globalIncidents.forEach(i => {
       let idt = i.Date ? String(i.Date).split('T')[0] : '';
@@ -2735,7 +2735,6 @@ function getMonthlyDetailedStats(ms) {
     });
   }
 
-  // 3. الفحص اليومي
   if (globalDailyInspections) {
     globalDailyInspections.forEach(d => {
       let ddt = d.date ? String(d.date).split('T')[0] : '';
@@ -2752,7 +2751,6 @@ function getMonthlyDetailedStats(ms) {
     });
   }
 
-  // 4. استبيانات الطيارين
   if (globalSurveys) {
     globalSurveys.forEach(sv => {
       let sdt = sv.Date ? String(sv.Date).split('T')[0] : '';
@@ -2760,7 +2758,6 @@ function getMonthlyDetailedStats(ms) {
     });
   }
 
-  // 5. الأجسام الغريبة FOD
   if (globalFod) {
     globalFod.forEach(f => {
       let rd = f.Date || f.date || '';
@@ -2788,8 +2785,8 @@ async function generateFullMonthlyReport() {
   const pm = getPreviousMonthStr(cm);
   const curYear = cm.split('-')[0];
   const prevYear = pm.split('-')[0];
+  const mInt = parseInt(cm.split('-')[1]);
 
-  // مزامنة أرقام التحركات الحية للسنة الحالية والسابقة
   await ensureSpiYearData(curYear);
   if (prevYear !== curYear) await ensureSpiYearData(prevYear);
 
@@ -2849,6 +2846,7 @@ async function generateFullMonthlyReport() {
   const mEngName = cDO.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const mArabicName = cDO.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
 
+  // ستايل احترافي لمنع الإطارات المشوهة وضبط مقاسات الشارتات بدقة
   let oldFix = document.getElementById('mr-page-rules-style');
   if (oldFix) oldFix.remove();
   let st = document.createElement('style');
@@ -2911,10 +2909,22 @@ async function generateFullMonthlyReport() {
       max-height: 190px !important;
       display: block !important;
     }
+    canvas#mrSpiTrendChart {
+      width: 100% !important;
+      height: 175px !important;
+      max-height: 175px !important;
+      display: block !important;
+    }
+    canvas#mrSpiCatChart, canvas#mrSpiApronChart, canvas#mrSpiWfChart {
+      width: 100% !important;
+      height: 165px !important;
+      max-height: 165px !important;
+      display: block !important;
+    }
   `;
   document.head.appendChild(st);
 
-  // 1. صفحة الغلاف
+  // 1. صفحة الغلاف الفخمة (صورة report cover.jpg)
   let p1Html = `
     <div class="mr-page" style="text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 12px;">
@@ -2929,8 +2939,8 @@ async function generateFullMonthlyReport() {
       </div>
 
       <div style="margin: 25px auto; width: 100%;">
-        <img src="Gemini_Generated_Image_vgja40vgja.jpg.jpg" 
-             onerror="this.onerror=null; this.src='Gemini_Generated_Image_vgja40vgja.jpg';" 
+        <img src="report cover.jpg" 
+             onerror="this.onerror=null; this.src='Gemini_Generated_Image_vgja40vgja.jpg.jpg';" 
              alt="Airport Safety" 
              style="width: 100%; max-width: 660px; max-height: 380px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
@@ -2956,7 +2966,7 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 2. الصفحة الثانية: مؤشرات الأداء والتحليل البياني
+  // 2. الصفحة الثانية: مؤشرات الأداء العامة والتحليل البياني للمخالفات
   let kpRows = '';
   const kp = [
     { l: "عدد التحركات الجوية", p: pS.mov, c: cS.mov, h: true, u: "" },
@@ -3017,7 +3027,37 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 3. الصفحة الثالثة: حصر الوقائع والحوادث
+  // 3. الصفحة الثالثة (الجديدة): مؤشرات الأداء التشغيلية والتحركات التراكمية حتى تاريخ التقرير (SPIs YTD)
+  let p3SpiHtml = `
+    <div class="mr-page">
+      <div class="mr-section-header">
+        <span>ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات (تراكمي للسنة الحالية حتى شهر التقرير)</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">Year-to-Date (YTD)</span>
+      </div>
+
+      <div style="background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+        <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px; text-align: center;">منحنى حركة الطائرات التراكمي (${curYear}) حتى شهر ${mArabicName}</h5>
+        <canvas id="mrSpiTrendChart"></canvas>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+        <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;">
+          <h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">توزيع المؤشرات حسب التصنيف</h6>
+          <canvas id="mrSpiCatChart"></canvas>
+        </div>
+        <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;">
+          <h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">مؤشرات الممرات والساحة</h6>
+          <canvas id="mrSpiApronChart"></canvas>
+        </div>
+        <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;">
+          <h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">المهبط، الحياة البرية والأجسام الغريبة</h6>
+          <canvas id="mrSpiWfChart"></canvas>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 4. الصفحة الرابعة: حصر وسجل الوقائع والحوادث
   let iLHtml = '';
   let gI = {};
   cS.incList.forEach(i => {
@@ -3080,17 +3120,17 @@ async function generateFullMonthlyReport() {
     }
   }
 
-  let p3Html = `
+  let p4Html = `
     <div class="mr-page">
       <div class="mr-section-header">
-        <span>ثالثاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span>
+        <span>رابعاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span>
         <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الوقائع: ${cS.inc + cS.acc}</span>
       </div>
       ${iLHtml}
     </div>
   `;
 
-  // 4. الصفحة الرابعة: استبيان الطيارين
+  // 5. الصفحة الخامسة: استبيان الطيارين
   let mS = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
   criteriaList.forEach(c => {
     mS["Excellent"][c] = 0; mS["Good"][c] = 0; mS["Poor"][c] = 0; mS["N/A"][c] = 0; mS["Blank"][c] = 0;
@@ -3170,10 +3210,10 @@ async function generateFullMonthlyReport() {
   }
   cH += `</tbody></table></div>`;
 
-  let p4Html = `
+  let p5Html = `
     <div class="mr-page">
       <div class="mr-section-header">
-        <span>رابعاً: استبيان الطيارين (Pilot Safety Surveys)</span>
+        <span>خامساً: استبيان الطيارين (Pilot Safety Surveys)</span>
         <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الاستبيانات: ${cS.surv.length}</span>
       </div>
       <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
@@ -3194,7 +3234,7 @@ async function generateFullMonthlyReport() {
     </div>
   `;
 
-  // 5. الصفحة الخامسة: حصر وتصنيف FOD والتوقيعات
+  // 6. الصفحة السادسة: حصر الأجسام الغريبة FOD والتوقيع الأخير بالإنجليزية على اليسار
   let fF = globalFod.filter(f => {
     let rd = f.Date || f.date || '';
     return (typeof rd === 'string' ? rd : new Date(rd).toISOString()).split('T')[0].startsWith(cm);
@@ -3218,10 +3258,10 @@ async function generateFullMonthlyReport() {
     `;
   });
 
-  let p5Html = `
+  let p6Html = `
     <div class="mr-page">
       <div class="mr-section-header">
-        <span>خامساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span>
+        <span>سادساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span>
         <span style="font-size: 10.5px; opacity: 0.9;">شهر ${mArabicName}</span>
       </div>
       <table class="mr-table" style="direction: ltr; text-align: center; font-size: 10px;">
@@ -3249,21 +3289,12 @@ async function generateFullMonthlyReport() {
         </tbody>
       </table>
 
-      <div style="margin-top: 40px;">
-        <div style="text-align: center; font-size: 20px; font-weight: bold; color: #003366; font-family: cursive; margin-bottom: 25px;">
-          Best Regards
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 20px;">
-          <div style="text-align: center; min-width: 200px;">
-            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">مُعِد التقرير</div>
-            <div style="font-size: 14px; font-weight: 900; color: #222;">${prepBy}</div>
-            <div style="font-size: 11px; color: #666; margin-top: 3px;">مدير سلامة المطارات</div>
-          </div>
-          <div style="text-align: center; min-width: 200px;">
-            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">اعتماد</div>
-            <div style="font-size: 14px; font-weight: 900; color: #222;">الإدارة العامة للسلامة والمطابقة</div>
-            <div style="font-size: 11px; color: #666; margin-top: 3px;">مطار مرسى علم الدولي</div>
-          </div>
+      <!-- الخاتمة وتوقيع مُعد التقرير على اليسار بدون اعتماد -->
+      <div style="margin-top: 50px;">
+        <div style="text-align: left; direction: ltr; padding-left: 15px;">
+          <div style="font-size: 13px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Prepared By:</div>
+          <div style="font-size: 16px; font-weight: 900; color: #003366; margin: 4px 0 2px 0;">${prepBy}</div>
+          <div style="font-size: 13px; font-weight: 700; color: #333;">Airport Safety Department</div>
         </div>
       </div>
     </div>
@@ -3271,11 +3302,11 @@ async function generateFullMonthlyReport() {
 
   const repMain = document.getElementById('printable-main-report');
   if (repMain) {
-    repMain.innerHTML = p1Html + p2Html + p3Html + p4Html + p5Html;
+    repMain.innerHTML = p1Html + p2Html + p3SpiHtml + p4Html + p5Html + p6Html;
     repMain.style.display = 'block';
   }
 
-  // رسم المخططات البيانية
+  // رسم المخططات البيانية الأساسية
   if (monthlyChart1) monthlyChart1.destroy();
   if (monthlyChart2) monthlyChart2.destroy();
   Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -3310,6 +3341,140 @@ async function generateFullMonthlyReport() {
     });
   }
 
+  // -----------------------------------------------------------
+  // رسم مخططات قسم مؤشرات الأداء التراكمية YTD حتى شهر التقرير
+  // -----------------------------------------------------------
+  const mNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const ytdMonths = mNames.slice(0, mInt);
+  const spiRec = (window.globalSpiRecords && window.globalSpiRecords[curYear]) ? window.globalSpiRecords[curYear] : { movements: {}, events: {} };
+  
+  const ytdMovData = ytdMonths.map((_, i) => (spiRec.movements && spiRec.movements[i + 1]) ? Number(spiRec.movements[i + 1]) : 0);
+
+  // شارت تحركات الطائرات YTD
+  if (mrSpiTrendInstance) mrSpiTrendInstance.destroy();
+  let spiTrendEl = document.getElementById('mrSpiTrendChart');
+  if (spiTrendEl) {
+    mrSpiTrendInstance = new Chart(spiTrendEl.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: ytdMonths,
+        datasets: [{
+          label: `Movements (${curYear})`,
+          data: ytdMovData,
+          borderColor: '#28a745',
+          backgroundColor: 'rgba(40,167,69,0.12)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#28a745',
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          tension: 0.35,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top', labels: { font: { family: 'Cairo,sans-serif', weight: 'bold' } } } },
+        scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { color: '#f9f9f9' } } }
+      }
+    });
+  }
+
+  // حساب البنود التراكمية YTD
+  const ytdCatTotals = {}, ytdItemTotals = {};
+  SPI_CONFIG.forEach(cO => {
+    let cSum = 0;
+    cO.items.forEach(itm => {
+      let itmSum = 0;
+      for (let m = 1; m <= mInt; m++) {
+        itmSum += ((spiRec.events && spiRec.events[itm] && spiRec.events[itm][m]) ? Number(spiRec.events[itm][m]) : 0);
+      }
+      ytdItemTotals[itm] = itmSum;
+      cSum += itmSum;
+    });
+    ytdCatTotals[cO.category] = cSum;
+  });
+
+  const pal = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#34495e'];
+
+  // باي شارت 1: التصنيفات
+  if (mrSpiCatInstance) mrSpiCatInstance.destroy();
+  let spiCatEl = document.getElementById('mrSpiCatChart');
+  if (spiCatEl) {
+    let cLabels = SPI_CONFIG.map(c => c.category);
+    let cCounts = SPI_CONFIG.map(c => ytdCatTotals[c.category] || 0);
+    let hasC = cCounts.some(v => v > 0);
+    mrSpiCatInstance = new Chart(spiCatEl.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: hasC ? cLabels : ['لا توجد وقائع مسجلة'],
+        datasets: [{ data: hasC ? cCounts : [1], backgroundColor: hasC ? pal : ['#e0e0e0'], borderWidth: 1 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { family: 'Cairo,sans-serif', size: 7.5 } } } }
+      }
+    });
+  }
+
+  // باي شارت 2: الممرات والساحة Taxiway & Apron
+  if (mrSpiApronInstance) mrSpiApronInstance.destroy();
+  let spiApronEl = document.getElementById('mrSpiApronChart');
+  if (spiApronEl) {
+    let aCat = SPI_CONFIG.find(c => c.category.includes('Taxiway & Apron'));
+    let aLabels = aCat ? aCat.items.map(i => i.replace(/^Reported\s+/i, '')) : [];
+    let aCounts = aCat ? aCat.items.map(i => ytdItemTotals[i] || 0) : [];
+    let hasA = aCounts.some(v => v > 0);
+    mrSpiApronInstance = new Chart(spiApronEl.getContext('2d'), {
+      type: 'pie',
+      data: {
+        labels: hasA ? aLabels : ['لا توجد ملاحظات على الممرات'],
+        datasets: [{
+          data: hasA ? aCounts : [1],
+          backgroundColor: hasA ? ['#2980b9', '#3498db', '#1abc9c', '#16a085', '#27ae60', '#2ecc71', '#f39c12', '#e67e22', '#d35400', '#c0392b', '#8e44ad'] : ['#e0e0e0'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { family: 'Cairo,sans-serif', size: 7 } } } }
+      }
+    });
+  }
+
+  // باي شارت 3: المهبط والحياة البرية و FOD
+  if (mrSpiWfInstance) mrSpiWfInstance.destroy();
+  let spiWfEl = document.getElementById('mrSpiWfChart');
+  if (spiWfEl) {
+    let g3 = [
+      ...((SPI_CONFIG.find(c => c.category.includes('Runway Incursion')) || {}).items || []),
+      ...((SPI_CONFIG.find(c => c.category.includes('Bird / Wildlife')) || {}).items || []),
+      ...((SPI_CONFIG.find(c => c.category.includes('FOD')) || {}).items || [])
+    ];
+    let g3L = g3.map(i => i.replace(/^Reported\s+/i, '').replace(/^Inspections in which\s+/i, ''));
+    let g3C = g3.map(i => ytdItemTotals[i] || 0);
+    let hasG3 = g3C.some(v => v > 0);
+    mrSpiWfInstance = new Chart(spiWfEl.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: hasG3 ? g3L.filter((_, idx) => g3C[idx] > 0) : ['لا توجد ملاحظات مهبط/حياة برية'],
+        datasets: [{
+          data: hasG3 ? g3C.filter(v => v > 0) : [1],
+          backgroundColor: hasG3 ? ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6'] : ['#e0e0e0'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { family: 'Cairo,sans-serif', size: 7 } } } }
+      }
+    });
+  }
+
+  // شارتات استبيانات الطيارين
   if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
   let saEl = document.getElementById('mrSurveyAirChart');
   if (saEl) {
@@ -3339,9 +3504,7 @@ async function generateFullMonthlyReport() {
   repMain.scrollIntoView({ behavior: 'smooth' });
 }
 
-// -------------------------------------------------------------
-// دالة تصدير التقرير كاملاً كصورة عالية الدقة PNG (تحل محل PDF تلقائياً)
-// -------------------------------------------------------------
+// تصدير كصورة PNG كاملة
 async function exportMainReportImage(format = 'png') {
   const el = document.getElementById('printable-main-report');
   if (!el || el.style.display === 'none') {
@@ -3393,7 +3556,7 @@ async function exportMainReportImage(format = 'png') {
   }
 }
 
-// تصدير كل صفحة من صفحات التقرير الـ 5 كصورة PNG مستقلة
+// تصدير صفحات التقرير الـ 6 كصور منفصلة PNG عالية الدقة
 async function exportMainReportPagesAsImages() {
   const el = document.getElementById('printable-main-report');
   if (!el || el.style.display === 'none') {
@@ -3415,9 +3578,10 @@ async function exportMainReportPagesAsImages() {
   const pageTitles = [
     "01_Cover",
     "02_General_KPIs",
-    "03_Incidents_Log",
-    "04_Pilot_Surveys",
-    "05_FOD_Collected"
+    "03_SPIs_YTD",
+    "04_Incidents_Log",
+    "05_Pilot_Surveys",
+    "06_FOD_Collected"
   ];
 
   try {
@@ -3453,7 +3617,7 @@ async function exportMainReportPagesAsImages() {
       });
     }
 
-    alert("✅ تم استخراج صفحات التقرير الـ 5 بنجاح كصور PNG عالية الدقة!");
+    alert("✅ تم استخراج صفحات التقرير الـ 6 كصور PNG عالية الدقة بنجاح!");
   } catch (err) {
     console.error("Export Pages error:", err);
     alert("حدث خطأ أثناء استخراج صفحات التقرير.");
@@ -3465,179 +3629,11 @@ async function exportMainReportPagesAsImages() {
   }
 }
 
-// تحويل الزر القديم exportMainReportPDF ليعمل مباشرة كصورة PNG لمنع خروج ملف PDF مشوه
+// إعادة توجيه زر PDF القديم ليُخرج صورة PNG فائقة الوضوح تلقائياً
 async function exportMainReportPDF() {
   return exportMainReportImage('png');
 }
 window.exportMainReportPDF = exportMainReportImage;
-
-async function sendReportViaEmail() {
-  const m = document.getElementById('mainReportMonth')?.value;
-  if (!m) return alert("اختر الشهر أولاً لتجهيز التقرير!");
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
-  let s = getMonthlyDetailedStats(m);
-
-  let hB = `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;line-height:1.6;">
-    <h2 style="color:#003366;border-bottom:2px solid #003366;padding-bottom:8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
-    <p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم ملخص مؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}):</p>
-    <table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;" border="1" cellpadding="8">
-      <tr style="background:#003366;color:#fff;"><th>مؤشر الأداء</th><th>القيمة</th></tr>
-      <tr><td>عدد التحركات الجوية</td><td>${s.mov}</td></tr>
-      <tr><td>عدد الحوادث</td><td>${s.acc}</td></tr>
-      <tr><td>عدد الوقائع</td><td>${s.inc}</td></tr>
-      <tr><td>إجمالي حالات عدم المطابقة</td><td>${s.fT} (المغلقة: ${s.fC} | المعلقة: ${s.fO})</td></tr>
-      <tr><td>استبيانات الطيارين</td><td>${s.surv.length}</td></tr>
-      <tr><td>إجمالي كميات FOD</td><td>${s.fTot.toFixed(3)} KG</td></tr>
-    </table>
-    <p><b>مُعِد التقرير:</b> ${prepBy}</p>
-  </div>`;
-
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: "sendReportEmail",
-        subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`,
-        htmlBody: hB
-      })
-    });
-    alert("✅ تم إرسال التقرير بنجاح إلى إدارة السلامة والمطابقة!");
-  } catch (err) {
-    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل.");
-  }
-}
-// -------------------------------------------------------------
-// دالة تصدير التقرير كاملاً كصورة عريضة ونقية (Full PNG Image)
-// -------------------------------------------------------------
-async function exportMainReportImage(format = 'png') {
-  const el = document.getElementById('printable-main-report');
-  if (!el || el.style.display === 'none') {
-    return alert("يرجى الضغط على زر (تجهيز التقرير الشامل) أولاً!");
-  }
-  const btn = (typeof event !== 'undefined' && event) ? event.target?.closest('button') : null;
-  let origHtml = btn ? btn.innerHTML : '';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الصورة...';
-  }
-
-  const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
-
-  try {
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    });
-
-    const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
-    const ext = format === 'jpeg' ? 'jpg' : 'png';
-
-    canvas.toBlob(blob => {
-      if (!blob) throw new Error("Blob creation failed");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Airside_Safety_Monthly_Report_${monthName}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 1500);
-
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = origHtml;
-      }
-    }, mime, 0.95);
-  } catch (err) {
-    console.error("Export Image error:", err);
-    alert("حدث خطأ أثناء استخراج الصورة، يرجى المحاولة مرة أخرى.");
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// دالة تصدير صفحات التقرير منفصلة (5 صور PNG مستقلة عالية الدقة)
-// -------------------------------------------------------------
-async function exportMainReportPagesAsImages() {
-  const el = document.getElementById('printable-main-report');
-  if (!el || el.style.display === 'none') {
-    return alert("يرجى الضغط على زر (تجهيز التقرير الشامل) أولاً!");
-  }
-  const pages = el.querySelectorAll('.mr-page');
-  if (!pages || pages.length === 0) {
-    return exportMainReportImage('png');
-  }
-
-  const btn = (typeof event !== 'undefined' && event) ? event.target?.closest('button') : null;
-  let origHtml = btn ? btn.innerHTML : '';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الصفحات...';
-  }
-
-  const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
-  const pageTitles = [
-    "01_Cover",
-    "02_General_KPIs",
-    "03_Incidents_Log",
-    "04_Pilot_Surveys",
-    "05_FOD_Collected"
-  ];
-
-  try {
-    for (let i = 0; i < pages.length; i++) {
-      const pageEl = pages[i];
-      const canvas = await html2canvas(pageEl, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-
-      await new Promise(resolve => {
-        canvas.toBlob(blob => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const title = pageTitles[i] || `Page_${i + 1}`;
-            a.download = `Monthly_Report_${monthName}_${title}.png`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-              resolve();
-            }, 600);
-          } else {
-            resolve();
-          }
-        }, 'image/png');
-      });
-    }
-
-    alert("✅ تم استخراج جميع صفحات التقرير كصور PNG عالية الدقة بنجاح!");
-  } catch (err) {
-    console.error("Export Pages error:", err);
-    alert("حدث خطأ أثناء استخراج صفحات التقرير.");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-    }
-  }
-}
 
 async function sendReportViaEmail() {
   const m = document.getElementById('mainReportMonth')?.value;
