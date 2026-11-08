@@ -1886,7 +1886,7 @@ function generateIsoDailyReport(specificRep) {
   });
 
   // =========================================================================
-  // 1. إعادة بناء جدول قائمة الفحص الشامل المكون من 10 أعمدة (Checklist Matrix)
+  // 1. إعادة بناء جدول قائمة الفحص الشامل المكون من 10 أعمدة كاملة (Checklist Matrix)
   // =========================================================================
   const isoColumns = [
     { title: "المناطق المرصوفة", items: dailyChecklistDataISO.col1.items },
@@ -1917,24 +1917,19 @@ function generateIsoDailyReport(specificRep) {
     isoColumns.forEach(col => {
       tblHtml += '<td style="border:1px solid #000; vertical-align:top; padding:2px;">';
       col.items.forEach(itm => {
-        // فحص صارم يشترط تطابق اسم القسم واسم البند بدقة لمنع تكرار تلوين "أخرى"
+        // فحص إذا كان البند مسجلاً كملاحظة عدم مطابقة
         let isFinding = rep.findings && rep.findings.some(f => {
           let fCat = (f.category || '').trim();
-          let fItm = (f.item || f.Finding_Item || '').trim();
-          return fCat === col.title.trim() && fItm === itm.trim();
+          let fItm = (f.item || '').trim();
+          return (fCat === col.title.trim() && fItm === itm.trim()) || (fItm === itm.trim());
         });
 
         let bg = isFinding ? 'background:#ffebee;' : '';
         let colStyle = isFinding ? 'color:#dc3545; font-weight:bold;' : 'color:#000;';
-        
-        // علامة ✖ باللون الأحمر للبند المخالف، وعلامة ✔ للبند المطابق السليم
-        let markIcon = isFinding
-          ? '<span style="font-size:8.5px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #dc3545; text-align:center; line-height:9px; background:#fff; color:#dc3545; font-weight:900;">✖</span>'
-          : '<span style="font-size:8px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #000; text-align:center; line-height:9px; background:#fff; color:#000;">✔</span>';
 
         tblHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:1.5px 2px; border-bottom:1px solid #eee; font-size:7.5px; line-height:1.2; ${bg}">`;
         tblHtml += `<span style="${colStyle}">${itm}</span>`;
-        tblHtml += markIcon;
+        tblHtml += `<span style="font-size:8px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #000; text-align:center; line-height:9px; background:#fff;">✔</span>`;
         tblHtml += `</div>`;
       });
       tblHtml += '</td>';
@@ -1943,49 +1938,6 @@ function generateIsoDailyReport(specificRep) {
     tblHtml += '</tr></tbody></table>';
     matrixBox.innerHTML = tblHtml;
   }
-
-  // =========================================================================
-  // 2. تعبئة جدول الملاحظات وحالات عدم المطابقة (Findings Table)
-  // =========================================================================
-  let tb = document.getElementById('iso-findings-tbody');
-  if (tb) {
-    tb.innerHTML = '';
-    if (!rep.findings || rep.findings.length === 0) {
-      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:12px;font-weight:bold;color:#28a745;font-size:11px;">سليم 100% ولا توجد ملاحظات عدم مطابقة</td></tr>';
-    } else {
-      let seq = 1;
-      rep.findings.forEach(f => {
-        let fn = f.note || '', nT = fn, aT = 'لم يحدد', tD = '';
-        try {
-          let m = fn.match(/الملاحظة: (.*?) - الإجراء: (.*?) - تاريخ التلافي: (.*)/);
-          if (m) { nT = m[1]; aT = m[2]; tD = (m[3] !== 'غير محدد') ? m[3] : ''; }
-        } catch (e) {}
-
-        let stStr = String(f.status || f.Status || '').trim().toLowerCase();
-        let isCl = (stStr === 'مغلق' || stStr === 'closed' || fn.includes('تم تلافي') || aT.includes('تم تلافي'));
-        let stBadge = isCl ? '<span style="color:#28a745;font-weight:900;font-size:11px;background:#e8f5e9;padding:2px 6px;border-radius:4px;border:1px solid #28a745;">مغلق</span>' : '<span style="color:#dc3545;font-weight:900;font-size:11px;background:#ffebee;padding:2px 6px;border-radius:4px;border:1px solid #dc3545;">مفتوح</span>';
-
-        let clMatch = aT.match(/\[تم تلافي الملحوظة بتاريخ (.*?)\]/) || fn.match(/\[تم تلافي الملحوظة بتاريخ (.*?)\]/);
-        let rawClDate = clMatch ? clMatch[1] : (tD && tD !== '' ? tD : rep.date);
-        let clNoteHtml = isCl ? `<div style="color:#155724;background:#d4edda;border:1px solid #c3e6cb;font-weight:bold;font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;display:inline-block;"><i class="fa-solid fa-check-double"></i> تم تلافي الملحوظة بتاريخ ${rawClDate}</div>` : '';
-        let cleanAct = aT.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim();
-        let actText = (cleanAct !== 'لم يحدد' && cleanAct !== '') ? `<br><span style="color:#555;font-size:8.5px;">${cleanAct}</span>` : '';
-
-        tb.innerHTML += `<tr>
-          <td style="text-align:center;width:5%;padding:6px;border:1px solid #000;font-weight:bold;">${seq++}</td>
-          <td style="text-align:center;width:15%;padding:6px;border:1px solid #000;font-weight:bold;">${f.location || '-'}</td>
-          <td style="text-align:right;width:45%;padding:6px;border:1px solid #000;line-height:1.4;">
-            <span style="color:#dc3545;font-weight:bold;font-size:10px;">${f.category} - ${f.item}</span><br>
-            <span style="color:#333;font-size:9.5px;">(${nT})</span>
-            ${clNoteHtml ? '<br>' + clNoteHtml : ''}
-          </td>
-          <td style="text-align:center;width:15%;padding:6px;border:1px solid #000;">${f.responsible || '-'}</td>
-          <td style="text-align:center;width:20%;padding:6px;border:1px solid #000;">${stBadge}${actText}</td>
-        </tr>`;
-      });
-    }
-  }
-}
 
   // =========================================================================
   // 2. تعبئة جدول الملاحظات وحالات عدم المطابقة (Findings Table)
@@ -2444,9 +2396,9 @@ function generateIsoPagesHtml(inc) {
 
   let p1 = `<div style="border:2px solid #000;padding:12px;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;font-size:10px;direction:rtl;color:#000;background:#fff;margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding-bottom:5px;font-weight:bold;font-size:12px;">
-      <div>مطار مرسي علم الدولي</div>
+      <div>الإدارة العامة للمطابقة والسلامة</div>
       <div style="text-align:center;"><span>Mandatory reporting system</span></div>
-      <div>الادارة العامة للسلامة و المطابقة</div>
+      <div>مطار مرسى علم الدولي</div>
     </div>
     <div style="border:1.5px solid #000;text-align:center;margin:6px 0;padding:4px;background:#f5f5f5;">
       <h3 style="margin:2px 0;font-size:13px;">نموذج تقرير حادثة / واقعة</h3>
