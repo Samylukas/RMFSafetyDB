@@ -2647,7 +2647,7 @@ function deleteQuarterlyDoc(cType, idx) {
 }
 
 // =============================================================================
-// 12. قسم التقرير الشهري الشامل (Monthly Report Module - Executive Redesign)
+// 12. قسم التقرير الشهري الشامل (Monthly Report Module - Direct Image Export)
 // =============================================================================
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
@@ -2673,7 +2673,7 @@ function getMonthlyDetailedStats(ms) {
   let mInt = parseInt(mN);
   let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {} };
 
-  // 1. قراءة حركة الطائرات الحية من شيت وسجلات SPI
+  // 1. قراءة حركة الطائرات الحية من منظومة SPI المعتمدة
   let movFound = 0;
   if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].movements) {
     movFound = Number(window.globalSpiRecords[y].movements[mInt]) || 0;
@@ -2802,7 +2802,7 @@ function generateFullMonthlyReport() {
   const mEngName = cDO.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const mArabicName = cDO.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
 
-  // حقن قواعد التنسيق لمنع الإطارات المشوهة وفصل الصفحات بدقة
+  // ستايل احترافي خاص بالتقرير
   let oldFix = document.getElementById('mr-page-rules-style');
   if (oldFix) oldFix.remove();
   let st = document.createElement('style');
@@ -2817,26 +2817,16 @@ function generateFullMonthlyReport() {
       margin: 0 auto !important;
       padding: 0 !important;
       background: #ffffff !important;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
     }
     #printable-main-report * { box-sizing: border-box !important; }
     .mr-page {
-      page-break-after: always !important;
-      break-after: page !important;
       padding: 30px 25px !important;
       background: #ffffff !important;
-      min-height: 1060px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: space-between !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      margin-bottom: 25px !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
       box-sizing: border-box !important;
-    }
-    .mr-page:last-child {
-      page-break-after: auto !important;
-      break-after: auto !important;
-      min-height: auto !important;
     }
     .mr-section-header {
       background: #003366 !important;
@@ -2878,9 +2868,9 @@ function generateFullMonthlyReport() {
   `;
   document.head.appendChild(st);
 
-  // 1. صفحة الغلاف الفخمة المستقلة (Dedicated Executive Cover Page)
+  // 1. صفحة الغلاف
   let p1Html = `
-    <div class="mr-page" style="text-align: center; justify-content: space-between;">
+    <div class="mr-page" style="text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 12px;">
         <div style="text-align: right;">
           <h2 style="color: #003366; font-size: 17px; font-weight: 900; margin: 0;">مطار مرسى علم الدولي</h2>
@@ -2892,35 +2882,35 @@ function generateFullMonthlyReport() {
         </div>
       </div>
 
-      <div style="margin: 20px auto; width: 100%;">
+      <div style="margin: 25px auto; width: 100%;">
         <img src="Gemini_Generated_Image_vgja40vgja.jpg.jpg" 
-             onerror="if(!this.tried1){this.tried1=true;this.src='Gemini_Generated_Image_vgja40vgja.jpg';}else if(!this.tried2){this.tried2=true;this.src='report cover.jpg';}" 
+             onerror="this.onerror=null; this.src='Gemini_Generated_Image_vgja40vgja.jpg';" 
              alt="Airport Safety" 
              style="width: 100%; max-width: 660px; max-height: 380px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
 
-      <div style="margin: 15px auto;">
-        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0; letter-spacing: -0.5px;"></h1>
-        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;"></h2>
+      <div style="margin: 20px auto;">
+        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;">Airside Safety Monthly Report</h2>
         <div style="display: inline-block; background: #003366; color: #ffffff; padding: 7px 28px; border-radius: 25px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 10px rgba(0,51,102,0.25);">
           ${mArabicName} - ${mEngName}
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #003366; padding-top: 12px; font-size: 11.5px; color: #333;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #003366; padding-top: 15px; font-size: 12px; color: #333; margin-top: 30px;">
         <div style="text-align: right;">
           <span style="color: #777;">الجهة المصدرة:</span><br>
-          <strong style="color: #003366; font-size: 12.5px;">الإدارة العامة للسلامة والمطابقة</strong>
+          <strong style="color: #003366; font-size: 13px;">الإدارة العامة للسلامة والمطابقة</strong>
         </div>
         <div style="text-align: left; direction: ltr;">
           <span style="color: #777;">Prepared By:</span><br>
-          <strong style="color: #003366; font-size: 13.5px;">${prepBy}</strong>
+          <strong style="color: #003366; font-size: 14px;">${prepBy}</strong>
         </div>
       </div>
     </div>
   `;
 
-  // 2. الصفحة الثانية: مؤشرات الأداء والتحليل البياني
+  // 2. الصفحة الثانية: المؤشرات والشارتات
   let kpRows = '';
   const kp = [
     { l: "عدد التحركات الجوية", p: pS.mov, c: cS.mov, h: true, u: "" },
@@ -2948,45 +2938,40 @@ function generateFullMonthlyReport() {
 
   let p2Html = `
     <div class="mr-page">
-      <div>
-        <div class="mr-section-header">
-          <span>أولاً: مؤشرات الأداء العامة لمنطقة التحركات الجوية</span>
-          <span style="font-size: 10.5px; opacity: 0.9;">مقارنة مع الشهر السابق</span>
-        </div>
-        <table class="mr-table">
-          <thead>
-            <tr>
-              <th style="width: 42%; text-align: right; padding-right: 12px;">البيان</th>
-              <th style="width: 18%;">الشهر السابق</th>
-              <th style="width: 18%;">الشهر الحالي</th>
-              <th style="width: 22%;">الفرق والاتجاه</th>
-            </tr>
-          </thead>
-          <tbody>${kpRows}</tbody>
-        </table>
-
-        <div class="mr-section-header" style="margin-top: 25px;">
-          <span>ثانياً: الحصر والتحليل البياني للمخالفات والوقائع</span>
-          <span style="font-size: 10.5px; opacity: 0.9;">الرصد والإدارات المسؤولة</span>
-        </div>
-        <div style="display: flex; gap: 15px; margin-top: 10px;">
-          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
-            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">المخالفات المرصودة طبقاً للإدارة المسؤولة</h5>
-            <canvas id="mrChart1"></canvas>
-          </div>
-          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
-            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">تصنيف الوقائع والحوادث المسجلة</h5>
-            <canvas id="mrChart2"></canvas>
-          </div>
-        </div>
+      <div class="mr-section-header">
+        <span>أولاً: مؤشرات الأداء العامة لمنطقة التحركات الجوية</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">مقارنة مع الشهر السابق</span>
       </div>
-      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
-        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 2
+      <table class="mr-table">
+        <thead>
+          <tr>
+            <th style="width: 42%; text-align: right; padding-right: 12px;">البيان</th>
+            <th style="width: 18%;">الشهر السابق</th>
+            <th style="width: 18%;">الشهر الحالي</th>
+            <th style="width: 22%;">الفرق والاتجاه</th>
+          </tr>
+        </thead>
+        <tbody>${kpRows}</tbody>
+      </table>
+
+      <div class="mr-section-header" style="margin-top: 25px;">
+        <span>ثانياً: الحصر والتحليل البياني للمخالفات والوقائع</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">الرصد والإدارات المسؤولة</span>
+      </div>
+      <div style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+          <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">المخالفات المرصودة طبقاً للإدارة المسؤولة</h5>
+          <canvas id="mrChart1"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 280px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+          <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">تصنيف الوقائع والحوادث المسجلة</h5>
+          <canvas id="mrChart2"></canvas>
+        </div>
       </div>
     </div>
   `;
 
-  // 3. الصفحة الثالثة: حصر وسجل الوقائع والحوادث المسجلة
+  // 3. الصفحة الثالثة: حصر الوقائع والحوادث
   let iLHtml = '';
   let gI = {};
   cS.incList.forEach(i => {
@@ -2997,7 +2982,7 @@ function generateFullMonthlyReport() {
 
   if (Object.keys(gI).length === 0) {
     iLHtml = `
-      <div style="background: #e8f5e9; border: 1.5px solid #28a745; padding: 30px; border-radius: 8px; text-align: center; margin: 40px auto; max-width: 600px;">
+      <div style="background: #e8f5e9; border: 1.5px solid #28a745; padding: 30px; border-radius: 8px; text-align: center; margin: 30px 0;">
         <i class="fa-solid fa-shield-halved" style="color: #28a745; font-size: 3rem; margin-bottom: 10px;"></i>
         <h3 style="color: #155724; margin: 0 0 6px 0;">سجل آمن 100%</h3>
         <p style="color: #28a745; margin: 0; font-weight: bold; font-size: 12px;">لم يتم تسجيل أي حوادث أو وقائع في منطقة التحركات الجوية خلال شهر ${mArabicName}.</p>
@@ -3051,16 +3036,11 @@ function generateFullMonthlyReport() {
 
   let p3Html = `
     <div class="mr-page">
-      <div>
-        <div class="mr-section-header">
-          <span>ثالثاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span>
-          <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الوقائع: ${cS.inc + cS.acc}</span>
-        </div>
-        ${iLHtml}
+      <div class="mr-section-header">
+        <span>ثالثاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الوقائع: ${cS.inc + cS.acc}</span>
       </div>
-      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
-        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 3
-      </div>
+      ${iLHtml}
     </div>
   `;
 
@@ -3146,30 +3126,25 @@ function generateFullMonthlyReport() {
 
   let p4Html = `
     <div class="mr-page">
-      <div>
-        <div class="mr-section-header">
-          <span>رابعاً: استبيان الطيارين (Pilot Safety Surveys)</span>
-          <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الاستبيانات: ${cS.surv.length}</span>
-        </div>
-        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
-            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">مشاركات شركات الطيران</h5>
-            <canvas id="mrSurveyAirChart"></canvas>
-          </div>
-          <div style="flex: 1; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
-            <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">توزيع التقييم العام للخدمات</h5>
-            <canvas id="mrSurveyEvalChart"></canvas>
-          </div>
-        </div>
-        <div style="text-align: center; margin-bottom: 8px;">
-          <h5 style="color: #003366; margin: 0; font-size: 12px; font-weight: bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5>
-        </div>
-        ${mH}
-        ${cH}
+      <div class="mr-section-header">
+        <span>رابعاً: استبيان الطيارين (Pilot Safety Surveys)</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">إجمالي الاستبيانات: ${cS.surv.length}</span>
       </div>
-      <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 6px;">
-        الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 4
+      <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+          <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">مشاركات شركات الطيران</h5>
+          <canvas id="mrSurveyAirChart"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 280px; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center;">
+          <h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px;">توزيع التقييم العام للخدمات</h5>
+          <canvas id="mrSurveyEvalChart"></canvas>
+        </div>
       </div>
+      <div style="text-align: center; margin-bottom: 8px;">
+        <h5 style="color: #003366; margin: 0; font-size: 12px; font-weight: bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5>
+      </div>
+      ${mH}
+      ${cH}
     </div>
   `;
 
@@ -3199,38 +3174,36 @@ function generateFullMonthlyReport() {
 
   let p5Html = `
     <div class="mr-page">
-      <div>
-        <div class="mr-section-header">
-          <span>خامساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span>
-          <span style="font-size: 10.5px; opacity: 0.9;">شهر ${mArabicName}</span>
-        </div>
-        <table class="mr-table" style="direction: ltr; text-align: center; font-size: 10px;">
-          <thead>
-            <tr>
-              <th rowspan="2" style="width: 15%;">Date</th>
-              <th rowspan="2" style="width: 32%; text-align: left;">Location</th>
-              <th rowspan="2" style="width: 15%;">Area</th>
-              <th colspan="2" style="width: 24%;">FOD Quantity</th>
-              <th rowspan="2" style="width: 14%;">Total</th>
-            </tr>
-            <tr>
-              <th>Plastic (kg)</th>
-              <th>Metal (kg)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${fR}
-            <tr style="background: #f0f4f8; font-weight: bold;">
-              <td colspan="3" style="text-align: left; padding: 10px;">Total Weight</td>
-              <td style="padding: 10px; color: #003366;">${tp.toFixed(3)} kg</td>
-              <td style="padding: 10px; color: #003366;">${tm.toFixed(3)} kg</td>
-              <td style="padding: 10px; color: #28a745; font-size: 12px;">${(tp + tm).toFixed(3)} kg</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="mr-section-header">
+        <span>خامساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span>
+        <span style="font-size: 10.5px; opacity: 0.9;">شهر ${mArabicName}</span>
       </div>
+      <table class="mr-table" style="direction: ltr; text-align: center; font-size: 10px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width: 15%;">Date</th>
+            <th rowspan="2" style="width: 32%; text-align: left;">Location</th>
+            <th rowspan="2" style="width: 15%;">Area</th>
+            <th colspan="2" style="width: 24%;">FOD Quantity</th>
+            <th rowspan="2" style="width: 14%;">Total</th>
+          </tr>
+          <tr>
+            <th>Plastic (kg)</th>
+            <th>Metal (kg)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fR}
+          <tr style="background: #f0f4f8; font-weight: bold;">
+            <td colspan="3" style="text-align: left; padding: 10px;">Total Weight</td>
+            <td style="padding: 10px; color: #003366;">${tp.toFixed(3)} kg</td>
+            <td style="padding: 10px; color: #003366;">${tm.toFixed(3)} kg</td>
+            <td style="padding: 10px; color: #28a745; font-size: 12px;">${(tp + tm).toFixed(3)} kg</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <div style="margin-top: 50px;">
+      <div style="margin-top: 40px;">
         <div style="text-align: center; font-size: 20px; font-weight: bold; color: #003366; font-family: cursive; margin-bottom: 25px;">
           Best Regards
         </div>
@@ -3241,13 +3214,10 @@ function generateFullMonthlyReport() {
             <div style="font-size: 11px; color: #666; margin-top: 3px;">مدير سلامة المطارات</div>
           </div>
           <div style="text-align: center; min-width: 200px;">
-            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;"></div>
-            <div style="font-size: 14px; font-weight: 900; color: #222;"></div>
-            <div style="font-size: 11px; color: #666; margin-top: 3px;"></div>
+            <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 5px;">اعتماد</div>
+            <div style="font-size: 14px; font-weight: 900; color: #222;">الإدارة العامة للسلامة والمطابقة</div>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;">مطار مرسى علم الدولي</div>
           </div>
-        </div>
-        <div style="text-align: center; font-size: 9px; color: #888; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px;">
-          الإدارة العامة للسلامة والمطابقة - مطار مرسى علم الدولي | صفحة 5
         </div>
       </div>
     </div>
@@ -3259,7 +3229,7 @@ function generateFullMonthlyReport() {
     repMain.style.display = 'block';
   }
 
-  // رسم وتحديث المخططات الأربعة بدقة
+  // رسم المخططات البيانية
   if (monthlyChart1) monthlyChart1.destroy();
   if (monthlyChart2) monthlyChart2.destroy();
   Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -3323,18 +3293,173 @@ function generateFullMonthlyReport() {
   repMain.scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportMainReportPDF() {
+// -------------------------------------------------------------
+// دالة تصدير التقرير كاملاً كصورة عريضة ونقية (Full PNG Image)
+// -------------------------------------------------------------
+async function exportMainReportImage(format = 'png') {
   const el = document.getElementById('printable-main-report');
-  if (!el || el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً بالضغط على 'تجهيز التقرير الشامل'!");
+  if (!el || el.style.display === 'none') {
+    return alert("يرجى الضغط على زر (تجهيز التقرير الشامل) أولاً!");
+  }
+  const btn = (typeof event !== 'undefined' && event) ? event.target?.closest('button') : null;
+  let origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الصورة...';
+  }
+
   const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
-  html2pdf().set({
-    margin: [0, 0, 0, 0],
-    filename: `Airside_Safety_Monthly_Report_${monthName}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true },
-    pagebreak: { mode: ['css', 'legacy'] }
-  }).from(el).save();
+
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const ext = format === 'jpeg' ? 'jpg' : 'png';
+
+    canvas.toBlob(blob => {
+      if (!blob) throw new Error("Blob creation failed");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Airside_Safety_Monthly_Report_${monthName}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1500);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }, mime, 0.95);
+  } catch (err) {
+    console.error("Export Image error:", err);
+    alert("حدث خطأ أثناء استخراج الصورة، يرجى المحاولة مرة أخرى.");
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// دالة تصدير صفحات التقرير منفصلة (5 صور PNG مستقلة عالية الدقة)
+// -------------------------------------------------------------
+async function exportMainReportPagesAsImages() {
+  const el = document.getElementById('printable-main-report');
+  if (!el || el.style.display === 'none') {
+    return alert("يرجى الضغط على زر (تجهيز التقرير الشامل) أولاً!");
+  }
+  const pages = el.querySelectorAll('.mr-page');
+  if (!pages || pages.length === 0) {
+    return exportMainReportImage('png');
+  }
+
+  const btn = (typeof event !== 'undefined' && event) ? event.target?.closest('button') : null;
+  let origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الصفحات...';
+  }
+
+  const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
+  const pageTitles = [
+    "01_Cover",
+    "02_General_KPIs",
+    "03_Incidents_Log",
+    "04_Pilot_Surveys",
+    "05_FOD_Collected"
+  ];
+
+  try {
+    for (let i = 0; i < pages.length; i++) {
+      const pageEl = pages[i];
+      const canvas = await html2canvas(pageEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      await new Promise(resolve => {
+        canvas.toBlob(blob => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const title = pageTitles[i] || `Page_${i + 1}`;
+            a.download = `Monthly_Report_${monthName}_${title}.png`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              resolve();
+            }, 600);
+          } else {
+            resolve();
+          }
+        }, 'image/png');
+      });
+    }
+
+    alert("✅ تم استخراج جميع صفحات التقرير كصور PNG عالية الدقة بنجاح!");
+  } catch (err) {
+    console.error("Export Pages error:", err);
+    alert("حدث خطأ أثناء استخراج صفحات التقرير.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+
+async function sendReportViaEmail() {
+  const m = document.getElementById('mainReportMonth')?.value;
+  if (!m) return alert("اختر الشهر أولاً لتجهيز التقرير!");
+  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
+  let s = getMonthlyDetailedStats(m);
+
+  let hB = `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;line-height:1.6;">
+    <h2 style="color:#003366;border-bottom:2px solid #003366;padding-bottom:8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2>
+    <p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم ملخص مؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}):</p>
+    <table style="width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;" border="1" cellpadding="8">
+      <tr style="background:#003366;color:#fff;"><th>مؤشر الأداء</th><th>القيمة</th></tr>
+      <tr><td>عدد التحركات الجوية</td><td>${s.mov}</td></tr>
+      <tr><td>عدد الحوادث</td><td>${s.acc}</td></tr>
+      <tr><td>عدد الوقائع</td><td>${s.inc}</td></tr>
+      <tr><td>إجمالي حالات عدم المطابقة</td><td>${s.fT} (المغلقة: ${s.fC} | المعلقة: ${s.fO})</td></tr>
+      <tr><td>استبيانات الطيارين</td><td>${s.surv.length}</td></tr>
+      <tr><td>إجمالي كميات FOD</td><td>${s.fTot.toFixed(3)} KG</td></tr>
+    </table>
+    <p><b>مُعِد التقرير:</b> ${prepBy}</p>
+  </div>`;
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: "sendReportEmail",
+        subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`,
+        htmlBody: hB
+      })
+    });
+    alert("✅ تم إرسال التقرير بنجاح إلى إدارة السلامة والمطابقة!");
+  } catch (err) {
+    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل.");
+  }
 }
 // =============================================================================
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
