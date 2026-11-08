@@ -1880,11 +1880,68 @@ function generateIsoDailyReport(specificRep) {
         if (!txt.includes('AS-') && !txt.includes('تلافي')) el.innerText = `التاريخ: ${dispDate}`;
       }
       if (txt.includes('توقيع القائم بالتفتيش:')) {
-        el.innerHTML = `توقيع القائم بالتفتيش: <b style="color:#003366;">${rep.inspector || '............................'}</b>`;
+        el.innerHTML = `توقيع القائم بالتفتيش: <b style="color:#003366;">${rep.inspector || 'مدير سلامة المطارات/ سامي لوكاس'}</b>`;
       }
     }
   });
 
+  // =========================================================================
+  // 1. إعادة بناء جدول قائمة الفحص الشامل المكون من 10 أعمدة كاملة (Checklist Matrix)
+  // =========================================================================
+  const isoColumns = [
+    { title: "المناطق المرصوفة", items: dailyChecklistDataISO.col1.items },
+    { title: "المناطق الغير مرصوفة", items: dailyChecklistDataISO.col1.items2 },
+    { title: "المساعدات الملاحية", items: dailyChecklistDataISO.col1.items3 },
+    { title: "التخطيط (Marking)", items: dailyChecklistDataISO.col2.items },
+    { title: "اللافتات الإرشادية", items: dailyChecklistDataISO.col2.items2 },
+    { title: "الإنارة", items: dailyChecklistDataISO.col2.items3 },
+    { title: "عملية تموين الوقود", items: dailyChecklistDataISO.col3.items },
+    { title: "أخطار الحياة البرية", items: dailyChecklistDataISO.col3.items2 },
+    { title: "التحركات الأرضية ووقوف وإيواء الطائرات ومناولة الحقائب", items: dailyChecklistDataISO.col4.items },
+    { title: "الإنقاذ والإطفاء", items: dailyChecklistDataISO.col4.items2 }
+  ];
+
+  let matrixBox = document.getElementById('iso-matrix-container');
+  if (matrixBox) {
+    matrixBox.style.display = 'block';
+    matrixBox.style.border = 'none';
+    matrixBox.style.marginBottom = '8px';
+
+    let tblHtml = '<table style="width:100%; border-collapse:collapse; border:1.5px solid #000; font-size:7.5px; direction:rtl; text-align:right;">';
+    tblHtml += '<thead><tr style="background:#f2f2f2;">';
+    isoColumns.forEach(col => {
+      tblHtml += `<th style="border:1px solid #000; padding:4px 2px; text-align:center; font-size:8px; font-weight:bold; vertical-align:middle; width:10%;">${col.title}</th>`;
+    });
+    tblHtml += '</tr></thead><tbody><tr>';
+
+    isoColumns.forEach(col => {
+      tblHtml += '<td style="border:1px solid #000; vertical-align:top; padding:2px;">';
+      col.items.forEach(itm => {
+        // فحص إذا كان البند مسجلاً كملاحظة عدم مطابقة
+        let isFinding = rep.findings && rep.findings.some(f => {
+          let fCat = (f.category || '').trim();
+          let fItm = (f.item || '').trim();
+          return (fCat === col.title.trim() && fItm === itm.trim()) || (fItm === itm.trim());
+        });
+
+        let bg = isFinding ? 'background:#ffebee;' : '';
+        let colStyle = isFinding ? 'color:#dc3545; font-weight:bold;' : 'color:#000;';
+
+        tblHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:1.5px 2px; border-bottom:1px solid #eee; font-size:7.5px; line-height:1.2; ${bg}">`;
+        tblHtml += `<span style="${colStyle}">${itm}</span>`;
+        tblHtml += `<span style="font-size:8px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #000; text-align:center; line-height:9px; background:#fff;">✔</span>`;
+        tblHtml += `</div>`;
+      });
+      tblHtml += '</td>';
+    });
+
+    tblHtml += '</tr></tbody></table>';
+    matrixBox.innerHTML = tblHtml;
+  }
+
+  // =========================================================================
+  // 2. تعبئة جدول الملاحظات وحالات عدم المطابقة (Findings Table)
+  // =========================================================================
   let tb = document.getElementById('iso-findings-tbody');
   if (tb) {
     tb.innerHTML = '';
@@ -1903,22 +1960,27 @@ function generateIsoDailyReport(specificRep) {
         let isCl = (stStr === 'مغلق' || stStr === 'closed' || fn.includes('تم تلافي') || aT.includes('تم تلافي'));
         let stBadge = isCl ? '<span style="color:#28a745;font-weight:900;font-size:11px;background:#e8f5e9;padding:2px 6px;border-radius:4px;border:1px solid #28a745;">مغلق</span>' : '<span style="color:#dc3545;font-weight:900;font-size:11px;background:#ffebee;padding:2px 6px;border-radius:4px;border:1px solid #dc3545;">مفتوح</span>';
 
+        let clMatch = aT.match(/\[تم تلافي الملحوظة بتاريخ (.*?)\]/) || fn.match(/\[تم تلافي الملحوظة بتاريخ (.*?)\]/);
+        let rawClDate = clMatch ? clMatch[1] : (tD && tD !== '' ? tD : rep.date);
+        let clNoteHtml = isCl ? `<div style="color:#155724;background:#d4edda;border:1px solid #c3e6cb;font-weight:bold;font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;display:inline-block;"><i class="fa-solid fa-check-double"></i> تم تلافي الملحوظة بتاريخ ${rawClDate}</div>` : '';
+        let cleanAct = aT.replace(/\[تم تلافي الملحوظة بتاريخ.*?\]/g, '').trim();
+        let actText = (cleanAct !== 'لم يحدد' && cleanAct !== '') ? `<br><span style="color:#555;font-size:8.5px;">${cleanAct}</span>` : '';
+
         tb.innerHTML += `<tr>
           <td style="text-align:center;width:5%;padding:6px;border:1px solid #000;font-weight:bold;">${seq++}</td>
           <td style="text-align:center;width:15%;padding:6px;border:1px solid #000;font-weight:bold;">${f.location || '-'}</td>
           <td style="text-align:right;width:45%;padding:6px;border:1px solid #000;line-height:1.4;">
             <span style="color:#dc3545;font-weight:bold;font-size:10px;">${f.category} - ${f.item}</span><br>
             <span style="color:#333;font-size:9.5px;">(${nT})</span>
+            ${clNoteHtml ? '<br>' + clNoteHtml : ''}
           </td>
           <td style="text-align:center;width:15%;padding:6px;border:1px solid #000;">${f.responsible || '-'}</td>
-          <td style="text-align:center;width:20%;padding:6px;border:1px solid #000;">${stBadge}</td>
+          <td style="text-align:center;width:20%;padding:6px;border:1px solid #000;">${stBadge}${actText}</td>
         </tr>`;
       });
     }
   }
-  if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-
 function exportDailyPNG() {
   const btn = event?.target?.closest('button');
   let origHtml = btn ? btn.innerHTML : '';
