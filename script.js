@@ -2894,7 +2894,7 @@ function generateFullMonthlyReport() {
 
       <div style="margin: 20px auto; width: 100%;">
         <img src="Gemini_Generated_Image_vgja40vgja.jpg.jpg" 
-             onerror="if(!this.tried1){this.tried1=true;this.src='Gemini_Generated_Image_vgja40vgja.jpg';}else if(!this.tried2){this.tried2=true;this.src='Gemini_Generated_Image_vgja40vgja40vgja.jpg.jpg';}" 
+             onerror="if(!this.tried1){this.tried1=true;this.src='Gemini_Generated_Image_vgja40vgja.jpg';}else if(!this.tried2){this.tried2=true;this.src='report cover.jpg';}" 
              alt="Airport Safety" 
              style="width: 100%; max-width: 660px; max-height: 380px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
