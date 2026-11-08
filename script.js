@@ -1625,7 +1625,10 @@ function loadDailyInspectionToForm(idx) {
   if (f) f.reset();
   document.querySelectorAll('.check-inputs').forEach(el => el.style.display = 'none');
 
-  const dD = document.getElementById('dailyDate'), dT = document.getElementById('dailyTime'), dS = document.getElementById('dailyShift'), dI = document.getElementById('dailyInspector');
+  const dD = document.getElementById('dailyDate'), 
+        dT = document.getElementById('dailyTime'), 
+        dS = document.getElementById('dailyShift'), 
+        dI = document.getElementById('dailyInspector');
   if (dD) dD.value = rep.date || '';
   if (dT) dT.value = rep.time || '';
   if (dS) dS.value = rep.shift || 'صباحي';
@@ -1677,7 +1680,6 @@ function loadDailyInspectionToForm(idx) {
     btn.style.backgroundColor = "#ffc107";
     btn.style.color = "#000";
   }
-  if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function submitDailyInspection(e) {
@@ -2924,7 +2926,7 @@ async function generateFullMonthlyReport() {
   `;
   document.head.appendChild(st);
 
-  // 1. صفحة الغلاف الفخمة (صورة report cover.jpg)
+  // 1. صفحة الغلاف الفخمة (بدون تكرار العنوان المكتوب داخل الصورة)
   let p1Html = `
     <div class="mr-page" style="text-align: center;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 12px;">
@@ -2938,22 +2940,21 @@ async function generateFullMonthlyReport() {
         </div>
       </div>
 
-      <div style="margin: 25px auto; width: 100%;">
+      <div style="margin: 30px auto 20px auto; width: 100%;">
         <img src="report cover.jpg" 
              onerror="this.onerror=null; this.src='Gemini_Generated_Image_vgja40vgja.jpg.jpg';" 
              alt="Airport Safety" 
-             style="width: 100%; max-width: 660px; max-height: 380px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
+             style="width: 100%; max-width: 680px; max-height: 400px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,51,102,0.12); border: 1px solid #e0e0e0; display: block; margin: 0 auto;">
       </div>
 
-      <div style="margin: 20px auto;">
-        <h1 style="color: #003366; font-size: 26px; font-weight: 900; margin: 0 0 6px 0;">التقرير الشهري لمنطقة التحركات الجوية</h1>
-        <h2 style="color: #777; font-size: 17px; font-weight: bold; margin: 0 0 14px 0; font-family: sans-serif;">Airside Safety Monthly Report</h2>
-        <div style="display: inline-block; background: #003366; color: #ffffff; padding: 7px 28px; border-radius: 25px; font-weight: bold; font-size: 14px; box-shadow: 0 3px 10px rgba(0,51,102,0.25);">
+      <!-- الإبقاء فقط على شارة الشهر والسنة أسفل الصورة مباشرة -->
+      <div style="margin: 20px auto 10px auto;">
+        <div style="display: inline-block; background: #003366; color: #ffffff; padding: 9px 34px; border-radius: 25px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,51,102,0.25); letter-spacing: 0.5px;">
           ${mArabicName} - ${mEngName}
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #003366; padding-top: 15px; font-size: 12px; color: #333; margin-top: 30px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #003366; padding-top: 15px; font-size: 12px; color: #333; margin-top: 40px;">
         <div style="text-align: right;">
           <span style="color: #777;">الجهة المصدرة:</span><br>
           <strong style="color: #003366; font-size: 13px;">الإدارة العامة للسلامة والمطابقة</strong>
