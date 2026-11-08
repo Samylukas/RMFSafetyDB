@@ -2647,7 +2647,7 @@ function deleteQuarterlyDoc(cType, idx) {
 }
 
 // =============================================================================
-// 12. قسم التقرير الشهري الشامل (Monthly Report Module)
+// 12. قسم التقرير الشهري الشامل (Monthly Report Module - Restored & Synced)
 // =============================================================================
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
@@ -2670,14 +2670,32 @@ function getPreviousMonthStr(ms) {
 function getMonthlyDetailedStats(ms) {
   let p = (ms || '').split('-'), y = p[0] || '', m = p[1] || '';
   let mN = parseInt(m || '0').toString();
+  let mInt = parseInt(mN);
   let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {} };
 
-  if (globalSpiData) {
+  // 1. قراءة حركة الطائرات للشهر من منظومة SPI المعتمدة
+  let movFound = 0;
+  if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].movements) {
+    movFound = Number(window.globalSpiRecords[y].movements[mInt]) || 0;
+  }
+  if (!movFound) {
+    try {
+      let ls = localStorage.getItem('spi_records_' + y);
+      if (ls) {
+        let pLs = JSON.parse(ls);
+        if (pLs && pLs.movements) movFound = Number(pLs.movements[mInt]) || 0;
+      }
+    } catch(e) {}
+  }
+  if (!movFound && typeof globalSpiData !== 'undefined' && globalSpiData) {
     let sR = globalSpiData.find(r => String(r.Year) === String(y) && String(r.Month) === mN && r.Indicator_Name === "OperationalSPI");
     if (sR) {
-      try { s.mov = parseInt(JSON.parse(sR.Actual_Value).Movements) || 0; } catch (e) {}
+      try { movFound = parseInt(JSON.parse(sR.Actual_Value).Movements) || 0; } catch (e) {}
     }
   }
+  s.mov = movFound;
+
+  // 2. إحصائيات الحوادث والوقائع
   if (globalIncidents) {
     globalIncidents.forEach(i => {
       let idt = i.Date ? String(i.Date).split('T')[0] : '';
@@ -2688,26 +2706,33 @@ function getMonthlyDetailedStats(ms) {
       }
     });
   }
+
+  // 3. إحصائيات الفحص اليومي
   if (globalDailyInspections) {
     globalDailyInspections.forEach(d => {
       let ddt = d.date ? String(d.date).split('T')[0] : '';
       if (ddt.startsWith(ms) && d.findings) {
         d.findings.forEach(f => {
           s.fT++;
-          let isCl = (String(f.status || f.Status || '').trim() === 'مغلق' || String(f.status || f.Status || '').trim().toLowerCase() === 'closed' || String(f.note || '').includes('تم تلافي'));
-          if (isCl) s.fC++; else s.fO++;
+          let isCl = (String(f.status || f.Status || '').trim() === 'مغلق' || String(f.status || f.Status || '').trim().toLowerCase() === 'closed' || String(f.note || '').includes('تم تلافي') || String(f.actionTaken || f.action || '').includes('تم تلافي'));
+          if (isCl) s.fC++;
+          else s.fO++;
           let resp = f.responsible || f.Responsible || 'أخرى';
           s.fDept[resp] = (s.fDept[resp] || 0) + 1;
         });
       }
     });
   }
+
+  // 4. استبيانات الطيارين
   if (globalSurveys) {
     globalSurveys.forEach(sv => {
       let sdt = sv.Date ? String(sv.Date).split('T')[0] : '';
       if (sdt.startsWith(ms)) s.surv.push(sv);
     });
   }
+
+  // 5. كميات الأجسام الغريبة FOD
   if (globalFod) {
     globalFod.forEach(f => {
       let rd = f.Date || f.date || '';
@@ -2717,6 +2742,7 @@ function getMonthlyDetailedStats(ms) {
       }
     });
   }
+
   return s;
 }
 
@@ -2729,27 +2755,93 @@ function generateFullMonthlyReport() {
   let cS = getMonthlyDetailedStats(cm);
   let pS = getMonthlyDetailedStats(pm);
 
+  // حصر المخالفات الفريدة بدون تكرار
+  const getUniqF = (mStr) => {
+    let uM = {};
+    if (globalDailyInspections) {
+      globalDailyInspections.forEach(r => {
+        let d = r.date ? String(r.date).split('T')[0] : '';
+        if (d.startsWith(mStr) && r.findings) {
+          r.findings.forEach(f => {
+            let k = ((f.category || '').trim() + '___' + (f.item || '').trim() + '___' + (f.location || '').trim()).toLowerCase();
+            let st = String(f.status || f.Status || '').trim().toLowerCase();
+            let nt = String(f.note || '');
+            let ac = String(f.actionTaken || f.action || '');
+            let cl = (st === 'مغلق' || st === 'closed' || nt.includes('تم تلافي') || ac.includes('تم تلافي'));
+            if (!uM[k]) {
+              uM[k] = { c: cl, dept: f.responsible || 'أخرى' };
+            } else if (cl) {
+              uM[k].c = true;
+            }
+          });
+        }
+      });
+    }
+    let t = 0, c = 0, o = 0, dp = {};
+    Object.keys(uM).forEach(k => {
+      t++;
+      if (uM[k].c) c++;
+      else {
+        o++;
+        let d = uM[k].dept;
+        dp[d] = (dp[d] || 0) + 1;
+      }
+    });
+    return { t, c, o, dp };
+  };
+
+  let cUF = getUniqF(cm);
+  let pUF = getUniqF(pm);
+  cS.fT = cUF.t;
+  cS.fO = cUF.o;
+  cS.fC = cUF.c;
+  if (Object.keys(cUF.dp).length > 0) cS.fDept = cUF.dp;
+  pS.fT = pUF.t;
+  pS.fO = pUF.o;
+  pS.fC = pUF.c;
+
   const mEngName = cDO.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const mArabicName = cDO.toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
 
-  let p1Html = `<div style="min-height:95vh;display:flex;flex-direction:column;justify-content:space-between;padding:20px 10px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div style="text-align:right;flex:1;">
-        <h2 style="color:#003366;font-size:18px;font-weight:900;margin:0 0 5px 0;">الإدارة العامة للمطابقة والسلامة</h2>
-        <h3 style="color:#222;font-size:16px;font-weight:bold;margin:0;">إدارة سلامة المطارات</h3>
-      </div>
-      <div style="flex:1;text-align:left;">
-        <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:105px;object-fit:contain;margin-left:15px;">
-      </div>
-    </div>
-    <div style="margin:20px auto;text-align:center;">
-      <h3 style="color:#003366;font-size:24px;font-weight:900;margin:0;font-family:sans-serif;">${mEngName}</h3>
-    </div>
-    <div style="margin-top:auto;text-align:left;direction:ltr;padding-left:15px;font-size:13px;font-weight:bold;color:#003366;">
-      Prepared by:<br><span style="font-size:15px;color:#222;">${prepBy || 'Safety Manager'}</span>
-    </div>
-  </div>`;
+  // ستايل طباعة وعرض التقرير
+  let oldFix = document.getElementById('mr-page-rules-style');
+  if (oldFix) oldFix.remove();
+  let st = document.createElement('style');
+  st.id = 'mr-page-rules-style';
+  st.innerHTML = `
+    #printable-main-report { font-family: 'Cairo', sans-serif !important; direction: rtl !important; box-sizing: border-box !important; width: 100% !important; max-width: 900px !important; margin: 0 auto !important; padding: 15px 20px !important; background: #fff !important; }
+    #printable-main-report * { box-sizing: border-box !important; }
+    #printable-main-report h1, #printable-main-report h2, #printable-main-report h3, #printable-main-report h4 { text-align: center !important; margin: 8px auto !important; }
+    #printable-main-report table { font-size: 9.5px !important; margin: 0 auto 15px auto !important; width: 100% !important; border-collapse: collapse !important; }
+    #printable-main-report th, #printable-main-report td { padding: 6px 8px !important; text-align: center; }
+    canvas#mrChart1, canvas#mrChart2, canvas#mrSurveyAirChart, canvas#mrSurveyEvalChart { width: 100% !important; max-height: 220px !important; height: 220px !important; display: block !important; margin: 0 auto !important; }
+    .mr-page-break { page-break-before: always !important; break-before: page !important; margin-top: 30px !important; padding-top: 20px !important; border-top: 1px dashed #ddd; }
+  `;
+  document.head.appendChild(st);
 
+  // 1. الغلاف الرسمي
+  let p1Html = `
+    <div style="border-bottom: 2px solid #003366; padding-bottom: 20px; margin-bottom: 25px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="text-align: right; flex: 1;">
+          <h2 style="color: #003366; font-size: 19px; font-weight: 900; margin: 0 0 5px 0;">الإدارة العامة للمطابقة والسلامة</h2>
+          <h3 style="color: #222; font-size: 16px; font-weight: bold; margin: 0;">إدارة سلامة المطارات</h3>
+        </div>
+        <div style="flex: 1; text-align: left;">
+          <img src="LOGO-removebg-preview (1).png" alt="Logo" style="height: 65px; object-fit: contain;">
+        </div>
+      </div>
+      <div style="margin: 25px auto 15px auto; text-align: center;">
+        <h1 style="color: #003366; font-size: 24px; font-weight: 900; margin: 0;">التقرير الشهري لمنطقة التحركات الجوية</h1>
+        <h3 style="color: #555; font-size: 18px; margin: 5px 0 0 0; font-family: sans-serif;">${mEngName}</h3>
+      </div>
+      <div style="text-align: left; direction: ltr; font-size: 12px; font-weight: bold; color: #003366; margin-top: 15px;">
+        Prepared by: <span style="font-size: 14px; color: #222;">${prepBy || 'Safety Manager'}</span>
+      </div>
+    </div>
+  `;
+
+  // 2. جدول مؤشرات الأداء والاتجاهات
   let kpRows = '';
   const kp = [
     { l: "عدد التحركات الجوية", p: pS.mov, c: cS.mov, h: true, u: "" },
@@ -2759,7 +2851,7 @@ function generateFullMonthlyReport() {
     { l: "حالات عدم المطابقة المعلقة", p: pS.fO, c: cS.fO, h: false, u: "" },
     { l: "حالات عدم المطابقة التي تم تلافيها", p: pS.fC, c: cS.fC, h: true, u: "" },
     { l: "استبيان الطيارين", p: pS.surv.length, c: cS.surv.length, h: true, u: "" },
-    { l: "كمية الأجسام الغريبة FOD", p: pS.fTot, c: cS.fTot, h: false, u: "كجم", isF: true }
+    { l: "كمية الأجسام الغريبة FOD (بلاستيك + معدن)", p: pS.fTot, c: cS.fTot, h: false, u: "كجم", isF: true }
   ];
 
   kp.forEach(i => {
@@ -2768,29 +2860,332 @@ function generateFullMonthlyReport() {
     let cD = i.isF ? i.c.toFixed(3) + " " + i.u : i.c;
     let pD = i.isF ? i.p.toFixed(3) + " " + i.u : i.p;
     kpRows += `<tr>
-      <td style="border:1px solid #000;padding:8px 10px;text-align:right;font-weight:bold;font-size:11px;">${i.l}</td>
-      <td style="border:1px solid #000;padding:8px;direction:ltr;font-size:11px;">${pD}</td>
-      <td style="border:1px solid #000;padding:8px;direction:ltr;font-weight:bold;background:#f9fbfd;font-size:11px;">${cD}</td>
-      <td style="border:1px solid #000;padding:8px;text-align:center;font-size:11px;">${tH}</td>
+      <td style="border: 1px solid #000; padding: 8px 10px; text-align: right; font-weight: bold; font-size: 11px;">${i.l}</td>
+      <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-size: 11px;">${pD}</td>
+      <td style="border: 1px solid #000; padding: 8px; direction: ltr; font-weight: bold; background: #f9fbfd; font-size: 11px;">${cD}</td>
+      <td style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${tH}</td>
     </tr>`;
   });
 
-  let p2Html = `<div style="margin-top:20px;">
-    <h2 style="color:#003366;font-size:18px;border-bottom:2px solid #003366;padding-bottom:5px;text-align:right;">أولاً: مؤشرات الأداء العامة</h2>
-    <table style="width:100%;border:1px solid #000;margin-bottom:25px;border-collapse:collapse;text-align:center;">
-      <thead style="background:#e6e6e6;color:#000;">
-        <tr><th style="border:1px solid #000;padding:8px;width:40%;">البيان</th><th style="border:1px solid #000;padding:8px;">الشهر السابق</th><th style="border:1px solid #000;padding:8px;">الشهر الحالي</th><th style="border:1px solid #000;padding:8px;width:25%;">الفرق والاتجاه</th></tr>
-      </thead>
-      <tbody>${kpRows}</tbody>
-    </table>
-  </div>`;
+  let p2Html = `
+    <div>
+      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">أولاً: مؤشرات الأداء العامة</h2>
+      <table style="width: 100%; border: 1px solid #000; margin-bottom: 25px; border-collapse: collapse; text-align: center;">
+        <thead style="background: #e6e6e6; color: #000;">
+          <tr>
+            <th style="border: 1px solid #000; padding: 8px; width: 40%;">البيان</th>
+            <th style="border: 1px solid #000; padding: 8px;">الشهر السابق</th>
+            <th style="border: 1px solid #000; padding: 8px;">الشهر الحالي</th>
+            <th style="border: 1px solid #000; padding: 8px; width: 25%;">الفرق والاتجاه</th>
+          </tr>
+        </thead>
+        <tbody>${kpRows}</tbody>
+      </table>
 
+      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right; margin-top: 30px;">ثانياً: الحصــــــــــــر التفصيلي</h2>
+      <h4 style="color: #333; text-align: right; margin-bottom: 8px; font-size: 13px;">حصر المخالفات والأخطار طبقاً للإدارة والنوع:</h4>
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
+          <canvas id="mrChart1"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
+          <canvas id="mrChart2"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="mr-page-break"></div>
+  `;
+
+  // 3. جدول الوقائع والحوادث المسجلة
+  let iLHtml = `
+    <h4 style="color: #003366; text-align: right; margin-bottom: 10px; font-size: 14px; border-bottom: 2px solid #003366; padding-bottom: 5px;">حصر الوقائع والحوادث المسجلة خلال الشهر:</h4>
+    <p style="font-weight: bold; color: #003366; text-align: right; margin-bottom: 15px; font-size: 12px;">تم حصر عدد (${cS.inc + cS.acc}) واقعة / حادثة كالتالي :</p>
+  `;
+
+  let gI = {};
+  cS.incList.forEach(i => {
+    let ct = i.Characterization ? i.Characterization.split('/')[0].trim() : 'Others';
+    if (!gI[ct]) gI[ct] = [];
+    gI[ct].push(i);
+  });
+
+  let cIdx = 1;
+  for (let ct in gI) {
+    iLHtml += `
+      <div style="background: #003366; color: #fff; font-weight: bold; padding: 6px 12px; margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px; direction: ltr;">
+        <span>${ct} (${cIdx})</span>
+        <span>Total: ${gI[ct].length}</span>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 12px; font-size: 10px; direction: ltr; text-align: left;">
+        <thead>
+          <tr style="background: #f9f9f9;">
+            <th style="border: 1px solid #000; padding: 6px; width: 5%; text-align: center;">Seq</th>
+            <th style="border: 1px solid #000; padding: 6px; width: 55%; text-align: center;">Description / Action Taken</th>
+            <th style="border: 1px solid #000; padding: 6px; width: 15%; text-align: center;">Date</th>
+            <th style="border: 1px solid #000; padding: 6px; width: 25%; text-align: center;">Flight Information</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    gI[ct].forEach((i, x) => {
+      let dt = i.Date ? String(i.Date).split('T')[0] : '';
+      let ds = i.Description ? i.Description.replace(/\n/g, '<br>') : '-';
+      let ac = i.Action_Taken ? i.Action_Taken.replace(/\n/g, '<br>') : '-';
+      let dsDir = /[\u0600-\u06FF]/.test(ds) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+      let acDir = /[\u0600-\u06FF]/.test(ac) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+      let fInfo = `<b>Airline:</b> ${i.CAR || '-'}<br><b>Local Agent:</b> ${i.Equipment_Owned || '-'}<br><b>FLT NO:</b> ${i.Flight_No || '-'}<br><b>REG:</b> ${i.REG || '-'}`;
+
+      iLHtml += `
+        <tr>
+          <td style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle; font-size: 11px;">0${x + 1}</td>
+          <td style="border: 1px solid #000; padding: 8px 12px; vertical-align: middle;">
+            <div style="text-align: center; margin-bottom: 4px;"><strong style="color: #003366; text-decoration: underline;">الوصف / Description</strong></div>
+            <div style="${dsDir} margin-bottom: 12px; line-height: 1.5;">${ds}</div>
+            <div style="text-align: center; margin-bottom: 4px;"><strong style="color: #28a745; text-decoration: underline;">الإجراء المتخذ / Action Taken</strong></div>
+            <div style="${acDir} line-height: 1.5;">${ac}</div>
+          </td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; font-weight: bold;">${dt}</td>
+          <td style="border: 1px solid #000; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.6; font-size: 9.5px;">${fInfo}</td>
+        </tr>
+      `;
+    });
+    iLHtml += `</tbody></table>`;
+    cIdx++;
+  }
+
+  // 4. استبيانات الطيارين والمصفوفة
+  let p3Html = `
+    <div class="mr-page-break">
+      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">ثالثاً: استبيان الطيارين</h2>
+      <p style="font-weight: bold; color: #003366; text-align: right; margin-bottom: 15px; font-size: 12px;">تم عمل عدد (${cS.surv.length}) استبيان طيارين خلال شهر ${mArabicName}.</p>
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
+          <canvas id="mrSurveyAirChart"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 280px; height: 240px; background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px;">
+          <canvas id="mrSurveyEvalChart"></canvas>
+        </div>
+      </div>
+      <h4 style="color: #003366; margin: 15px 0 10px 0; text-align: center; font-size: 14px;">مصفوفة تقييم استبيانات الطيارين</h4>
+      <div id="mr-survey-matrix-box"></div>
+      <div id="mr-survey-comments-box" style="margin-top: 20px;"></div>
+    </div>
+  `;
+
+  let mS = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+  criteriaList.forEach(c => {
+    mS["Excellent"][c] = 0; mS["Good"][c] = 0; mS["Poor"][c] = 0; mS["N/A"][c] = 0; mS["Blank"][c] = 0;
+  });
+  let aC = {}, eTC = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, cL = [];
+  cS.surv.forEach(s => {
+    if (s.CAR) aC[s.CAR] = (aC[s.CAR] || 0) + 1;
+    criteriaList.forEach(c => {
+      let v = s[c] || "Blank";
+      if (mS[v]) mS[v][c]++;
+      if (eTC[v] !== undefined) eTC[v]++;
+    });
+    if (s.Captain_Comments && s.Captain_Comments.trim() !== "") cL.push(s);
+  });
+
+  let mH = `
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #777; font-size: 9.5px; text-align: center; direction: ltr;">
+      <thead>
+        <tr style="background: #003366; color: #fff;">
+          <th style="padding: 4px 6px; border: 1px solid #999; text-align: left; width: 40%;">Evaluation Criteria</th>
+          <th style="padding: 4px; border: 1px solid #999; background: #28a745; width: 12%;">Excellent</th>
+          <th style="padding: 4px; border: 1px solid #999; background: #ffc107; color: #000; width: 12%;">Good</th>
+          <th style="padding: 4px; border: 1px solid #999; background: #dc3545; width: 12%;">Poor</th>
+          <th style="padding: 4px; border: 1px solid #999; background: #6c757d; width: 12%;">N/A</th>
+          <th style="padding: 4px; border: 1px solid #999; background: #1a2a6c; width: 12%;">Blank</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  criteriaList.forEach(c => {
+    mH += `
+      <tr>
+        <td style="padding: 4px 6px; border: 1px solid #ccc; text-align: left; font-weight: bold; background: #f9f9f9;">${c}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'}; font-weight: bold;">${mS["Excellent"][c] || 0}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'}; font-weight: bold;">${mS["Good"][c] || 0}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; color: ${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'}; font-weight: bold;">${mS["Poor"][c] || 0}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; color: #777;">${mS["N/A"][c] || 0}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; color: #777;">${mS["Blank"][c] || 0}</td>
+      </tr>
+    `;
+  });
+  mH += `</tbody></table>`;
+
+  let cH = `
+    <div style="direction: ltr; text-align: left; margin-top: 20px;">
+      <h4 style="color: #003366; text-align: left; margin-bottom: 8px; font-size: 13px;">Captain Comments & Observations:</h4>
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 10px; direction: ltr; text-align: left;">
+        <thead style="background: #003366; color: #fff;">
+          <tr>
+            <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 15%;">Airline</th>
+            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">FLT NO</th>
+            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">Type</th>
+            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">Date</th>
+            <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 12%;">REG</th>
+            <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 37%;">Comments</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  if (cL.length === 0) {
+    cH += `<tr><td colspan="6" style="padding: 10px; text-align: center; color: #777; border: 1px solid #000;">No comments recorded for this month.</td></tr>`;
+  } else {
+    cL.forEach(s => {
+      let cmt = s.Captain_Comments || '-';
+      let cmtDir = /[\u0600-\u06FF]/.test(cmt) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+      cH += `
+        <tr>
+          <td style="padding: 6px; border: 1px solid #000; font-weight: bold;">${s.CAR || '-'}</td>
+          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.Flight_NO || '-'}</td>
+          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.TYPE || '-'}</td>
+          <td style="padding: 6px; border: 1px solid #000; text-align: center;" dir="ltr">${s.Date ? String(s.Date).split('T')[0] : ''}</td>
+          <td style="padding: 6px; border: 1px solid #000; text-align: center;">${s.REG || '-'}</td>
+          <td style="padding: 6px; border: 1px solid #000; ${cmtDir}">${cmt}</td>
+        </tr>
+      `;
+    });
+  }
+  cH += `</tbody></table></div>`;
+
+  // 5. حصر الأجسام الغريبة FOD
+  let fF = globalFod.filter(f => {
+    let rd = f.Date || f.date || '';
+    return (typeof rd === 'string' ? rd : new Date(rd).toISOString()).split('T')[0].startsWith(cm);
+  });
+  let tp = 0, tm = 0, fR = '';
+  fodLocations.forEach(loc => {
+    let rc = fF.find(f => (f.Location || f.location) === loc.loc);
+    let p = rc ? parseFloat(rc.Plastic || rc.plastic || 0) : 0;
+    let met = rc ? parseFloat(rc.Metal || rc.metal || 0) : 0;
+    tp += p; tm += met;
+    let dD = rc && (rc.Date || rc.date) ? String(rc.Date || rc.date).split('T')[0] : '---';
+    fR += `
+      <tr>
+        <td style="border: 1px solid #777; padding: 6px;" dir="ltr">${dD}</td>
+        <td style="border: 1px solid #777; padding: 6px; text-align: left; font-weight: bold;">${loc.loc}</td>
+        <td style="border: 1px solid #777; padding: 6px;">${loc.area}</td>
+        <td style="border: 1px solid #777; padding: 6px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td>
+        <td style="border: 1px solid #777; padding: 6px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td>
+        <td style="border: 1px solid #777; padding: 6px;">---</td>
+      </tr>
+    `;
+  });
+
+  let p4Html = `
+    <div class="mr-page-break">
+      <h2 style="color: #003366; font-size: 18px; border-bottom: 2px solid #003366; padding-bottom: 5px; text-align: right;">رابعاً: حصر وتصنيف الأجسام الغريبة FOD</h2>
+      <div style="direction: ltr; text-align: left; margin-top: 15px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #777; font-size: 10.5px; direction: ltr;">
+          <thead>
+            <tr style="background: #003366; color: #fff;">
+              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Date</th>
+              <th rowspan="2" style="border: 1px solid #777; padding: 6px; text-align: left; width: 30%;">Location</th>
+              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Area</th>
+              <th colspan="2" style="border: 1px solid #777; padding: 6px; width: 25%;">FOD Quantity</th>
+              <th rowspan="2" style="border: 1px solid #777; padding: 6px; width: 15%;">Total</th>
+            </tr>
+            <tr style="background: #003366; color: #fff;">
+              <th style="border: 1px solid #777; padding: 4px;">Plastic (kg)</th>
+              <th style="border: 1px solid #777; padding: 4px;">Metal (kg)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${fR}
+            <tr style="background: #fafafa; font-weight: bold;">
+              <td colspan="3" style="border: 1px solid #777; padding: 8px; text-align: left;">Total Weight</td>
+              <td style="border: 1px solid #777; padding: 8px;">${tp.toFixed(3)} kg</td>
+              <td style="border: 1px solid #777; padding: 8px;">${tm.toFixed(3)} kg</td>
+              <td style="border: 1px solid #777; padding: 8px; color: #003366; font-size: 11.5px;">${(tp + tm).toFixed(3)} kg</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top: 50px; text-align: center; font-size: 18px; font-weight: bold; color: #003366; font-family: cursive;">Best Regards</div>
+      <div style="margin-top: 30px; text-align: left; direction: ltr; padding-left: 15px;">
+        <div style="display: inline-block; text-align: center; min-width: 180px;">
+          <div style="font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 6px;">إدارة سلامة المطارات</div>
+          <div style="font-size: 13px; font-weight: bold; color: #222;">${(prepBy && prepBy !== 'إدارة سلامة المطارات') ? prepBy : ''}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // حقن كامل محتوى التقرير
   const repMain = document.getElementById('printable-main-report');
   if (repMain) {
-    repMain.innerHTML = p1Html + p2Html;
+    repMain.innerHTML = p1Html + p2Html + '<div id="mr-incidents-list-container" style="direction:ltr;">' + iLHtml + '</div>' + p3Html + p4Html;
+    document.getElementById('mr-survey-matrix-box').innerHTML = mH;
+    document.getElementById('mr-survey-comments-box').innerHTML = cH;
     repMain.style.display = 'block';
-    repMain.scrollIntoView({ behavior: 'smooth' });
   }
+
+  // رسم وتحديث المخططات الأربعة
+  if (monthlyChart1) monthlyChart1.destroy();
+  if (monthlyChart2) monthlyChart2.destroy();
+  Chart.defaults.font.family = "'Cairo', sans-serif";
+
+  let c1El = document.getElementById('mrChart1');
+  if (c1El) {
+    monthlyChart1 = new Chart(c1El.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(cS.fDept),
+        datasets: [{ label: 'المخاطر طبقاً للإدارة', data: Object.values(cS.fDept), backgroundColor: '#003366', borderRadius: 4 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  let iTC = {};
+  cS.incList.forEach(i => {
+    let ct = i.Characterization ? i.Characterization.split('/')[0].trim() : 'أخرى';
+    iTC[ct] = (iTC[ct] || 0) + 1;
+  });
+
+  let c2El = document.getElementById('mrChart2');
+  if (c2El) {
+    monthlyChart2 = new Chart(c2El.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(iTC),
+        datasets: [{ label: 'الوقائع', data: Object.values(iTC), backgroundColor: '#dc3545', borderRadius: 4 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
+  let saEl = document.getElementById('mrSurveyAirChart');
+  if (saEl) {
+    mrSurveyAirChartInstance = new Chart(saEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(aC),
+        datasets: [{ label: 'الاستبيانات', data: Object.values(aC), backgroundColor: '#003366', borderRadius: 4 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  if (mrSurveyEvalChartInstance) mrSurveyEvalChartInstance.destroy();
+  let seEl = document.getElementById('mrSurveyEvalChart');
+  if (seEl) {
+    mrSurveyEvalChartInstance = new Chart(seEl.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['ممتاز', 'جيد', 'ضعيف', 'غير منطبق', 'فارغ'],
+        datasets: [{ data: Object.values(eTC), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  repMain.scrollIntoView({ behavior: 'smooth' });
 }
 
 function exportMainReportPDF() {
@@ -2798,7 +3193,7 @@ function exportMainReportPDF() {
   if (!el || el.style.display === 'none') return alert("قم بتجهيز التقرير أولاً بالضغط على 'تجهيز التقرير الشامل'!");
   const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
   html2pdf().set({
-    margin: 0,
+    margin: [5, 5, 5, 5],
     filename: `Airside_Safety_Monthly_Report_${monthName}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
@@ -2844,7 +3239,6 @@ async function sendReportViaEmail() {
     alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل.");
   }
 }
-
 // =============================================================================
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
 // =============================================================================
