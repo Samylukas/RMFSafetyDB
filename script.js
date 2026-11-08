@@ -1886,7 +1886,7 @@ function generateIsoDailyReport(specificRep) {
   });
 
   // =========================================================================
-  // 1. إعادة بناء جدول قائمة الفحص الشامل المكون من 10 أعمدة كاملة (Checklist Matrix)
+  // 1. إعادة بناء جدول قائمة الفحص الشامل المكون من 10 أعمدة (Checklist Matrix)
   // =========================================================================
   const isoColumns = [
     { title: "المناطق المرصوفة", items: dailyChecklistDataISO.col1.items },
@@ -1917,19 +1917,24 @@ function generateIsoDailyReport(specificRep) {
     isoColumns.forEach(col => {
       tblHtml += '<td style="border:1px solid #000; vertical-align:top; padding:2px;">';
       col.items.forEach(itm => {
-        // فحص إذا كان البند مسجلاً كملاحظة عدم مطابقة
+        // فحص صارم يشترط تطابق اسم القسم واسم البند بدقة لمنع تكرار تلوين "أخرى"
         let isFinding = rep.findings && rep.findings.some(f => {
           let fCat = (f.category || '').trim();
-          let fItm = (f.item || '').trim();
-          return (fCat === col.title.trim() && fItm === itm.trim()) || (fItm === itm.trim());
+          let fItm = (f.item || f.Finding_Item || '').trim();
+          return fCat === col.title.trim() && fItm === itm.trim();
         });
 
         let bg = isFinding ? 'background:#ffebee;' : '';
         let colStyle = isFinding ? 'color:#dc3545; font-weight:bold;' : 'color:#000;';
+        
+        // علامة ✖ باللون الأحمر للبند المخالف، وعلامة ✔ للبند المطابق السليم
+        let markIcon = isFinding
+          ? '<span style="font-size:8.5px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #dc3545; text-align:center; line-height:9px; background:#fff; color:#dc3545; font-weight:900;">✖</span>'
+          : '<span style="font-size:8px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #000; text-align:center; line-height:9px; background:#fff; color:#000;">✔</span>';
 
         tblHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:1.5px 2px; border-bottom:1px solid #eee; font-size:7.5px; line-height:1.2; ${bg}">`;
         tblHtml += `<span style="${colStyle}">${itm}</span>`;
-        tblHtml += `<span style="font-size:8px; margin-right:2px; display:inline-block; width:10px; height:10px; border:1px solid #000; text-align:center; line-height:9px; background:#fff;">✔</span>`;
+        tblHtml += markIcon;
         tblHtml += `</div>`;
       });
       tblHtml += '</td>';
