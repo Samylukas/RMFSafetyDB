@@ -2779,7 +2779,7 @@ async function generateFullMonthlyReport() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استدعاء البيانات...';
   }
 
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
+  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'Samy Lukas';
   const pm = getPreviousMonthStr(cm);
   const curYear = cm.split('-')[0];
   const prevYear = pm.split('-')[0];
@@ -3639,7 +3639,7 @@ async function sendReportViaEmail() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال التقرير...';
   }
 
-  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
+  const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'Samy Lukas';
 
   try {
     const canvas = await html2canvas(el, {
