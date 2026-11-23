@@ -73,6 +73,10 @@ let logoTripleClickCounter = 0;
 let logoTripleClickTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const cachedUsers = JSON.parse(localStorage.getItem('rmf_users_cache') || '[]');
+    if (Array.isArray(cachedUsers) && cachedUsers.length > 0) globalUsers = cachedUsers;
+  } catch (e) {}
   buildDailyChecklist();
   buildEvaluationForm();
   setupCustomDropdown();
@@ -95,6 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (r.includes('safety') || r.includes('مطارات')) {
           if (bBtn) bBtn.style.display = 'none';
           openSection('airport-safety-dashboard');
+        } else if (r.includes('osh') || r.includes('صحة') || r.includes('مهنية')) {
+          openOshSection();
+        } else if (r.includes('env') || r.includes('بيئة') || r.includes('برية')) {
+          openEnvSection();
         } else if (r.includes('fire') || r.includes('حماية') || r.includes('مدنية')) {
           openCivilDefenseSection();
         } else {
@@ -228,9 +236,9 @@ function login() {
       if (bBtn) bBtn.style.display = 'none';
       openSection('airport-safety-dashboard');
     } else if (r.includes('osh') || r.includes('صحة') || r.includes('مهنية')) {
-      window.location.href = 'osh.html';
+      openOshSection();
     } else if (r.includes('env') || r.includes('بيئة') || r.includes('برية')) {
-      window.location.href = 'env.html';
+      openEnvSection();
     } else if (r.includes('fire') || r.includes('حماية') || r.includes('مدنية')) {
       openCivilDefenseSection();
     } else {
@@ -284,10 +292,30 @@ function openSection(sId) {
       subEl.style.color = '#555';
       hdrEl.style.borderBottomColor = '#003366';
       if (homeBtn) homeBtn.style.display = 'none';
+    } else if (sId === 'osh-section') {
+      subEl.innerText = 'قسم السلامة والصحة المهنية (OSH)';
+      subEl.style.color = '#fd7e14';
+      hdrEl.style.borderBottomColor = '#fd7e14';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    } else if (sId === 'env-section') {
+      subEl.innerText = 'قسم البيئة ومكافحة مخاطر الحياة البرية (ENV)';
+      subEl.style.color = '#28a745';
+      hdrEl.style.borderBottomColor = '#28a745';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     } else if (sId === 'civil-defense-section') {
       subEl.innerText = 'قسم سلامة الحماية المدنية (Civil Defense & ARFF)';
       subEl.style.color = '#dc3545';
       hdrEl.style.borderBottomColor = '#dc3545';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    } else if (sId === 'general-report-section') {
+      subEl.innerText = 'التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة';
+      subEl.style.color = '#e67e22';
+      hdrEl.style.borderBottomColor = '#e67e22';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    } else if (sId === 'directory-section') {
+      subEl.innerText = 'دليل هاتف مطار مرسى علم الدولي (Airport Phone Directory)';
+      subEl.style.color = '#17a2b8';
+      hdrEl.style.borderBottomColor = '#17a2b8';
       if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     } else if (sId === 'flight-schedule-section') {
       subEl.innerText = 'جدول الرحلات اليومي (Flight Schedule)';
@@ -301,6 +329,26 @@ function openSection(sId) {
       if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     }
   }
+}
+
+function openOshSection() {
+  openSection('osh-section');
+  if (typeof initOshSection === 'function') initOshSection();
+}
+
+function openEnvSection() {
+  openSection('env-section');
+  if (typeof initEnvSection === 'function') initEnvSection();
+}
+
+function openGeneralReportSection() {
+  openSection('general-report-section');
+  if (typeof initGeneralReportSection === 'function') initGeneralReportSection();
+}
+
+function openDirectorySection() {
+  openSection('directory-section');
+  if (typeof initDirectorySection === 'function') initDirectorySection();
 }
 
 function openAdminSection(sId) {
@@ -392,6 +440,9 @@ function loadAppDataInit() {
         globalSurveys = d.surveys ? [...d.surveys] : [];
         sortSurveysByDate();
         globalUsers = d.users || [];
+        if (globalUsers.length > 0) {
+          try { localStorage.setItem('rmf_users_cache', JSON.stringify(globalUsers)); } catch (e) {}
+        }
         if (d.incidents && Array.isArray(d.incidents) && d.incidents.length > 0) {
           globalIncidents = d.incidents;
           window.globalIncidents = d.incidents;
@@ -2731,23 +2782,35 @@ async function sendReportViaEmail() {
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
 // =============================================================================
 function getLoginUsersCatalog() {
-  const defaults = [
-    { Username: "Admin", Role: "مدير النظام (Admin)" },
-    { Username: "Airport Safety", Role: "إدارة سلامة المطارات" },
-    { Username: "OSH", Role: "السلامة والصحة المهنية" },
-    { Username: "Environment", Role: "البيئة والحياة البرية" },
-    { Username: "Civil Defense", Role: "الحماية المدنية" }
-  ];
   const map = new Map();
-  if (Array.isArray(globalUsers) && globalUsers.length > 0) {
-    globalUsers.forEach(u => {
-      if (u && u.Username) map.set(String(u.Username).trim(), { Username: String(u.Username).trim(), Role: u.Role || "" });
-    });
+  let sourceList = Array.isArray(globalUsers) ? globalUsers : [];
+  if (sourceList.length === 0) {
+    try {
+      const cached = JSON.parse(localStorage.getItem('rmf_users_cache') || '[]');
+      if (Array.isArray(cached) && cached.length > 0) sourceList = cached;
+    } catch (e) {}
   }
-  defaults.forEach(d => {
-    if (!map.has(d.Username)) map.set(d.Username, d);
-  });
-  return Array.from(map.values());
+
+  if (sourceList.length > 0) {
+    sourceList.forEach(u => {
+      if (u && u.Username) {
+        const cleanU = String(u.Username).trim();
+        const key = cleanU.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, { Username: cleanU, Role: String(u.Role || '').trim() });
+        }
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  return [
+    { Username: "Admin", Role: "Admin" },
+    { Username: "safety", Role: "Airport Safety" },
+    { Username: "osh", Role: "OSH" },
+    { Username: "env", Role: "Environment" },
+    { Username: "fire", Role: "Civil Defense" }
+  ];
 }
 
 function renderLoginUsersDropdown(filterText = "") {
@@ -2762,9 +2825,9 @@ function renderLoginUsersDropdown(filterText = "") {
     return;
   }
   lst.innerHTML = users.map(u => `
-    <div class="login-user-opt" data-username="${u.Username.replace(/"/g, '&quot;')}" style="padding:9px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background 0.15s;" onmouseover="this.style.background='#f0f6ff'" onmouseout="this.style.background='#fff'">
-      <span style="font-weight:800;color:#003366;font-size:0.95rem;"><i class="fa-solid fa-user-check" style="color:#17a2b8;margin-left:6px;"></i>${u.Username}</span>
-      <span style="font-size:0.75rem;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:10px;font-weight:bold;">${u.Role || ''}</span>
+    <div class="login-user-opt" data-username="${u.Username.replace(/"/g, '&quot;')}" style="padding:8px 12px;border-bottom:1px solid #eef2f6;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='#f0f6ff'" onmouseout="this.style.background='#fff'">
+      <span style="font-weight:800;color:#003366;font-size:0.9rem;white-space:nowrap;"><i class="fa-solid fa-user-check" style="color:#17a2b8;margin-left:5px;"></i>${u.Username}</span>
+      <span style="font-size:0.74rem;color:#475569;background:#f1f5f9;padding:2px 8px;border-radius:10px;font-weight:bold;white-space:nowrap;">${u.Role || ''}</span>
     </div>
   `).join('');
 
@@ -2788,7 +2851,9 @@ function setupLoginUserDropdown() {
   renderLoginUsersDropdown("");
 
   arrow.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
+    inp.blur();
     const isOpen = lst.style.display === 'block';
     if (isOpen) {
       lst.style.display = 'none';
@@ -2847,6 +2912,7 @@ function addUser(e) {
   if (!user || !pass) return alert('يرجى إدخال اسم المستخدم وكلمة المرور!');
   safePost({ action: "addUser", performedBy: getCurrentActorName(), role: role, username: user, password: pass }, document.querySelector('#account-management-section .submit-btn'), document.getElementById('userMsg'), "تم إضافة الحساب بنجاح!", () => {
     globalUsers.push({ Role: role, Username: user, Password: pass });
+    try { localStorage.setItem('rmf_users_cache', JSON.stringify(globalUsers)); } catch (e) {}
     populateUsersDropdown(globalUsers);
     renderUsersTable();
     document.getElementById('newUsername').value = '';
@@ -2905,6 +2971,7 @@ function deleteUserAccount(username) {
   if (!isCurrentUserAdmin()) return alert('⚠️ للمدير فقط!');
   if (!confirm(`⚠️ هل أنت متأكد من حذف حساب (${username}) نهائياً؟`)) return;
   globalUsers = globalUsers.filter(u => u.Username !== username);
+  try { localStorage.setItem('rmf_users_cache', JSON.stringify(globalUsers)); } catch (e) {}
   populateUsersDropdown(globalUsers);
   renderUsersTable();
   safePost({

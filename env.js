@@ -3,7 +3,7 @@
  * Environment & Wildlife Hazard Control Module (env.js)
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
+window.API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
 const ENV_CLASSIFICATIONS = [
   "ثعبان",
@@ -93,7 +93,27 @@ function getEnvActorName() {
   return document.getElementById('envDailyInspector')?.value?.trim() || 'ENV Officer';
 }
 
+function initEnvSection() {
+  try {
+    const uObj = (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) ? currentLoggedInUser : JSON.parse(sessionStorage.getItem('rmf_user') || 'null');
+    const r = (uObj && uObj.Role ? uObj.Role : '').toLowerCase();
+    const backBtn = document.getElementById('envBackMainBtn');
+    if (backBtn) backBtn.style.display = r.includes('admin') ? 'inline-flex' : 'none';
+  } catch (e) {}
+  try {
+    const dCache = localStorage.getItem('rmf_env_daily');
+    if (dCache) globalEnvDaily = JSON.parse(dCache) || [];
+    const mCache = localStorage.getItem('rmf_env_monthly');
+    if (mCache) globalEnvMonthly = JSON.parse(mCache) || {};
+  } catch (e) {}
+  renderSavedEnvDaily();
+  updateEnvNavCounter();
+  loadEnvMonthlyForm();
+  syncEnvFromServer();
+}
+
 function envLogout() {
+  if (typeof logout === 'function') { logout(); return; }
   try { sessionStorage.removeItem('rmf_user'); } catch (e) {}
   window.location.href = 'index.html';
 }
@@ -117,7 +137,7 @@ function syncEnvFromServer() {
     } catch (err) {} finally { delete window[cb]; }
   };
   const s = document.createElement('script');
-  s.src = API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
+  s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
@@ -239,7 +259,7 @@ function submitEnvDailyInspection(e) {
   const btn = document.getElementById('submitEnvDailyBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
 
-  fetch(API_URL, {
+  fetch(window.API_URL, {
     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action: isEnvEditMode ? 'updateENVDaily' : 'submitENVDaily', performedBy: getEnvActorName(), reportData: repObj })
   }).finally(() => {
@@ -335,7 +355,7 @@ function deleteEnvDailyRecord(idx) {
   globalEnvDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
   renderSavedEnvDaily();
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteENVDaily', performedBy: getEnvActorName(), id: delId }) });
+  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteENVDaily', performedBy: getEnvActorName(), id: delId }) });
 }
 
 function generateEnvDailyPrintView(specificRep) {
@@ -617,7 +637,7 @@ function saveEnvMonthlyReport() {
   globalEnvMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_env_monthly', JSON.stringify(globalEnvMonthly)); } catch (e) {}
 
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveENVMonthly', performedBy: getEnvActorName(), monthlyData: obj }) }).finally(() => {
+  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveENVMonthly', performedBy: getEnvActorName(), monthlyData: obj }) }).finally(() => {
     alert("✅ تم حفظ بيانات التقرير الشهري للبيئة والحياة البرية بنجاح!");
     document.getElementById('envExtractMonth').value = mStr;
     switchEnvMonthlySubTab('extract');
@@ -733,6 +753,6 @@ async function sendEnvMonthlyEmail() {
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
   const cvs = await html2canvas(el, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
   const imgData = cvs.toDataURL('image/jpeg', 0.85);
-  await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم البيئة والحياة البرية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم البيئة ومكافحة مخاطر الحياة البرية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `ENV_Report_${mStr}.jpg` }) });
+  await fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم البيئة والحياة البرية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم البيئة ومكافحة مخاطر الحياة البرية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `ENV_Report_${mStr}.jpg` }) });
   alert("✅ تم إرسال التقرير بالإيميل بنجاح!");
 }

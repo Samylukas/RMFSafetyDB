@@ -3,7 +3,7 @@
  * Airport Phone Directory Module (directory.js)
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
+window.API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 const CACHE_KEY = "rmf_phone_directory_cache";
 
 let isDirAdmin = false;
@@ -11,6 +11,9 @@ let directoryData = [];
 let currentActorName = "Admin";
 
 function getSessionUserObj() {
+  if (typeof currentLoggedInUser !== "undefined" && currentLoggedInUser && currentLoggedInUser.Username) {
+    return currentLoggedInUser;
+  }
   try {
     const s = sessionStorage.getItem("rmf_user");
     return s ? JSON.parse(s) : null;
@@ -19,7 +22,22 @@ function getSessionUserObj() {
   }
 }
 
+function initDirectorySection() {
+  updateConnectionStatus();
+  const uObj = getSessionUserObj();
+  const unlockBtn = document.getElementById("admin-unlock-btn");
+  if (uObj && uObj.Username) {
+    currentActorName = uObj.Username;
+    const role = (uObj.Role || "").toLowerCase();
+    if (unlockBtn) unlockBtn.style.display = role.includes("admin") ? "inline-flex" : "none";
+  } else {
+    if (unlockBtn) unlockBtn.style.display = "none";
+  }
+  loadData(false);
+}
+
 function dirLogout() {
+  if (typeof logout === "function") { logout(); return; }
   try { sessionStorage.removeItem("rmf_user"); } catch (e) {}
   window.location.href = "index.html";
 }
@@ -168,7 +186,7 @@ function loadData(isRefresh = false) {
   };
 
   const s = document.createElement("script");
-  s.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
+  s.src = window.API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
   s.onerror = () => {
     delete window[cb];
     if (!cachedData) {
@@ -342,7 +360,7 @@ async function saveRecord() {
   document.getElementById("table-body").innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والمزامنة وتسجيل الحركة...</td></tr>';
 
   try {
-    await fetch(API_URL, {
+    await fetch(window.API_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -375,7 +393,7 @@ async function deleteRecord(id) {
   document.getElementById("table-body").innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحذف...</td></tr>';
 
   try {
-    await fetch(API_URL, {
+    await fetch(window.API_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },

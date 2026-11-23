@@ -7,7 +7,7 @@
   <link rel="preload" as="image" href="LOGO-removebg-preview (1).png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2026.2">
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -58,12 +58,12 @@
             <h3 class="dept-title">إدارة سلامة المطارات</h3>
             <div class="dept-subtitle">Airport Safety Department</div>
         </div>
-        <div class="dept-card" onclick="window.location.href='osh.html'" style="border-top:4px solid #fd7e14;">
+        <div class="dept-card" onclick="openOshSection()" style="border-top:4px solid #fd7e14;">
             <i class="fa-solid fa-helmet-safety dept-icon" style="color:#fd7e14;"></i>
             <h3 class="dept-title">السلامة والصحة المهنية</h3>
             <div class="dept-subtitle">Occupational Safety & Health</div>
         </div>
-        <div class="dept-card" onclick="window.location.href='env.html'" style="border-top:4px solid #28a745;">
+        <div class="dept-card" onclick="openEnvSection()" style="border-top:4px solid #28a745;">
             <i class="fa-solid fa-dove dept-icon" style="color:#28a745;"></i>
             <h3 class="dept-title">البيئة والحياة البرية</h3>
             <div class="dept-subtitle">Environment & Wildlife</div>
@@ -77,7 +77,7 @@
 
     <!-- الصف الثاني: التقرير المجمع وجدول الرحلات ودليل الهاتف -->
     <div class="main-tools-row">
-        <div class="dept-card" onclick="window.location.href='general-report.html'" style="border-top:4px solid #e67e22;background:linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);">
+        <div class="dept-card" onclick="openGeneralReportSection()" style="border-top:4px solid #e67e22;background:linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);">
             <i class="fa-solid fa-folder-tree dept-icon" style="color:#e67e22;"></i>
             <h3 class="dept-title">التقرير الشهري المجمع للإدارة العامة</h3>
             <div class="dept-subtitle">Consolidated General Report</div>
@@ -87,7 +87,7 @@
             <h3 class="dept-title">جدول الرحلات</h3>
             <div class="dept-subtitle">Flight Schedule</div>
         </div>
-        <div class="dept-card" onclick="window.location.href='directory.html'" style="border-top:4px solid #17a2b8;">
+        <div class="dept-card" onclick="openDirectorySection()" style="border-top:4px solid #17a2b8;">
             <i class="fa-solid fa-phone-volume dept-icon" style="color:#17a2b8;"></i>
             <h3 class="dept-title">دليل هاتف المطار</h3>
             <div class="dept-subtitle">Airport Phone Directory</div>
@@ -106,7 +106,7 @@
         <div class="sub-card" onclick="openSection('monthly-report-section')" style="border-top: 4px solid #6f42c1;"><i class="fa-solid fa-file-invoice sub-icon" style="color:#6f42c1;"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
         <div class="sub-card" onclick="openSection('fod-section')" style="border-top: 4px solid #fd7e14;"><i class="fa-solid fa-circle-exclamation sub-icon" style="color:#fd7e14;"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
         <div class="sub-card" onclick="openSection('quarterly-inspection-section')" style="border-top: 4px solid #20c997;"><i class="fa-solid fa-magnifying-glass-chart sub-icon" style="color:#20c997;"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarterly Airside Inspection</div></div>
-        <div class="sub-card" onclick="window.location.href='directory.html'" style="border-top: 4px solid #6c757d;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6c757d;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
+        <div class="sub-card" onclick="openDirectorySection()" style="border-top: 4px solid #6c757d;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6c757d;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
     </div>
 </div>
 
@@ -252,6 +252,529 @@
   </div>
 </div>
 
+
+<!-- ================== osh-section ================== -->
+<div id="osh-section" class="content-area" style="display:none;">
+<h1 style="color:#fd7e14;text-align:center;font-weight:900;font-size:2rem;margin-bottom:5px;">
+    إدارة السلامة والصحة المهنية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Occupational Safety & Health Department (OSH)</span>
+  </h1>
+
+  <!-- التبويبان الرئيسيان -->
+  <div style="display:flex;gap:12px;justify-content:center;margin:20px auto;max-width:750px;flex-wrap:wrap;">
+    <button type="button" id="osh-main-tab-daily" onclick="switchOshMainTab('daily')" style="flex:1;min-width:220px;padding:14px 20px;background:#fd7e14;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;box-shadow:0 4px 12px rgba(253,126,20,0.28);font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-clipboard-check"></i> 01 - الفحص اليومي والمرور الدوري (OSH)
+    </button>
+    <button type="button" id="osh-main-tab-monthly" onclick="switchOshMainTab('monthly')" style="flex:1;min-width:220px;padding:14px 20px;background:#6c757d;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-file-invoice"></i> 02 - التقرير الشهري للسلامة والصحة المهنية
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 01. الفحص اليومي للسلامة والصحة المهنية -->
+  <!-- ========================================================================= -->
+  <div id="osh-view-daily">
+    <div class="nav-controls">
+      <button type="button" class="new-btn" style="background:#fd7e14;" onclick="clearOshDailyForm()"><i class="fa-solid fa-plus"></i> جولة تفتيش جديدة</button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('first')"><i class="fa-solid fa-angles-right"></i></button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('prev')"><i class="fa-solid fa-angle-right"></i></button>
+      <div class="nav-counter" id="nav-osh-daily-counter">0 / 0</div>
+      <button type="button" class="nav-btn" onclick="navOshDaily('next')"><i class="fa-solid fa-angle-left"></i></button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('last')"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchOshDailySubTab('entry')" id="btn-osh-daily-entry"><i class="fa-solid fa-pen-to-square"></i> نموذج الفحص اليومي (إدخال)</button>
+        <button class="tab-btn" onclick="switchOshDailySubTab('report')" id="btn-osh-daily-report"><i class="fa-solid fa-file-contract"></i> الجولات المحفوظة وطباعة بيان الفحص</button>
+      </div>
+
+      <!-- إدخال الفحص اليومي -->
+      <div id="tab-osh-daily-entry" class="tab-content active">
+        <form id="oshDailyForm" onsubmit="event.preventDefault(); submitOshDailyInspection(event);">
+          <div class="form-grid" style="background:#fff8f1;padding:15px;border-radius:8px;border:1.5px solid #fd7e14;margin-bottom:20px;">
+            <div class="form-group"><label>التاريخ:</label><input type="date" id="oshDailyDate" required></div>
+            <div class="form-group"><label>الوقت:</label><input type="time" id="oshDailyTime" required></div>
+            <div class="form-group"><label>الوردية:</label><select id="oshDailyShift"><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option></select></div>
+            <div class="form-group"><label>نطاق التفتيش:</label>
+              <select id="oshDailyScope">
+                <option value="مرور يومي عام على مرافق المطار">مرور يومي عام على مرافق المطار</option>
+                <option value="الفحص الدوري لطفايات الحريق وصناديق الإطفاء">الفحص الدوري لطفايات الحريق وصناديق الإطفاء</option>
+                <option value="تفتيش محطات الكهرباء واللوحات الفرعية">تفتيش محطات الكهرباء واللوحات الفرعية</option>
+                <option value="تفتيش صالات السفر والوصول والأسواق الحرة">تفتيش صالات السفر والوصول والأسواق الحرة</option>
+                <option value="تفتيش الورش والمخازن وساحات الانتظار">تفتيش الورش والمخازن وساحات الانتظار</option>
+              </select>
+            </div>
+            <div class="form-group"><label>القائم بالتفتيش (مفتش OSH):</label><input type="text" id="oshDailyInspector" required placeholder="اسم مسئول السلامة والصحة المهنية..."></div>
+          </div>
+
+          <!-- قائمة بنود الفحص اليومي القياسية -->
+          <h3 style="color:#003366;margin-bottom:10px;font-size:1.1rem;"><i class="fa-solid fa-list-check"></i> قائمة فحص السلامة والصحة المهنية (حدد البند في حال وجود مخالفة):</h3>
+          <div id="osh-checklist-grid" class="osh-check-grid"></div>
+
+          <!-- جدول حالات عدم المطابقة التفصيلية -->
+          <div style="border:1.5px solid #003366;border-radius:8px;overflow:hidden;margin-top:20px;margin-bottom:20px;background:#fff;">
+            <div style="background:#003366;color:#fff;padding:10px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <span>حالات عدم المطابقة والمخاطر المرصودة خلال الجولة</span>
+              <button type="button" onclick="addOshFindingRow()" style="background:#fd7e14;color:#fff;border:none;padding:5px 14px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:12px;">
+                <i class="fa-solid fa-plus"></i> إضافة مخالفة يدوياً
+              </button>
+            </div>
+            <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table class="report-table" style="width:100%;min-width:850px;margin:0;font-size:11.5px;">
+                <thead>
+                  <tr>
+                    <th style="width:28%;">وصف الخطر / الحالة غير المطابقة</th>
+                    <th style="width:15%;">المكان / الموقع</th>
+                    <th style="width:14%;">تصنيف الخطر</th>
+                    <th style="width:14%;">الجهة المسئولة</th>
+                    <th style="width:16%;">الإجراء التصحيحي المتخذ</th>
+                    <th style="width:9%;">الحالة</th>
+                    <th style="width:4%;">حذف</th>
+                  </tr>
+                </thead>
+                <tbody id="osh-findings-entry-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <button type="button" onclick="submitOshDailyInspection(event)" class="submit-btn" id="submitOshDailyBtn" style="background-color:#fd7e14;font-size:1.05rem;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> حفظ جولة السلامة والصحة المهنية
+          </button>
+          <p id="oshDailyMsg" style="text-align:center;margin-top:12px;font-weight:bold;"></p>
+        </form>
+      </div>
+
+      <!-- الجولات المحفوظة وطباعة البيان اليومي -->
+      <div id="tab-osh-daily-report" class="tab-content">
+        <div class="report-wrapper" style="margin-top:10px;margin-bottom:25px;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <h3 style="color:#fd7e14;margin-bottom:12px;">الجولات اليومية المسجلة للسلامة والصحة المهنية:</h3>
+          <table class="report-table rtl-table" dir="rtl" style="min-width:650px;">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>الوردية</th>
+                <th>نطاق التفتيش</th>
+                <th>المفتش</th>
+                <th>حالة الجولة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="saved-osh-daily-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="report-filters" style="border-top:2px solid #eee;padding-top:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group"><label>اختر تاريخ البيان للطباعة:</label><input type="date" id="oshPrintDate"></div>
+          <button type="button" onclick="generateOshDailyPrintView()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;"><i class="fa-solid fa-eye"></i> عرض البيان الرسمي</button>
+          <button type="button" onclick="exportOshDailyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;"><i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)</button>
+          <button type="button" onclick="exportOshDailyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;"><i class="fa-solid fa-file-pdf"></i> طباعة / PDF</button>
+        </div>
+
+        <div id="printable-osh-daily-report" style="display:none;background:#fff;padding:22px;margin-top:20px;border:2px solid #000;direction:rtl;color:#000;font-family:'Cairo',Arial,sans-serif;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 02. التقرير الشهري للسلامة والصحة المهنية -->
+  <!-- ========================================================================= -->
+  <div id="osh-view-monthly" style="display:none;">
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchOshMonthlySubTab('data')" id="btn-osh-monthly-data"><i class="fa-solid fa-database"></i> 1- بيانات التقرير الشهري (إدخال وحفظ)</button>
+        <button class="tab-btn" onclick="switchOshMonthlySubTab('extract')" id="btn-osh-monthly-extract"><i class="fa-solid fa-file-export"></i> 2- استخراج التقرير الشهري (معاينة وتصدير)</button>
+      </div>
+
+      <!-- 1. بيانات التقرير الشهري -->
+      <div id="tab-osh-monthly-data" class="tab-content active">
+        <div style="background:#fff8f1;padding:15px;border-radius:8px;border:1.5px solid #fd7e14;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="min-width:180px;">
+            <label style="font-weight:bold;color:#003366;">شهر التقرير:</label>
+            <input type="month" id="oshMonthlyMonth" onchange="loadOshMonthlyForm()">
+          </div>
+          <div class="form-group" style="min-width:200px;">
+            <label style="font-weight:bold;color:#003366;">إعداد (مسئول السلامة والصحة المهنية):</label>
+            <input type="text" id="oshMonthlyPreparedBy" placeholder="اسم المعد...">
+          </div>
+          <button type="button" onclick="autoPopulateOshMonthly()" class="submit-btn" style="width:auto;padding:10px 16px;background:#17a2b8;margin:0;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> تجميع البيانات تلقائياً من الفحص اليومي
+          </button>
+        </div>
+
+        <div id="osh-monthly-form-container"></div>
+
+        <button type="button" onclick="saveOshMonthlyReport()" id="saveOshMonthlyBtn" class="submit-btn" style="background:#28a745;margin-top:20px;font-size:1.05rem;">
+          <i class="fa-solid fa-floppy-disk"></i> حفظ وإثبات بيانات التقرير الشهري (OSH)
+        </button>
+        <p id="oshMonthlyMsg" style="text-align:center;margin-top:10px;font-weight:bold;"></p>
+      </div>
+
+      <!-- 2. استخراج التقرير الشهري -->
+      <div id="tab-osh-monthly-extract" class="tab-content">
+        <div class="report-filters" style="background:#f0f8ff;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group">
+            <label style="font-weight:bold;color:#003366;">اختر الشهر لاستخراج التقرير:</label>
+            <input type="month" id="oshExtractMonth">
+          </div>
+          <button type="button" onclick="generateOshMonthlyPreview()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;">
+            <i class="fa-solid fa-eye"></i> عرض التقرير الشهري
+          </button>
+          <button type="button" onclick="exportOshMonthlyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;">
+            <i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)
+          </button>
+          <button type="button" onclick="exportOshMonthlyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;">
+            <i class="fa-solid fa-file-pdf"></i> طباعة / PDF
+          </button>
+          <button type="button" onclick="sendOshMonthlyEmail()" class="submit-btn" style="width:auto;padding:10px 18px;background:#f39c12;">
+            <i class="fa-solid fa-envelope"></i> إرسال بالإيميل
+          </button>
+        </div>
+
+        <div id="printable-osh-monthly-report" style="display:none;background:#fff;padding:0;margin-top:20px;direction:rtl;color:#000;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== env-section ================== -->
+<div id="env-section" class="content-area" style="display:none;">
+<h1 style="color:#28a745;text-align:center;font-weight:900;font-size:2rem;margin-bottom:5px;">
+    إدارة البيئة ومكافحة مخاطر الحياة البرية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Environment & Wildlife Hazard Control Department</span>
+  </h1>
+
+  <!-- التبويبان الرئيسيان -->
+  <div style="display:flex;gap:12px;justify-content:center;margin:20px auto;max-width:750px;flex-wrap:wrap;">
+    <button type="button" id="env-main-tab-daily" onclick="switchEnvMainTab('daily')" style="flex:1;min-width:220px;padding:14px 20px;background:#28a745;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;box-shadow:0 4px 12px rgba(40,167,69,0.28);font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-dove"></i> 01 - التفتيش اليومي للبيئة وأماكن الجذب
+    </button>
+    <button type="button" id="env-main-tab-monthly" onclick="switchEnvMainTab('monthly')" style="flex:1;min-width:220px;padding:14px 20px;background:#6c757d;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-file-invoice"></i> 02 - التقرير الشهري للبيئة والحياة البرية
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 01. التفتيش اليومي للبيئة وأماكن الجذب -->
+  <!-- ========================================================================= -->
+  <div id="env-view-daily">
+    <div class="nav-controls">
+      <button type="button" class="new-btn" style="background:#28a745;" onclick="clearEnvDailyForm()"><i class="fa-solid fa-plus"></i> تفتيش بيئي جديد</button>
+      <button type="button" class="nav-btn" onclick="navEnvDaily('first')"><i class="fa-solid fa-angles-right"></i></button>
+      <button type="button" class="nav-btn" onclick="navEnvDaily('prev')"><i class="fa-solid fa-angle-right"></i></button>
+      <div class="nav-counter" id="nav-env-daily-counter">0 / 0</div>
+      <button type="button" class="nav-btn" onclick="navEnvDaily('next')"><i class="fa-solid fa-angle-left"></i></button>
+      <button type="button" class="nav-btn" onclick="navEnvDaily('last')"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchEnvDailySubTab('entry')" id="btn-env-daily-entry"><i class="fa-solid fa-pen-to-square"></i> نموذج التفتيش اليومي (إدخال)</button>
+        <button class="tab-btn" onclick="switchEnvDailySubTab('report')" id="btn-env-daily-report"><i class="fa-solid fa-file-contract"></i> السجلات المحفوظة وطباعة بيان التفتيش</button>
+      </div>
+
+      <!-- إدخال التفتيش اليومي -->
+      <div id="tab-env-daily-entry" class="tab-content active">
+        <form id="envDailyForm" onsubmit="event.preventDefault(); submitEnvDailyInspection(event);">
+          <div class="form-grid" style="background:#f0fff4;padding:15px;border-radius:8px;border:1.5px solid #28a745;margin-bottom:20px;">
+            <div class="form-group"><label>تاريخ التفتيش:</label><input type="date" id="envDailyDate" required></div>
+            <div class="form-group"><label>وقت بداية التفتيش:</label><input type="time" id="envDailyTime" required></div>
+            <div class="form-group"><label>الفترة:</label><select id="envDailyShift"><option value="نهاراً">نهاراً</option><option value="ليلاً">ليلاً</option></select></div>
+            <div class="form-group"><label>نوع التفتيش:</label>
+              <select id="envDailyType">
+                <option value="التفتيش اليومي للبيئة ومكافحة مخاطر الحياة البرية">التفتيش اليومي للبيئة ومكافحة مخاطر الحياة البرية</option>
+                <option value="التفتيش اليومي على أماكن رصد وجذب الطيور داخل وخارج المهبط">التفتيش اليومي على أماكن رصد وجذب الطيور داخل وخارج المهبط</option>
+              </select>
+            </div>
+            <div class="form-group"><label>القائم بالأعمال:</label><input type="text" id="envDailyInspector" value="أحمد إسماعيل محمد" required></div>
+          </div>
+
+          <datalist id="envLocationsList">
+            <option value="سور المهبط"></option>
+            <option value="شركة توتال"></option>
+            <option value="الدوار الخارجي للمطار"></option>
+            <option value="المبنى الإداري"></option>
+            <option value="مبنى الصالات"></option>
+            <option value="مبنى الحماية المدنية"></option>
+            <option value="أمام مبنى 7 الهندسية"></option>
+            <option value="منطقة التحركات الجوية"></option>
+            <option value="صالة الوصول الدولي"></option>
+            <option value="منطقة انتظار السيارات"></option>
+            <option value="مبنى 17"></option>
+            <option value="مكتب مصر للطيران للأسواق الحرة"></option>
+            <option value="الدوار الداخلي للمطار"></option>
+            <option value="سطح الصالة"></option>
+            <option value="أمام مبنى رقم 14"></option>
+            <option value="أمام مبنى رقم (12-D)"></option>
+            <option value="منطقة انتظار المعدات بالمهبط"></option>
+            <option value="كابينة برج المراقبة الجوية"></option>
+            <option value="مبنى تجميع النفايات بالمهبط"></option>
+            <option value="محطة المعالجة"></option>
+          </datalist>
+
+          <!-- جدول الحالات المرصودة -->
+          <div style="border:1.5px solid #003366;border-radius:8px;overflow:hidden;margin-bottom:20px;background:#fff;">
+            <div style="background:#003366;color:#fff;padding:10px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <span>جدول رصد الحالات البيئية ومكافحة مخاطر الحياة البرية</span>
+              <button type="button" onclick="addEnvFindingRow()" style="background:#28a745;color:#fff;border:none;padding:5px 14px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:12px;">
+                <i class="fa-solid fa-plus"></i> إضافة حالة / ملاحظة بيئية
+              </button>
+            </div>
+            <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table class="report-table" style="width:100%;min-width:950px;margin:0;font-size:11.5px;">
+                <thead>
+                  <tr>
+                    <th style="width:24%;">وصف الحالات غير المطابقة</th>
+                    <th style="width:14%;">المكان</th>
+                    <th style="width:14%;">تصنيف الحالة / الواقعة</th>
+                    <th style="width:13%;">الجهة / الإدارة المسئولة</th>
+                    <th style="width:10%;">رقم الإجراء (PA)</th>
+                    <th style="width:15%;">الإجراء التصحيحي / الوقائي المتخذ</th>
+                    <th style="width:6%;">الحالة</th>
+                    <th style="width:4%;">حذف</th>
+                  </tr>
+                </thead>
+                <tbody id="env-findings-entry-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <button type="button" onclick="submitEnvDailyInspection(event)" class="submit-btn" id="submitEnvDailyBtn" style="background-color:#28a745;font-size:1.05rem;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة
+          </button>
+          <p id="envDailyMsg" style="text-align:center;margin-top:12px;font-weight:bold;"></p>
+        </form>
+      </div>
+
+      <!-- السجلات المحفوظة وطباعة البيان اليومي -->
+      <div id="tab-env-daily-report" class="tab-content">
+        <div class="report-wrapper" style="margin-top:10px;margin-bottom:25px;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <h3 style="color:#28a745;margin-bottom:12px;">سجلات التفتيش اليومي للبيئة والحياة البرية:</h3>
+          <table class="report-table rtl-table" dir="rtl" style="min-width:650px;">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>الفترة</th>
+                <th>نوع التفتيش</th>
+                <th>القائم بالأعمال</th>
+                <th>حالة الرصد</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="saved-env-daily-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="report-filters" style="border-top:2px solid #eee;padding-top:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group"><label>اختر تاريخ البيان للطباعة:</label><input type="date" id="envPrintDate"></div>
+          <button type="button" onclick="generateEnvDailyPrintView()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;"><i class="fa-solid fa-eye"></i> عرض البيان الرسمي</button>
+          <button type="button" onclick="exportEnvDailyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;"><i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)</button>
+          <button type="button" onclick="exportEnvDailyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;"><i class="fa-solid fa-file-pdf"></i> طباعة / PDF</button>
+        </div>
+
+        <div id="printable-env-daily-report" style="display:none;background:#fff;padding:22px;margin-top:20px;border:2px solid #000;direction:rtl;color:#000;font-family:'Cairo',Arial,sans-serif;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 02. التقرير الشهري للبيئة والحياة البرية -->
+  <!-- ========================================================================= -->
+  <div id="env-view-monthly" style="display:none;">
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchEnvMonthlySubTab('data')" id="btn-env-monthly-data"><i class="fa-solid fa-database"></i> 1- بيانات التقرير الشهري (إدخال وحفظ)</button>
+        <button class="tab-btn" onclick="switchEnvMonthlySubTab('extract')" id="btn-env-monthly-extract"><i class="fa-solid fa-file-export"></i> 2- استخراج التقرير الشهري (معاينة وتصدير)</button>
+      </div>
+
+      <div id="tab-env-monthly-data" class="tab-content active">
+        <div style="background:#f0fff4;padding:15px;border-radius:8px;border:1.5px solid #28a745;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="min-width:180px;">
+            <label style="font-weight:bold;color:#003366;">شهر التقرير:</label>
+            <input type="month" id="envMonthlyMonth" onchange="loadEnvMonthlyForm()">
+          </div>
+          <div class="form-group" style="min-width:200px;">
+            <label style="font-weight:bold;color:#003366;">إعداد (رئيس قسم البيئة والحياة البرية):</label>
+            <input type="text" id="envMonthlyPreparedBy" value="أحمد إسماعيل محمد">
+          </div>
+          <button type="button" onclick="autoPopulateEnvMonthly()" class="submit-btn" style="width:auto;padding:10px 16px;background:#17a2b8;margin:0;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> تجميع البيانات تلقائياً من التفتيش اليومي
+          </button>
+        </div>
+
+        <div id="env-monthly-form-container"></div>
+
+        <button type="button" onclick="saveEnvMonthlyReport()" id="saveEnvMonthlyBtn" class="submit-btn" style="background:#28a745;margin-top:20px;font-size:1.05rem;">
+          <i class="fa-solid fa-floppy-disk"></i> حفظ وإثبات بيانات التقرير الشهري للبيئة
+        </button>
+        <p id="envMonthlyMsg" style="text-align:center;margin-top:10px;font-weight:bold;"></p>
+      </div>
+
+      <div id="tab-env-monthly-extract" class="tab-content">
+        <div class="report-filters" style="background:#f0f8ff;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group">
+            <label style="font-weight:bold;color:#003366;">اختر الشهر لاستخراج التقرير:</label>
+            <input type="month" id="envExtractMonth">
+          </div>
+          <button type="button" onclick="generateEnvMonthlyPreview()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;">
+            <i class="fa-solid fa-eye"></i> عرض التقرير الشهري
+          </button>
+          <button type="button" onclick="exportEnvMonthlyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;">
+            <i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)
+          </button>
+          <button type="button" onclick="exportEnvMonthlyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;">
+            <i class="fa-solid fa-file-pdf"></i> طباعة / PDF
+          </button>
+          <button type="button" onclick="sendEnvMonthlyEmail()" class="submit-btn" style="width:auto;padding:10px 18px;background:#f39c12;">
+            <i class="fa-solid fa-envelope"></i> إرسال بالإيميل
+          </button>
+        </div>
+
+        <div id="printable-env-monthly-report" style="display:none;background:#fff;padding:0;margin-top:20px;direction:rtl;color:#000;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== general-report-section ================== -->
+<div id="general-report-section" class="content-area" style="display:none;">
+<h1 style="color:#003366;text-align:center;font-weight:900;font-size:1.95rem;margin-bottom:8px;">
+    التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة <br><span style="font-size:1.05rem;color:#777;font-family:sans-serif;">Consolidated General Department Monthly Report</span>
+  </h1>
+
+  <!-- لوحة التحكم وإعداد التقرير المجمع -->
+  <div class="survey-container" style="margin-bottom:22px;">
+    <div class="form-grid" style="background:#f0f4f8;padding:15px;border-radius:8px;border:1.5px solid #003366;">
+      <div class="form-group">
+        <label>اختر شهر التقرير:</label>
+        <input type="month" id="grMonth">
+      </div>
+      <div class="form-group">
+        <label>مدير إدارة السلامة والمطابقة:</label>
+        <input type="text" id="grManagerName" value="محمد محمد مرسي">
+      </div>
+    </div>
+
+    <!-- الملاحظات العامة والأنشطة المشتركة على الإدارة ككل -->
+    <div style="border:1.5px solid #17a2b8;border-radius:8px;overflow:hidden;margin-bottom:18px;background:#fff;">
+      <div style="background:#17a2b8;color:#fff;padding:8px 14px;font-weight:bold;">
+        <i class="fa-solid fa-building-shield"></i> الملاحظات العامة والأنشطة المشتركة على الإدارة العامة ككل (التفتيشات، دورات التوعية، والاجتماعات):
+      </div>
+      <div style="padding:14px;">
+        <div class="form-grid" style="margin-bottom:10px;">
+          <div class="form-group"><label>تفتيشات السلامة (الشهر السابق):</label><input type="number" id="grGenAuditsPrev" value="0" min="0"></div>
+          <div class="form-group"><label>تفتيشات السلامة (الشهر الحالي):</label><input type="number" id="grGenAuditsCur" value="0" min="0"></div>
+          <div class="form-group"><label>دورات التوعية (الشهر السابق):</label><input type="number" id="grGenCoursesPrev" value="1" min="0"></div>
+          <div class="form-group"><label>دورات التوعية (الشهر الحالي):</label><input type="number" id="grGenCoursesCur" value="2" min="0"></div>
+          <div class="form-group"><label>الاجتماعات العامة (الشهر السابق):</label><input type="number" id="grGenMeetingsPrev" value="1" min="0"></div>
+          <div class="form-group"><label>الاجتماعات العامة (الشهر الحالي):</label><input type="number" id="grGenMeetingsCur" value="2" min="0"></div>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>ملاحظات عامة إضافية على مستوى الإدارة العامة للسلامة والمطابقة ككل:</label>
+          <textarea id="grGenNotesText" class="inc-textarea" style="height:60px;" placeholder="اكتب أي ملاحظات عامة تخص الإدارة ككل (التفتيشات الدورية، برامج التوعية والتدريب، التنسيق مع الجهات الخارجية)...">تم تنفيذ خطة التوعية والتفتيش الدوري على الإدارات والشركات العاملة بالمطار وفقاً للبرنامج الزمني المعتمد.</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- توصيات إدارة السلامة والمطابقة (الصفحة الختامية) -->
+    <div style="border:1.5px solid #e67e22;border-radius:8px;overflow:hidden;margin-bottom:18px;background:#fff;">
+      <div style="background:#e67e22;color:#fff;padding:8px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;">
+        <span>توصيات إدارة السلامة والمطابقة (تظهر في الصفحة الختامية للتقرير):</span>
+        <button type="button" onclick="addGrRecommendationRow()" style="background:#fff;color:#e67e22;border:none;padding:4px 12px;border-radius:4px;font-weight:bold;cursor:pointer;font-size:12px;">+ إضافة توصية</button>
+      </div>
+      <div id="gr-recommendations-box" style="padding:12px;"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button type="button" onclick="generateConsolidatedMonthlyReport()" id="genGrBtn" class="submit-btn" style="width:auto;padding:12px 22px;background:#003366;">
+        <i class="fa-solid fa-layer-group"></i> تجميع وإصدار التقرير الشهري المجمع
+      </button>
+      <button type="button" onclick="exportGrPagesAsImages(this)" class="submit-btn" style="width:auto;padding:12px 20px;background:#28a745;">
+        <i class="fa-solid fa-images"></i> تصدير الصفحات كصور (PNG)
+      </button>
+      <button type="button" onclick="exportGrPDF(this)" class="submit-btn" style="width:auto;padding:12px 20px;background:#d9534f;">
+        <i class="fa-solid fa-file-pdf"></i> طباعة / تصدير PDF
+      </button>
+      <button type="button" onclick="sendGrViaEmail(this)" class="submit-btn" style="width:auto;padding:12px 20px;background:#f39c12;">
+        <i class="fa-solid fa-envelope"></i> إرسال بالإيميل
+      </button>
+    </div>
+  </div>
+
+  <!-- منطقة عرض التقرير المجمع -->
+  <div id="printable-general-report" style="display:none;"></div>
+</div>
+
+<!-- ================== قسم دليل هاتف المطار (Phone Directory Section) ================== -->
+<div id="directory-section" class="content-area" style="display:none;">
+<div class="dir-container">
+  <div class="dir-top-bar">
+    <h2 class="dir-page-title"><i class="fa-solid fa-phone-volume" style="color:#17a2b8;"></i> دليل أرقام الطوارئ والإدارات بالمطار</h2>
+    <div class="status-container" id="connection-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text" style="color: var(--success-green);">متصل (Online)</span>
+    </div>
+  </div>
+
+  <div class="controls-bar">
+    <div class="search-box">
+      <i class="fa-solid fa-search search-icon"></i>
+      <input type="text" id="search-input" placeholder="ابحث بالاسم، الوظيفة، الإدارة، أو الرقم الأرضي/الموبايل..." oninput="filterTable()">
+      <i class="fa-solid fa-times clear-icon" id="clear-search-btn" onclick="clearSearch()" title="مسح البحث"></i>
+    </div>
+
+    <div class="controls-buttons">
+      <button type="button" class="dir-btn btn-refresh" onclick="forceRefreshData()"><i class="fa-solid fa-sync-alt"></i> تحديث</button>
+      <button type="button" class="dir-btn btn-print" onclick="triggerPrint()"><i class="fa-solid fa-print"></i> طباعة</button>
+      <button type="button" class="dir-btn btn-admin-unlock" id="admin-unlock-btn" onclick="enableAdminDirectoryMode()"><i class="fa-solid fa-user-shield"></i> وضع التعديل (Admin)</button>
+      <button type="button" class="dir-btn btn-add" id="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i> إضافة رقم</button>
+      <button type="button" class="dir-btn btn-exit-admin" id="exit-admin-btn" onclick="exitAdminMode()"><i class="fa-solid fa-sign-out-alt"></i> إنهاء التعديل</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="directory-table">
+      <thead>
+        <tr class="print-spacer"><td colspan="6"></td></tr>
+        <tr>
+          <th style="width: 45px;">م</th>
+          <th>الاسم</th>
+          <th>الوظيفة</th>
+          <th>أرضي (EXT)</th>
+          <th>موبايل</th>
+          <th class="action-cell">إجراء</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل بيانات دليل الهاتف...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="dir-modal" id="admin-modal">
+  <div class="dir-modal-content">
+    <h3 id="modal-title" style="color: var(--primary-blue); border-bottom: 1.5px solid #003366; padding-bottom: 8px; font-size: 16px; margin-top: 0;">إضافة رقم جديد</h3>
+    <input type="hidden" id="emp-id">
+    <label>الإدارة / القسم:</label>
+    <input type="text" id="emp-dept" list="dirDeptsList" placeholder="اكتب اسم الإدارة...">
+    <datalist id="dirDeptsList"></datalist>
+    <label>الاسم:</label>
+    <input type="text" id="emp-name" placeholder="اسم الموظف أو الجهة...">
+    <label>الوظيفة:</label>
+    <input type="text" id="emp-role" placeholder="المسمى الوظيفي...">
+    <label>الرقم الأرضي (EXT):</label>
+    <input type="text" id="emp-ext" placeholder="مثال: 4100">
+    <label>رقم الموبايل:</label>
+    <input type="text" id="emp-mobile" placeholder="مثال: 0100 000 0000" oninput="formatMobileInput(this)" maxlength="13">
+    <div style="display: flex; gap: 8px; margin-top: 8px;">
+      <button type="button" class="dir-btn btn-add" style="display: flex; flex: 1; justify-content: center;" onclick="saveRecord()"><i class="fa-solid fa-floppy-disk"></i> حفظ</button>
+      <button type="button" class="dir-btn btn-print" style="background: #6c757d; flex: 1; justify-content: center;" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <div id="quarterly-inspection-section" class="content-area" style="display:none;"><button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button><h1 class="welcome-text" style="margin-bottom:25px;">التفتيش الربع سنوي <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Quarterly Airside Inspection</span></h1><div class="departments-grid" style="max-width:700px;margin:0 auto 30px auto;"><div class="dept-card" onclick="openQuarterlyCompany('ground')" style="border-top:4px solid #003366;"><i class="fa-solid fa-truck-ramp-box dept-icon" style="color:#003366;"></i><h3 class="dept-title">شركة الخدمات الأرضية</h3><div class="dept-subtitle">Ground Handling Company</div></div><div class="dept-card" onclick="openQuarterlyCompany('fuel')" style="border-top:4px solid #e67e22;"><i class="fa-solid fa-gas-pump dept-icon" style="color:#e67e22;"></i><h3 class="dept-title">شركة تموين الوقود</h3><div class="dept-subtitle">Fuel Supply Company</div></div></div><div id="quarterly-company-box" style="display:none;max-width:850px;margin:0 auto;background:#fff;padding:25px;border-radius:10px;border:1px solid #ddd;box-shadow:0 4px 15px rgba(0,0,0,0.06);"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:10px;margin-bottom:20px;"><h3 id="quarterly-company-title" style="color:#003366;margin:0;">تقرير التفتيش</h3><button type="button" onclick="document.getElementById('quarterly-company-box').style.display='none'" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button></div><form id="quarterlyUploadForm" onsubmit="event.preventDefault(); uploadQuarterlyPdf();" style="background:#f8f9fa;padding:15px;border-radius:8px;border:1px dashed #003366;margin-bottom:25px;"><input type="hidden" id="quarterlyCompanyType"><div class="form-grid"><div class="form-group"><label>تاريخ التفتيش:</label><input type="date" id="quarterlyDate" required></div><div class="form-group"><label>الربع السنوي:</label><select id="quarterlyQuarter" required><option value="Q1">الربع الأول (Q1)</option><option value="Q2">الربع الثاني (Q2)</option><option value="Q3">الربع الثالث (Q3)</option><option value="Q4">الربع الرابع (Q4)</option></select></div><div class="form-group"><label>اسم المفتش:</label><input type="text" id="quarterlyInspector" placeholder="اسم مفتش السلامة..." required></div><div class="form-group"><label>ملف التقرير (PDF فقط):</label><input type="file" id="quarterlyPdfFile" accept="application/pdf" required style="padding:6px;background:#fff;"></div></div><button type="submit" class="submit-btn" id="uploadQuarterlyBtn" style="margin-top:15px;background:#003366;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع وحفظ تقرير التفتيش (PDF)</button><p id="quarterlyUploadMsg" style="text-align:center;margin-top:10px;font-weight:bold;"></p></form><h4 style="color:#003366;margin-bottom:10px;">التقارير المرفوعة والمحفوظة:</h4><div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #eee;border-radius:6px;"><table class="report-table rtl-table" style="width:100%;min-width:520px;font-size:11px;margin-bottom:0;"><thead><tr><th>التاريخ</th><th>الربع</th><th>المفتش</th><th>المستند</th><th>إجراء</th></tr></thead><tbody id="quarterly-reports-tbody"></tbody></table></div></div></div>
 
 <div id="captain-survey-section" class="content-area" style="display:none;"><button class="back-btn" onclick="openSection('airport-safety-dashboard')"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button><h1 style="color:var(--primary);text-align:center;font-weight:900;font-size:2rem;">01 - استبيان الكابتن</h1><div class="nav-controls"><button type="button" class="new-btn" onclick="clearFormForNew()"><i class="fa-solid fa-plus"></i> جديد</button><button type="button" class="nav-btn" onclick="navSurveys('first')"><i class="fa-solid fa-angles-right"></i></button><button type="button" class="nav-btn" onclick="navSurveys('prev')"><i class="fa-solid fa-angle-right"></i></button><div class="nav-counter" id="nav-counter" dir="ltr">0 / 0</div><button type="button" class="nav-btn" onclick="navSurveys('next')"><i class="fa-solid fa-angle-left"></i></button><button type="button" class="nav-btn" onclick="navSurveys('last')"><i class="fa-solid fa-angles-left"></i></button></div><div class="survey-container"><div class="tabs-header"><button class="tab-btn active" onclick="switchTab('entry')" id="btn-entry"><i class="fa-solid fa-keyboard"></i> إدخال البيانات</button><button class="tab-btn" onclick="switchTab('report')" id="btn-report"><i class="fa-solid fa-chart-pie"></i> التقارير (Dashboard)</button></div><div id="tab-entry" class="tab-content active"><form id="surveyForm" onsubmit="event.preventDefault(); submitSurvey(event);"><div class="form-grid"><div class="form-group"><label>Registration (REG)</label><div style="display:flex;gap:5px;width:100%;"><div class="custom-dropdown-container"><input type="text" id="reg" dir="ltr" class="custom-dropdown-input" placeholder="اختر للبحث..." required autocomplete="off"><i class="fa-solid fa-chevron-down custom-dropdown-arrow" id="regArrowBtn"></i><div class="custom-dropdown-list" id="regDropdownList"></div></div><button type="button" class="add-btn" onclick="openFleetModal()" style="padding:7px 12px;height:42px;background:var(--primary);color:white;border:none;border-radius:6px;"><i class="fa-solid fa-plus"></i></button></div></div><div class="form-group"><label>Airline NAME (CAR)</label><input type="text" dir="ltr" id="airline" required placeholder="اكتب اسم الشركة..." style="background-color:#fff;text-transform:uppercase;"></div><div class="form-group"><label>Aircraft Type</label><input type="text" dir="ltr" id="acType" required placeholder="طراز الطائرة (B737-800)..." style="background-color:#fff;text-transform:uppercase;"></div><div class="form-group"><label>Flight NO</label><input type="text" dir="ltr" id="fltNo" required placeholder="مثال: MS 184"></div><div class="form-group"><label>Date</label><input type="date" id="capDate" required></div><div class="form-group"><label>Time</label><input type="time" id="capTime"></div></div><div class="eval-section"><div class="eval-grid" id="criteria-container"></div></div><div class="eval-section"><div class="form-group"><label>Captain Comments (ملاحظات الكابتن)</label><textarea id="comments" class="inc-textarea"></textarea></div></div><div style="display:flex;gap:15px;margin-top:15px;"><button type="submit" class="submit-btn" id="submitSurveyBtn" style="flex:2;"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيانات الاستبيان</button><button type="submit" class="submit-btn" id="editSurveyBtn" onclick="enableSurveyEdit()" style="flex:1;background-color:#17a2b8;display:none;"><i class="fa-solid fa-pen-to-square"></i> تعديل</button></div><p id="surveyMsg" style="text-align:center;margin-top:15px;font-weight:bold;"></p></form></div><div id="tab-report" class="tab-content"><div class="report-filters" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;"><div class="form-group"><label>من:</label><input type="date" id="fromDate"></div><div class="form-group"><label>إلى:</label><input type="date" id="toDate"></div><div class="form-group"><label>الشركة (Airline):</label><select id="surveyFilterAirline"><option value="ALL">الكل</option></select></div><div class="form-group"><label>التسجيل (REG):</label><select id="surveyFilterReg"><option value="ALL">الكل</option></select></div><button type="button" onclick="generateModernReport()" class="submit-btn" style="width:auto;padding:10px 20px;"><i class="fa-solid fa-chart-pie"></i> فلترة وإحصائيات</button><button type="button" onclick="exportModernPDF()" class="submit-btn" style="width:auto;background:#d9534f;padding:10px 20px;"><i class="fa-solid fa-file-pdf"></i> تحميل PDF</button></div><div id="printable-report" style="display:none;background:#fff;padding:20px;border-radius:10px;direction:rtl;"><div class="dashboard-header avoid-page-break" style="display:flex;justify-content:space-between;align-items:center;"><div><h2>Safety Captain Survey Dashboard</h2><p id="report-date-range">الفترة: ...</p></div><img src="LOGO-removebg-preview (1).png" alt="Logo" style="height:60px;"></div><div class="stats-cards avoid-page-break" style="display:flex;gap:15px;margin:20px 0;"><div class="stat-card" style="flex:1;background:#003366;color:white;padding:15px;border-radius:8px;text-align:center;"><h3 id="stat-total" style="font-size:2rem;margin:0;">0</h3><p>إجمالي الاستبيانات</p></div><div class="stat-card" style="flex:1;background:#17a2b8;color:white;padding:15px;border-radius:8px;text-align:center;"><h3 id="stat-airlines" style="font-size:2rem;margin:0;">0</h3><p>الشركات المشغلة</p></div><div class="stat-card" style="flex:1;background:#28a745;color:white;padding:15px;border-radius:8px;text-align:center;"><h3 id="stat-excellent" style="font-size:2rem;margin:0;">0%</h3><p>التقييم الممتاز</p></div></div><div class="avoid-page-break" style="margin-bottom:30px;"><div class="charts-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:15px;direction:rtl;"><div class="chart-container" style="background:#fafafa;border:1px solid #ddd;padding:10px;border-radius:8px;height:260px;position:relative;"><canvas id="evalChart"></canvas></div><div class="chart-container" style="background:#fafafa;border:1px solid #ddd;padding:10px;border-radius:8px;height:260px;position:relative;"><canvas id="airlinesChart"></canvas></div><div class="chart-container" style="background:#fafafa;border:1px solid #ddd;padding:10px;border-radius:8px;height:260px;position:relative;"><canvas id="datesChart"></canvas></div></div></div><div class="report-wrapper avoid-page-break" style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="report-table rtl-table" dir="rtl" style="min-width:650px;"><thead><tr><th>الشركة</th><th>الرحلة</th><th>التاريخ</th><th>التسجيل</th><th style="background:#28a745;color:white;">E</th><th style="background:#ffc107;color:black;">G</th><th style="background:#dc3545;color:white;">P</th><th style="background:#6c757d;color:white;">N/A</th><th style="background:#1a2a6c;color:white;">B</th></tr></thead><tbody id="flights-eval-tbody"></tbody></table></div><div id="additional-tables-container" style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;"></div></div></div></div></div>
@@ -366,6 +889,10 @@
     }
   }, 4200);
 </script>
-<script src="script.js"></script>
+<script src="script.js?v=2026.2"></script>
+<script src="osh.js?v=2026.2"></script>
+<script src="env.js?v=2026.2"></script>
+<script src="general-report.js?v=2026.2"></script>
+<script src="directory.js?v=2026.2"></script>
 </body>
 </html>

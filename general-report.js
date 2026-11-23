@@ -3,7 +3,7 @@
  * Consolidated General Department Monthly Report (general-report.js)
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
+window.API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
 const SPI_CONFIG_GR = [
   { category: "Post-crash fires", items: ["Airport firefighting services’ decreased (ICAO Airports firefighting categories)", "Reported inadequate equipment or resources (fire trucks, fire tools, etc.)", "Reported unqualified personnel (firefighters - Airport familiarization)", "Reported unqualified personnel (firefighters - Tactical training)"] },
@@ -60,6 +60,19 @@ let grAppData = {
 
 let grChartInstances = [];
 let grLiveFetchPromise = null;
+
+function initGeneralReportSection() {
+  const curMonth = new Date().toISOString().slice(0, 7);
+  if (document.getElementById('grMonth') && !document.getElementById('grMonth').value) {
+    document.getElementById('grMonth').value = curMonth;
+  }
+  const recBox = document.getElementById('gr-recommendations-box');
+  if (recBox && recBox.children.length === 0) {
+    recBox.innerHTML = DEFAULT_GR_RECOMMENDATIONS.map(r => buildGrRecRow(r)).join('');
+  }
+  loadLocalCachesForGr();
+  fetchLiveAllDataForGr();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const curMonth = new Date().toISOString().slice(0, 7);
@@ -208,7 +221,7 @@ function fetchLiveAllDataForGr() {
       }
     };
     const s = document.createElement('script');
-    s.src = API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
+    s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
     s.onerror = () => { clearTimeout(timer); delete window[cb]; grLiveFetchPromise = null; resolve(false); };
     document.body.appendChild(s);
   });
@@ -223,7 +236,7 @@ function getPrevMonthStr(ms) {
 async function fetchSpiForYearGr(year) {
   const yStr = String(year || '2026');
   try {
-    let res = await fetch(API_URL, {
+    let res = await fetch(window.API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'getSPIData', year: yStr })
@@ -1200,7 +1213,7 @@ async function sendGrViaEmail(btn) {
     await withDesktopReportWidth(el, async () => {
       const cvs = await html2canvas(el, { scale: 1.4, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
       const imgData = cvs.toDataURL('image/jpeg', 0.85);
-      await fetch(API_URL, {
+      await fetch(window.API_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },

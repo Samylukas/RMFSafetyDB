@@ -3,7 +3,7 @@
  * Occupational Safety & Health Module (osh.js)
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
+window.API_URL = window.API_URL || "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
 const OSH_RESPONSIBLE_DEPTS = [
   "الهندسة المدنية",
@@ -132,7 +132,28 @@ function getOshActorName() {
   return document.getElementById('oshDailyInspector')?.value?.trim() || 'OSH Officer';
 }
 
+function initOshSection() {
+  try {
+    const uObj = (typeof currentLoggedInUser !== 'undefined' && currentLoggedInUser) ? currentLoggedInUser : JSON.parse(sessionStorage.getItem('rmf_user') || 'null');
+    const r = (uObj && uObj.Role ? uObj.Role : '').toLowerCase();
+    const backBtn = document.getElementById('oshBackMainBtn');
+    if (backBtn) backBtn.style.display = r.includes('admin') ? 'inline-flex' : 'none';
+  } catch (e) {}
+  try {
+    const dCache = localStorage.getItem('rmf_osh_daily');
+    if (dCache) globalOshDaily = JSON.parse(dCache) || [];
+    const mCache = localStorage.getItem('rmf_osh_monthly');
+    if (mCache) globalOshMonthly = JSON.parse(mCache) || {};
+  } catch (e) {}
+  buildOshChecklist();
+  renderSavedOshDaily();
+  updateOshNavCounter();
+  loadOshMonthlyForm();
+  syncOshFromServer();
+}
+
 function oshLogout() {
+  if (typeof logout === 'function') { logout(); return; }
   try { sessionStorage.removeItem('rmf_user'); } catch (e) {}
   window.location.href = 'index.html';
 }
@@ -156,7 +177,7 @@ function syncOshFromServer() {
     } catch (err) {} finally { delete window[cb]; }
   };
   const s = document.createElement('script');
-  s.src = API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
+  s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
@@ -311,7 +332,7 @@ function submitOshDailyInspection(e) {
   const btn = document.getElementById('submitOshDailyBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
 
-  fetch(API_URL, {
+  fetch(window.API_URL, {
     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action: isOshEditMode ? 'updateOSHDaily' : 'submitOSHDaily', performedBy: getOshActorName(), reportData: repObj })
   }).finally(() => {
@@ -427,7 +448,7 @@ function deleteOshDailyRecord(idx) {
   globalOshDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
   renderSavedOshDaily();
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteOSHDaily', performedBy: getOshActorName(), id: delId }) });
+  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteOSHDaily', performedBy: getOshActorName(), id: delId }) });
 }
 
 function generateOshDailyPrintView(specificRep) {
@@ -671,7 +692,7 @@ function saveOshMonthlyReport() {
   globalOshMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(globalOshMonthly)); } catch (e) {}
 
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveOSHMonthly', performedBy: getOshActorName(), monthlyData: obj }) }).finally(() => {
+  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveOSHMonthly', performedBy: getOshActorName(), monthlyData: obj }) }).finally(() => {
     alert("✅ تم حفظ بيانات التقرير الشهري للسلامة والصحة المهنية بنجاح!");
     document.getElementById('oshExtractMonth').value = mStr;
     switchOshMonthlySubTab('extract');
@@ -756,6 +777,6 @@ async function sendOshMonthlyEmail() {
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
   const cvs = await html2canvas(el, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
   const imgData = cvs.toDataURL('image/jpeg', 0.85);
-  await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `OSH_Report_${mStr}.jpg` }) });
+  await fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `OSH_Report_${mStr}.jpg` }) });
   alert("✅ تم إرسال التقرير بالإيميل بنجاح!");
 }
