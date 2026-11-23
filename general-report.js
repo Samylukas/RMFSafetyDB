@@ -501,7 +501,7 @@ async function generateConsolidatedMonthlyReport() {
     let pDisp = i.isF ? i.p.toFixed(3) + " كجم" : (i.pad ? String(i.p).padStart(2, '0') : i.p.toLocaleString());
     let cDisp = i.isF ? i.c.toFixed(3) + " كجم" : (i.pad ? String(i.c).padStart(2, '0') : i.c.toLocaleString());
     let trend = formatGrTrendBadge(i.c, i.p, i.hb, i.u, i.pad);
-    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${i.l}</td><td dir="ltr">${pDisp}</td><td dir="ltr" style="font-weight:bold;background:#f9fbfd;">${cDisp}</td><td>${trend}</td></tr>`;
+    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${i.l}</td><td dir="ltr" style="white-space:nowrap;">${pDisp}</td><td dir="ltr" style="font-weight:bold;background:#f9fbfd;white-space:nowrap;">${cDisp}</td><td style="white-space:nowrap;">${trend}</td></tr>`;
   }).join('');
 
   const pageAv1 = `
@@ -605,9 +605,9 @@ async function generateConsolidatedMonthlyReport() {
     if (s.Captain_Comments && String(s.Captain_Comments).trim() !== "") cL.push(s);
   });
 
-  let mH = `<table class="gr-tbl" style="direction:ltr;text-align:center;font-size:8.5px;margin-bottom:10px;"><thead><tr><th style="text-align:left;width:40%;">Evaluation Criteria</th><th style="background:#28a745;width:12%;">Excellent</th><th style="background:#ffc107;color:#000;width:12%;">Good</th><th style="background:#dc3545;width:12%;">Poor</th><th style="background:#6c757d;width:12%;">N/A</th><th style="background:#1a2a6c;width:12%;">Blank</th></tr></thead><tbody>`;
+  let mH = `<table class="gr-tbl" style="direction:ltr;text-align:center;font-size:8px;margin-bottom:8px;"><thead><tr><th style="text-align:left;width:40%;">Evaluation Criteria</th><th style="background:#28a745;width:12%;">Excellent</th><th style="background:#ffc107;color:#000;width:12%;">Good</th><th style="background:#dc3545;width:12%;">Poor</th><th style="background:#6c757d;width:12%;">N/A</th><th style="background:#1a2a6c;width:12%;">Blank</th></tr></thead><tbody>`;
   CRITERIA_LIST_GR.forEach(c => {
-    mH += `<tr><td style="padding:2.5px 6px;text-align:left;font-weight:bold;background:#fbfbfb;">${c}</td><td style="padding:2.5px;color:${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'};font-weight:bold;">${mS["Excellent"][c] || 0}</td><td style="padding:2.5px;color:${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'};font-weight:bold;">${mS["Good"][c] || 0}</td><td style="padding:2.5px;color:${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'};font-weight:bold;">${mS["Poor"][c] || 0}</td><td style="padding:2.5px;color:#777;">${mS["N/A"][c] || 0}</td><td style="padding:2.5px;color:#777;">${mS["Blank"][c] || 0}</td></tr>`;
+    mH += `<tr><td style="padding:1.8px 5px;text-align:left;font-weight:bold;background:#fbfbfb;">${c}</td><td style="padding:1.8px;color:${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'};font-weight:bold;">${mS["Excellent"][c] || 0}</td><td style="padding:1.8px;color:${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'};font-weight:bold;">${mS["Good"][c] || 0}</td><td style="padding:1.8px;color:${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'};font-weight:bold;">${mS["Poor"][c] || 0}</td><td style="padding:1.8px;color:#777;">${mS["N/A"][c] || 0}</td><td style="padding:1.8px;color:#777;">${mS["Blank"][c] || 0}</td></tr>`;
   });
   mH += `</tbody></table>`;
 
@@ -625,8 +625,8 @@ async function generateConsolidatedMonthlyReport() {
       ${pageHeaderBanner(5)}
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — خامساً: استبيان الطيارين (Pilot Safety Surveys)</span><span>إجمالي الاستبيانات: ${survCur.length}</span></div>
       <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">مشاركات شركات الطيران</h5><div style="height:160px;"><canvas id="grAvSurveyAirChart"></canvas></div></div>
-        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">توزيع التقييم العام للخدمات</h5><div style="height:160px;"><canvas id="grAvSurveyEvalChart"></canvas></div></div>
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">مشاركات شركات الطيران</h5><div style="height:135px;"><canvas id="grAvSurveyAirChart"></canvas></div></div>
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">توزيع التقييم العام للخدمات</h5><div style="height:135px;"><canvas id="grAvSurveyEvalChart"></canvas></div></div>
       </div>
       <div style="text-align:center;margin-bottom:6px;"><h5 style="color:#003366;margin:0;font-size:11.5px;font-weight:bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5></div>
       ${mH}${cH}
@@ -675,7 +675,7 @@ async function generateConsolidatedMonthlyReport() {
       else badge = `<span style="color:#dc3545;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${r.c} <i class="fa-solid fa-arrow-down"></i></span>`;
       return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${r.p}</td><td style="font-weight:bold;background:#f9fbfd;">${r.c}</td><td>${badge}</td></tr>`;
     }
-    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;">${String(r.c).padStart(2,'0')}</td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`;
+    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td style="white-space:nowrap;">${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;white-space:nowrap;">${String(r.c).padStart(2,'0')}</td><td style="white-space:nowrap;">${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`;
   }).join('');
 
   const pageCd = `
@@ -1012,56 +1012,152 @@ async function generateConsolidatedMonthlyReport() {
   out.scrollIntoView({ behavior: 'smooth' });
 }
 
-async function exportGrPagesAsImages() {
-  const pages = document.querySelectorAll('#printable-general-report .gr-page');
-  if (!pages.length) return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
-  const mStr = document.getElementById('grMonth')?.value || 'Report';
-  for (let i = 0; i < pages.length; i++) {
-    const cvs = await html2canvas(pages[i], { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-    await new Promise(res => {
-      cvs.toBlob(b => {
-        const u = URL.createObjectURL(b);
-        const a = document.createElement('a');
-        a.href = u; a.download = `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`;
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(u); res(); }, 500);
-      }, 'image/png');
-    });
-  }
-  alert("✅ تم تصدير جميع صفحات التقرير المجمع كصور PNG بنجاح!");
+function withDesktopReportWidth(el, fn) {
+  const prevWidth = el.style.width;
+  const prevMaxWidth = el.style.maxWidth;
+  const prevMargin = el.style.margin;
+  el.style.width = '820px';
+  el.style.maxWidth = '820px';
+  el.style.margin = '0 auto';
+  return Promise.resolve().then(fn).finally(() => {
+    el.style.width = prevWidth;
+    el.style.maxWidth = prevMaxWidth;
+    el.style.margin = prevMargin;
+  });
 }
 
-function exportGrPDF() {
+async function exportGrPagesAsImages(btn) {
   const el = document.getElementById('printable-general-report');
-  if (!el || el.style.display === 'none') return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  if (!el || el.style.display === 'none' || !pages.length) {
+    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+  }
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تصدير الصور...'; }
   const mStr = document.getElementById('grMonth')?.value || 'Report';
-  html2pdf().set({
-    margin: 0.2,
-    filename: `General_Department_Monthly_Report_${mStr}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: 'css', after: '.gr-page' }
-  }).from(el).save();
+
+  try {
+    await withDesktopReportWidth(el, async () => {
+      for (let i = 0; i < pages.length; i++) {
+        if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> صفحة ${i + 1} / ${pages.length}...`;
+        const cvs = await html2canvas(pages[i], { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+        await new Promise(res => {
+          cvs.toBlob(b => {
+            if (b) {
+              const u = URL.createObjectURL(b);
+              const a = document.createElement('a');
+              a.href = u;
+              a.download = `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); res(); }, 450);
+            } else res();
+          }, 'image/png');
+        });
+      }
+    });
+    alert(`✅ تم تصدير جميع صفحات التقرير المجمع (${pages.length} صفحات) كصور PNG عالية الدقة بنجاح!`);
+  } catch (err) {
+    console.error(err);
+    alert("حدث خطأ أثناء تصدير الصور.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
 }
 
-async function sendGrViaEmail() {
+async function exportGrPDF(btn) {
+  const el = document.getElementById('printable-general-report');
+  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  if (!el || el.style.display === 'none' || !pages.length) {
+    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+  }
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تجهيز ملف PDF...'; }
+  const mStr = document.getElementById('grMonth')?.value || 'Report';
+
+  try {
+    await withDesktopReportWidth(el, async () => {
+      const JsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+      let pdf = null;
+      if (JsPDFCtor) {
+        pdf = new JsPDFCtor({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+      } else {
+        pdf = await html2pdf().set({ jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } }).from(document.createElement('div')).toPdf().get('pdf');
+      }
+
+      const pdfW = 210;
+      const pdfH = 297;
+      const margin = 6;
+      const maxW = pdfW - margin * 2;
+      const maxH = pdfH - margin * 2;
+
+      for (let i = 0; i < pages.length; i++) {
+        if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> تجهيز PDF (${i + 1} / ${pages.length})...`;
+        const cvs = await html2canvas(pages[i], {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+        const imgData = cvs.toDataURL('image/jpeg', 0.96);
+
+        let imgW = maxW;
+        let imgH = (cvs.height * imgW) / cvs.width;
+        if (imgH > maxH) {
+          imgH = maxH;
+          imgW = (cvs.width * imgH) / cvs.height;
+        }
+        const x = (pdfW - imgW) / 2;
+        const y = margin;
+
+        if (i > 0) pdf.addPage('a4', 'portrait');
+        pdf.addImage(imgData, 'JPEG', x, y, imgW, imgH, undefined, 'FAST');
+      }
+
+      pdf.save(`General_Department_Monthly_Report_${mStr}.pdf`);
+    });
+  } catch (err) {
+    console.error(err);
+    alert("حدث خطأ أثناء إنشاء ملف PDF، يرجى المحاولة مرة أخرى.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
+}
+
+async function sendGrViaEmail(btn) {
   const mStr = document.getElementById('grMonth')?.value;
   const el = document.getElementById('printable-general-report');
-  if (!el || el.style.display === 'none') return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+  if (!el || el.style.display === 'none') {
+    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+  }
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال التقرير بالإيميل...'; }
   const mgrName = document.getElementById('grManagerName')?.value || 'محمد محمد مرسي';
-  const cvs = await html2canvas(el, { scale: 1.3, useCORS: true, backgroundColor: '#ffffff' });
-  const imgData = cvs.toDataURL('image/jpeg', 0.82);
-  await fetch(API_URL, {
-    method: 'POST', mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
-      action: 'sendReportEmail',
-      subject: `التقرير الشهري المجمع لإدارة السلامة والمطابقة - ${mStr}`,
-      htmlBody: `<div dir="rtl"><h2>التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة - ${mStr}</h2><p>إعداد واعتماد: <b>${mgrName}</b> - مدير إدارة السلامة والمطابقة</p><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`,
-      imageData: imgData,
-      imageName: `General_Safety_Report_${mStr}.jpg`
-    })
-  });
-  alert("✅ تم إرسال التقرير الشهري المجمع بالإيميل بنجاح!");
+
+  try {
+    await withDesktopReportWidth(el, async () => {
+      const cvs = await html2canvas(el, { scale: 1.4, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+      const imgData = cvs.toDataURL('image/jpeg', 0.85);
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'sendReportEmail',
+          performedBy: mgrName,
+          subject: `التقرير الشهري المجمع لإدارة السلامة والمطابقة - ${mStr}`,
+          htmlBody: `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;"><h2>التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة - ${mStr}</h2><p>إعداد واعتماد: <b>${mgrName}</b> - مدير إدارة السلامة والمطابقة</p><img src="cid:monthlyReportImage" style="max-width:100%;border:1px solid #ddd;border-radius:8px;"></div>`,
+          imageData: imgData,
+          imageName: `General_Safety_Report_${mStr}.jpg`
+        })
+      });
+    });
+    alert("✅ تم إرسال التقرير الشهري المجمع بالإيميل بنجاح!");
+  } catch (err) {
+    console.error(err);
+    alert("❌ تعذر إرسال الإيميل، يرجى التحقق من الاتصال.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
 }

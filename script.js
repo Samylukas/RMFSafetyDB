@@ -38,6 +38,7 @@ var globalIncidents = [];
 var globalFod = [];
 var globalSpiData = [];
 var globalQuarterlyDocs = { ground: [], fuel: [] };
+var globalAppLogs = [];
 window.globalIncidents = globalIncidents;
 window.globalSpiRecords = window.globalSpiRecords || {};
 
@@ -112,6 +113,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('dailyDate') && !document.getElementById('dailyDate').value) document.getElementById('dailyDate').value = today;
 });
 
+function isCurrentUserAdmin() {
+  const r = (currentLoggedInUser && currentLoggedInUser.Role ? currentLoggedInUser.Role : '').toLowerCase();
+  return r.includes('admin');
+}
+
+function getCurrentActorName() {
+  if (currentLoggedInUser && currentLoggedInUser.Username) return currentLoggedInUser.Username;
+  try {
+    const u = JSON.parse(sessionStorage.getItem('rmf_user') || 'null');
+    if (u && u.Username) return u.Username;
+  } catch (e) {}
+  return 'Admin';
+}
+
 function handleLogoTripleClick() {
   logoTripleClickCounter++;
   if (logoTripleClickCounter === 1) {
@@ -119,6 +134,10 @@ function handleLogoTripleClick() {
   } else if (logoTripleClickCounter === 3) {
     clearTimeout(logoTripleClickTimer);
     logoTripleClickCounter = 0;
+    if (!isCurrentUserAdmin()) {
+      alert('⚠️ هذه الصلاحية مخصصة لمدير النظام (Admin) فقط!');
+      return;
+    }
     openAdminSection('account-management-section');
   }
 }
@@ -169,6 +188,27 @@ function login() {
   if (foundUser) {
     currentLoggedInUser = foundUser;
     try { sessionStorage.setItem('rmf_user', JSON.stringify(foundUser)); } catch (e) {}
+    try {
+      const logEntry = {
+        Timestamp: new Date().toLocaleString('sv-SE', { timeZone: 'Africa/Cairo' }),
+        Action: 'تسجيل دخول للنظام',
+        Status: 'نجاح',
+        Details: `المستخدم: ${foundUser.Username} | الصلاحية: ${foundUser.Role}`
+      };
+      globalAppLogs.unshift(logEntry);
+      try { localStorage.setItem('rmf_app_logs', JSON.stringify(globalAppLogs)); } catch (e) {}
+      fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'logLogin',
+          performedBy: foundUser.Username,
+          username: foundUser.Username,
+          role: foundUser.Role
+        })
+      });
+    } catch (e) {}
     const lS = document.getElementById('login-screen');
     if (lS) lS.style.display = 'none';
     const hdr = document.getElementById('app-header');
@@ -260,7 +300,16 @@ function openSection(sId) {
   }
 }
 
-function openAdminSection(sId) { openSection(sId); }
+function openAdminSection(sId) {
+  if (!isCurrentUserAdmin()) {
+    alert('⚠️ صلاحية مرفوضة: إدارة الحسابات وسجل المراقبة لمدير النظام (Admin) فقط!');
+    return;
+  }
+  openSection(sId);
+  renderUsersTable();
+  renderAppLogs();
+  refreshAppLogs();
+}
 function openGenericDoc(t, bT) {
   genericBackTarget = bT || 'main-dashboard';
   const el = document.getElementById('generic-doc-title');
@@ -283,6 +332,9 @@ function safePost(payload, btn, msgEl, successMsg, callback) {
     btn.disabled = true;
     btn.dataset.originalHtml = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+  }
+  if (payload && typeof payload === 'object' && !payload.performedBy) {
+    payload.performedBy = getCurrentActorName();
   }
   fetch(API_URL, {
     method: 'POST',
@@ -409,7 +461,13 @@ function loadAppDataInit() {
           try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(globalDailyInspections)); } catch (e) {}
         }
 
+        if (Array.isArray(d.logs)) {
+          globalAppLogs = d.logs;
+          try { localStorage.setItem('rmf_app_logs', JSON.stringify(globalAppLogs)); } catch (e) {}
+        }
         populateUsersDropdown(globalUsers);
+        renderUsersTable();
+        renderAppLogs();
         updateSurveyNavCounter();
         renderSavedDaily();
         renderSavedIncidents();
@@ -715,7 +773,7 @@ async function submitSPI(e) {
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'submitSPI', year: year, month: month, movements: movements, spiData: window.globalSpiRecords[year] })
+        body: JSON.stringify({ action: 'submitSPI', performedBy: getCurrentActorName(), year: year, month: month, movements: movements, spiData: window.globalSpiRecords[year] })
       });
     }
   } catch (err) { console.error(err); }
@@ -1679,7 +1737,7 @@ async function saveIncident(e) {
   try {
     await fetch(API_URL, {
       method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: currentIncidentEditId ? "updateIncident" : "submitIncident", incidentData: incObj, fileData: fileData, fileName: fileName, mimeType: mimeType })
+      body: JSON.stringify({ action: currentIncidentEditId ? "updateIncident" : "submitIncident", performedBy: getCurrentActorName(), incidentData: incObj, fileData: fileData, fileName: fileName, mimeType: mimeType })
     });
     if (!globalIncidents) globalIncidents = [];
     let exIdx = globalIncidents.findIndex(x => (x.ID || x.id) === incId);
@@ -1761,7 +1819,7 @@ function renderSavedIncidents() {
 async function deleteIncident(incId) {
   if (!confirm("⚠️ هل أنت متأكد من حذف هذه الواقعة نهائياً من قاعدة البيانات؟")) return;
   try {
-    await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "deleteIncident", id: incId }) });
+    await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "deleteIncident", performedBy: getCurrentActorName(), id: incId }) });
     if (globalIncidents) {
       globalIncidents = globalIncidents.filter(x => (x.ID || x.id) !== incId);
       window.globalIncidents = globalIncidents;
@@ -1976,7 +2034,7 @@ async function uploadQuarterlyPdf() {
     try {
       await fetch(API_URL, {
         method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "uploadQuarterlyDoc", companyType: cType, date: dateVal, quarter: qVal, inspector: inspVal, fileName: file.name, fileData: base64Data, mimeType: "application/pdf" })
+        body: JSON.stringify({ action: "uploadQuarterlyDoc", performedBy: getCurrentActorName(), companyType: cType, date: dateVal, quarter: qVal, inspector: inspVal, fileName: file.name, fileData: base64Data, mimeType: "application/pdf" })
       });
       const newDoc = { date: dateVal, quarter: qVal, inspector: inspVal, name: file.name, url: base64Data };
       if (!globalQuarterlyDocs[cType]) globalQuarterlyDocs[cType] = [];
@@ -2522,7 +2580,7 @@ async function sendReportViaEmail() {
     let hB = `<div dir="rtl" style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;"><h2 style="color: #003366; border-bottom: 2px solid #003366; padding-bottom: 8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2><p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم التقرير الشهري الشامل لمؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}).</p><p>يرجى الاطلاع على صورة التقرير المرفقة أدناه.</p><div style="text-align: center; margin: 20px 0;"><img src="cid:monthlyReportImage" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" alt="التقرير الشهري"></div><p>وتفضلوا بقبول فائق الاحترام والتقدير،،<br><b>مُعِد التقرير:</b> ${prepBy}<br><b>إدارة سلامة المطارات</b><br><b>مطار مرسى علم الدولي</b></p></div>`;
     await fetch(API_URL, {
       method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: "sendReportEmail", subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`, htmlBody: hB, imageData: imgData, imageName: `Airside_Safety_Report_${m}.jpg` })
+      body: JSON.stringify({ action: "sendReportEmail", performedBy: getCurrentActorName(), subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`, htmlBody: hB, imageData: imgData, imageName: `Airside_Safety_Report_${m}.jpg` })
     });
     alert("✅ تم إرسال التقرير الشامل بنجاح إلى إدارة السلامة والمطابقة!");
   } catch (err) { alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل أو فشل معالجة الصورة."); } finally { if (btn) { btn.disabled = false; btn.innerHTML = origHtml; } }
@@ -2553,15 +2611,176 @@ function saveNewAircraft() {
   });
 }
 
+function escapeSingleQuote(str) {
+  return String(str || '').split("'").join("\\'");
+}
+
 function addUser(e) {
   e.preventDefault();
+  if (!isCurrentUserAdmin()) return alert('⚠️ للمدير فقط!');
   let role = document.getElementById('newUserRole').value;
-  let user = document.getElementById('newUsername').value;
-  let pass = document.getElementById('newUserPass').value;
-  safePost({ action: "addUser", role: role, username: user, password: pass }, document.querySelector('#account-management-section .submit-btn'), document.getElementById('userMsg'), "تم!", () => {
+  let user = document.getElementById('newUsername').value.trim();
+  let pass = document.getElementById('newUserPass').value.trim();
+  if (!user || !pass) return alert('يرجى إدخال اسم المستخدم وكلمة المرور!');
+  safePost({ action: "addUser", performedBy: getCurrentActorName(), role: role, username: user, password: pass }, document.querySelector('#account-management-section .submit-btn'), document.getElementById('userMsg'), "تم إضافة الحساب بنجاح!", () => {
     globalUsers.push({ Role: role, Username: user, Password: pass });
-    document.getElementById('users-tbody').innerHTML += `<tr><td>#</td><td>${role}</td><td>${user}</td><td>${pass}</td></tr>`;
+    populateUsersDropdown(globalUsers);
+    renderUsersTable();
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newUserPass').value = '';
+    setTimeout(() => refreshAppLogs(), 1200);
   });
+}
+
+function renderUsersTable() {
+  const tb = document.getElementById('users-tbody');
+  if (!tb) return;
+  if (!globalUsers || globalUsers.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#777;">لا توجد حسابات مسجلة في الشيت</td></tr>';
+    return;
+  }
+  tb.innerHTML = globalUsers.map((u, idx) => {
+    const safeU = escapeSingleQuote(u.Username);
+    const safeR = escapeSingleQuote(u.Role);
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td><b>${u.Role || '-'}</b></td>
+        <td style="font-weight:bold;color:#003366;">${u.Username || '-'}</td>
+        <td dir="ltr" style="font-family:monospace;font-weight:bold;">${u.Password || '****'}</td>
+        <td style="white-space:nowrap;">
+          <button type="button" onclick="editUserPassword('${safeU}', '${safeR}')" style="background:#ffc107;color:#000;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;margin-left:4px;">
+            <i class="fa-solid fa-key"></i> تعديل كلمة السر
+          </button>
+          ${String(u.Username).toLowerCase() !== 'admin' ? `<button type="button" onclick="deleteUserAccount('${safeU}')" style="background:#dc3545;color:#fff;border:none;padding:5px 9px;border-radius:4px;cursor:pointer;font-size:11px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function editUserPassword(username, role) {
+  if (!isCurrentUserAdmin()) return alert('⚠️ للمدير فقط!');
+  const newPass = prompt(`أدخل كلمة المرور الجديدة للمستخدم (${username}):`);
+  if (!newPass || !newPass.trim()) return;
+  const cleanPass = newPass.trim();
+  const uObj = globalUsers.find(u => u.Username === username);
+  if (uObj) uObj.Password = cleanPass;
+  renderUsersTable();
+  safePost({
+    action: "updateUserPassword",
+    performedBy: getCurrentActorName(),
+    username: username,
+    role: role,
+    newPassword: cleanPass
+  }, null, document.getElementById('userMsg'), `تم تحديث كلمة مرور (${username}) بنجاح!`, () => {
+    setTimeout(() => refreshAppLogs(), 1200);
+  });
+}
+
+function deleteUserAccount(username) {
+  if (!isCurrentUserAdmin()) return alert('⚠️ للمدير فقط!');
+  if (!confirm(`⚠️ هل أنت متأكد من حذف حساب (${username}) نهائياً؟`)) return;
+  globalUsers = globalUsers.filter(u => u.Username !== username);
+  populateUsersDropdown(globalUsers);
+  renderUsersTable();
+  safePost({
+    action: "deleteUser",
+    performedBy: getCurrentActorName(),
+    username: username
+  }, null, document.getElementById('userMsg'), `تم حذف حساب (${username}) بنجاح!`, () => {
+    setTimeout(() => refreshAppLogs(), 1200);
+  });
+}
+
+function renderAppLogs() {
+  const tb = document.getElementById('app-logs-tbody');
+  if (!tb) return;
+  if (!globalAppLogs || globalAppLogs.length === 0) {
+    try {
+      const cached = JSON.parse(localStorage.getItem('rmf_app_logs') || '[]');
+      if (Array.isArray(cached) && cached.length > 0) globalAppLogs = cached;
+    } catch (e) {}
+  }
+
+  const q = (document.getElementById('logSearchInput')?.value || '').toLowerCase().trim();
+  const typeF = document.getElementById('logTypeFilter')?.value || 'ALL';
+
+  const filtered = (globalAppLogs || []).filter(row => {
+    const act = String(row.Action || '');
+    const det = String(row.Details || '');
+    const ts = String(row.Timestamp || '');
+    const matchText = !q || act.toLowerCase().includes(q) || det.toLowerCase().includes(q) || ts.toLowerCase().includes(q);
+    let matchType = true;
+    if (typeF === 'دخول') matchType = act.includes('دخول');
+    else if (typeF === 'تعديل') matchType = !act.includes('دخول') && !act.includes('حذف');
+    else if (typeF === 'حذف') matchType = act.includes('حذف');
+    return matchText && matchType;
+  });
+
+  if (filtered.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:15px;color:#777;font-weight:bold;">لا توجد سجلات مسجلة في APP_LOGS حتى الآن. اضغط على (تحديث السجل الآن) بعد تنفيذ أي حركة.</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = filtered.map((row, idx) => {
+    const act = String(row.Action || '-');
+    const st = String(row.Status || 'تم');
+    let badgeBg = '#17a2b8';
+    if (act.includes('دخول')) badgeBg = '#003366';
+    else if (act.includes('حذف')) badgeBg = '#dc3545';
+    else if (act.includes('تعديل') || act.includes('تحديث')) badgeBg = '#e67e22';
+    else if (act.includes('إضافة') || act.includes('حفظ') || act.includes('إرسال') || act.includes('تسجيل') || act.includes('إدخال') || act.includes('رفع')) badgeBg = '#28a745';
+
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td dir="ltr" style="font-weight:bold;white-space:nowrap;">${row.Timestamp || '-'}</td>
+        <td><span style="background:${badgeBg};color:#fff;padding:3px 9px;border-radius:12px;font-weight:bold;font-size:10.5px;display:inline-block;">${act}</span></td>
+        <td style="color:#28a745;font-weight:bold;">${st}</td>
+        <td style="text-align:right;line-height:1.5;font-weight:600;">${row.Details || '-'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function refreshAppLogs() {
+  const btn = document.getElementById('refreshLogsBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...'; }
+  const cb = 'jsonpLogs_' + Math.round(100000 * Math.random());
+  const timer = setTimeout(() => {
+    delete window[cb];
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث السجل الآن'; }
+    renderAppLogs();
+  }, 8000);
+  window[cb] = function (d) {
+    clearTimeout(timer);
+    try {
+      if (d && d.status === 'success') {
+        if (Array.isArray(d.logs)) {
+          globalAppLogs = d.logs;
+          try { localStorage.setItem('rmf_app_logs', JSON.stringify(globalAppLogs)); } catch (e) {}
+        }
+        if (Array.isArray(d.users) && d.users.length > 0) {
+          globalUsers = d.users;
+          renderUsersTable();
+        }
+        renderAppLogs();
+      }
+    } catch (e) {} finally {
+      delete window[cb];
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث السجل الآن'; }
+    }
+  };
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
+  s.onerror = () => {
+    clearTimeout(timer);
+    delete window[cb];
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate"></i> تحديث السجل الآن'; }
+    renderAppLogs();
+  };
+  document.body.appendChild(s);
 }
 
 
@@ -3389,7 +3608,7 @@ async function sendCdMonthlyEmail() {
     const cvs = await html2canvas(el, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = cvs.toDataURL('image/jpeg', 0.85);
     const hB = `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;line-height:1.6;"><h2 style="color:#dc3545;border-bottom:2px solid #dc3545;padding-bottom:8px;">التقرير الشهري لقسم سلامة الحماية المدنية - ${mStr}</h2><p><b>السادة / الإدارة العامة للسلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم التقرير الشهري لحالة السلامة والمعدات بقسم الحماية المدنية بمطار مرسى علم الدولي عن شهر (${mStr}).</p><div style="text-align:center;margin:20px 0;"><img src="cid:monthlyReportImage" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px;"></div><p><b>إعداد:</b> ${prepBy} - مسئول سلامة الحماية المدنية</p></div>`;
-    await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "sendReportEmail", subject: `التقرير الشهري لقسم سلامة الحماية المدنية - ${mStr}`, htmlBody: hB, imageData: imgData, imageName: `Civil_Defense_Report_${mStr}.jpg` }) });
+    await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "sendReportEmail", performedBy: getCurrentActorName(), subject: `التقرير الشهري لقسم سلامة الحماية المدنية - ${mStr}`, htmlBody: hB, imageData: imgData, imageName: `Civil_Defense_Report_${mStr}.jpg` }) });
     alert("✅ تم إرسال التقرير الشهري للحماية المدنية بالإيميل بنجاح!");
   } catch (err) { alert("❌ تعذر إرسال الإيميل."); }
 }
