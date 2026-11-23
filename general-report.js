@@ -128,7 +128,7 @@ function formatGrTrendBadge(curVal, prevVal, higherBetter, unit = "", pad2 = tru
   let isPositive = diff > 0;
   let isGood = higherBetter ? isPositive : !isPositive;
   let clr = isGood ? "#28a745" : "#dc3545";
-  let ico = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  let ico = isPositive ? "fa-arrow-up" : "fa-arrow-down";
   let absFormatted = isFloat
     ? Math.abs(diff).toFixed(3)
     : (pad2 ? String(Math.abs(Math.round(diff))).padStart(2, '0') : Math.abs(Math.round(diff)).toLocaleString());
@@ -348,7 +348,6 @@ async function generateConsolidatedMonthlyReport() {
   if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-layer-group"></i> تجميع وإصدار التقرير الشهري المجمع'; }
 
   const mgrName = document.getElementById('grManagerName')?.value?.trim() || 'محمد محمد مرسي';
-  const airportMgrName = document.getElementById('grAirportSafetyMgr')?.value?.trim() || 'سامي لوكاس';
   const mAr = new Date(yCur, mCurInt - 1, 15).toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
   const pmAr = new Date(parseInt(yPrev), mPrevInt - 1, 15).toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
   const mOnlyAr = new Date(yCur, mCurInt - 1, 15).toLocaleString('ar-EG', { month: 'long' });
@@ -650,11 +649,7 @@ async function generateConsolidatedMonthlyReport() {
           <tr style="background:#f0f4f8;font-weight:bold;"><td colspan="3" style="text-align:left;padding:9px;">Total Weight</td><td style="padding:9px;color:#003366;">${fodTotPlastic.toFixed(3)} kg</td><td style="padding:9px;color:#003366;">${fodTotMetal.toFixed(3)} kg</td><td style="padding:9px;color:#28a745;font-size:12px;">${fodCur.toFixed(3)} kg</td></tr>
         </tbody>
       </table>
-      <div style="margin-top:35px;text-align:left;direction:ltr;padding-left:15px;">
-        <div style="font-size:12px;font-weight:bold;color:#666;text-transform:uppercase;">Prepared By:</div>
-        <div style="font-size:15px;font-weight:900;color:#003366;margin:3px 0 2px 0;">${airportMgrName}</div>
-        <div style="font-size:12.5px;font-weight:700;color:#333;">Airport Safety Department</div>
-      </div>
+
       ${pageFooterBanner()}
     </div>
   `;

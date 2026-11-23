@@ -85,6 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
   syncEnvFromServer();
 });
 
+function getEnvActorName() {
+  try {
+    const u = JSON.parse(sessionStorage.getItem('rmf_user') || 'null');
+    if (u && u.Username) return u.Username;
+  } catch (e) {}
+  return document.getElementById('envDailyInspector')?.value?.trim() || 'ENV Officer';
+}
+
 function envLogout() {
   try { sessionStorage.removeItem('rmf_user'); } catch (e) {}
   window.location.href = 'index.html';
@@ -232,7 +240,7 @@ function submitEnvDailyInspection(e) {
 
   fetch(API_URL, {
     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: isEnvEditMode ? 'updateENVDaily' : 'submitENVDaily', reportData: repObj })
+    body: JSON.stringify({ action: isEnvEditMode ? 'updateENVDaily' : 'submitENVDaily', performedBy: getEnvActorName(), reportData: repObj })
   }).finally(() => {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة'; btn.style.backgroundColor = '#28a745'; }
     isEnvEditMode = false; currentEnvEditId = null;
@@ -326,7 +334,7 @@ function deleteEnvDailyRecord(idx) {
   globalEnvDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
   renderSavedEnvDaily();
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteENVDaily', id: delId }) });
+  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteENVDaily', performedBy: getEnvActorName(), id: delId }) });
 }
 
 function generateEnvDailyPrintView(specificRep) {
@@ -520,7 +528,7 @@ function formatEnvTrendBadge(cur, prev, higherBetter) {
   }
   let isGood = higherBetter ? (d > 0) : (d < 0);
   let clr = isGood ? "#28a745" : "#dc3545";
-  let ico = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  let ico = (d > 0) ? "fa-arrow-up" : "fa-arrow-down";
   return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${absStr} <i class="fa-solid ${ico}"></i></span>`;
 }
 
@@ -608,7 +616,7 @@ function saveEnvMonthlyReport() {
   globalEnvMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_env_monthly', JSON.stringify(globalEnvMonthly)); } catch (e) {}
 
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveENVMonthly', monthlyData: obj }) }).finally(() => {
+  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveENVMonthly', performedBy: getEnvActorName(), monthlyData: obj }) }).finally(() => {
     alert("✅ تم حفظ بيانات التقرير الشهري للبيئة والحياة البرية بنجاح!");
     document.getElementById('envExtractMonth').value = mStr;
     switchEnvMonthlySubTab('extract');

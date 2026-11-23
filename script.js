@@ -2010,7 +2010,7 @@ function formatTrendDifference(dV, iHb, un = "") {
   let fV = isFloat ? Math.abs(n).toFixed(3) : String(Math.abs(Math.round(n))).padStart(2, '0');
   let isGood = iHb ? iP : !iP;
   let clr = isGood ? "#28a745" : "#dc3545";
-  let aI = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  let aI = iP ? "fa-arrow-up" : "fa-arrow-down";
   return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`;
 }
 

@@ -124,6 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
   syncOshFromServer();
 });
 
+function getOshActorName() {
+  try {
+    const u = JSON.parse(sessionStorage.getItem('rmf_user') || 'null');
+    if (u && u.Username) return u.Username;
+  } catch (e) {}
+  return document.getElementById('oshDailyInspector')?.value?.trim() || 'OSH Officer';
+}
+
 function oshLogout() {
   try { sessionStorage.removeItem('rmf_user'); } catch (e) {}
   window.location.href = 'index.html';
@@ -304,7 +312,7 @@ function submitOshDailyInspection(e) {
 
   fetch(API_URL, {
     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: isOshEditMode ? 'updateOSHDaily' : 'submitOSHDaily', reportData: repObj })
+    body: JSON.stringify({ action: isOshEditMode ? 'updateOSHDaily' : 'submitOSHDaily', performedBy: getOshActorName(), reportData: repObj })
   }).finally(() => {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ جولة السلامة والصحة المهنية'; btn.style.backgroundColor = '#fd7e14'; }
     isOshEditMode = false; currentOshEditId = null;
@@ -418,7 +426,7 @@ function deleteOshDailyRecord(idx) {
   globalOshDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
   renderSavedOshDaily();
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteOSHDaily', id: delId }) });
+  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteOSHDaily', performedBy: getOshActorName(), id: delId }) });
 }
 
 function generateOshDailyPrintView(specificRep) {
@@ -589,7 +597,7 @@ function formatOshTrendBadge(cur, prev, higherBetter) {
   }
   let isGood = higherBetter ? (d > 0) : (d < 0);
   let clr = isGood ? "#28a745" : "#dc3545";
-  let ico = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  let ico = (d > 0) ? "fa-arrow-up" : "fa-arrow-down";
   return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${absStr} <i class="fa-solid ${ico}"></i></span>`;
 }
 
@@ -662,7 +670,7 @@ function saveOshMonthlyReport() {
   globalOshMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(globalOshMonthly)); } catch (e) {}
 
-  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveOSHMonthly', monthlyData: obj }) }).finally(() => {
+  fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveOSHMonthly', performedBy: getOshActorName(), monthlyData: obj }) }).finally(() => {
     alert("✅ تم حفظ بيانات التقرير الشهري للسلامة والصحة المهنية بنجاح!");
     document.getElementById('oshExtractMonth').value = mStr;
     switchOshMonthlySubTab('extract');
