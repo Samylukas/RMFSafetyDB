@@ -2345,11 +2345,12 @@ async function generateFullMonthlyReport() {
   let fF = globalFod.filter(f => { let rd = f.Date || f.date || ''; return (typeof rd === 'string' ? rd : new Date(rd).toISOString()).split('T')[0].startsWith(cm); });
   let tp = 0, tm = 0, fR = '';
   fodLocations.forEach(loc => {
-    let rc = fF.find(f => (f.Location || f.location) === loc.loc);
-    let p = rc ? parseFloat(rc.Plastic || rc.plastic || 0) : 0;
-    let met = rc ? parseFloat(rc.Metal || rc.metal || 0) : 0;
+    let matching = fF.filter(f => String(f.Location || f.location || '').trim().toLowerCase() === loc.loc.toLowerCase());
+    let p = matching.reduce((acc, r) => acc + (parseFloat(r.Plastic || r.plastic || 0) || 0), 0);
+    let met = matching.reduce((acc, r) => acc + (parseFloat(r.Metal || r.metal || 0) || 0), 0);
     tp += p; tm += met;
-    let dD = rc && (rc.Date || rc.date) ? String(rc.Date || rc.date).split('T')[0] : '---';
+    let lastRec = matching.length > 0 ? matching[matching.length - 1] : null;
+    let dD = lastRec && (lastRec.Date || lastRec.date) ? String(lastRec.Date || lastRec.date).split('T')[0] : '---';
     fR += `<tr><td style="padding: 8px;" dir="ltr">${dD}</td><td style="padding: 8px; text-align: left; font-weight: bold;">${loc.loc}</td><td style="padding: 8px;">${loc.area}</td><td style="padding: 8px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="padding: 8px;">${met > 0 ? met.toFixed(3) + ' kg' : '---'}</td><td style="padding: 8px; font-weight: bold;">${(p + met) > 0 ? (p + met).toFixed(3) + ' kg' : '---'}</td></tr>`;
   });
 

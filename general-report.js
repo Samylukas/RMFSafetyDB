@@ -5,6 +5,17 @@
 
 const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
 
+const SPI_CONFIG_GR = [
+  { category: "Post-crash fires", items: ["Airport firefighting services’ decreased (ICAO Airports firefighting categories)", "Reported inadequate equipment or resources (fire trucks, fire tools, etc.)", "Reported unqualified personnel (firefighters - Airport familiarization)", "Reported unqualified personnel (firefighters - Tactical training)"] },
+  { category: "Precursors to Runway Incursion (RI) (HRC)", items: ["Failures or defects regarding signage found during routine inspection affect operation", "Failures or defects regarding lighting found during routine inspection affect operation", "Reported traffic not comply with mandatory runway stop sign/ lights / markings", "Reported disturbed ground frequency between ATC & vehicles (Follow-me Cars)", "Unauthorized or uncoordinated movement of vehicles or personnel near runways"] },
+  { category: "Taxiway & Apron", items: ["Reported inadequate signage on TWY", "Reported inadequate signage on apron", "Reported inadequate lights on TWY", "Reported inadequate lights on apron", "Reported inadequate markings on TWY", "Reported inadequate markings on apron", "Reported lack of information signs", "Reported violating limited speed by vehicles on apron", "Reported walking across aprons", "Violations to low visibility procedures", "Unauthorized or uncoordinated movement of vehicles or personnel on aprons/ taxiways"] },
+  { category: "Airport Operation", items: ["Reported ground collision with equipment/ aircraft/ vehicle", "Reported airport ground equipment malfunctions", "Reported airport electricity malfunctions", "Reported failures of SMGCS “surface movement guidance and control systems”"] },
+  { category: "Bird / Wildlife", items: ["Reported birds strike", "Reported fencing openings", "Reported other defective protective devices", "Reported source of attraction such as (water, food, etc. ) in or around the airport", "Reported presence of weeds", "Observed birds /wildlife in or near airport"] },
+  { category: "Foreign object debris (FOD)", items: ["Inspections in which FOD was detected (RWY)", "Inspections in which FOD was detected ( Taxiway)", "Inspections in which FOD was detected(Apron)"] },
+  { category: "Emergency procedures", items: ["Carried out emergency procedures (fuel leak, engine fire, etc.)", "Delayed response to emergency (fuel leak, engine fire, etc.)"] },
+  { category: "Laser", items: ["Reported observed laser beam"] }
+];
+
 const DEFAULT_GR_RECOMMENDATIONS = [
   "استكمال تأمين اللوحات الكهربائية بالمحطات الفرعية بنظام Fire Search واستبدال نظام الماتيك بنظام إطفاء تلقائي CO2.",
   "ضرورة تأمين ساحة انتظار الأتوبيسات والسيارات بالوسائل الإطفائية المناسبة.",
@@ -79,10 +90,8 @@ function normalizeYearMonth(val) {
   if (!val) return '';
   let s = String(val).trim();
   if (s.includes('T')) s = s.split('T')[0];
-  // YYYY-MM-DD or YYYY/MM/DD
   let m1 = s.match(/^(\d{4})[-\/](\d{1,2})/);
   if (m1) return `${m1[1]}-${String(m1[2]).padStart(2, '0')}`;
-  // DD/MM/YYYY or DD-MM-YYYY
   let m2 = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
   if (m2) return `${m2[3]}-${String(m2[2]).padStart(2, '0')}`;
   let dt = new Date(val);
@@ -211,14 +220,22 @@ function getPrevMonthStr(ms) {
 }
 
 async function fetchSpiForYearGr(year) {
+  const yStr = String(year || '2026');
   try {
     let res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getSPIData', year: String(year) })
+      body: JSON.stringify({ action: 'getSPIData', year: yStr })
     });
     let j = await res.json();
-    if (j.status === 'success' && j.data) return j.data;
+    if (j.status === 'success' && j.data) {
+      try { localStorage.setItem('spi_records_' + yStr, JSON.stringify(j.data)); } catch (e) {}
+      return j.data;
+    }
+  } catch (e) {}
+  try {
+    let ls = localStorage.getItem('spi_records_' + yStr);
+    if (ls) return JSON.parse(ls);
   } catch (e) {}
   return { movements: {}, events: {} };
 }
@@ -229,7 +246,7 @@ function pageHeaderBanner(pageNum) {
       <div style="text-align:right;font-size:11px;font-weight:bold;color:#003366;">
         إيماك مرسى علم<br>لإدارة وتشغيل المطارات (ش.م.م)<br>مطار مرسى علم الدولي
       </div>
-      <div><img src="LOGO-removebg-preview (1).png" style="height:52px;"></div>
+      <div><img src="LOGO-removebg-preview (1).png" style="height:54px;"></div>
       <div style="text-align:left;direction:ltr;font-size:10px;font-weight:bold;color:#003366;">
         EMAK Marsa Alam<br>For Management and Operation Airports (S.A.E)<br><span style="color:#777;">Page ${pageNum}</span>
       </div>
@@ -246,7 +263,26 @@ function pageFooterBanner() {
   `;
 }
 
-// Helper: build OSH monthly object from daily inspections if monthly wasn't manually saved
+function resolveCdMonthly(monthKey) {
+  if (grAppData.cdMonthly && grAppData.cdMonthly[monthKey]) {
+    return JSON.parse(JSON.stringify(grAppData.cdMonthly[monthKey]));
+  }
+  let reps = (grAppData.cdDaily || []).filter(r => normalizeYearMonth(r.date) === monthKey);
+  let pendObs = [], rectObs = [], recObs = [];
+  let truckDef = 0, equipDef = 0, commDef = 0, bldgDef = 0;
+  reps.forEach(rep => {
+    (rep.trucks || []).forEach(t => { if (t.status !== 'صالح' || (t.note && t.note.trim())) { truckDef++; recObs.push({ text: `سيارة (${t.id}): ${t.note || t.status}`, date: rep.date }); } });
+    (rep.rooms || []).forEach(r => { if (r.hazard !== 'لا يوجد' || (r.note && r.note.trim())) { bldgDef++; if (r.status === 'مغلق') rectObs.push({ text: `${r.room}: ${r.note}`, obsDate: rep.date, rectDate: r.rectDate || rep.date }); else pendObs.push({ text: `${r.room}: ${r.note}`, dept: r.responsible || 'الهندسة المدنية' }); } });
+    (rep.comm || []).forEach(c => { if (c.condition !== 'صالح' || (c.note && c.note.trim())) { commDef++; if (c.status === 'مغلق') rectObs.push({ text: `${c.item}: ${c.note}`, obsDate: rep.date, rectDate: c.rectDate || rep.date }); else pendObs.push({ text: `${c.item}: ${c.note}`, dept: c.responsible || 'تكنولوجيا المعلومات' }); } });
+    (rep.equip || []).forEach(eq => { if (eq.condition !== 'صالح' || (eq.note && eq.note.trim())) { equipDef++; if (eq.status === 'مغلق') rectObs.push({ text: `${eq.name}: ${eq.note}`, obsDate: rep.date, rectDate: eq.rectDate || rep.date }); else pendObs.push({ text: `${eq.name}: ${eq.note}`, dept: eq.responsible || 'الهندسة الميكانيكية' }); } });
+    (rep.pendingNotes || []).forEach(pn => { if (pn.status === 'مغلق') rectObs.push({ text: pn.note, obsDate: pn.obsDate || rep.date, rectDate: pn.rectDate || rep.date }); else pendObs.push({ text: pn.note, dept: pn.dept || 'الإدارة الهندسية' }); });
+  });
+  return {
+    kpis: { drills: 0, truckDefects: truckDef, equipDefects: equipDef, ppeDefects: 0, commDefects: commDef, bldgDefects: bldgDef, pendingTotal: pendObs.length, rectifiedTotal: rectObs.length, stockStatus: 'مطابق' },
+    prevKpis: {}, trainings: [], recordedObs: recObs, rectifiedObs: rectObs, pendingObs: pendObs
+  };
+}
+
 function resolveOshMonthly(monthKey) {
   if (grAppData.oshMonthly && grAppData.oshMonthly[monthKey]) {
     let m = JSON.parse(JSON.stringify(grAppData.oshMonthly[monthKey]));
@@ -265,61 +301,11 @@ function resolveOshMonthly(monthKey) {
     });
   });
   return {
-    kpis: {
-      totalFindings: pend.length + rect.length,
-      rectifiedFindings: rect.length,
-      pendingFindings: pend.length,
-      incidents: 0,
-      workInjuries: 0,
-      meetings: 0
-    },
-    prevKpis: {},
-    pendingList: pend,
-    rectifiedList: rect,
-    accidentsText: 'لا يوجد',
-    occurrencesText: 'لا يوجد',
-    meetingsText: '-',
-    periodicText: '-',
-    injuriesText: 'لا يوجد'
+    kpis: { totalFindings: pend.length + rect.length, rectifiedFindings: rect.length, pendingFindings: pend.length, incidents: 0, workInjuries: 0, meetings: 0 },
+    prevKpis: {}, pendingList: pend, rectifiedList: rect, accidentsText: 'لا يوجد', occurrencesText: 'لا يوجد', meetingsText: '-', periodicText: '-', injuriesText: 'لا يوجد'
   };
 }
 
-// Helper: build Civil Defense monthly object from daily inspections if monthly wasn't manually saved
-function resolveCdMonthly(monthKey) {
-  if (grAppData.cdMonthly && grAppData.cdMonthly[monthKey]) {
-    return JSON.parse(JSON.stringify(grAppData.cdMonthly[monthKey]));
-  }
-  let reps = (grAppData.cdDaily || []).filter(r => normalizeYearMonth(r.date) === monthKey);
-  let pendObs = [], rectObs = [], recObs = [];
-  let truckDef = 0, equipDef = 0, commDef = 0, bldgDef = 0;
-  reps.forEach(rep => {
-    (rep.trucks || []).forEach(t => { if (t.status !== 'صالح' || (t.note && t.note.trim())) { truckDef++; recObs.push({ text: `سيارة (${t.id}): ${t.note || t.status}`, date: rep.date }); } });
-    (rep.rooms || []).forEach(r => { if (r.hazard !== 'لا يوجد' || (r.note && r.note.trim())) { bldgDef++; if (r.status === 'مغلق') rectObs.push({ text: `${r.room}: ${r.note}`, obsDate: rep.date, rectDate: r.rectDate || rep.date }); else pendObs.push({ text: `${r.room}: ${r.note}`, dept: r.responsible || 'الهندسة المدنية' }); } });
-    (rep.comm || []).forEach(c => { if (c.condition !== 'صالح' || (c.note && c.note.trim())) { commDef++; if (c.status === 'مغلق') rectObs.push({ text: `${c.item}: ${c.note}`, obsDate: rep.date, rectDate: c.rectDate || rep.date }); else pendObs.push({ text: `${c.item}: ${c.note}`, dept: c.responsible || 'تكنولوجيا المعلومات' }); } });
-    (rep.equip || []).forEach(eq => { if (eq.condition !== 'صالح' || (eq.note && eq.note.trim())) { equipDef++; if (eq.status === 'مغلق') rectObs.push({ text: `${eq.name}: ${eq.note}`, obsDate: rep.date, rectDate: eq.rectDate || rep.date }); else pendObs.push({ text: `${eq.name}: ${eq.note}`, dept: eq.responsible || 'الهندسة الميكانيكية' }); } });
-    (rep.pendingNotes || []).forEach(pn => { if (pn.status === 'مغلق') rectObs.push({ text: pn.note, obsDate: pn.obsDate || rep.date, rectDate: pn.rectDate || rep.date }); else pendObs.push({ text: pn.note, dept: pn.dept || 'الإدارة الهندسية' }); });
-  });
-  return {
-    kpis: {
-      drills: 0,
-      truckDefects: truckDef,
-      equipDefects: equipDef,
-      ppeDefects: 0,
-      commDefects: commDef,
-      bldgDefects: bldgDef,
-      pendingTotal: pendObs.length,
-      rectifiedTotal: rectObs.length,
-      stockStatus: 'مطابق'
-    },
-    prevKpis: {},
-    trainings: [],
-    recordedObs: recObs,
-    rectifiedObs: rectObs,
-    pendingObs: pendObs
-  };
-}
-
-// Helper: build ENV monthly object from daily inspections if monthly wasn't manually saved
 function resolveEnvMonthly(monthKey) {
   if (grAppData.envMonthly && grAppData.envMonthly[monthKey]) {
     let m = JSON.parse(JSON.stringify(grAppData.envMonthly[monthKey]));
@@ -334,26 +320,12 @@ function resolveEnvMonthly(monthKey) {
     (r.findings || []).forEach(f => {
       let isDone = (f.status === 'تم' || f.status === 'مغلق');
       if (isDone) doneCnt++; else pendCnt++;
-      obs.push({
-        desc: f.desc, location: f.location, category: f.category, dept: f.dept, date: r.date,
-        action: `${f.paCode ? '[' + f.paCode + '] ' : ''}${f.action}`,
-        status: isDone ? 'تم' : 'معلق'
-      });
+      obs.push({ desc: f.desc, location: f.location, category: f.category, dept: f.dept, date: r.date, action: `${f.paCode ? '[' + f.paCode + '] ' : ''}${f.action}`, status: isDone ? 'تم' : 'معلق' });
     });
   });
   return {
-    kpis: {
-      pendingEnv: pendCnt,
-      rectifiedEnv: doneCnt,
-      totalEnv: pendCnt + doneCnt,
-      meetingsEnv: 0
-    },
-    prevKpis: {},
-    observations: obs,
-    accidentsText: 'لا يوجد',
-    fenceText: 'تم المرور الدوري وتنظيف الأسوار وسد الفتحات.',
-    externalText: 'تم المرور الشهري على مناطق الجذب الخارجية.',
-    pestEval: '78.0%'
+    kpis: { pendingEnv: pendCnt, rectifiedEnv: doneCnt, totalEnv: pendCnt + doneCnt, meetingsEnv: 0 },
+    prevKpis: {}, observations: obs, accidentsText: 'لا يوجد', fenceText: 'تم المرور الدوري وتنظيف الأسوار وسد الفتحات.', externalText: 'تم المرور الشهري على مناطق الجذب الخارجية.', pestEval: '78.0%'
   };
 }
 
@@ -364,7 +336,6 @@ async function generateConsolidatedMonthlyReport() {
   const btn = document.getElementById('genGrBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تجميع ومراجعة بيانات الإدارات الأربع...'; }
 
-  // Ensure latest data from server is loaded
   await fetchLiveAllDataForGr();
 
   const pmStr = getPrevMonthStr(mStr);
@@ -377,12 +348,15 @@ async function generateConsolidatedMonthlyReport() {
   if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-layer-group"></i> تجميع وإصدار التقرير الشهري المجمع'; }
 
   const mgrName = document.getElementById('grManagerName')?.value?.trim() || 'محمد محمد مرسي';
+  const airportMgrName = document.getElementById('grAirportSafetyMgr')?.value?.trim() || 'سامي لوكاس';
   const mAr = new Date(yCur, mCurInt - 1, 15).toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
   const pmAr = new Date(parseInt(yPrev), mPrevInt - 1, 15).toLocaleString('ar-EG', { month: 'long', year: 'numeric' });
   const mOnlyAr = new Date(yCur, mCurInt - 1, 15).toLocaleString('ar-EG', { month: 'long' });
-  const mEngShort = new Date(yCur, mCurInt - 1, 15).toLocaleString('en-US', { month: 'long' });
+  const mEngName = new Date(yCur, mCurInt - 1, 15).toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-  // 1. بيانات قسم سلامة الطيران (مع التحقق المنطقي من كل مصادر البيانات)
+  // =========================================================================
+  // 1. بيانات إدارة سلامة المطارات (طبق الأصل من تقرير سلامة المطارات المعتمد)
+  // =========================================================================
   const lookupMovements = (ymKey, spiObj, yr, mIdx) => {
     let val = Number(spiObj?.movements?.[mIdx] || 0);
     if (!val && Array.isArray(grAppData.movements)) {
@@ -406,43 +380,36 @@ async function generateConsolidatedMonthlyReport() {
   const occCur = incCurList.length - accCur;
   const occPrev = incPrevList.length - accPrev;
 
-  const getAirsideFindings = (monthKey) => {
-    let map = {};
+  const getUniqAirsideFindings = (monthKey) => {
+    let uM = {};
     (grAppData.daily || []).forEach(r => {
-      if (normalizeYearMonth(r.date) === monthKey) {
-        (r.findings || []).forEach(f => {
-          let k = `${(f.category || '').trim()}|${(f.item || '').trim()}|${(f.location || '').trim()}`.toLowerCase();
-          let isCl = f.status === 'مغلق';
-          if (!map[k]) map[k] = { ...f, closed: isCl };
-          else if (isCl) map[k].closed = true;
+      if (normalizeYearMonth(r.date) === monthKey && r.findings) {
+        r.findings.forEach(f => {
+          let k = ((f.category || '').trim() + '___' + (f.item || '').trim() + '___' + (f.location || '').trim()).toLowerCase();
+          let st = String(f.status || f.Status || '').trim().toLowerCase();
+          let nt = String(f.note || '');
+          let ac = String(f.actionTaken || f.action || '');
+          let cl = (st === 'مغلق' || st === 'closed' || nt.includes('تم تلافي') || ac.includes('تم تلافي'));
+          if (!uM[k]) uM[k] = { ...f, closed: cl, dept: f.responsible || 'أخرى' };
+          else if (cl) uM[k].closed = true;
         });
       }
     });
-    let list = Object.values(map);
+    let list = Object.values(uM);
     let closed = list.filter(x => x.closed).length;
     let open = list.filter(x => !x.closed).length;
-    return { total: open + closed, closed: closed, open: open, list: list };
+    let dp = {};
+    list.forEach(x => { if (!x.closed) dp[x.dept] = (dp[x.dept] || 0) + 1; });
+    return { total: open + closed, closed: closed, open: open, deptOpenMap: dp, list: list };
   };
 
-  const afCur = getAirsideFindings(mStr);
-  const afPrev = getAirsideFindings(pmStr);
+  const afCur = getUniqAirsideFindings(mStr);
+  const afPrev = getUniqAirsideFindings(pmStr);
 
   const survCur = (grAppData.surveys || []).filter(s => normalizeYearMonth(s.Date || s.date) === mStr);
   const survPrev = (grAppData.surveys || []).filter(s => normalizeYearMonth(s.Date || s.date) === pmStr);
 
-  // مصفوفة استبيان الطيارين للشهر الحالي
-  let survMatrix = {};
-  CRITERIA_LIST_GR.forEach(c => survMatrix[c] = { Excellent: 0, Good: 0, Poor: 0, "N/A": 0, Blank: 0 });
-  let survComments = [];
-  survCur.forEach(s => {
-    CRITERIA_LIST_GR.forEach(c => {
-      let v = s[c] || "Blank";
-      if (survMatrix[c][v] !== undefined) survMatrix[c][v]++;
-    });
-    if (s.Captain_Comments && String(s.Captain_Comments).trim() !== "") survComments.push(s);
-  });
-
-  // بيانات FOD للشهر الحالي والشهر السابق (تجميع كافة الإدخالات بدون فقدان أي سجل)
+  // بيانات FOD للشهر الحالي والشهر السابق
   const fodCurRows = (grAppData.fod || []).filter(f => normalizeYearMonth(f.Date || f.date) === mStr);
   let fodTotPlastic = 0, fodTotMetal = 0;
   const fodTableRowsHtml = FOD_LOCATIONS_GR.map(loc => {
@@ -451,7 +418,7 @@ async function generateConsolidatedMonthlyReport() {
     let m = matching.reduce((acc, r) => acc + (parseFloat(r.Metal || r.metal || 0) || 0), 0);
     fodTotPlastic += p; fodTotMetal += m;
     let dStr = matching.length > 0 ? normalizeDateStr(matching[matching.length - 1].Date || matching[matching.length - 1].date) : '---';
-    return `<tr><td dir="ltr">${dStr}</td><td style="text-align:left;font-weight:bold;">${loc.loc}</td><td>${loc.area}</td><td>${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td>${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td>${(p + m) > 0 ? (p + m).toFixed(3) + ' kg' : '---'}</td></tr>`;
+    return `<tr><td style="padding:7px;" dir="ltr">${dStr}</td><td style="padding:7px;text-align:left;font-weight:bold;">${loc.loc}</td><td style="padding:7px;">${loc.area}</td><td style="padding:7px;">${p > 0 ? p.toFixed(3) + ' kg' : '---'}</td><td style="padding:7px;">${m > 0 ? m.toFixed(3) + ' kg' : '---'}</td><td style="padding:7px;font-weight:bold;">${(p + m) > 0 ? (p + m).toFixed(3) + ' kg' : '---'}</td></tr>`;
   }).join('');
   const fodCur = fodTotPlastic + fodTotMetal;
 
@@ -462,172 +429,241 @@ async function generateConsolidatedMonthlyReport() {
     }
   });
 
-  const avMeetings = Number(document.getElementById('grAvMeetings')?.value || 2);
-  const avAudits = Number(document.getElementById('grAvAudits')?.value || 0);
-  const avCourses = Number(document.getElementById('grAvCourses')?.value || 2);
-
-  // 2. بيانات السلامة والصحة المهنية (OSH)
-  const oshCur = resolveOshMonthly(mStr);
-  const oshPrev = grAppData.oshMonthly[pmStr] ? resolveOshMonthly(pmStr) : (Object.keys(oshCur.prevKpis || {}).length ? { kpis: oshCur.prevKpis } : resolveOshMonthly(pmStr));
-
-  // 3. بيانات الحماية المدنية (Civil Defense)
+  // =========================================================================
+  // 2. بيانات الحماية المدنية (الترتيب الثاني بعد سلامة المطارات)
+  // =========================================================================
   const cdCur = resolveCdMonthly(mStr);
   const cdPrev = grAppData.cdMonthly[pmStr] ? resolveCdMonthly(pmStr) : (Object.keys(cdCur.prevKpis || {}).length ? { kpis: cdCur.prevKpis } : resolveCdMonthly(pmStr));
 
-  // 4. بيانات البيئة والحياة البرية (ENV)
+  // =========================================================================
+  // 3. بيانات السلامة والصحة المهنية (الترتيب الثالث)
+  // =========================================================================
+  const oshCur = resolveOshMonthly(mStr);
+  const oshPrev = grAppData.oshMonthly[pmStr] ? resolveOshMonthly(pmStr) : (Object.keys(oshCur.prevKpis || {}).length ? { kpis: oshCur.prevKpis } : resolveOshMonthly(pmStr));
+
+  // =========================================================================
+  // 4. بيانات البيئة والحياة البرية (الترتيب الرابع)
+  // =========================================================================
   const envCur = resolveEnvMonthly(mStr);
   const envPrev = grAppData.envMonthly[pmStr] ? resolveEnvMonthly(pmStr) : (Object.keys(envCur.prevKpis || {}).length ? { kpis: envCur.prevKpis } : resolveEnvMonthly(pmStr));
+
+  // =========================================================================
+  // 5. الملاحظات العامة والأنشطة المشتركة على الإدارة العامة ككل
+  // =========================================================================
+  const genAuditsPrev = Number(document.getElementById('grGenAuditsPrev')?.value || 0);
+  const genAuditsCur = Number(document.getElementById('grGenAuditsCur')?.value || 0);
+  const genCoursesPrev = Number(document.getElementById('grGenCoursesPrev')?.value || 0);
+  const genCoursesCur = Number(document.getElementById('grGenCoursesCur')?.value || 0);
+  const genMeetingsPrev = Number(document.getElementById('grGenMeetingsPrev')?.value || 0);
+  const genMeetingsCur = Number(document.getElementById('grGenMeetingsCur')?.value || 0);
+  const genNotesText = document.getElementById('grGenNotesText')?.value?.trim() || '';
 
   // التوصيات الختامية
   let recs = [];
   document.querySelectorAll('#gr-recommendations-box .gr-rec-inp').forEach(inp => { if (inp.value.trim()) recs.push(inp.value.trim()); });
 
+  // =========================================================================
+  // بناء صفحات التقرير
+  // =========================================================================
+
   // الصفحة 1: الغلاف
   const pageCover = `
     <div class="gr-page" style="text-align:center;">
       ${pageHeaderBanner(1)}
-      <div style="margin:25px auto;">
+      <div style="margin:22px auto;">
         <img src="report cover.jpg" onerror="this.onerror=null;this.src='Gemini_Generated_Image_vgja40vgja.jpg.jpg';" style="width:100%;max-width:650px;max-height:360px;object-fit:contain;border-radius:10px;border:1px solid #ddd;">
       </div>
       <h1 style="color:#003366;font-size:24px;font-weight:900;margin:15px 0 8px 0;">التقرير الشهري لإدارة السلامة والمطابقة</h1>
-      <div style="display:inline-block;background:#003366;color:#fff;padding:8px 36px;border-radius:25px;font-size:17px;font-weight:bold;margin-bottom:25px;">( ${mOnlyAr} ${yCur} )</div>
-      <div style="text-align:left;padding-left:30px;margin:20px 0;">
+      <div style="display:inline-block;background:#003366;color:#fff;padding:8px 36px;border-radius:25px;font-size:16px;font-weight:bold;margin-bottom:22px;">( ${mOnlyAr} ${yCur} — ${mEngName} )</div>
+      <div style="text-align:left;padding-left:30px;margin:18px 0;">
         <div style="font-size:14px;color:#555;font-weight:bold;">مدير إدارة السلامة والمطابقة</div>
         <div style="font-size:18px;color:#003366;font-weight:900;">${mgrName}</div>
       </div>
-      <div style="background:#f0f4f8;border-right:4px solid #003366;padding:12px 16px;text-align:right;font-size:12.5px;font-weight:bold;color:#333;border-radius:6px;margin-top:25px;">
+      <div style="background:#f0f4f8;border-right:4px solid #003366;padding:12px 16px;text-align:right;font-size:12.5px;font-weight:bold;color:#333;border-radius:6px;margin-top:22px;">
         يعتبر هذا التقرير نتاج لتقارير تم إعدادها بواسطة رئيس كل قسم من أقسام الإدارة العامة للسلامة والمطابقة نتيجة لتقارير يومية وقاعدة بيانات متاحة للعرض التفصيلي والمناقشة.
       </div>
       ${pageFooterBanner()}
     </div>
   `;
 
-  // الصفحة 2: 1. قسم سلامة الطيران (المؤشرات + الأسهم الملونة + المخاطر + الشارتات)
+  // الصفحة 2: 1. إدارة سلامة المطارات (أولاً: مؤشرات الأداء العامة + ثانياً: الحصر والتحليل البياني وحصر المخاطر)
+  const avKpis = [
+    { l: "عدد التحركات الجوية", p: movPrev, c: movCur, hb: true, u: "", pad: false },
+    { l: "عدد الحوادث", p: accPrev, c: accCur, hb: false, u: "", pad: true },
+    { l: "عدد الوقائع", p: occPrev, c: occCur, hb: false, u: "", pad: true },
+    { l: "حالات عدم المطابقة (الإجمالي)", p: afPrev.total, c: afCur.total, hb: false, u: "", pad: true },
+    { l: "حالات عدم المطابقة المعلقة", p: afPrev.open, c: afCur.open, hb: false, u: "", pad: true },
+    { l: "حالات عدم المطابقة التي تم تلافيها", p: afPrev.closed, c: afCur.closed, hb: true, u: "", pad: true },
+    { l: "استبيان الطيارين", p: survPrev.length, c: survCur.length, hb: true, u: "", pad: true },
+    { l: "كمية الأجسام الغريبة FOD (بلاستيك + معدن)", p: fodPrev, c: fodCur, hb: false, u: "كجم", isF: true, pad: false }
+  ];
+
+  const avKpiRowsHtml = avKpis.map(i => {
+    let pDisp = i.isF ? i.p.toFixed(3) + " كجم" : (i.pad ? String(i.p).padStart(2, '0') : i.p.toLocaleString());
+    let cDisp = i.isF ? i.c.toFixed(3) + " كجم" : (i.pad ? String(i.c).padStart(2, '0') : i.c.toLocaleString());
+    let trend = formatGrTrendBadge(i.c, i.p, i.hb, i.u, i.pad);
+    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${i.l}</td><td dir="ltr">${pDisp}</td><td dir="ltr" style="font-weight:bold;background:#f9fbfd;">${cDisp}</td><td>${trend}</td></tr>`;
+  }).join('');
+
   const pageAv1 = `
     <div class="gr-page">
       ${pageHeaderBanner(2)}
       <p style="font-weight:bold;color:#003366;margin-bottom:10px;">أتشرف بالعرض على سيادتكم أهم مؤشرات الأداء لكل قسم بالإدارة كالتالي:</p>
-      <div class="gr-hdr-banner"><span>1. قسم سلامة الطيران</span><span>Airport Safety Department</span></div>
+      <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — أولاً: مؤشرات الأداء العامة لمنطقة التحركات الجوية</span><span>Airport Safety Department</span></div>
       <table class="gr-tbl">
-        <thead><tr><th style="text-align:right;width:50%;">الشهر (السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:18%;">الفرق</th></tr></thead>
-        <tbody>
-          <tr><td style="text-align:right;font-weight:bold;">عدد التحركات الجوية</td><td>${movPrev.toLocaleString()}</td><td><b>${movCur.toLocaleString()}</b></td><td>${formatGrTrendBadge(movCur, movPrev, true, "", false)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">عدد الحوادث</td><td>${String(accPrev).padStart(2,'0')}</td><td><b>${String(accCur).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(accCur, accPrev, false, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">عدد الوقائع</td><td>${String(occPrev).padStart(2,'0')}</td><td><b>${String(occCur).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(occCur, occPrev, false, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">إجمالي حالات عدم المطابقة</td><td>${String(afPrev.total).padStart(2,'0')}</td><td><b>${String(afCur.total).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(afCur.total, afPrev.total, false, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">حالات عدم المطابقة المعلقة</td><td>${String(afPrev.open).padStart(2,'0')}</td><td><b>${String(afCur.open).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(afCur.open, afPrev.open, false, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">حالات عدم المطابقة التي تم تلافيها</td><td>${String(afPrev.closed).padStart(2,'0')}</td><td><b>${String(afCur.closed).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(afCur.closed, afPrev.closed, true, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">استبيان الطيارين</td><td>${String(survPrev.length).padStart(2,'0')}</td><td><b>${String(survCur.length).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(survCur.length, survPrev.length, true, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">الاجتماعات</td><td>01</td><td><b>${String(avMeetings).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(avMeetings, 1, true, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">تفتيشات السلامة</td><td>00</td><td><b>${String(avAudits).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(avAudits, 0, true, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">دورات توعية</td><td>01</td><td><b>${String(avCourses).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(avCourses, 1, true, "", true)}</td></tr>
-          <tr><td style="text-align:right;font-weight:bold;">إجمالي كمية F.O.D التي تم التقاطها وتجميعها خلال الشهر</td><td dir="ltr">${fodPrev.toFixed(3)} KG</td><td dir="ltr"><b>${fodCur.toFixed(3)} KG</b></td><td>${formatGrTrendBadge(fodCur, fodPrev, false, "KG", false)}</td></tr>
-        </tbody>
+        <thead><tr><th style="width:44%;text-align:right;padding-right:12px;">البيان</th><th style="width:18%;">${pmAr}</th><th style="width:18%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
+        <tbody>${avKpiRowsHtml}</tbody>
       </table>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-        <div style="flex:1;min-width:250px;height:175px;background:#fafafa;border:1px solid #ddd;padding:6px;border-radius:6px;"><canvas id="grAvDeptChart"></canvas></div>
-        <div style="flex:1;min-width:250px;height:175px;background:#fafafa;border:1px solid #ddd;padding:6px;border-radius:6px;"><canvas id="grAvStatusChart"></canvas></div>
+
+      <div class="gr-sub-banner">ثانياً: الحصر والتحليل البياني للمخالفات والوقائع وحصر المخاطر</div>
+      <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">المخالفات المرصودة طبقاً للإدارة المسؤولة</h5>
+          <div style="height:175px;"><canvas id="grAvChart1"></canvas></div>
+        </div>
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">تصنيف الوقائع والحوادث المسجلة</h5>
+          <div style="height:175px;"><canvas id="grAvChart2"></canvas></div>
+        </div>
       </div>
-      <div style="font-weight:bold;color:#003366;margin-bottom:6px;">حصر وتصنيف المخاطر (حالات عدم المطابقة المعلقة وما تم تلافيه):</div>
-      <ol style="line-height:1.65;font-size:11px;margin-bottom:8px;">
-        ${afCur.list.length ? afCur.list.map(f => `<li><b>${f.category} - ${f.item}</b> (${f.location}) — <span style="color:#003366;">الإجراء التصحيحي:</span> ${f.note} <b>[${f.closed ? 'تم' : 'معلق'}]</b></li>`).join('') : '<li>لا توجد حالات عدم مطابقة مسجلة خلال الشهر.</li>'}
+
+      <div style="font-weight:bold;color:#003366;margin-bottom:4px;font-size:11.5px;">حصر وتصنيف المخاطر (حالات عدم المطابقة المعلقة وما تم تلافيه):</div>
+      <ol style="line-height:1.6;font-size:10.5px;margin:0 0 8px 0;padding-right:20px;">
+        ${afCur.list.length ? afCur.list.map(f => `<li><b>${f.category} - ${f.item}</b> (${f.location}) — <span style="color:#003366;">الإجراء التصحيحي:</span> ${f.note} <b style="color:${f.closed ? '#28a745' : '#dc3545'};">[${f.closed ? 'تم' : 'معلق'}]</b></li>`).join('') : '<li>لا توجد حالات عدم مطابقة مسجلة خلال الشهر.</li>'}
       </ol>
-      <div style="font-weight:bold;font-size:12px;">• الحوادث: <span style="color:#28a745;">${accCur === 0 ? 'لا يوجد' : accCur}</span></div>
+      <div style="font-weight:bold;font-size:11.5px;">• الحوادث: <span style="color:#28a745;">${accCur === 0 ? 'لا يوجد' : accCur}</span></div>
       ${pageFooterBanner()}
     </div>
   `;
 
-  // الصفحة 3: 1. قسم سلامة الطيران (الوقائع + مصفوفة استبيان الطيارين + ملاحظات الكابتن + FOD)
-  const incRowsHtml = incCurList.length === 0
-    ? '<tr><td colspan="4" style="color:#28a745;font-weight:bold;">لا توجد وقائع مسجلة خلال الشهر</td></tr>'
-    : incCurList.map((i, idx) => `<tr><td>0${idx+1}</td><td>${i.Characterization || '-'}</td><td style="text-align:left;direction:ltr;font-size:9.5px;"><b>Description:</b> ${i.Description || '-'}<br><b>Action Taken:</b> ${i.Action_Taken || '-'}</td><td>${normalizeDateStr(i.Date)}<br><b>${i.CAR || '-'}</b></td></tr>`).join('');
-
-  const survMatrixRowsHtml = CRITERIA_LIST_GR.map(c => `
-    <tr>
-      <td style="text-align:left;font-weight:bold;padding:2px 6px;">${c}</td>
-      <td style="padding:2px;">${survMatrix[c].Excellent}</td>
-      <td style="padding:2px;">${survMatrix[c].Good}</td>
-      <td style="padding:2px;">${survMatrix[c].Poor}</td>
-      <td style="padding:2px;">${survMatrix[c]["N/A"]}</td>
-      <td style="padding:2px;">${survMatrix[c].Blank}</td>
-    </tr>
-  `).join('');
-
-  const survCommentsHtml = survComments.length === 0
-    ? '<tr><td colspan="5" style="text-align:center;color:#777;">No captain comments recorded for this month.</td></tr>'
-    : survComments.map(s => `<tr><td><b>${s.CAR || '-'}</b></td><td>${s.Flight_NO || '-'}</td><td>${s.TYPE || '-'}</td><td dir="ltr">${normalizeDateStr(s.Date)}</td><td>${s.REG || '-'}</td><td style="text-align:left;">${s.Captain_Comments}</td></tr>`).join('');
-
+  // الصفحة 3: إدارة سلامة المطارات (ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات التراكمي YTD)
   const pageAv2 = `
     <div class="gr-page">
       ${pageHeaderBanner(3)}
-      <div style="font-weight:bold;color:#003366;margin-bottom:6px;">• الوقائع: تم حصر عدد (${String(occCur).padStart(2,'0')}) واقعة وتصنيفها كالتالي:</div>
-      <table class="gr-tbl">
-        <thead><tr><th style="width:7%;">م</th><th style="width:20%;">تصنيف الواقعة</th><th style="width:53%;">الوصف والإجراء المتخذ</th><th style="width:20%;">التاريخ / الشركة</th></tr></thead>
-        <tbody>${incRowsHtml}</tbody>
-      </table>
-
-      <div style="font-weight:bold;color:#003366;margin:10px 0 6px 0;">• حصر استطلاع رأي الطيارين: تم عمل عدد (${survCur.length}) استعلام طيارين (Safety Captain Survey Report For ${mEngShort})</div>
-      <table class="gr-tbl" style="direction:ltr;font-size:8.5px;margin-bottom:8px;">
-        <thead><tr><th style="text-align:left;">Criteria</th><th>Excellent</th><th>Good</th><th>Poor</th><th>N/A</th><th>Blank</th></tr></thead>
-        <tbody>${survMatrixRowsHtml}</tbody>
-      </table>
-
-      <table class="gr-tbl" style="direction:ltr;font-size:9px;margin-bottom:10px;">
-        <thead><tr><th>Airline</th><th>FLT NO</th><th>Type</th><th>Date</th><th>REG</th><th>Captain Comments</th></tr></thead>
-        <tbody>${survCommentsHtml}</tbody>
-      </table>
-
-      <div style="font-weight:bold;color:#003366;margin:10px 0 6px 0;">• F.O.D Collected and Classifications:</div>
-      <table class="gr-tbl" style="direction:ltr;font-size:9.5px;">
-        <thead><tr><th>Day</th><th>Location</th><th>Area</th><th>Plastic</th><th>Metal</th><th>Total</th></tr></thead>
-        <tbody>
-          ${fodTableRowsHtml}
-          <tr style="background:#f0f4f8;font-weight:bold;"><td colspan="3">Total</td><td>${fodTotPlastic.toFixed(3)} kg</td><td>${fodTotMetal.toFixed(3)} kg</td><td>${fodCur.toFixed(3)} kg</td></tr>
-        </tbody>
-      </table>
-      ${pageFooterBanner()}
-    </div>
-  `;
-
-  // الصفحة 4: 2. السلامة والصحة المهنية (OSH) مع الأسهم الملونة
-  const oshTotalPrev = Number(oshPrev.kpis?.rectifiedFindings || 0) + Number(oshPrev.kpis?.pendingFindings || 0);
-  const oshTotalCur = Number(oshCur.kpis?.rectifiedFindings || 0) + Number(oshCur.kpis?.pendingFindings || 0);
-
-  const oshKpiRows = [
-    { l: "حالات عدم المطابقة", p: oshTotalPrev, c: oshTotalCur, hb: false },
-    { l: "حالات عدم المطابقة التي تم تلافيها", p: Number(oshPrev.kpis?.rectifiedFindings || 0), c: Number(oshCur.kpis?.rectifiedFindings || 0), hb: true },
-    { l: "حالات عدم المطابقة المعلقة", p: Number(oshPrev.kpis?.pendingFindings || 0), c: Number(oshCur.kpis?.pendingFindings || 0), hb: false },
-    { l: "الوقائع", p: Number(oshPrev.kpis?.incidents || 0), c: Number(oshCur.kpis?.incidents || 0), hb: false },
-    { l: "إصابات العمل", p: Number(oshPrev.kpis?.workInjuries || 0), c: Number(oshCur.kpis?.workInjuries || 0), hb: false },
-    { l: "الاجتماعات", p: Number(oshPrev.kpis?.meetings || 0), c: Number(oshCur.kpis?.meetings || 0), hb: true }
-  ].map(r => `<tr><td style="text-align:right;font-weight:bold;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td><b>${String(r.c).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`).join('');
-
-  const pageOsh = `
-    <div class="gr-page">
-      ${pageHeaderBanner(4)}
-      <div class="gr-hdr-banner" style="background:#fd7e14;"><span>2. قسم السلامة والصحة المهنية</span><span>Occupational Safety & Health</span></div>
-      <table class="gr-tbl">
-        <thead><tr><th style="text-align:right;width:50%;">الشهر (السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:18%;">الفرق</th></tr></thead>
-        <tbody>${oshKpiRows}</tbody>
-      </table>
-      <div style="height:175px;background:#fafafa;border:1px solid #ddd;padding:6px;border-radius:6px;margin-bottom:12px;"><canvas id="grOshDeptChart"></canvas></div>
-      <div style="font-weight:bold;color:#dc3545;margin-bottom:4px;">حالات عدم المطابقة (المخاطر) المعلقة:</div>
-      <ol style="line-height:1.6;font-size:11px;margin-bottom:8px;">${(oshCur.pendingList || []).length ? oshCur.pendingList.map(x => `<li>${x.text} <b>(${x.dept})</b></li>`).join('') : '<li>لا يوجد</li>'}</ol>
-      <div style="font-weight:bold;color:#28a745;margin-bottom:4px;">حالات عدم المطابقة (المخاطر) التي تم تلافيها:</div>
-      <ol style="line-height:1.6;font-size:11px;margin-bottom:8px;">${(oshCur.rectifiedList || []).length ? oshCur.rectifiedList.map(x => `<li>${x.text} <b>(${x.dept})</b></li>`).join('') : '<li>لا يوجد</li>'}</ol>
-      <div style="background:#f9fbfd;border:1px solid #ddd;padding:10px;border-radius:6px;font-size:11px;line-height:1.7;">
-        <div><b>• الحوادث:</b> ${oshCur.accidentsText || 'لا يوجد'} | <b>إصابات العمل:</b> ${oshCur.injuriesText || 'لا يوجد'}</div>
-        <div><b>• الوقائع:</b> ${oshCur.occurrencesText || 'لا يوجد'}</div>
-        <div><b>• الاجتماعات:</b> ${oshCur.meetingsText || '-'}</div>
-        <div><b>• نتائج الفحص والمرور الدوري:</b> ${oshCur.periodicText || '-'}</div>
+      <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات (YTD)</span><span>تراكمي حتى ${mAr}</span></div>
+      <div style="background:#fafafa;border:1px solid #ddd;padding:10px;border-radius:6px;margin-bottom:14px;">
+        <h5 style="color:#003366;margin:0 0 6px 0;font-size:11.5px;text-align:center;">منحنى حركة الطائرات التراكمي (${yCur}) حتى شهر ${mAr}</h5>
+        <div style="height:185px;"><canvas id="grAvSpiTrendChart"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+        <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">توزيع المؤشرات حسب التصنيف</h6>
+          <div style="height:185px;"><canvas id="grAvSpiCatChart"></canvas></div>
+        </div>
+        <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">مؤشرات الممرات والساحة</h6>
+          <div style="height:185px;"><canvas id="grAvSpiApronChart"></canvas></div>
+        </div>
+        <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">المهبط، الحياة البرية والأجسام الغريبة</h6>
+          <div style="height:185px;"><canvas id="grAvSpiWfChart"></canvas></div>
+        </div>
       </div>
       ${pageFooterBanner()}
     </div>
   `;
 
-  // الصفحة 5: 3. قسم سلامة الحماية المدنية (Civil Defense) مع الأسهم الملونة
+  // الصفحة 4: إدارة سلامة المطارات (رابعاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر)
+  let gI = {};
+  incCurList.forEach(i => { let ct = i.Characterization ? i.Characterization.split('/')[0].trim() : 'Others'; if (!gI[ct]) gI[ct] = []; gI[ct].push(i); });
+  let incSectionHtml = '';
+  if (Object.keys(gI).length === 0) {
+    incSectionHtml = `<div style="background:#e8f5e9;border:1.5px solid #28a745;padding:30px;border-radius:8px;text-align:center;margin:25px 0;"><i class="fa-solid fa-shield-halved" style="color:#28a745;font-size:3rem;margin-bottom:10px;"></i><h3 style="color:#155724;margin:0 0 6px 0;">سجل آمن 100%</h3><p style="color:#28a745;margin:0;font-weight:bold;font-size:12px;">لم يتم تسجيل أي حوادث أو وقائع في منطقة التحركات الجوية خلال شهر ${mAr}.</p></div>`;
+  } else {
+    let cIdx = 1;
+    for (let ct in gI) {
+      incSectionHtml += `<div style="background:#003366;color:#fff;font-weight:bold;padding:6px 12px;margin-top:10px;border-radius:4px;display:flex;justify-content:space-between;font-size:11px;direction:ltr;"><span>${ct} (${cIdx})</span><span>Count: ${gI[ct].length}</span></div><table class="gr-tbl" style="direction:ltr;text-align:left;margin-bottom:12px;"><thead><tr><th style="width:6%;">Seq</th><th style="width:54%;">Description / Action Taken</th><th style="width:15%;">Date</th><th style="width:25%;">Flight Information</th></tr></thead><tbody>`;
+      gI[ct].forEach((i, x) => {
+        let dt = normalizeDateStr(i.Date);
+        let ds = i.Description ? i.Description.replace(/\n/g, '<br>') : '-';
+        let ac = i.Action_Taken ? i.Action_Taken.replace(/\n/g, '<br>') : '-';
+        let dsDir = /[\u0600-\u06FF]/.test(ds) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+        let acDir = /[\u0600-\u06FF]/.test(ac) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+        let fInfo = `<b>Airline:</b> ${i.CAR || '-'}<br><b>Local Agent:</b> ${i.Equipment_Owned || '-'}<br><b>FLT NO:</b> ${i.Flight_No || '-'}<br><b>REG:</b> ${i.REG || '-'}`;
+        incSectionHtml += `<tr><td style="font-weight:bold;">0${x + 1}</td><td style="padding:7px 9px;"><div style="text-align:center;margin-bottom:2px;"><strong style="color:#003366;text-decoration:underline;font-size:10px;">الوصف / Description</strong></div><div style="${dsDir} margin-bottom:8px;line-height:1.4;font-size:9.5px;">${ds}</div><div style="text-align:center;margin-bottom:2px;"><strong style="color:#28a745;text-decoration:underline;font-size:10px;">الإجراء المتخذ / Action Taken</strong></div><div style="${acDir} line-height:1.4;font-size:9.5px;color:#155724;">${ac}</div></td><td style="font-weight:bold;">${dt}</td><td style="text-align:left;line-height:1.5;font-size:9px;">${fInfo}</td></tr>`;
+      });
+      incSectionHtml += `</tbody></table>`;
+      cIdx++;
+    }
+  }
+
+  const pageAv3 = `
+    <div class="gr-page">
+      ${pageHeaderBanner(4)}
+      <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — رابعاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span><span>إجمالي الوقائع: ${incCurList.length}</span></div>
+      ${incSectionHtml}
+      ${pageFooterBanner()}
+    </div>
+  `;
+
+  // الصفحة 5: إدارة سلامة المطارات (خامساً: استبيان الطيارين Pilot Safety Surveys)
+  let mS = { "Excellent": {}, "Good": {}, "Poor": {}, "N/A": {}, "Blank": {} };
+  CRITERIA_LIST_GR.forEach(c => { mS["Excellent"][c] = 0; mS["Good"][c] = 0; mS["Poor"][c] = 0; mS["N/A"][c] = 0; mS["Blank"][c] = 0; });
+  let aC = {}, eTC = { "Excellent": 0, "Good": 0, "Poor": 0, "N/A": 0, "Blank": 0 }, cL = [];
+  survCur.forEach(s => {
+    if (s.CAR) aC[s.CAR] = (aC[s.CAR] || 0) + 1;
+    CRITERIA_LIST_GR.forEach(c => { let v = s[c] || "Blank"; if (mS[v]) mS[v][c]++; if (eTC[v] !== undefined) eTC[v]++; });
+    if (s.Captain_Comments && String(s.Captain_Comments).trim() !== "") cL.push(s);
+  });
+
+  let mH = `<table class="gr-tbl" style="direction:ltr;text-align:center;font-size:8.5px;margin-bottom:10px;"><thead><tr><th style="text-align:left;width:40%;">Evaluation Criteria</th><th style="background:#28a745;width:12%;">Excellent</th><th style="background:#ffc107;color:#000;width:12%;">Good</th><th style="background:#dc3545;width:12%;">Poor</th><th style="background:#6c757d;width:12%;">N/A</th><th style="background:#1a2a6c;width:12%;">Blank</th></tr></thead><tbody>`;
+  CRITERIA_LIST_GR.forEach(c => {
+    mH += `<tr><td style="padding:2.5px 6px;text-align:left;font-weight:bold;background:#fbfbfb;">${c}</td><td style="padding:2.5px;color:${mS["Excellent"][c] > 0 ? '#28a745' : '#bbb'};font-weight:bold;">${mS["Excellent"][c] || 0}</td><td style="padding:2.5px;color:${mS["Good"][c] > 0 ? '#ffc107' : '#bbb'};font-weight:bold;">${mS["Good"][c] || 0}</td><td style="padding:2.5px;color:${mS["Poor"][c] > 0 ? '#dc3545' : '#bbb'};font-weight:bold;">${mS["Poor"][c] || 0}</td><td style="padding:2.5px;color:#777;">${mS["N/A"][c] || 0}</td><td style="padding:2.5px;color:#777;">${mS["Blank"][c] || 0}</td></tr>`;
+  });
+  mH += `</tbody></table>`;
+
+  let cH = `<div style="direction:ltr;text-align:left;"><h5 style="color:#003366;margin:6px 0;font-size:11px;">Captain Comments & Observations:</h5><table class="gr-tbl" style="direction:ltr;text-align:left;font-size:9px;"><thead><tr><th style="width:15%;">Airline</th><th style="width:12%;">FLT NO</th><th style="width:12%;">Type</th><th style="width:12%;">Date</th><th style="width:12%;">REG</th><th style="width:37%;">Comments</th></tr></thead><tbody>`;
+  if (cL.length === 0) cH += `<tr><td colspan="6" style="padding:6px;text-align:center;color:#777;">No comments recorded for this month.</td></tr>`;
+  else cL.forEach(s => {
+    let cmt = s.Captain_Comments || '-';
+    let cmtDir = /[\u0600-\u06FF]/.test(cmt) ? 'direction:rtl;text-align:right;' : 'direction:ltr;text-align:left;';
+    cH += `<tr><td style="font-weight:bold;">${s.CAR || '-'}</td><td>${s.Flight_NO || '-'}</td><td>${s.TYPE || '-'}</td><td dir="ltr">${normalizeDateStr(s.Date)}</td><td>${s.REG || '-'}</td><td style="${cmtDir}">${cmt}</td></tr>`;
+  });
+  cH += `</tbody></table></div>`;
+
+  const pageAv4 = `
+    <div class="gr-page">
+      ${pageHeaderBanner(5)}
+      <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — خامساً: استبيان الطيارين (Pilot Safety Surveys)</span><span>إجمالي الاستبيانات: ${survCur.length}</span></div>
+      <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">مشاركات شركات الطيران</h5><div style="height:160px;"><canvas id="grAvSurveyAirChart"></canvas></div></div>
+        <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">توزيع التقييم العام للخدمات</h5><div style="height:160px;"><canvas id="grAvSurveyEvalChart"></canvas></div></div>
+      </div>
+      <div style="text-align:center;margin-bottom:6px;"><h5 style="color:#003366;margin:0;font-size:11.5px;font-weight:bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5></div>
+      ${mH}${cH}
+      ${pageFooterBanner()}
+    </div>
+  `;
+
+  // الصفحة 6: إدارة سلامة المطارات (سادساً: حصر وتصنيف الأجسام الغريبة F.O.D Collected)
+  const pageAv5 = `
+    <div class="gr-page">
+      ${pageHeaderBanner(6)}
+      <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — سادساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span><span>شهر ${mAr}</span></div>
+      <table class="gr-tbl" style="direction:ltr;text-align:center;font-size:10px;">
+        <thead>
+          <tr><th rowspan="2" style="width:15%;">Date</th><th rowspan="2" style="width:32%;text-align:left;">Location</th><th rowspan="2" style="width:15%;">Area</th><th colspan="2" style="width:24%;">FOD Quantity</th><th rowspan="2" style="width:14%;">Total</th></tr>
+          <tr><th>Plastic (kg)</th><th>Metal (kg)</th></tr>
+        </thead>
+        <tbody>
+          ${fodTableRowsHtml}
+          <tr style="background:#f0f4f8;font-weight:bold;"><td colspan="3" style="text-align:left;padding:9px;">Total Weight</td><td style="padding:9px;color:#003366;">${fodTotPlastic.toFixed(3)} kg</td><td style="padding:9px;color:#003366;">${fodTotMetal.toFixed(3)} kg</td><td style="padding:9px;color:#28a745;font-size:12px;">${fodCur.toFixed(3)} kg</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:35px;text-align:left;direction:ltr;padding-left:15px;">
+        <div style="font-size:12px;font-weight:bold;color:#666;text-transform:uppercase;">Prepared By:</div>
+        <div style="font-size:15px;font-weight:900;color:#003366;margin:3px 0 2px 0;">${airportMgrName}</div>
+        <div style="font-size:12.5px;font-weight:700;color:#333;">Airport Safety Department</div>
+      </div>
+      ${pageFooterBanner()}
+    </div>
+  `;
+
+  // =========================================================================
+  // الصفحة 7: 2. قسم سلامة الحماية المدنية (الترتيب الثاني بعد سلامة المطارات)
+  // =========================================================================
   const cdKpiRows = [
-    { l: "التدريبات", p: Number(cdPrev.kpis?.drills || 0), c: Number(cdCur.kpis?.drills || 0), hb: true },
+    { l: "التدريبات وفقاً للخطة المخططة", p: Number(cdPrev.kpis?.drills || 0), c: Number(cdCur.kpis?.drills || 0), hb: true },
     { l: "الأعطال والملاحظات التي تم تسجيلها بسيارات الإطفاء", p: Number(cdPrev.kpis?.truckDefects || 0), c: Number(cdCur.kpis?.truckDefects || 0), hb: false },
     { l: "حالات عدم المطابقة لمعدات الإنقاذ والإطفاء المحملة داخل السيارات", p: Number(cdPrev.kpis?.equipDefects || 0), c: Number(cdCur.kpis?.equipDefects || 0), hb: false },
     { l: "حالات عدم المطابقة لمهمات الوقاية الشخصية", p: Number(cdPrev.kpis?.ppeDefects || 0), c: Number(cdCur.kpis?.ppeDefects || 0), hb: false },
@@ -642,32 +678,72 @@ async function generateConsolidatedMonthlyReport() {
       if (r.p === r.c) badge = `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">00 <i class="fa-solid fa-arrow-right"></i></span>`;
       else if (r.c === 'مطابق') badge = `<span style="color:#28a745;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${r.c} <i class="fa-solid fa-arrow-up"></i></span>`;
       else badge = `<span style="color:#dc3545;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${r.c} <i class="fa-solid fa-arrow-down"></i></span>`;
-      return `<tr><td style="text-align:right;font-weight:bold;">${r.l}</td><td>${r.p}</td><td><b>${r.c}</b></td><td>${badge}</td></tr>`;
+      return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${r.p}</td><td style="font-weight:bold;background:#f9fbfd;">${r.c}</td><td>${badge}</td></tr>`;
     }
-    return `<tr><td style="text-align:right;font-weight:bold;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td><b>${String(r.c).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`;
+    return `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;">${String(r.c).padStart(2,'0')}</td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`;
   }).join('');
 
   const pageCd = `
     <div class="gr-page">
-      ${pageHeaderBanner(5)}
-      <div class="gr-hdr-banner" style="background:#dc3545;"><span>3. قسم سلامة الحماية المدنية</span><span>Civil Defense & ARFF</span></div>
+      ${pageHeaderBanner(7)}
+      <div class="gr-hdr-banner" style="background:#dc3545;"><span>2. قسم سلامة الحماية المدنية</span><span>Civil Defense & ARFF</span></div>
       <table class="gr-tbl">
-        <thead><tr><th style="text-align:right;width:50%;">الشهر (السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:18%;">الفرق</th></tr></thead>
+        <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
         <tbody>${cdKpiRows}</tbody>
       </table>
       <div style="height:175px;background:#fafafa;border:1px solid #ddd;padding:6px;border-radius:6px;margin-bottom:12px;"><canvas id="grCdCompareChart"></canvas></div>
-      <div style="font-weight:bold;color:#dc3545;margin-bottom:5px;">حالات عدم المطابقة والملاحظات المعلقة:</div>
+      <div style="font-weight:bold;color:#dc3545;margin-bottom:5px;font-size:11.5px;">حالات عدم المطابقة والملاحظات المعلقة:</div>
       <table class="gr-tbl">
         <thead><tr><th style="width:8%;">م</th><th>الملاحظات المعلقة</th><th style="width:25%;">الإدارة المعنية</th></tr></thead>
         <tbody>${(cdCur.pendingObs || []).length ? cdCur.pendingObs.map((x, i) => `<tr><td>${i+1}</td><td style="text-align:right;">${x.text}</td><td><b>${x.dept}</b></td></tr>`).join('') : '<tr><td colspan="3">لا يوجد</td></tr>'}</tbody>
       </table>
-      <div style="font-weight:bold;color:#003366;margin-bottom:4px;">التدريبات المنفذة خلال الشهر:</div>
-      <ol style="line-height:1.6;font-size:11px;">${(cdCur.trainings || []).length ? cdCur.trainings.map(t => `<li>${t}</li>`).join('') : '<li>لا يوجد</li>'}</ol>
+      <div style="font-weight:bold;color:#003366;margin-bottom:4px;font-size:11.5px;">التدريبات المنفذة خلال الشهر:</div>
+      <ol style="line-height:1.6;font-size:11px;margin:0;">${(cdCur.trainings || []).length ? cdCur.trainings.map(t => `<li>${t}</li>`).join('') : '<li>لا يوجد</li>'}</ol>
       ${pageFooterBanner()}
     </div>
   `;
 
-  // الصفحة 6: 4. قسم البيئة ومكافحة مخاطر الحياة البرية مع الأسهم الملونة
+  // =========================================================================
+  // الصفحة 8: 3. قسم السلامة والصحة المهنية (الترتيب الثالث)
+  // =========================================================================
+  const oshTotalPrev = Number(oshPrev.kpis?.rectifiedFindings || 0) + Number(oshPrev.kpis?.pendingFindings || 0);
+  const oshTotalCur = Number(oshCur.kpis?.rectifiedFindings || 0) + Number(oshCur.kpis?.pendingFindings || 0);
+
+  const oshKpiRows = [
+    { l: "حالات عدم المطابقة (الإجمالي)", p: oshTotalPrev, c: oshTotalCur, hb: false },
+    { l: "حالات عدم المطابقة التي تم تلافيها", p: Number(oshPrev.kpis?.rectifiedFindings || 0), c: Number(oshCur.kpis?.rectifiedFindings || 0), hb: true },
+    { l: "حالات عدم المطابقة المعلقة", p: Number(oshPrev.kpis?.pendingFindings || 0), c: Number(oshCur.kpis?.pendingFindings || 0), hb: false },
+    { l: "الوقائع", p: Number(oshPrev.kpis?.incidents || 0), c: Number(oshCur.kpis?.incidents || 0), hb: false },
+    { l: "إصابات العمل", p: Number(oshPrev.kpis?.workInjuries || 0), c: Number(oshCur.kpis?.workInjuries || 0), hb: false },
+    { l: "الاجتماعات", p: Number(oshPrev.kpis?.meetings || 0), c: Number(oshCur.kpis?.meetings || 0), hb: true }
+  ].map(r => `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;">${String(r.c).padStart(2,'0')}</td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`).join('');
+
+  const pageOsh = `
+    <div class="gr-page">
+      ${pageHeaderBanner(8)}
+      <div class="gr-hdr-banner" style="background:#fd7e14;"><span>3. قسم السلامة والصحة المهنية</span><span>Occupational Safety & Health</span></div>
+      <table class="gr-tbl">
+        <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
+        <tbody>${oshKpiRows}</tbody>
+      </table>
+      <div style="height:175px;background:#fafafa;border:1px solid #ddd;padding:6px;border-radius:6px;margin-bottom:12px;"><canvas id="grOshDeptChart"></canvas></div>
+      <div style="font-weight:bold;color:#dc3545;margin-bottom:4px;font-size:11.5px;">حالات عدم المطابقة (المخاطر) المعلقة:</div>
+      <ol style="line-height:1.6;font-size:11px;margin-bottom:8px;">${(oshCur.pendingList || []).length ? oshCur.pendingList.map(x => `<li>${x.text} <b>(${x.dept})</b></li>`).join('') : '<li>لا يوجد</li>'}</ol>
+      <div style="font-weight:bold;color:#28a745;margin-bottom:4px;font-size:11.5px;">حالات عدم المطابقة (المخاطر) التي تم تلافيها:</div>
+      <ol style="line-height:1.6;font-size:11px;margin-bottom:8px;">${(oshCur.rectifiedList || []).length ? oshCur.rectifiedList.map(x => `<li>${x.text} <b>(${x.dept})</b></li>`).join('') : '<li>لا يوجد</li>'}</ol>
+      <div style="background:#f9fbfd;border:1px solid #ddd;padding:10px;border-radius:6px;font-size:11px;line-height:1.7;">
+        <div><b>• الحوادث:</b> ${oshCur.accidentsText || 'لا يوجد'} | <b>إصابات العمل:</b> ${oshCur.injuriesText || 'لا يوجد'}</div>
+        <div><b>• الوقائع:</b> ${oshCur.occurrencesText || 'لا يوجد'}</div>
+        <div><b>• الاجتماعات:</b> ${oshCur.meetingsText || '-'}</div>
+        <div><b>• نتائج الفحص والمرور الدوري:</b> ${oshCur.periodicText || '-'}</div>
+      </div>
+      ${pageFooterBanner()}
+    </div>
+  `;
+
+  // =========================================================================
+  // الصفحة 9: 4. قسم البيئة ومكافحة مخاطر الحياة البرية (الترتيب الرابع)
+  // =========================================================================
   const envTotalPrev = Number(envPrev.kpis?.pendingEnv || 0) + Number(envPrev.kpis?.rectifiedEnv || 0);
   const envTotalCur = Number(envCur.kpis?.pendingEnv || 0) + Number(envCur.kpis?.rectifiedEnv || 0);
 
@@ -676,14 +752,14 @@ async function generateConsolidatedMonthlyReport() {
     { l: "الحالات والمخاطر البيئية التي تم تلافيها", p: Number(envPrev.kpis?.rectifiedEnv || 0), c: Number(envCur.kpis?.rectifiedEnv || 0), hb: true },
     { l: "إجمالي الحالات والمخاطر البيئية", p: envTotalPrev, c: envTotalCur, hb: false },
     { l: "الاجتماعات", p: Number(envPrev.kpis?.meetingsEnv || 0), c: Number(envCur.kpis?.meetingsEnv || 0), hb: true }
-  ].map(r => `<tr><td style="text-align:right;font-weight:bold;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td><b>${String(r.c).padStart(2,'0')}</b></td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`).join('');
+  ].map(r => `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;">${String(r.c).padStart(2,'0')}</td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`).join('');
 
   const pageEnv = `
     <div class="gr-page">
-      ${pageHeaderBanner(6)}
+      ${pageHeaderBanner(9)}
       <div class="gr-hdr-banner" style="background:#28a745;"><span>4. قسم البيئة ومكافحة مخاطر الحياة البرية</span><span>Environment & Wildlife</span></div>
       <table class="gr-tbl">
-        <thead><tr><th style="text-align:right;width:50%;">الشهر (السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:18%;">الفرق</th></tr></thead>
+        <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
         <tbody>${envKpiRows}</tbody>
       </table>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
@@ -695,22 +771,37 @@ async function generateConsolidatedMonthlyReport() {
         <div><b>• نتائج التفتيشات البيئية:</b><br>أ- التفتيش والمرور الأسبوعي على سور السلك بمنطقة العمليات الجوية: ${envCur.fenceText || '-'}<br>ب- التفتيش والمرور الشهري على مناطق الجذب الخارجية للطيور والحياة البرية: ${envCur.externalText || '-'}</div>
         <div><b>• نتيجة تقييم أداء شركة المكافحة:</b> <b>(${envCur.pestEval || '78.0%'})</b> عن الشهر الحالي وتم إرساله لإدارة الشئون الإدارية.</div>
       </div>
-      <div style="font-weight:bold;color:#003366;margin-bottom:5px;">نتائج المرور والملاحظات التي تم رصدها:</div>
-      <ol style="line-height:1.6;font-size:10.5px;">${(envCur.observations || []).length ? envCur.observations.map(o => `<li><b>${o.desc}</b> (${o.location}) - ${o.date} — <span style="color:#003366;">الإجراء التصحيحي:</span> ${o.action} <b>[${o.status}]</b></li>`).join('') : '<li>لا توجد ملاحظات مسجلة خلال الشهر.</li>'}</ol>
+      <div style="font-weight:bold;color:#003366;margin-bottom:5px;font-size:11.5px;">نتائج المرور والملاحظات التي تم رصدها:</div>
+      <ol style="line-height:1.6;font-size:10.5px;margin:0;">${(envCur.observations || []).length ? envCur.observations.map(o => `<li><b>${o.desc}</b> (${o.location}) - ${o.date} — <span style="color:#003366;">الإجراء التصحيحي:</span> ${o.action} <b>[${o.status}]</b></li>`).join('') : '<li>لا توجد ملاحظات مسجلة خلال الشهر.</li>'}</ol>
       ${pageFooterBanner()}
     </div>
   `;
 
-  // الصفحة 7: توصيات إدارة السلامة والمطابقة (الخاتمة)
-  const pageRecs = `
+  // =========================================================================
+  // الصفحة 10: 5. الملاحظات العامة على الإدارة ككل (التفتيشات ودورات التوعية) + التوصيات الختامية
+  // =========================================================================
+  const genKpiRows = [
+    { l: "تفتيشات السلامة والمراجعات العامة (Safety Audits & Inspections)", p: genAuditsPrev, c: genAuditsCur, hb: true },
+    { l: "دورات التوعية والتدريب العام (Safety Awareness & Training Courses)", p: genCoursesPrev, c: genCoursesCur, hb: true },
+    { l: "الاجتماعات التنسيقية للإدارة العامة (General Department Meetings)", p: genMeetingsPrev, c: genMeetingsCur, hb: true }
+  ].map(r => `<tr><td style="text-align:right;font-weight:bold;padding-right:12px;">${r.l}</td><td>${String(r.p).padStart(2,'0')}</td><td style="font-weight:bold;background:#f9fbfd;">${String(r.c).padStart(2,'0')}</td><td>${formatGrTrendBadge(r.c, r.p, r.hb, "", true)}</td></tr>`).join('');
+
+  const pageGenAndRecs = `
     <div class="gr-page">
-      ${pageHeaderBanner(7)}
-      <div class="gr-hdr-banner" style="background:#003366;"><span>توصيات الإدارة العامة للسلامة والمطابقة</span><span>General Department Recommendations</span></div>
-      <ul style="line-height:2.1;font-size:13px;font-weight:bold;color:#222;margin:20px 0 40px 0;padding-right:24px;">
+      ${pageHeaderBanner(10)}
+      <div class="gr-hdr-banner" style="background:#17a2b8;"><span>5. الملاحظات العامة والأنشطة المشتركة للإدارة العامة للسلامة والمطابقة ككل</span><span>General Department Activities</span></div>
+      <table class="gr-tbl">
+        <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
+        <tbody>${genKpiRows}</tbody>
+      </table>
+      ${genNotesText ? `<div style="background:#f0f8ff;border-right:4px solid #17a2b8;padding:10px 14px;border-radius:6px;font-size:11.5px;font-weight:bold;color:#003366;margin-bottom:18px;"><b>ملاحظات عامة على الإدارة:</b> ${genNotesText}</div>` : ''}
+
+      <div class="gr-hdr-banner" style="background:#003366;margin-top:14px;"><span>6. توصيات الإدارة العامة للسلامة والمطابقة</span><span>General Department Recommendations</span></div>
+      <ul style="line-height:2.0;font-size:12.5px;font-weight:bold;color:#222;margin:14px 0 28px 0;padding-right:24px;">
         ${recs.map(r => `<li>${r}</li>`).join('')}
       </ul>
-      <div style="text-align:center;font-size:15px;font-weight:bold;margin:30px 0;">وتفضلوا بقبول فائق الاحترام ،،</div>
-      <div style="text-align:left;padding-left:35px;margin-top:30px;">
+      <div style="text-align:center;font-size:15px;font-weight:bold;margin:20px 0;">وتفضلوا بقبول فائق الاحترام ،،</div>
+      <div style="text-align:left;padding-left:35px;margin-top:20px;">
         <div style="font-size:14px;color:#555;font-weight:bold;">مدير إدارة السلامة والمطابقة</div>
         <div style="font-size:18px;color:#003366;font-weight:900;margin-top:4px;">${mgrName}</div>
       </div>
@@ -719,50 +810,150 @@ async function generateConsolidatedMonthlyReport() {
   `;
 
   const out = document.getElementById('printable-general-report');
-  out.innerHTML = pageCover + pageAv1 + pageAv2 + pageOsh + pageCd + pageEnv + pageRecs;
+  out.innerHTML = pageCover + pageAv1 + pageAv2 + pageAv3 + pageAv4 + pageAv5 + pageCd + pageOsh + pageEnv + pageGenAndRecs;
   out.style.display = 'block';
 
+  // تدمير الرسوم القديمة ورسم الجديدة
   grChartInstances.forEach(c => { try { c.destroy(); } catch (e) {} });
   grChartInstances = [];
 
   const intTickOpts = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } };
 
-  // 1. رسوم سلامة الطيران
-  let avDeptMap = {};
-  afCur.list.forEach(f => {
-    let d = f.responsible || 'أخرى';
-    if (!avDeptMap[d]) avDeptMap[d] = { open: 0, closed: 0 };
-    if (f.closed) avDeptMap[d].closed++; else avDeptMap[d].open++;
-  });
-  const ctxAv1 = document.getElementById('grAvDeptChart')?.getContext('2d');
+  // 1. رسوم سلامة المطارات (الصفحة 2)
+  const ctxAv1 = document.getElementById('grAvChart1')?.getContext('2d');
   if (ctxAv1) {
-    const lbs = Object.keys(avDeptMap).length ? Object.keys(avDeptMap) : ['الهندسة المدنية', 'الهندسة الكهربائية'];
+    const dKeys = Object.keys(afCur.deptOpenMap);
     grChartInstances.push(new Chart(ctxAv1, {
       type: 'bar',
       data: {
-        labels: lbs,
-        datasets: [
-          { label: 'معلق', data: lbs.map(l => avDeptMap[l]?.open || 0), backgroundColor: '#dc3545' },
-          { label: 'تم', data: lbs.map(l => avDeptMap[l]?.closed || 0), backgroundColor: '#28a745' }
-        ]
+        labels: dKeys.length ? dKeys : ['لا توجد مخالفات معلقة'],
+        datasets: [{ label: 'المخاطر طبقاً للإدارة', data: dKeys.length ? Object.values(afCur.deptOpenMap) : [0], backgroundColor: '#003366', borderRadius: 4 }]
       },
-      options: { ...intTickOpts, plugins: { title: { display: true, text: 'المخاطر طبقاً للإدارة / الجهة (سلامة الطيران)' } } }
+      options: intTickOpts
     }));
   }
 
-  const ctxAv2 = document.getElementById('grAvStatusChart')?.getContext('2d');
+  let iTC = {};
+  incCurList.forEach(i => { let ct = i.Characterization ? i.Characterization.split('/')[0].trim() : 'أخرى'; iTC[ct] = (iTC[ct] || 0) + 1; });
+  const ctxAv2 = document.getElementById('grAvChart2')?.getContext('2d');
   if (ctxAv2) {
+    const iKeys = Object.keys(iTC);
     grChartInstances.push(new Chart(ctxAv2, {
       type: 'bar',
       data: {
-        labels: ['معلق', 'تم', 'الإجمالي'],
-        datasets: [{ label: 'حالات عدم المطابقة', data: [afCur.open, afCur.closed, afCur.total], backgroundColor: ['#dc3545', '#28a745', '#6c757d'] }]
+        labels: iKeys.length ? iKeys : ['لا توجد وقائع'],
+        datasets: [{ label: 'الوقائع', data: iKeys.length ? Object.values(iTC) : [0], backgroundColor: '#dc3545', borderRadius: 4 }]
       },
-      options: { ...intTickOpts, plugins: { title: { display: true, text: 'إجمالي المخاطر المرصودة (سلامة الطيران)' } } }
+      options: intTickOpts
     }));
   }
 
-  // 2. رسم السلامة والصحة المهنية
+  // 2. رسوم مؤشرات الأداء التشغيلية YTD (الصفحة 3)
+  const mNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const ytdMonths = mNames.slice(0, mCurInt);
+  const ytdMovData = ytdMonths.map((_, i) => lookupMovements(`${yCur}-${String(i + 1).padStart(2, '0')}`, spiCur, yCur, i + 1));
+
+  const ctxSpiTrend = document.getElementById('grAvSpiTrendChart')?.getContext('2d');
+  if (ctxSpiTrend) {
+    grChartInstances.push(new Chart(ctxSpiTrend, {
+      type: 'line',
+      data: {
+        labels: ytdMonths,
+        datasets: [{ label: `Movements (${yCur})`, data: ytdMovData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.12)', borderWidth: 2.5, pointBackgroundColor: '#28a745', pointBorderColor: '#fff', pointRadius: 4, tension: 0.35, fill: true }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    }));
+  }
+
+  const ytdCatTotals = {}, ytdItemTotals = {};
+  SPI_CONFIG_GR.forEach(cO => {
+    let cSum = 0;
+    cO.items.forEach(itm => {
+      let itmSum = 0;
+      for (let m = 1; m <= mCurInt; m++) itmSum += ((spiCur?.events && spiCur.events[itm] && spiCur.events[itm][m]) ? Number(spiCur.events[itm][m]) : 0);
+      ytdItemTotals[itm] = itmSum; cSum += itmSum;
+    });
+    ytdCatTotals[cO.category] = cSum;
+  });
+
+  const pal = ['#e74c3c', '#e67e22', '#f39c12', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6', '#34495e'];
+
+  const ctxSpiCat = document.getElementById('grAvSpiCatChart')?.getContext('2d');
+  if (ctxSpiCat) {
+    let cLabels = SPI_CONFIG_GR.map(c => c.category);
+    let cCounts = SPI_CONFIG_GR.map(c => ytdCatTotals[c.category] || 0);
+    let hasC = cCounts.some(v => v > 0);
+    grChartInstances.push(new Chart(ctxSpiCat, {
+      type: 'doughnut',
+      data: { labels: hasC ? cLabels : ['لا توجد وقائع مسجلة'], datasets: [{ data: hasC ? cCounts : [1], backgroundColor: hasC ? pal : ['#e0e0e0'], borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 7.5 } } } } }
+    }));
+  }
+
+  const ctxSpiApron = document.getElementById('grAvSpiApronChart')?.getContext('2d');
+  if (ctxSpiApron) {
+    let aCat = SPI_CONFIG_GR.find(c => c.category.includes('Taxiway & Apron'));
+    let aLabels = aCat ? aCat.items.map(i => i.replace(/^Reported\s+/i, '')) : [];
+    let aCounts = aCat ? aCat.items.map(i => ytdItemTotals[i] || 0) : [];
+    let hasA = aCounts.some(v => v > 0);
+    grChartInstances.push(new Chart(ctxSpiApron, {
+      type: 'pie',
+      data: { labels: hasA ? aLabels : ['لا توجد ملاحظات على الممرات'], datasets: [{ data: hasA ? aCounts : [1], backgroundColor: hasA ? ['#2980b9', '#3498db', '#1abc9c', '#16a085', '#27ae60', '#2ecc71', '#f39c12', '#e67e22', '#d35400', '#c0392b', '#8e44ad'] : ['#e0e0e0'], borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { size: 7 } } } } }
+    }));
+  }
+
+  const ctxSpiWf = document.getElementById('grAvSpiWfChart')?.getContext('2d');
+  if (ctxSpiWf) {
+    let g3 = [...((SPI_CONFIG_GR.find(c => c.category.includes('Runway Incursion')) || {}).items || []), ...((SPI_CONFIG_GR.find(c => c.category.includes('Bird / Wildlife')) || {}).items || []), ...((SPI_CONFIG_GR.find(c => c.category.includes('FOD')) || {}).items || [])];
+    let g3L = g3.map(i => i.replace(/^Reported\s+/i, '').replace(/^Inspections in which\s+/i, ''));
+    let g3C = g3.map(i => ytdItemTotals[i] || 0);
+    let hasG3 = g3C.some(v => v > 0);
+    grChartInstances.push(new Chart(ctxSpiWf, {
+      type: 'doughnut',
+      data: { labels: hasG3 ? g3L.filter((_, idx) => g3C[idx] > 0) : ['لا توجد ملاحظات مهبط/حياة برية'], datasets: [{ data: hasG3 ? g3C.filter(v => v > 0) : [1], backgroundColor: hasG3 ? ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6'] : ['#e0e0e0'], borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { size: 7 } } } } }
+    }));
+  }
+
+  // 3. رسوم استبيان الطيارين (الصفحة 5)
+  const ctxSA = document.getElementById('grAvSurveyAirChart')?.getContext('2d');
+  if (ctxSA) {
+    grChartInstances.push(new Chart(ctxSA, {
+      type: 'bar',
+      data: { labels: Object.keys(aC), datasets: [{ label: 'الاستبيانات', data: Object.values(aC), backgroundColor: '#003366', borderRadius: 4 }] },
+      options: intTickOpts
+    }));
+  }
+
+  const ctxSE = document.getElementById('grAvSurveyEvalChart')?.getContext('2d');
+  if (ctxSE) {
+    grChartInstances.push(new Chart(ctxSE, {
+      type: 'doughnut',
+      data: { labels: ['ممتاز', 'جيد', 'ضعيف', 'غير منطبق', 'فارغ'], datasets: [{ data: Object.values(eTC), backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d', '#003366'] }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    }));
+  }
+
+  // 4. رسم الحماية المدنية (الصفحة 7)
+  const ctxCd = document.getElementById('grCdCompareChart')?.getContext('2d');
+  if (ctxCd) {
+    const cdKeys = ['drills', 'truckDefects', 'equipDefects', 'ppeDefects', 'commDefects', 'bldgDefects', 'pendingTotal', 'rectifiedTotal'];
+    const cdLabels = ['التدريبات', 'أعطال السيارات', 'المعدات', 'مهمات الوقاية', 'الاتصالات', 'المبنى', 'المعلقة', 'المتلافية'];
+    grChartInstances.push(new Chart(ctxCd, {
+      type: 'bar',
+      data: {
+        labels: cdLabels,
+        datasets: [
+          { label: pmAr, data: cdKeys.map(k => Number(cdPrev.kpis?.[k] || 0)), backgroundColor: '#6c757d' },
+          { label: mAr, data: cdKeys.map(k => Number(cdCur.kpis?.[k] || 0)), backgroundColor: '#dc3545' }
+        ]
+      },
+      options: { ...intTickOpts, plugins: { title: { display: true, text: 'مقارنة مؤشرات الحماية المدنية بين الشهر السابق والحالي' } } }
+    }));
+  }
+
+  // 5. رسم السلامة والصحة المهنية (الصفحة 8)
   let oshDeptMap = { "الهندسة المدنية": { open: 0, closed: 0 }, "الهندسة الميكانيكية": { open: 0, closed: 0 }, "الهندسة الكهربائية": { open: 0, closed: 0 }, "إدارة الاتصالات": { open: 0, closed: 0 }, "شركات خارجية": { open: 0, closed: 0 } };
   (oshCur.pendingList || []).forEach(x => { if (!oshDeptMap[x.dept]) oshDeptMap[x.dept] = { open: 0, closed: 0 }; oshDeptMap[x.dept].open++; });
   (oshCur.rectifiedList || []).forEach(x => { if (!oshDeptMap[x.dept]) oshDeptMap[x.dept] = { open: 0, closed: 0 }; oshDeptMap[x.dept].closed++; });
@@ -782,25 +973,7 @@ async function generateConsolidatedMonthlyReport() {
     }));
   }
 
-  // 3. رسم الحماية المدنية
-  const ctxCd = document.getElementById('grCdCompareChart')?.getContext('2d');
-  if (ctxCd) {
-    const cdKeys = ['drills', 'truckDefects', 'equipDefects', 'ppeDefects', 'commDefects', 'bldgDefects', 'pendingTotal', 'rectifiedTotal'];
-    const cdLabels = ['التدريبات', 'أعطال السيارات', 'المعدات', 'مهمات الوقاية', 'الاتصالات', 'المبنى', 'المعلقة', 'المتلافية'];
-    grChartInstances.push(new Chart(ctxCd, {
-      type: 'bar',
-      data: {
-        labels: cdLabels,
-        datasets: [
-          { label: pmAr, data: cdKeys.map(k => Number(cdPrev.kpis?.[k] || 0)), backgroundColor: '#6c757d' },
-          { label: mAr, data: cdKeys.map(k => Number(cdCur.kpis?.[k] || 0)), backgroundColor: '#dc3545' }
-        ]
-      },
-      options: { ...intTickOpts, plugins: { title: { display: true, text: 'مقارنة مؤشرات الحماية المدنية بين الشهر السابق والحالي' } } }
-    }));
-  }
-
-  // 4. رسوم البيئة والحياة البرية
+  // 6. رسوم البيئة والحياة البرية (الصفحة 9)
   let envDeptMap = {}, envCatMap = {};
   (envCur.observations || []).forEach(o => {
     const isDone = o.status === 'تم';
@@ -854,7 +1027,7 @@ async function exportGrPagesAsImages() {
       cvs.toBlob(b => {
         const u = URL.createObjectURL(b);
         const a = document.createElement('a');
-        a.href = u; a.download = `General_Safety_Report_${mStr}_Page_0${i + 1}.png`;
+        a.href = u; a.download = `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`;
         a.click();
         setTimeout(() => { URL.revokeObjectURL(u); res(); }, 500);
       }, 'image/png');

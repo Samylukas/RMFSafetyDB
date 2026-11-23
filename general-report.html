@@ -15,7 +15,8 @@
     .fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}
     .gr-page{max-width:880px;margin:0 auto 25px auto;background:#fff;padding:30px 26px;border:1.5px solid #cbd5e1;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,0.05);}
     .gr-hdr-banner{background:#003366;color:#fff;padding:9px 15px;border-radius:6px;font-weight:900;font-size:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
-    .gr-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:15px;}
+    .gr-sub-banner{background:#f0f4f8;color:#003366;border-right:4px solid #003366;padding:6px 12px;font-weight:bold;font-size:12px;margin:12px 0 8px 0;border-radius:4px;}
+    .gr-tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:14px;}
     .gr-tbl th{background:#003366;color:#fff;padding:7px 6px;border:1px solid #1a4a75;text-align:center;}
     .gr-tbl td{padding:6px 8px;border:1px solid #ccc;text-align:center;}
   </style>
@@ -34,7 +35,7 @@
     <h2 style="color:#e67e22;">التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة</h2>
   </div>
   <div class="header-left">
-    <button type="button"  class="hdr-btn-home" onclick="window.location.href='index.html'" title="العودة للرئيسية">
+    <button type="button" class="hdr-btn-home" onclick="window.location.href='index.html'" title="العودة للرئيسية">
       <i class="fa-solid fa-house"></i> الرئيسية
     </button>
     <button type="button" class="hdr-btn-logout" onclick="try{sessionStorage.removeItem('rmf_user');}catch(e){}window.location.href='index.html'" title="تسجيل الخروج">
@@ -61,16 +62,29 @@
         <input type="text" id="grManagerName" value="محمد محمد مرسي">
       </div>
       <div class="form-group">
-        <label>اجتماعات سلامة الطيران (الشهر الحالي):</label>
-        <input type="number" id="grAvMeetings" value="2" min="0">
+        <label>رئيس قسم سلامة المطارات:</label>
+        <input type="text" id="grAirportSafetyMgr" value="سامي لوكاس">
       </div>
-      <div class="form-group">
-        <label>تفتيشات سلامة الطيران (الشهر الحالي):</label>
-        <input type="number" id="grAvAudits" value="0" min="0">
+    </div>
+
+    <!-- الملاحظات العامة والأنشطة المشتركة على الإدارة ككل -->
+    <div style="border:1.5px solid #17a2b8;border-radius:8px;overflow:hidden;margin-bottom:18px;background:#fff;">
+      <div style="background:#17a2b8;color:#fff;padding:8px 14px;font-weight:bold;">
+        <i class="fa-solid fa-building-shield"></i> الملاحظات العامة والأنشطة المشتركة على الإدارة العامة ككل (التفتيشات، دورات التوعية، والاجتماعات):
       </div>
-      <div class="form-group">
-        <label>دورات التوعية (سلامة الطيران):</label>
-        <input type="number" id="grAvCourses" value="2" min="0">
+      <div style="padding:14px;">
+        <div class="form-grid" style="margin-bottom:10px;">
+          <div class="form-group"><label>تفتيشات السلامة (الشهر السابق):</label><input type="number" id="grGenAuditsPrev" value="0" min="0"></div>
+          <div class="form-group"><label>تفتيشات السلامة (الشهر الحالي):</label><input type="number" id="grGenAuditsCur" value="0" min="0"></div>
+          <div class="form-group"><label>دورات التوعية (الشهر السابق):</label><input type="number" id="grGenCoursesPrev" value="1" min="0"></div>
+          <div class="form-group"><label>دورات التوعية (الشهر الحالي):</label><input type="number" id="grGenCoursesCur" value="2" min="0"></div>
+          <div class="form-group"><label>الاجتماعات العامة (الشهر السابق):</label><input type="number" id="grGenMeetingsPrev" value="1" min="0"></div>
+          <div class="form-group"><label>الاجتماعات العامة (الشهر الحالي):</label><input type="number" id="grGenMeetingsCur" value="2" min="0"></div>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>ملاحظات عامة إضافية على مستوى الإدارة العامة للسلامة والمطابقة ككل:</label>
+          <textarea id="grGenNotesText" class="inc-textarea" style="height:60px;" placeholder="اكتب أي ملاحظات عامة تخص الإدارة ككل (التفتيشات الدورية، برامج التوعية والتدريب، التنسيق مع الجهات الخارجية)...">تم تنفيذ خطة التوعية والتفتيش الدوري على الإدارات والشركات العاملة بالمطار وفقاً للبرنامج الزمني المعتمد.</textarea>
+        </div>
       </div>
     </div>
 
