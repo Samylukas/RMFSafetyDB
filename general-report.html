@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    html,body{max-width:100vw;overflow-x:hidden;margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;background:#f4f6f8;}
+    .fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}
+    .gr-page{max-width:880px;margin:0 auto 25px auto;background:#fff;padding:30px 26px;border:1.5px solid #cbd5e1;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,0.05);}
+    .gr-hdr-banner{background:#003366;color:#fff;padding:9px 15px;border-radius:6px;font-weight:900;font-size:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+    .gr-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:15px;}
+    .gr-tbl th{background:#003366;color:#fff;padding:7px 6px;border:1px solid #1a4a75;text-align:center;}
+    .gr-tbl td{padding:6px 8px;border:1px solid #ccc;text-align:center;}
+  </style>
+</head>
+<body>
+
+<button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
+<button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
+
+<div class="header" style="display:flex;width:100%;padding:8px 15px;justify-content:space-between;align-items:center;background:#fff;border-bottom:2.5px solid #003366;">
+  <img src="LOGO-removebg-preview (1).png" alt="Main Logo" onclick="window.location.href='index.html'" style="cursor:pointer;max-height:50px;object-fit:contain;">
+  <div class="header-titles" style="flex:1;text-align:center;padding:0 8px;">
+    <h1 style="font-size:1.05rem;margin:0;color:#003366;">General Department of Safety and Compliance</h1>
+    <h2 style="font-size:0.9rem;margin:3px 0 0 0;color:#e67e22;">التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة</h2>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button type="button" onclick="window.location.href='index.html'" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.85rem;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-house"></i> الرئيسية
+    </button>
+  </div>
+</div>
+
+<div class="content-area" style="display:block;">
+  <h1 style="color:#003366;text-align:center;font-weight:900;font-size:1.95rem;margin-bottom:8px;">
+    التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة <br><span style="font-size:1.05rem;color:#777;font-family:sans-serif;">Consolidated General Department Monthly Report</span>
+  </h1>
+
+  <!-- لوحة التحكم وإعداد التقرير المجمع -->
+  <div class="survey-container" style="margin-bottom:22px;">
+    <div class="form-grid" style="background:#f0f4f8;padding:15px;border-radius:8px;border:1.5px solid #003366;">
+      <div class="form-group">
+        <label>اختر شهر التقرير:</label>
+        <input type="month" id="grMonth">
+      </div>
+      <div class="form-group">
+        <label>مدير إدارة السلامة والمطابقة:</label>
+        <input type="text" id="grManagerName" value="محمد محمد مرسي">
+      </div>
+      <div class="form-group">
+        <label>اجتماعات سلامة الطيران (الشهر الحالي):</label>
+        <input type="number" id="grAvMeetings" value="2" min="0">
+      </div>
+      <div class="form-group">
+        <label>تفتيشات سلامة الطيران (الشهر الحالي):</label>
+        <input type="number" id="grAvAudits" value="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>دورات التوعية (سلامة الطيران):</label>
+        <input type="number" id="grAvCourses" value="2" min="0">
+      </div>
+    </div>
+
+    <!-- توصيات إدارة السلامة والمطابقة (الصفحة الختامية) -->
+    <div style="border:1.5px solid #e67e22;border-radius:8px;overflow:hidden;margin-bottom:18px;background:#fff;">
+      <div style="background:#e67e22;color:#fff;padding:8px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;">
+        <span>توصيات إدارة السلامة والمطابقة (تظهر في الصفحة الختامية للتقرير):</span>
+        <button type="button" onclick="addGrRecommendationRow()" style="background:#fff;color:#e67e22;border:none;padding:4px 12px;border-radius:4px;font-weight:bold;cursor:pointer;font-size:12px;">+ إضافة توصية</button>
+      </div>
+      <div id="gr-recommendations-box" style="padding:12px;"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button type="button" onclick="generateConsolidatedMonthlyReport()" id="genGrBtn" class="submit-btn" style="width:auto;padding:12px 22px;background:#003366;">
+        <i class="fa-solid fa-layer-group"></i> تجميع وإصدار التقرير الشهري المجمع
+      </button>
+      <button type="button" onclick="exportGrPagesAsImages()" class="submit-btn" style="width:auto;padding:12px 20px;background:#28a745;">
+        <i class="fa-solid fa-images"></i> تصدير الصفحات كصور (PNG)
+      </button>
+      <button type="button" onclick="exportGrPDF()" class="submit-btn" style="width:auto;padding:12px 20px;background:#d9534f;">
+        <i class="fa-solid fa-file-pdf"></i> طباعة / تصدير PDF
+      </button>
+      <button type="button" onclick="sendGrViaEmail()" class="submit-btn" style="width:auto;padding:12px 20px;background:#f39c12;">
+        <i class="fa-solid fa-envelope"></i> إرسال بالإيميل
+      </button>
+    </div>
+  </div>
+
+  <!-- منطقة عرض التقرير المجمع -->
+  <div id="printable-general-report" style="display:none;"></div>
+</div>
+
+<script src="general-report.js"></script>
+</body>
+</html>
