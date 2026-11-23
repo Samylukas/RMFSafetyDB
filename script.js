@@ -16,7 +16,8 @@ const SPI_CONFIG = [
   { category: "Bird / Wildlife", items: ["Reported birds strike", "Reported fencing openings", "Reported other defective protective devices", "Reported source of attraction such as (water, food, etc. ) in or around the airport", "Reported presence of weeds", "Observed birds /wildlife in or near airport"] },
   { category: "Foreign object debris (FOD)", items: ["Inspections in which FOD was detected (RWY)", "Inspections in which FOD was detected ( Taxiway)", "Inspections in which FOD was detected(Apron)"] },
   { category: "Emergency procedures", items: ["Carried out emergency procedures (fuel leak, engine fire, etc.)", "Delayed response to emergency (fuel leak, engine fire, etc.)"] },
-  { category: "Laser", items: ["Reported observed laser beam"] }
+  { category: "Laser", items: ["Reported observed laser beam"] },
+  { category: "Reporting / safety awareness", items: ["Number of received safety reports", "Number of closed safety reports"] }
 ];
 
 const dailyChecklistDataISO = {
@@ -62,6 +63,7 @@ let mrSpiTrendInstance = null;
 let mrSpiCatInstance = null;
 let mrSpiApronInstance = null;
 let mrSpiWfInstance = null;
+let mrSpiReportsInstance = null;
 
 window.currentScheduleData = window.currentScheduleData || { english: null, arabic: null };
 window.currentActiveDoc = null;
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   buildDailyChecklist();
   buildEvaluationForm();
   setupCustomDropdown();
+  setupLoginUserDropdown();
   loadAppDataInit();
   try {
     const savedSess = sessionStorage.getItem('rmf_user');
@@ -386,7 +389,8 @@ function loadAppDataInit() {
     try {
       if (d && d.status === "success") {
         globalFleetData = d.fleet ? d.fleet.reverse() : [];
-        globalSurveys = d.surveys ? d.surveys.reverse() : [];
+        globalSurveys = d.surveys ? [...d.surveys] : [];
+        sortSurveysByDate();
         globalUsers = d.users || [];
         if (d.incidents && Array.isArray(d.incidents) && d.incidents.length > 0) {
           globalIncidents = d.incidents;
@@ -410,6 +414,7 @@ function loadAppDataInit() {
 
         if (d.cdDaily && Array.isArray(d.cdDaily) && d.cdDaily.length > 0) {
           globalCivilDefenseDaily = d.cdDaily;
+          sortCdDailyByDate();
           try { localStorage.setItem('rmf_cd_daily', JSON.stringify(globalCivilDefenseDaily)); } catch (e) {}
         }
         if (d.cdMonthly && typeof d.cdMonthly === 'object' && Object.keys(d.cdMonthly).length > 0) {
@@ -457,7 +462,8 @@ function loadAppDataInit() {
               });
             }
           });
-          globalDailyInspections = Object.values(rMap).sort((a, b) => b.id - a.id);
+          globalDailyInspections = Object.values(rMap);
+          sortDailyInspectionsByDate();
           try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(globalDailyInspections)); } catch (e) {}
         }
 
@@ -894,6 +900,34 @@ async function generateSpiReport() {
     window.spiWildlifeFodPieChartInstance = new Chart(wfCtx, { type: 'doughnut', data: { labels: hasG3 ? g3L.filter((_, idx) => g3C[idx] > 0) : ['لا توجد مؤشرات مسجلة بالمهبط والحياة البرية'], datasets: [{ data: hasG3 ? g3C.filter(v => v > 0) : [1], backgroundColor: hasG3 ? ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6'] : ['#e0e0e0'], borderWidth: 1.5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 9, font: { family: 'Cairo,sans-serif', size: 8.5 } } } } } });
   }
 
+  const repCtx = document.getElementById('spiSafetyReportsPieChart')?.getContext('2d');
+  if (repCtx) {
+    if (window.spiSafetyReportsPieChartInstance) window.spiSafetyReportsPieChartInstance.destroy();
+    let recTot = itemTotalsMain["Number of received safety reports"] || 0;
+    let clsTot = itemTotalsMain["Number of closed safety reports"] || 0;
+    let openTot = Math.max(0, recTot - clsTot);
+    let ratioPct = recTot > 0 ? ((clsTot / recTot) * 100).toFixed(1) : "0.0";
+    let hasRep = (recTot > 0 || clsTot > 0);
+    window.spiSafetyReportsPieChartInstance = new Chart(repCtx, {
+      type: 'doughnut',
+      data: {
+        labels: hasRep ? [`مغلقة (Closed: ${clsTot}) - ${ratioPct}%`, `مفتوحة / قيد المتابعة (Open: ${openTot})`] : ['لا توجد تقارير سلامة مسجلة'],
+        datasets: [{
+          data: hasRep ? [clsTot, openTot] : [1],
+          backgroundColor: hasRep ? ['#28a745', '#dc3545'] : ['#e0e0e0'],
+          borderWidth: 1.5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Cairo,sans-serif', size: 9, weight: 'bold' } } }
+        }
+      }
+    });
+  }
+
   const matrixBox = document.getElementById('spi-matrix-container');
   if (!matrixBox) return;
 
@@ -976,8 +1010,13 @@ function navSurveys(dir) {
   if (!globalSurveys || globalSurveys.length === 0) return alert("لا توجد استبيانات مسجلة بعد.");
   if (dir === 'first') currentSurveyIndex = 0;
   else if (dir === 'last') currentSurveyIndex = globalSurveys.length - 1;
-  else if (dir === 'next' && currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
-  else if (dir === 'prev' && currentSurveyIndex > 0) currentSurveyIndex--;
+  else if (dir === 'next') {
+    if (currentSurveyIndex === -1) currentSurveyIndex = globalSurveys.length - 1;
+    else if (currentSurveyIndex < globalSurveys.length - 1) currentSurveyIndex++;
+  } else if (dir === 'prev') {
+    if (currentSurveyIndex === -1) currentSurveyIndex = globalSurveys.length - 1;
+    else if (currentSurveyIndex > 0) currentSurveyIndex--;
+  }
   if (currentSurveyIndex >= 0 && currentSurveyIndex < globalSurveys.length) {
     displaySurveyInForm(globalSurveys[currentSurveyIndex]);
     updateSurveyNavCounter();
@@ -1074,6 +1113,7 @@ function submitSurvey(e) {
       sObj.ID = res ? res.id : ("S-" + Date.now());
       globalSurveys.unshift(sObj);
     }
+    sortSurveysByDate();
     let exists = globalFleetData.some(a => (a.REG || '').toString().toUpperCase().trim() === reg);
     if (!exists) {
       globalFleetData.unshift({ REG: reg, TYPE: type, CAR: airline, Handling: 'EMAAS', Country: '-' });
@@ -1279,8 +1319,13 @@ function navDaily(dir) {
   if (!globalDailyInspections || globalDailyInspections.length === 0) return alert("لا توجد فحوصات مسجلة.");
   if (dir === 'first') currentDailyIndex = 0;
   else if (dir === 'last') currentDailyIndex = globalDailyInspections.length - 1;
-  else if (dir === 'next' && currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
-  else if (dir === 'prev' && currentDailyIndex > 0) currentDailyIndex--;
+  else if (dir === 'next') {
+    if (currentDailyIndex === -1) currentDailyIndex = globalDailyInspections.length - 1;
+    else if (currentDailyIndex < globalDailyInspections.length - 1) currentDailyIndex++;
+  } else if (dir === 'prev') {
+    if (currentDailyIndex === -1) currentDailyIndex = globalDailyInspections.length - 1;
+    else if (currentDailyIndex > 0) currentDailyIndex--;
+  }
   if (currentDailyIndex >= 0 && currentDailyIndex < globalDailyInspections.length) loadDailyInspectionToForm(currentDailyIndex);
 }
 
@@ -1368,8 +1413,10 @@ function submitDailyInspection(e) {
     globalDailyInspections[currentDailyIndex] = repObj;
   } else {
     globalDailyInspections.unshift(repObj);
-    currentDailyIndex = 0;
   }
+  sortDailyInspectionsByDate();
+  currentDailyIndex = globalDailyInspections.findIndex(x => x.id === repObj.id);
+  if (currentDailyIndex < 0) currentDailyIndex = 0;
   renderSavedDaily();
   if (typeof updateDailyNavCounter === 'function') updateDailyNavCounter();
 
@@ -1390,7 +1437,8 @@ function renderSavedDaily() {
     tb.innerHTML = "<tr><td colspan='6' style='color:#777; font-weight:bold; text-align:center;'>لا توجد فحوصات محفوظة.</td></tr>";
     return;
   }
-  globalDailyInspections.forEach((rep, idx) => {
+  for (let idx = globalDailyInspections.length - 1; idx >= 0; idx--) {
+    const rep = globalDailyInspections[idx];
     if (!rep || !rep.date || rep.date === '-' || rep.date.trim() === '') return;
     let cnt = rep.findings ? rep.findings.length : 0;
     let clCnt = 0;
@@ -1409,8 +1457,8 @@ function renderSavedDaily() {
       let grnB = clCnt > 0 ? `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:12px; font-weight:bold; font-size:11px; white-space:nowrap;"><i class="fa-solid fa-check"></i> ${clCnt} تم الإغلاق</span>` : '';
       badge = `<div style="display:flex; justify-content:center; align-items:center; gap:5px; flex-wrap:nowrap;">${redB}${grnB}</div>`;
     }
-    tb.innerHTML += `<tr><td dir="ltr" style="font-weight:bold;">${rep.date}</td><td dir="ltr">${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td>${badge}</td><td style="white-space: nowrap;"><button type="button" onclick="previewDailyReport(${idx})" style="background:#003366; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:3px;" title="عرض وطباعة النموذج"><i class="fa-solid fa-eye"></i> النموذج</button><button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#ffc107; color:#000; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:3px;" title="تعديل هذا الفحص"><i class="fa-solid fa-pen"></i> تعديل</button><button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:3px;" title="إلغاء وحذف هذه الجولة"><i class="fa-solid fa-trash"></i> إلغاء</button><button type="button" onclick="copyDailyInspection(${idx})" style="background:#17a2b8; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:3px;" title="نسخ ملاحظات هذا اليوم إلى فحص جديد اليوم"><i class="fa-solid fa-copy"></i> نسخ لليوم</button></td></tr>`;
-  });
+    tb.innerHTML += `<tr><td dir="ltr" style="font-weight:bold;"><span style="background:#003366;color:#fff;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;">#${idx + 1}</span> ${rep.date}</td><td dir="ltr">${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td>${badge}</td><td style="white-space: nowrap;"><button type="button" onclick="previewDailyReport(${idx})" style="background:#003366; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:3px;" title="عرض وطباعة النموذج"><i class="fa-solid fa-eye"></i> النموذج</button><button type="button" onclick="loadDailyInspectionToForm(${idx})" style="background:#ffc107; color:#000; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:3px;" title="تعديل هذا الفحص"><i class="fa-solid fa-pen"></i> تعديل</button><button type="button" onclick="deleteDailyInspectionRecord(${idx})" style="background:#dc3545; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:3px;" title="إلغاء وحذف هذه الجولة"><i class="fa-solid fa-trash"></i> إلغاء</button><button type="button" onclick="copyDailyInspection(${idx})" style="background:#17a2b8; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:3px;" title="نسخ ملاحظات هذا اليوم إلى فحص جديد اليوم"><i class="fa-solid fa-copy"></i> نسخ لليوم</button></td></tr>`;
+  }
 }
 
 function previewDailyReport(idx) { if (!globalDailyInspections || !globalDailyInspections[idx]) return; generateIsoDailyReport(globalDailyInspections[idx]); }
@@ -1582,10 +1630,62 @@ function exportDailyPNG() {
 // =============================================================================
 // 9. قسم سجل الحوادث والوقائع (Incidents & Accidents Module)
 // =============================================================================
+function parseRecordDateTime(dateVal, timeVal) {
+  let dStr = dateVal ? String(dateVal).trim() : '';
+  if (dStr.includes('T')) {
+    let dtIso = new Date(dStr);
+    if (!isNaN(dtIso.getTime())) {
+      dStr = dtIso.toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
+    } else {
+      dStr = dStr.split('T')[0];
+    }
+  }
+  let mDmy = dStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (mDmy) {
+    dStr = `${mDmy[3]}-${String(mDmy[2]).padStart(2, '0')}-${String(mDmy[1]).padStart(2, '0')}`;
+  }
+  let mYmd = dStr.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+  if (mYmd) {
+    dStr = `${mYmd[1]}-${String(mYmd[2]).padStart(2, '0')}-${String(mYmd[3]).padStart(2, '0')}`;
+  }
+  if (!dStr) return 0;
+  let tStr = timeVal ? String(timeVal).trim() : '00:00';
+  if (tStr.includes('T')) {
+    let dt = new Date(tStr);
+    if (!isNaN(dt.getTime())) tStr = dt.toISOString().substring(11, 16);
+  }
+  if (!/^\d{1,2}:\d{2}/.test(tStr)) tStr = '00:00';
+  else if (tStr.indexOf(':') === 1) tStr = '0' + tStr;
+  let ts = Date.parse(`${dStr}T${tStr.substring(0, 5)}:00`);
+  if (isNaN(ts)) ts = Date.parse(dStr);
+  return isNaN(ts) ? 0 : ts;
+}
+
+function sortSurveysByDate() {
+  if (!Array.isArray(globalSurveys)) return;
+  globalSurveys.sort((a, b) => parseRecordDateTime(a.Date, a.Time) - parseRecordDateTime(b.Date, b.Time));
+}
+
+function sortDailyInspectionsByDate() {
+  if (!Array.isArray(globalDailyInspections)) return;
+  globalDailyInspections.sort((a, b) => parseRecordDateTime(a.date, a.time) - parseRecordDateTime(b.date, b.time));
+}
+
+function sortCdDailyByDate() {
+  if (!Array.isArray(globalCivilDefenseDaily)) return;
+  globalCivilDefenseDaily.sort((a, b) => parseRecordDateTime(a.date, a.time) - parseRecordDateTime(b.date, b.time));
+}
+
 function sortIncidentsByDate() {
   if (!globalIncidents) return;
-  globalIncidents.sort((a, b) => { let da = new Date(a.Date || a.date || 0).getTime(); let db = new Date(b.Date || b.date || 0).getTime(); return db - da; });
+  globalIncidents.sort((a, b) => parseRecordDateTime(a.Date || a.date, a.Time || a.time) - parseRecordDateTime(b.Date || b.date, b.Time || b.time));
   window.globalIncidents = globalIncidents;
+}
+
+function loadIncidentById(incId) {
+  const list = globalIncidents || [];
+  const realIdx = list.findIndex(x => String(x.ID || x.id) === String(incId));
+  if (realIdx >= 0) loadIncidentToForm(realIdx);
 }
 
 function updateIncidentNavCounter() {
@@ -1607,8 +1707,13 @@ function navIncidents(dir) {
   if (!list || list.length === 0) return alert("لا توجد وقائع مسجلة بعد.");
   if (dir === 'first') currentIncidentIndex = 0;
   else if (dir === 'last') currentIncidentIndex = list.length - 1;
-  else if (dir === 'next' && currentIncidentIndex < list.length - 1) currentIncidentIndex++;
-  else if (dir === 'prev' && currentIncidentIndex > 0) currentIncidentIndex--;
+  else if (dir === 'next') {
+    if (currentIncidentIndex === -1) currentIncidentIndex = list.length - 1;
+    else if (currentIncidentIndex < list.length - 1) currentIncidentIndex++;
+  } else if (dir === 'prev') {
+    if (currentIncidentIndex === -1) currentIncidentIndex = list.length - 1;
+    else if (currentIncidentIndex > 0) currentIncidentIndex--;
+  }
   if (currentIncidentIndex >= 0 && currentIncidentIndex < list.length) { loadIncidentToForm(currentIncidentIndex); switchIncidentTab('entry'); }
 }
 
@@ -1789,7 +1894,8 @@ function renderSavedIncidents() {
   tb.innerHTML = '';
   if (!list || list.length === 0) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:15px;color:#777;">لا توجد وقائع مطابقة للبحث</td></tr>'; return; }
 
-  list.forEach((item, idx) => {
+  for (let idx = list.length - 1; idx >= 0; idx--) {
+    const item = list[idx];
     const id = item.ID || item.id || `INC-${idx}`;
     const dt = (item.Date || item.date || '').toString().split('T')[0];
     const loc = item.Location || item.location || '-';
@@ -1801,19 +1907,19 @@ function renderSavedIncidents() {
     const sClr = sev === 'Catastrophic' || sev === 'Critical' ? '#dc3545' : (sev === 'Major' ? '#ffc107' : '#28a745');
 
     tb.innerHTML += `<tr style="border-bottom:1px solid #ddd;text-align:center;">
-      <td style="padding:8px;" dir="ltr">${dt}</td>
+      <td style="padding:8px;" dir="ltr"><span style="background:#dc3545;color:#fff;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;">#${idx + 1}</span> ${dt}</td>
       <td style="padding:8px;font-weight:bold;">${locFlt}</td>
       <td style="padding:8px;">${char}</td>
       <td style="padding:8px;"><span style="background:${sClr};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">${sev}</span></td>
       <td style="padding:8px;">${loss}</td>
       <td style="padding:6px;display:flex;gap:4px;justify-content:center;align-items:center;">
-        <button type="button" onclick="loadIncidentToForm(${idx});switchIncidentTab('entry');" title="عرض وتعديل الواقعة" style="background:#17a2b8;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button type="button" onclick="loadIncidentById('${id}');switchIncidentTab('entry');" title="عرض وتعديل الواقعة" style="background:#17a2b8;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-pen-to-square"></i></button>
         <button type="button" onclick="printIsoIncidentReport('${id}')" title="طباعة تقرير ISO" style="background:#003366;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-print"></i></button>
         <button type="button" onclick="exportIsoIncidentImage('${id}')" title="تصدير كصورة PNG" style="background:#28a745;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-file-image"></i></button>
         <button type="button" onclick="deleteIncident('${id}')" title="حذف الواقعة" style="background:#dc3545;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`;
-  });
+  }
 }
 
 async function deleteIncident(incId) {
@@ -2119,7 +2225,7 @@ function getMonthlyDetailedStats(ms) {
   let p = (ms || '').split('-'), y = p[0] || '2026', m = p[1] || '1';
   let mN = parseInt(m || '0').toString();
   let mInt = parseInt(mN);
-  let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {} };
+  let s = { ms: ms, mov: 0, acc: 0, inc: 0, fT: 0, fO: 0, fC: 0, surv: [], fTot: 0, incList: [], fDept: {}, recRep: 0, clsRep: 0 };
 
   let movFound = 0;
   if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].movements) {
@@ -2130,6 +2236,20 @@ function getMonthlyDetailedStats(ms) {
     movFound = base2026[mInt] || 0;
   }
   s.mov = movFound;
+
+  let recFound = 0, clsFound = 0;
+  if (window.globalSpiRecords && window.globalSpiRecords[y] && window.globalSpiRecords[y].events) {
+    let evs = window.globalSpiRecords[y].events;
+    if (evs["Number of received safety reports"]) recFound = Number(evs["Number of received safety reports"][mInt]) || 0;
+    if (evs["Number of closed safety reports"]) clsFound = Number(evs["Number of closed safety reports"][mInt]) || 0;
+  }
+  if (!recFound && !clsFound && y === '2026') {
+    const baseRep2026 = { 1: 1, 2: 2, 3: 2, 4: 2, 5: 2, 6: 1, 7: 5, 8: 2, 9: 5, 10: 1, 11: 0, 12: 0 };
+    recFound = baseRep2026[mInt] || 0;
+    clsFound = baseRep2026[mInt] || 0;
+  }
+  s.recRep = recFound;
+  s.clsRep = clsFound;
 
   if (globalIncidents) {
     globalIncidents.forEach(i => {
@@ -2250,7 +2370,7 @@ async function generateFullMonthlyReport() {
     .mr-table td { border: 1px solid #dcdcdc !important; padding: 6px 8px !important; text-align: center !important; }
     canvas#mrChart1, canvas#mrChart2, canvas#mrSurveyAirChart, canvas#mrSurveyEvalChart { width: 100% !important; height: 190px !important; max-height: 190px !important; display: block !important; }
     canvas#mrSpiTrendChart { width: 100% !important; height: 175px !important; max-height: 175px !important; display: block !important; }
-    canvas#mrSpiCatChart, canvas#mrSpiApronChart, canvas#mrSpiWfChart { width: 100% !important; height: 165px !important; max-height: 165px !important; display: block !important; }
+    canvas#mrSpiCatChart, canvas#mrSpiApronChart, canvas#mrSpiWfChart, canvas#mrSpiReportsChart { width: 100% !important; height: 165px !important; max-height: 165px !important; display: block !important; }
   `;
   document.head.appendChild(st);
 
@@ -2299,6 +2419,8 @@ async function generateFullMonthlyReport() {
     { l: "حالات عدم المطابقة المعلقة", p: pS.fO, c: cS.fO, h: false, u: "" },
     { l: "حالات عدم المطابقة التي تم تلافيها", p: pS.fC, c: cS.fC, h: true, u: "" },
     { l: "استبيان الطيارين", p: pS.surv.length, c: cS.surv.length, h: true, u: "" },
+    { l: "تقارير السلامة المستلمة (Received Safety Reports)", p: pS.recRep, c: cS.recRep, h: true, u: "" },
+    { l: "تقارير السلامة المغلقة (Closed Safety Reports)", p: pS.clsRep, c: cS.clsRep, h: true, u: "" },
     { l: "كمية الأجسام الغريبة FOD (بلاستيك + معدن)", p: pS.fTot, c: cS.fTot, h: false, u: "كجم", isF: true }
   ];
 
@@ -2327,10 +2449,11 @@ async function generateFullMonthlyReport() {
     <div class="mr-page">
       <div class="mr-section-header"><span>ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات (تراكمي للسنة الحالية حتى شهر التقرير)</span><span style="font-size: 10.5px; opacity: 0.9;">Year-to-Date (YTD)</span></div>
       <div style="background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; margin-bottom: 15px;"><h5 style="color: #003366; margin: 0 0 8px 0; font-size: 11px; text-align: center;">منحنى حركة الطائرات التراكمي (${curYear}) حتى شهر ${mArabicName}</h5><canvas id="mrSpiTrendChart"></canvas></div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
         <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;"><h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">توزيع المؤشرات حسب التصنيف</h6><canvas id="mrSpiCatChart"></canvas></div>
         <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;"><h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">مؤشرات الممرات والساحة</h6><canvas id="mrSpiApronChart"></canvas></div>
         <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;"><h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">المهبط، الحياة البرية والأجسام الغريبة</h6><canvas id="mrSpiWfChart"></canvas></div>
+        <div style="background: #fafafa; border: 1px solid #ddd; padding: 8px; border-radius: 6px; text-align: center;"><h6 style="color: #003366; margin: 0 0 6px 0; font-size: 9.5px; font-weight: bold;">تقارير السلامة المستلمة والمغلقة (YTD)</h6><canvas id="mrSpiReportsChart"></canvas></div>
       </div>
     </div>
   `;
@@ -2495,6 +2618,24 @@ async function generateFullMonthlyReport() {
     mrSpiWfInstance = new Chart(spiWfEl.getContext('2d'), { type: 'doughnut', data: { labels: hasG3 ? g3L.filter((_, idx) => g3C[idx] > 0) : ['لا توجد ملاحظات مهبط/حياة برية'], datasets: [{ data: hasG3 ? g3C.filter(v => v > 0) : [1], backgroundColor: hasG3 ? ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6'] : ['#e0e0e0'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { family: 'Cairo,sans-serif', size: 7 } } } } } });
   }
 
+  if (mrSpiReportsInstance) mrSpiReportsInstance.destroy();
+  let spiRepEl = document.getElementById('mrSpiReportsChart');
+  if (spiRepEl) {
+    let recTot = ytdItemTotals["Number of received safety reports"] || 0;
+    let clsTot = ytdItemTotals["Number of closed safety reports"] || 0;
+    let openTot = Math.max(0, recTot - clsTot);
+    let ratioPct = recTot > 0 ? ((clsTot / recTot) * 100).toFixed(1) : "0.0";
+    let hasRep = (recTot > 0 || clsTot > 0);
+    mrSpiReportsInstance = new Chart(spiRepEl.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: hasRep ? [`مغلقة (${clsTot}) - ${ratioPct}%`, `مفتوحة (${openTot})`] : ['لا توجد تقارير سلامة'],
+        datasets: [{ data: hasRep ? [clsTot, openTot] : [1], backgroundColor: hasRep ? ['#28a745', '#dc3545'] : ['#e0e0e0'], borderWidth: 1 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { family: 'Cairo,sans-serif', size: 7.5 } } } } }
+    });
+  }
+
   if (mrSurveyAirChartInstance) mrSurveyAirChartInstance.destroy();
   let saEl = document.getElementById('mrSurveyAirChart');
   if (saEl) { mrSurveyAirChartInstance = new Chart(saEl.getContext('2d'), { type: 'bar', data: { labels: Object.keys(aC), datasets: [{ label: 'الاستبيانات', data: Object.values(aC), backgroundColor: '#003366', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
@@ -2589,13 +2730,95 @@ async function sendReportViaEmail() {
 // =============================================================================
 // 13. إدارة الحسابات والأسطول (Users & Fleet Registry Helpers)
 // =============================================================================
+function getLoginUsersCatalog() {
+  const defaults = [
+    { Username: "Admin", Role: "مدير النظام (Admin)" },
+    { Username: "Airport Safety", Role: "إدارة سلامة المطارات" },
+    { Username: "OSH", Role: "السلامة والصحة المهنية" },
+    { Username: "Environment", Role: "البيئة والحياة البرية" },
+    { Username: "Civil Defense", Role: "الحماية المدنية" }
+  ];
+  const map = new Map();
+  if (Array.isArray(globalUsers) && globalUsers.length > 0) {
+    globalUsers.forEach(u => {
+      if (u && u.Username) map.set(String(u.Username).trim(), { Username: String(u.Username).trim(), Role: u.Role || "" });
+    });
+  }
+  defaults.forEach(d => {
+    if (!map.has(d.Username)) map.set(d.Username, d);
+  });
+  return Array.from(map.values());
+}
+
+function renderLoginUsersDropdown(filterText = "") {
+  const lst = document.getElementById('loginUserDropdownList');
+  const inp = document.getElementById('loginUser');
+  const passInp = document.getElementById('loginPass');
+  if (!lst || !inp) return;
+  const q = String(filterText || "").toLowerCase().trim();
+  const users = getLoginUsersCatalog().filter(u => !q || u.Username.toLowerCase().includes(q) || (u.Role && u.Role.toLowerCase().includes(q)));
+  if (users.length === 0) {
+    lst.innerHTML = '<div style="padding:10px;color:#777;font-size:0.85rem;text-align:center;">لا توجد حسابات مطابقة</div>';
+    return;
+  }
+  lst.innerHTML = users.map(u => `
+    <div class="login-user-opt" data-username="${u.Username.replace(/"/g, '&quot;')}" style="padding:9px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background 0.15s;" onmouseover="this.style.background='#f0f6ff'" onmouseout="this.style.background='#fff'">
+      <span style="font-weight:800;color:#003366;font-size:0.95rem;"><i class="fa-solid fa-user-check" style="color:#17a2b8;margin-left:6px;"></i>${u.Username}</span>
+      <span style="font-size:0.75rem;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:10px;font-weight:bold;">${u.Role || ''}</span>
+    </div>
+  `).join('');
+
+  lst.querySelectorAll('.login-user-opt').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      inp.value = el.getAttribute('data-username') || '';
+      lst.style.display = 'none';
+      if (passInp) passInp.focus();
+    });
+  });
+}
+
+function setupLoginUserDropdown() {
+  const inp = document.getElementById('loginUser');
+  const arrow = document.getElementById('loginUserArrowBtn');
+  const lst = document.getElementById('loginUserDropdownList');
+  const wrap = document.getElementById('loginUserDropdownWrap');
+  if (!inp || !arrow || !lst || !wrap) return;
+
+  renderLoginUsersDropdown("");
+
+  arrow.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = lst.style.display === 'block';
+    if (isOpen) {
+      lst.style.display = 'none';
+    } else {
+      renderLoginUsersDropdown("");
+      lst.style.display = 'block';
+    }
+  });
+
+  inp.addEventListener('focus', () => {
+    renderLoginUsersDropdown("");
+    lst.style.display = 'block';
+  });
+
+  inp.addEventListener('input', () => {
+    renderLoginUsersDropdown(inp.value);
+    lst.style.display = 'block';
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) {
+      lst.style.display = 'none';
+    }
+  });
+}
+
 function populateUsersDropdown(arr) {
-  const datalist = document.getElementById('usersList');
   const userInp = document.getElementById('loginUser');
-  if (!datalist) return;
-  datalist.innerHTML = '';
-  arr.forEach(u => { let opt = document.createElement('option'); opt.value = u.Username; datalist.appendChild(opt); });
-  if (userInp) userInp.value = "Admin";
+  if (userInp && !userInp.value) userInp.value = "Admin";
+  renderLoginUsersDropdown("");
 }
 
 function openFleetModal() { document.getElementById('addModal').style.display = 'flex'; }
@@ -3206,7 +3429,10 @@ function submitCdDailyInspection(e) {
   const msg = document.getElementById('cdDailyMsg');
   const repObj = collectCdDailyFormData();
   if (isCdDailyEditMode && currentCdDailyIndex >= 0 && currentCdDailyIndex < globalCivilDefenseDaily.length) globalCivilDefenseDaily[currentCdDailyIndex] = repObj;
-  else { globalCivilDefenseDaily.unshift(repObj); currentCdDailyIndex = 0; }
+  else { globalCivilDefenseDaily.unshift(repObj); }
+  sortCdDailyByDate();
+  currentCdDailyIndex = globalCivilDefenseDaily.findIndex(x => x.id === repObj.id);
+  if (currentCdDailyIndex < 0) currentCdDailyIndex = 0;
   try { localStorage.setItem('rmf_cd_daily', JSON.stringify(globalCivilDefenseDaily)); } catch (err) {}
   renderSavedCdDaily(); updateCdDailyNavCounter();
 
@@ -3236,7 +3462,8 @@ function renderSavedCdDaily() {
   tb.innerHTML = ''; updateCdDailyNavCounter();
   if (!globalCivilDefenseDaily || globalCivilDefenseDaily.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:15px;color:#777;font-weight:bold;">لا توجد بيانات فحص يومي مسجلة للحماية المدنية بعد.</td></tr>'; return; }
 
-  globalCivilDefenseDaily.forEach((rep, idx) => {
+  for (let idx = globalCivilDefenseDaily.length - 1; idx >= 0; idx--) {
+    const rep = globalCivilDefenseDaily[idx];
     let activeTrucks = (rep.trucks || []).filter(t => t.status === 'صالح').length;
     let counts = countCdFindings(rep);
     let badge = '';
@@ -3246,14 +3473,22 @@ function renderSavedCdDaily() {
       let gB = counts.closedCnt > 0 ? `<span style="background:#28a745;color:#fff;padding:3px 8px;border-radius:12px;font-weight:bold;font-size:11px;">${counts.closedCnt} مغلق</span>` : '';
       badge = `<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">${rB}${gB}</div>`;
     }
-    tb.innerHTML += `<tr><td dir="ltr" style="font-weight:bold;">${rep.date}</td><td dir="ltr">${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td style="font-weight:bold;color:#003366;">${activeTrucks} / 6</td><td>${badge}</td><td style="white-space:nowrap;"><button type="button" onclick="generateCdDailyPrintView(globalCivilDefenseDaily[${idx}])" style="background:#003366;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;" title="عرض البيان"><i class="fa-solid fa-eye"></i> البيان</button><button type="button" onclick="loadCdDailyToForm(${idx})" style="background:#ffc107;color:#000;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:bold;margin-left:3px;" title="تعديل"><i class="fa-solid fa-pen"></i> تعديل</button><button type="button" onclick="copyCdDailyToToday(${idx})" style="background:#17a2b8;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;" title="نسخ لليوم"><i class="fa-solid fa-copy"></i> نسخ لليوم</button><button type="button" onclick="deleteCdDailyRecord(${idx})" style="background:#dc3545;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-  });
+    tb.innerHTML += `<tr><td dir="ltr" style="font-weight:bold;"><span style="background:#dc3545;color:#fff;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;">#${idx + 1}</span> ${rep.date}</td><td dir="ltr">${rep.time || '-'}</td><td>${rep.shift || '-'}</td><td>${rep.inspector || '-'}</td><td style="font-weight:bold;color:#003366;">${activeTrucks} / 6</td><td>${badge}</td><td style="white-space:nowrap;"><button type="button" onclick="generateCdDailyPrintView(globalCivilDefenseDaily[${idx}])" style="background:#003366;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;" title="عرض البيان"><i class="fa-solid fa-eye"></i> البيان</button><button type="button" onclick="loadCdDailyToForm(${idx})" style="background:#ffc107;color:#000;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:bold;margin-left:3px;" title="تعديل"><i class="fa-solid fa-pen"></i> تعديل</button><button type="button" onclick="copyCdDailyToToday(${idx})" style="background:#17a2b8;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;" title="نسخ لليوم"><i class="fa-solid fa-copy"></i> نسخ لليوم</button><button type="button" onclick="deleteCdDailyRecord(${idx})" style="background:#dc3545;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;" title="حذف"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }
 }
 
 function updateCdDailyNavCounter() { const el = document.getElementById('nav-cd-daily-counter'); if (el) el.innerText = globalCivilDefenseDaily.length > 0 ? `${currentCdDailyIndex + 1} / ${globalCivilDefenseDaily.length}` : '0 / 0'; }
 function navCdDaily(dir) {
   if (!globalCivilDefenseDaily || globalCivilDefenseDaily.length === 0) return alert("لا توجد جولات مسجلة بعد.");
-  if (dir === 'first') currentCdDailyIndex = 0; else if (dir === 'last') currentCdDailyIndex = globalCivilDefenseDaily.length - 1; else if (dir === 'next' && currentCdDailyIndex < globalCivilDefenseDaily.length - 1) currentCdDailyIndex++; else if (dir === 'prev' && currentCdDailyIndex > 0) currentCdDailyIndex--;
+  if (dir === 'first') currentCdDailyIndex = 0;
+  else if (dir === 'last') currentCdDailyIndex = globalCivilDefenseDaily.length - 1;
+  else if (dir === 'next') {
+    if (currentCdDailyIndex === -1) currentCdDailyIndex = globalCivilDefenseDaily.length - 1;
+    else if (currentCdDailyIndex < globalCivilDefenseDaily.length - 1) currentCdDailyIndex++;
+  } else if (dir === 'prev') {
+    if (currentCdDailyIndex === -1) currentCdDailyIndex = globalCivilDefenseDaily.length - 1;
+    else if (currentCdDailyIndex > 0) currentCdDailyIndex--;
+  }
   if (currentCdDailyIndex >= 0 && currentCdDailyIndex < globalCivilDefenseDaily.length) loadCdDailyToForm(currentCdDailyIndex);
 }
 

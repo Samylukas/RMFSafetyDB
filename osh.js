@@ -143,7 +143,7 @@ function syncOshFromServer() {
     try {
       if (d && d.status === 'success') {
         if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) {
-          globalOshDaily = d.oshDaily;
+          globalOshDaily = d.oshDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
           try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
           renderSavedOshDaily();
         }
@@ -299,8 +299,9 @@ function submitOshDailyInspection(e) {
   if (isOshEditMode && currentOshDailyIndex >= 0 && currentOshDailyIndex < globalOshDaily.length) {
     globalOshDaily[currentOshDailyIndex] = repObj;
   } else {
-    globalOshDaily.unshift(repObj);
-    currentOshDailyIndex = 0;
+    globalOshDaily.push(repObj);
+    globalOshDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+    currentOshDailyIndex = globalOshDaily.length - 1;
   }
 
   try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (err) {}

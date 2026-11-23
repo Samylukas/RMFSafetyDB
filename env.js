@@ -104,7 +104,7 @@ function syncEnvFromServer() {
     try {
       if (d && d.status === 'success') {
         if (Array.isArray(d.envDaily) && d.envDaily.length > 0) {
-          globalEnvDaily = d.envDaily;
+          globalEnvDaily = d.envDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
           try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
           renderSavedEnvDaily();
         }
@@ -227,8 +227,9 @@ function submitEnvDailyInspection(e) {
   if (isEnvEditMode && currentEnvDailyIndex >= 0 && currentEnvDailyIndex < globalEnvDaily.length) {
     globalEnvDaily[currentEnvDailyIndex] = repObj;
   } else {
-    globalEnvDaily.unshift(repObj);
-    currentEnvDailyIndex = 0;
+    globalEnvDaily.push(repObj);
+    globalEnvDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+    currentEnvDailyIndex = globalEnvDaily.length - 1;
   }
 
   try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (err) {}

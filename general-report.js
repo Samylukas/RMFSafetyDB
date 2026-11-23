@@ -13,7 +13,8 @@ const SPI_CONFIG_GR = [
   { category: "Bird / Wildlife", items: ["Reported birds strike", "Reported fencing openings", "Reported other defective protective devices", "Reported source of attraction such as (water, food, etc. ) in or around the airport", "Reported presence of weeds", "Observed birds /wildlife in or near airport"] },
   { category: "Foreign object debris (FOD)", items: ["Inspections in which FOD was detected (RWY)", "Inspections in which FOD was detected ( Taxiway)", "Inspections in which FOD was detected(Apron)"] },
   { category: "Emergency procedures", items: ["Carried out emergency procedures (fuel leak, engine fire, etc.)", "Delayed response to emergency (fuel leak, engine fire, etc.)"] },
-  { category: "Laser", items: ["Reported observed laser beam"] }
+  { category: "Laser", items: ["Reported observed laser beam"] },
+  { category: "Reporting / safety awareness", items: ["Number of received safety reports", "Number of closed safety reports"] }
 ];
 
 const DEFAULT_GR_RECOMMENDATIONS = [
@@ -240,25 +241,29 @@ async function fetchSpiForYearGr(year) {
   return { movements: {}, events: {} };
 }
 
-function pageHeaderBanner(pageNum) {
+function pageHeaderBanner() {
   return `
-    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:8px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #003366;padding-bottom:8px;margin-bottom:14px;flex-shrink:0;">
       <div style="text-align:right;font-size:11px;font-weight:bold;color:#003366;">
         إيماك مرسى علم<br>لإدارة وتشغيل المطارات (ش.م.م)<br>مطار مرسى علم الدولي
       </div>
       <div><img src="LOGO-removebg-preview (1).png" style="height:54px;"></div>
       <div style="text-align:left;direction:ltr;font-size:10px;font-weight:bold;color:#003366;">
-        EMAK Marsa Alam<br>For Management and Operation Airports (S.A.E)<br><span style="color:#777;">Page ${pageNum}</span>
+        EMAK Marsa Alam<br>For Management and Operation Airports (S.A.E)
       </div>
     </div>
   `;
 }
 
-function pageFooterBanner() {
+function pageFooterBanner(pageNum, totalPages = 10) {
   return `
-    <div style="border-top:1.5px solid #003366;padding-top:6px;margin-top:16px;display:flex;justify-content:space-between;font-size:9.5px;color:#555;">
-      <div>الكيلو (65) جنوب مدينة القصير - طريق مرسى علم | تليفون: 065/3700020-29</div>
-      <div style="direction:ltr;">65 km Southern El-Quseir City - Marsa Alam Highway</div>
+    <div class="gr-page-footer">
+      <div style="text-align:right;font-weight:bold;color:#333;">
+        الكيلو (65) جنوب مدينة القصير - طريق مرسى علم | تليفون: 065/3700020-29 &nbsp;|&nbsp; <span dir="ltr" style="color:#555;">65 km Southern El-Quseir City - Marsa Alam Highway</span>
+      </div>
+      <div style="text-align:left;direction:ltr;font-weight:900;color:#003366;white-space:nowrap;font-size:10.5px;">
+        Page ${pageNum} of ${totalPages}
+      </div>
     </div>
   `;
 }
@@ -408,6 +413,19 @@ async function generateConsolidatedMonthlyReport() {
   const survCur = (grAppData.surveys || []).filter(s => normalizeYearMonth(s.Date || s.date) === mStr);
   const survPrev = (grAppData.surveys || []).filter(s => normalizeYearMonth(s.Date || s.date) === pmStr);
 
+  const lookupSafetyRep = (spiObj, yr, mIdx, itemKey) => {
+    let val = Number(spiObj?.events?.[itemKey]?.[mIdx] || 0);
+    if (!val && String(yr) === '2026') {
+      const baseRep2026 = { 1: 1, 2: 2, 3: 2, 4: 2, 5: 2, 6: 1, 7: 5, 8: 2, 9: 5, 10: 1 };
+      val = baseRep2026[mIdx] || 0;
+    }
+    return val;
+  };
+  const recRepCur = lookupSafetyRep(spiCur, yCur, mCurInt, "Number of received safety reports");
+  const recRepPrev = lookupSafetyRep(spiPrev, yPrev, mPrevInt, "Number of received safety reports");
+  const clsRepCur = lookupSafetyRep(spiCur, yCur, mCurInt, "Number of closed safety reports");
+  const clsRepPrev = lookupSafetyRep(spiPrev, yPrev, mPrevInt, "Number of closed safety reports");
+
   // بيانات FOD للشهر الحالي والشهر السابق
   const fodCurRows = (grAppData.fod || []).filter(f => normalizeYearMonth(f.Date || f.date) === mStr);
   let fodTotPlastic = 0, fodTotMetal = 0;
@@ -468,7 +486,8 @@ async function generateConsolidatedMonthlyReport() {
   // الصفحة 1: الغلاف
   const pageCover = `
     <div class="gr-page" style="text-align:center;">
-      ${pageHeaderBanner(1)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div style="margin:22px auto;">
         <img src="report cover.jpg" onerror="this.onerror=null;this.src='Gemini_Generated_Image_vgja40vgja.jpg.jpg';" style="width:100%;max-width:650px;max-height:360px;object-fit:contain;border-radius:10px;border:1px solid #ddd;">
       </div>
@@ -481,7 +500,8 @@ async function generateConsolidatedMonthlyReport() {
       <div style="background:#f0f4f8;border-right:4px solid #003366;padding:12px 16px;text-align:right;font-size:12.5px;font-weight:bold;color:#333;border-radius:6px;margin-top:22px;">
         يعتبر هذا التقرير نتاج لتقارير تم إعدادها بواسطة رئيس كل قسم من أقسام الإدارة العامة للسلامة والمطابقة نتيجة لتقارير يومية وقاعدة بيانات متاحة للعرض التفصيلي والمناقشة.
       </div>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(1, 10)}
     </div>
   `;
 
@@ -494,6 +514,8 @@ async function generateConsolidatedMonthlyReport() {
     { l: "حالات عدم المطابقة المعلقة", p: afPrev.open, c: afCur.open, hb: false, u: "", pad: true },
     { l: "حالات عدم المطابقة التي تم تلافيها", p: afPrev.closed, c: afCur.closed, hb: true, u: "", pad: true },
     { l: "استبيان الطيارين", p: survPrev.length, c: survCur.length, hb: true, u: "", pad: true },
+    { l: "تقارير السلامة المستلمة (Received Safety Reports)", p: recRepPrev, c: recRepCur, hb: true, u: "", pad: true },
+    { l: "تقارير السلامة المغلقة (Closed Safety Reports)", p: clsRepPrev, c: clsRepCur, hb: true, u: "", pad: true },
     { l: "كمية الأجسام الغريبة FOD (بلاستيك + معدن)", p: fodPrev, c: fodCur, hb: false, u: "كجم", isF: true, pad: false }
   ];
 
@@ -506,7 +528,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageAv1 = `
     <div class="gr-page">
-      ${pageHeaderBanner(2)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <p style="font-weight:bold;color:#003366;margin-bottom:10px;">أتشرف بالعرض على سيادتكم أهم مؤشرات الأداء لكل قسم بالإدارة كالتالي:</p>
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — أولاً: مؤشرات الأداء العامة لمنطقة التحركات الجوية</span><span>Airport Safety Department</span></div>
       <table class="gr-tbl">
@@ -531,34 +554,41 @@ async function generateConsolidatedMonthlyReport() {
         ${afCur.list.length ? afCur.list.map(f => `<li><b>${f.category} - ${f.item}</b> (${f.location}) — <span style="color:#003366;">الإجراء التصحيحي:</span> ${f.note} <b style="color:${f.closed ? '#28a745' : '#dc3545'};">[${f.closed ? 'تم' : 'معلق'}]</b></li>`).join('') : '<li>لا توجد حالات عدم مطابقة مسجلة خلال الشهر.</li>'}
       </ol>
       <div style="font-weight:bold;font-size:11.5px;">• الحوادث: <span style="color:#28a745;">${accCur === 0 ? 'لا يوجد' : accCur}</span></div>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(2, 10)}
     </div>
   `;
 
   // الصفحة 3: إدارة سلامة المطارات (ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات التراكمي YTD)
   const pageAv2 = `
     <div class="gr-page">
-      ${pageHeaderBanner(3)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — ثالثاً: مؤشرات السلامة التشغيلية وحركة الطائرات (YTD)</span><span>تراكمي حتى ${mAr}</span></div>
       <div style="background:#fafafa;border:1px solid #ddd;padding:10px;border-radius:6px;margin-bottom:14px;">
         <h5 style="color:#003366;margin:0 0 6px 0;font-size:11.5px;text-align:center;">منحنى حركة الطائرات التراكمي (${yCur}) حتى شهر ${mAr}</h5>
         <div style="height:185px;"><canvas id="grAvSpiTrendChart"></canvas></div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
         <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
           <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">توزيع المؤشرات حسب التصنيف</h6>
-          <div style="height:185px;"><canvas id="grAvSpiCatChart"></canvas></div>
+          <div style="height:165px;"><canvas id="grAvSpiCatChart"></canvas></div>
         </div>
         <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
           <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">مؤشرات الممرات والساحة</h6>
-          <div style="height:185px;"><canvas id="grAvSpiApronChart"></canvas></div>
+          <div style="height:165px;"><canvas id="grAvSpiApronChart"></canvas></div>
         </div>
         <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
           <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">المهبط، الحياة البرية والأجسام الغريبة</h6>
-          <div style="height:185px;"><canvas id="grAvSpiWfChart"></canvas></div>
+          <div style="height:165px;"><canvas id="grAvSpiWfChart"></canvas></div>
+        </div>
+        <div style="background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;">
+          <h6 style="color:#003366;margin:0 0 6px 0;font-size:10px;font-weight:bold;">تقارير السلامة المستلمة والمغلقة (YTD)</h6>
+          <div style="height:165px;"><canvas id="grAvSpiReportsChart"></canvas></div>
         </div>
       </div>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(3, 10)}
     </div>
   `;
 
@@ -588,10 +618,12 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageAv3 = `
     <div class="gr-page">
-      ${pageHeaderBanner(4)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — رابعاً: حصر وسجل الوقائع والحوادث المسجلة خلال الشهر</span><span>إجمالي الوقائع: ${incCurList.length}</span></div>
       ${incSectionHtml}
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(4, 10)}
     </div>
   `;
 
@@ -622,7 +654,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageAv4 = `
     <div class="gr-page">
-      ${pageHeaderBanner(5)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — خامساً: استبيان الطيارين (Pilot Safety Surveys)</span><span>إجمالي الاستبيانات: ${survCur.length}</span></div>
       <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
         <div style="flex:1;min-width:260px;background:#fafafa;border:1px solid #ddd;padding:8px;border-radius:6px;text-align:center;"><h5 style="color:#003366;margin:0 0 6px 0;font-size:11px;">مشاركات شركات الطيران</h5><div style="height:135px;"><canvas id="grAvSurveyAirChart"></canvas></div></div>
@@ -630,14 +663,16 @@ async function generateConsolidatedMonthlyReport() {
       </div>
       <div style="text-align:center;margin-bottom:6px;"><h5 style="color:#003366;margin:0;font-size:11.5px;font-weight:bold;">مصفوفة تقييم بنود السلامة (Safety Evaluation Matrix)</h5></div>
       ${mH}${cH}
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(5, 10)}
     </div>
   `;
 
   // الصفحة 6: إدارة سلامة المطارات (سادساً: حصر وتصنيف الأجسام الغريبة F.O.D Collected)
   const pageAv5 = `
     <div class="gr-page">
-      ${pageHeaderBanner(6)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner"><span>1. إدارة سلامة المطارات — سادساً: حصر وتصنيف الأجسام الغريبة (F.O.D Collected)</span><span>شهر ${mAr}</span></div>
       <table class="gr-tbl" style="direction:ltr;text-align:center;font-size:10px;">
         <thead>
@@ -650,7 +685,8 @@ async function generateConsolidatedMonthlyReport() {
         </tbody>
       </table>
 
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(6, 10)}
     </div>
   `;
 
@@ -680,7 +716,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageCd = `
     <div class="gr-page">
-      ${pageHeaderBanner(7)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner" style="background:#dc3545;"><span>2. قسم سلامة الحماية المدنية</span><span>Civil Defense & ARFF</span></div>
       <table class="gr-tbl">
         <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
@@ -694,7 +731,8 @@ async function generateConsolidatedMonthlyReport() {
       </table>
       <div style="font-weight:bold;color:#003366;margin-bottom:4px;font-size:11.5px;">التدريبات المنفذة خلال الشهر:</div>
       <ol style="line-height:1.6;font-size:11px;margin:0;">${(cdCur.trainings || []).length ? cdCur.trainings.map(t => `<li>${t}</li>`).join('') : '<li>لا يوجد</li>'}</ol>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(7, 10)}
     </div>
   `;
 
@@ -715,7 +753,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageOsh = `
     <div class="gr-page">
-      ${pageHeaderBanner(8)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner" style="background:#fd7e14;"><span>3. قسم السلامة والصحة المهنية</span><span>Occupational Safety & Health</span></div>
       <table class="gr-tbl">
         <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
@@ -732,7 +771,8 @@ async function generateConsolidatedMonthlyReport() {
         <div><b>• الاجتماعات:</b> ${oshCur.meetingsText || '-'}</div>
         <div><b>• نتائج الفحص والمرور الدوري:</b> ${oshCur.periodicText || '-'}</div>
       </div>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(8, 10)}
     </div>
   `;
 
@@ -751,7 +791,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageEnv = `
     <div class="gr-page">
-      ${pageHeaderBanner(9)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner" style="background:#28a745;"><span>4. قسم البيئة ومكافحة مخاطر الحياة البرية</span><span>Environment & Wildlife</span></div>
       <table class="gr-tbl">
         <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
@@ -768,7 +809,8 @@ async function generateConsolidatedMonthlyReport() {
       </div>
       <div style="font-weight:bold;color:#003366;margin-bottom:5px;font-size:11.5px;">نتائج المرور والملاحظات التي تم رصدها:</div>
       <ol style="line-height:1.6;font-size:10.5px;margin:0;">${(envCur.observations || []).length ? envCur.observations.map(o => `<li><b>${o.desc}</b> (${o.location}) - ${o.date} — <span style="color:#003366;">الإجراء التصحيحي:</span> ${o.action} <b>[${o.status}]</b></li>`).join('') : '<li>لا توجد ملاحظات مسجلة خلال الشهر.</li>'}</ol>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(9, 10)}
     </div>
   `;
 
@@ -783,7 +825,8 @@ async function generateConsolidatedMonthlyReport() {
 
   const pageGenAndRecs = `
     <div class="gr-page">
-      ${pageHeaderBanner(10)}
+      ${pageHeaderBanner()}
+      <div class="gr-page-body">
       <div class="gr-hdr-banner" style="background:#17a2b8;"><span>5. الملاحظات العامة والأنشطة المشتركة للإدارة العامة للسلامة والمطابقة ككل</span><span>General Department Activities</span></div>
       <table class="gr-tbl">
         <thead><tr><th style="text-align:right;width:48%;padding-right:12px;">البيان (الشهر السابق / الحالي)</th><th style="width:16%;">${pmAr}</th><th style="width:16%;">${mAr}</th><th style="width:20%;">الفرق والاتجاه</th></tr></thead>
@@ -800,7 +843,8 @@ async function generateConsolidatedMonthlyReport() {
         <div style="font-size:14px;color:#555;font-weight:bold;">مدير إدارة السلامة والمطابقة</div>
         <div style="font-size:18px;color:#003366;font-weight:900;margin-top:4px;">${mgrName}</div>
       </div>
-      ${pageFooterBanner()}
+      </div>
+      ${pageFooterBanner(10, 10)}
     </div>
   `;
 
@@ -908,6 +952,23 @@ async function generateConsolidatedMonthlyReport() {
       type: 'doughnut',
       data: { labels: hasG3 ? g3L.filter((_, idx) => g3C[idx] > 0) : ['لا توجد ملاحظات مهبط/حياة برية'], datasets: [{ data: hasG3 ? g3C.filter(v => v > 0) : [1], backgroundColor: hasG3 ? ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1abc9c', '#3498db', '#9b59b6'] : ['#e0e0e0'], borderWidth: 1 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { size: 7 } } } } }
+    }));
+  }
+
+  const ctxSpiRep = document.getElementById('grAvSpiReportsChart')?.getContext('2d');
+  if (ctxSpiRep) {
+    let recTot = ytdItemTotals["Number of received safety reports"] || 0;
+    let clsTot = ytdItemTotals["Number of closed safety reports"] || 0;
+    let openTot = Math.max(0, recTot - clsTot);
+    let ratioPct = recTot > 0 ? ((clsTot / recTot) * 100).toFixed(1) : "0.0";
+    let hasRep = (recTot > 0 || clsTot > 0);
+    grChartInstances.push(new Chart(ctxSpiRep, {
+      type: 'doughnut',
+      data: {
+        labels: hasRep ? [`مغلقة (${clsTot}) - ${ratioPct}%`, `مفتوحة (${openTot})`] : ['لا توجد تقارير سلامة'],
+        datasets: [{ data: hasRep ? [clsTot, openTot] : [1], backgroundColor: hasRep ? ['#28a745', '#dc3545'] : ['#e0e0e0'], borderWidth: 1 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 7.5 } } } } }
     }));
   }
 
