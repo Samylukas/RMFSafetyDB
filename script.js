@@ -364,6 +364,11 @@ function loadAppDataInit() {
           globalCivilDefenseMonthly = d.cdMonthly;
           try { localStorage.setItem('rmf_cd_monthly', JSON.stringify(globalCivilDefenseMonthly)); } catch (e) {}
         }
+        try {
+          localStorage.setItem('rmf_surveys', JSON.stringify(globalSurveys || []));
+          localStorage.setItem('rmf_fod', JSON.stringify(globalFod || []));
+          localStorage.setItem('rmf_movements', JSON.stringify(d.movements || []));
+        } catch (e) {}
 
         sortIncidentsByDate();
 
@@ -401,6 +406,7 @@ function loadAppDataInit() {
             }
           });
           globalDailyInspections = Object.values(rMap).sort((a, b) => b.id - a.id);
+          try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(globalDailyInspections)); } catch (e) {}
         }
 
         populateUsersDropdown(globalUsers);
@@ -1995,12 +2001,17 @@ function deleteQuarterlyDoc(cType, idx) {
 // =============================================================================
 function formatTrendDifference(dV, iHb, un = "") {
   let n = parseFloat(dV);
-  if (isNaN(n) || n === 0) return `<span style="color:#6c757d;font-weight:bold;">0 ${un} <i class="fa-solid fa-arrows-left-right"></i></span>`;
-  let iP = n > 0, fV = Math.abs(n).toFixed(un.includes("كجم") ? 3 : 0);
-  let iG = iHb ? iP : !iP;
-  let clr = iG ? "#28a745" : "#dc3545";
-  let aI = iP ? "fa-arrow-up" : "fa-arrow-down";
-  return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`;
+  let isFloat = un.includes("كجم") || un.toLowerCase().includes("kg");
+  if (isNaN(n) || Math.abs(n) < 0.0001) {
+    let zeroTxt = isFloat ? `0.000 ${un}`.trim() : `00 ${un}`.trim();
+    return `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${zeroTxt} <i class="fa-solid fa-arrow-right"></i></span>`;
+  }
+  let iP = n > 0;
+  let fV = isFloat ? Math.abs(n).toFixed(3) : String(Math.abs(Math.round(n))).padStart(2, '0');
+  let isGood = iHb ? iP : !iP;
+  let clr = isGood ? "#28a745" : "#dc3545";
+  let aI = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${fV} ${un} <i class="fa-solid ${aI}"></i></span>`;
 }
 
 function getPreviousMonthStr(ms) {
@@ -3197,8 +3208,17 @@ function recalcCdMonthlyDiffs() {
   CD_MONTHLY_KPI_DEFS.forEach(def => {
     const diffEl = document.getElementById(`cd_mkpi_diff_${def.key}`);
     if (!diffEl) return;
-    if (def.isText) { let p = document.getElementById(`cd_mkpi_prev_${def.key}`)?.value || 'مطابق', c = document.getElementById(`cd_mkpi_cur_${def.key}`)?.value || 'مطابق'; diffEl.innerText = (p === c) ? '00' : c; diffEl.style.color = (c === 'مطابق') ? '#28a745' : '#dc3545'; }
-    else { let p = Number(document.getElementById(`cd_mkpi_prev_${def.key}`)?.value || 0), c = Number(document.getElementById(`cd_mkpi_cur_${def.key}`)?.value || 0), d = Math.abs(c - p); diffEl.innerText = String(d).padStart(2, '0'); if (c === p) diffEl.style.color = '#6c757d'; else { let good = def.higherBetter ? (c > p) : (c < p); diffEl.style.color = good ? '#28a745' : '#dc3545'; } }
+    if (def.isText) {
+      let p = document.getElementById(`cd_mkpi_prev_${def.key}`)?.value || 'مطابق';
+      let c = document.getElementById(`cd_mkpi_cur_${def.key}`)?.value || 'مطابق';
+      if (p === c) diffEl.innerHTML = `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">00 <i class="fa-solid fa-arrow-right"></i></span>`;
+      else if (c === 'مطابق') diffEl.innerHTML = `<span style="color:#28a745;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${c} <i class="fa-solid fa-arrow-up"></i></span>`;
+      else diffEl.innerHTML = `<span style="color:#dc3545;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${c} <i class="fa-solid fa-arrow-down"></i></span>`;
+    } else {
+      let p = Number(document.getElementById(`cd_mkpi_prev_${def.key}`)?.value || 0);
+      let c = Number(document.getElementById(`cd_mkpi_cur_${def.key}`)?.value || 0);
+      diffEl.innerHTML = formatTrendDifference(c - p, def.higherBetter, "");
+    }
   });
 }
 
@@ -3290,10 +3310,17 @@ function generateCdMonthlyReportPreview() {
   const kpiTableRows = CD_MONTHLY_KPI_DEFS.map(def => {
     let pVal = rep.prevKpis && rep.prevKpis[def.key] !== undefined ? rep.prevKpis[def.key] : (def.isText ? 'مطابق' : 0);
     let cVal = rep.kpis && rep.kpis[def.key] !== undefined ? rep.kpis[def.key] : (def.isText ? 'مطابق' : 0);
-    let diffDisplay = '00';
-    if (def.isText) diffDisplay = (pVal === cVal) ? '00' : cVal;
-    else { let d = Math.abs(Number(cVal) - Number(pVal)); diffDisplay = String(d).padStart(2, '0'); pVal = String(pVal).padStart(2, '0'); cVal = String(cVal).padStart(2, '0'); }
-    return `<tr><td style="border:1px solid #888;padding:7px 10px;text-align:right;font-weight:bold;">${def.label}</td><td style="border:1px solid #888;padding:7px;text-align:center;">${pVal}</td><td style="border:1px solid #888;padding:7px;text-align:center;font-weight:bold;background:#f8fbfd;">${cVal}</td><td style="border:1px solid #888;padding:7px;text-align:center;font-weight:bold;">${diffDisplay}</td></tr>`;
+    let diffHtml = '';
+    if (def.isText) {
+      if (pVal === cVal) diffHtml = `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">00 <i class="fa-solid fa-arrow-right"></i></span>`;
+      else if (cVal === 'مطابق') diffHtml = `<span style="color:#28a745;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${cVal} <i class="fa-solid fa-arrow-up"></i></span>`;
+      else diffHtml = `<span style="color:#dc3545;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:4px;">${cVal} <i class="fa-solid fa-arrow-down"></i></span>`;
+    } else {
+      diffHtml = formatTrendDifference(Number(cVal) - Number(pVal), def.higherBetter, "");
+      pVal = String(pVal).padStart(2, '0');
+      cVal = String(cVal).padStart(2, '0');
+    }
+    return `<tr><td style="border:1px solid #888;padding:7px 10px;text-align:right;font-weight:bold;">${def.label}</td><td style="border:1px solid #888;padding:7px;text-align:center;">${pVal}</td><td style="border:1px solid #888;padding:7px;text-align:center;font-weight:bold;background:#f8fbfd;">${cVal}</td><td style="border:1px solid #888;padding:7px;text-align:center;font-weight:bold;">${diffHtml}</td></tr>`;
   }).join('');
 
   const trainingHtml = (rep.trainings || []).length === 0 ? '<p style="color:#777;">لا توجد تدريبات مسجلة.</p>' : `<ul style="margin:6px 0 12px 0;padding-right:22px;line-height:1.8;font-weight:bold;color:#222;">${rep.trainings.map(t => `<li>${t}</li>`).join('')}</ul>`;

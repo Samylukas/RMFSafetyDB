@@ -581,14 +581,33 @@ function buildOshMonthlyItemHtml(obj) {
 }
 function addOshMonthlyItemRow(boxId) { document.getElementById(boxId)?.insertAdjacentHTML('beforeend', buildOshMonthlyItemHtml({ text: '', dept: 'الهندسة المدنية' })); }
 
+function formatOshTrendBadge(cur, prev, higherBetter) {
+  let d = Number(cur) - Number(prev);
+  let absStr = String(Math.abs(Math.round(d))).padStart(2, '0');
+  if (d === 0) {
+    return `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">00 <i class="fa-solid fa-arrow-right"></i></span>`;
+  }
+  let isGood = higherBetter ? (d > 0) : (d < 0);
+  let clr = isGood ? "#28a745" : "#dc3545";
+  let ico = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${absStr} <i class="fa-solid ${ico}"></i></span>`;
+}
+
 function recalcOshMonthlyDiff() {
+  // Enforce logical total: totalFindings = rectifiedFindings + pendingFindings
+  const pRect = Number(document.getElementById('osh_mk_p_rectifiedFindings')?.value || 0);
+  const pPend = Number(document.getElementById('osh_mk_p_pendingFindings')?.value || 0);
+  const cRect = Number(document.getElementById('osh_mk_c_rectifiedFindings')?.value || 0);
+  const cPend = Number(document.getElementById('osh_mk_c_pendingFindings')?.value || 0);
+  if (document.getElementById('osh_mk_p_totalFindings')) document.getElementById('osh_mk_p_totalFindings').value = pRect + pPend;
+  if (document.getElementById('osh_mk_c_totalFindings')) document.getElementById('osh_mk_c_totalFindings').value = cRect + cPend;
+
   OSH_MONTHLY_KPIS.forEach(k => {
     const p = Number(document.getElementById(`osh_mk_p_${k.key}`)?.value || 0);
     const c = Number(document.getElementById(`osh_mk_c_${k.key}`)?.value || 0);
     const dEl = document.getElementById(`osh_mk_d_${k.key}`);
     if (dEl) {
-      dEl.innerText = String(Math.abs(c - p)).padStart(2, '0');
-      dEl.style.color = (c === p) ? '#6c757d' : ((k.higherBetter ? c > p : c < p) ? '#28a745' : '#dc3545');
+      dEl.innerHTML = formatOshTrendBadge(c, p, k.higherBetter);
     }
   });
 }
@@ -662,7 +681,12 @@ function generateOshMonthlyPreview() {
 
   const kpiRows = OSH_MONTHLY_KPIS.map(k => {
     let p = Number(rep.prevKpis?.[k.key] || 0), c = Number(rep.kpis?.[k.key] || 0);
-    return `<tr><td style="border:1px solid #888;padding:7px;text-align:right;font-weight:bold;">${k.label}</td><td style="border:1px solid #888;padding:7px;">${p}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${c}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${String(Math.abs(c - p)).padStart(2, '0')}</td></tr>`;
+    if (k.key === 'totalFindings') {
+      p = Number(rep.prevKpis?.rectifiedFindings || 0) + Number(rep.prevKpis?.pendingFindings || 0);
+      c = Number(rep.kpis?.rectifiedFindings || 0) + Number(rep.kpis?.pendingFindings || 0);
+    }
+    let badge = formatOshTrendBadge(c, p, k.higherBetter);
+    return `<tr><td style="border:1px solid #888;padding:7px;text-align:right;font-weight:bold;">${k.label}</td><td style="border:1px solid #888;padding:7px;">${String(p).padStart(2, '0')}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${String(c).padStart(2, '0')}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${badge}</td></tr>`;
   }).join('');
 
   const deptMap = { "الهندسة المدنية": { open: 0, closed: 0 }, "الهندسة الميكانيكية": { open: 0, closed: 0 }, "الهندسة الكهربائية": { open: 0, closed: 0 }, "إدارة الاتصالات": { open: 0, closed: 0 }, "شركات خارجية": { open: 0, closed: 0 } };

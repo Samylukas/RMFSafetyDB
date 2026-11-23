@@ -512,14 +512,33 @@ function buildEnvMonthlyObsRowHtml(o) {
 }
 function addEnvMonthlyObsRow() { document.getElementById('env-m-obs-box')?.insertAdjacentHTML('beforeend', buildEnvMonthlyObsRowHtml()); }
 
+function formatEnvTrendBadge(cur, prev, higherBetter) {
+  let d = Number(cur) - Number(prev);
+  let absStr = String(Math.abs(Math.round(d))).padStart(2, '0');
+  if (d === 0) {
+    return `<span style="color:#0d6efd;font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">00 <i class="fa-solid fa-arrow-right"></i></span>`;
+  }
+  let isGood = higherBetter ? (d > 0) : (d < 0);
+  let clr = isGood ? "#28a745" : "#dc3545";
+  let ico = isGood ? "fa-arrow-up" : "fa-arrow-down";
+  return `<span style="color:${clr};font-weight:bold;direction:ltr;display:inline-flex;align-items:center;gap:5px;">${absStr} <i class="fa-solid ${ico}"></i></span>`;
+}
+
 function recalcEnvMonthlyDiff() {
+  // Enforce logical total: totalEnv = pendingEnv + rectifiedEnv
+  const pPend = Number(document.getElementById('env_mk_p_pendingEnv')?.value || 0);
+  const pRect = Number(document.getElementById('env_mk_p_rectifiedEnv')?.value || 0);
+  const cPend = Number(document.getElementById('env_mk_c_pendingEnv')?.value || 0);
+  const cRect = Number(document.getElementById('env_mk_c_rectifiedEnv')?.value || 0);
+  if (document.getElementById('env_mk_p_totalEnv')) document.getElementById('env_mk_p_totalEnv').value = pPend + pRect;
+  if (document.getElementById('env_mk_c_totalEnv')) document.getElementById('env_mk_c_totalEnv').value = cPend + cRect;
+
   ENV_MONTHLY_KPIS.forEach(k => {
     const p = Number(document.getElementById(`env_mk_p_${k.key}`)?.value || 0);
     const c = Number(document.getElementById(`env_mk_c_${k.key}`)?.value || 0);
     const dEl = document.getElementById(`env_mk_d_${k.key}`);
     if (dEl) {
-      dEl.innerText = String(Math.abs(c - p)).padStart(2, '0');
-      dEl.style.color = (c === p) ? '#6c757d' : ((k.higherBetter ? c > p : c < p) ? '#28a745' : '#dc3545');
+      dEl.innerHTML = formatEnvTrendBadge(c, p, k.higherBetter);
     }
   });
 }
@@ -608,7 +627,12 @@ function generateEnvMonthlyPreview() {
 
   const kpiRows = ENV_MONTHLY_KPIS.map(k => {
     let p = Number(rep.prevKpis?.[k.key] || 0), c = Number(rep.kpis?.[k.key] || 0);
-    return `<tr><td style="border:1px solid #888;padding:7px;text-align:right;font-weight:bold;">${k.label}</td><td style="border:1px solid #888;padding:7px;">${p}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${c}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${String(Math.abs(c - p)).padStart(2, '0')}</td></tr>`;
+    if (k.key === 'totalEnv') {
+      p = Number(rep.prevKpis?.pendingEnv || 0) + Number(rep.prevKpis?.rectifiedEnv || 0);
+      c = Number(rep.kpis?.pendingEnv || 0) + Number(rep.kpis?.rectifiedEnv || 0);
+    }
+    let badge = formatEnvTrendBadge(c, p, k.higherBetter);
+    return `<tr><td style="border:1px solid #888;padding:7px;text-align:right;font-weight:bold;">${k.label}</td><td style="border:1px solid #888;padding:7px;">${String(p).padStart(2, '0')}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${String(c).padStart(2, '0')}</td><td style="border:1px solid #888;padding:7px;font-weight:bold;">${badge}</td></tr>`;
   }).join('');
 
   const deptMap = {};
