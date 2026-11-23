@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>السلامة والصحة المهنية - مطار مرسى علم الدولي</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    html,body{max-width:100vw;overflow-x:hidden;margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;background:#f4f6f8;}
+    .fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}
+    .osh-check-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:15px;margin-bottom:20px;}
+    .osh-col{background:#fff;border:1.5px solid #fd7e14;border-radius:8px;overflow:hidden;}
+    .osh-col-hdr{background:#fd7e14;color:#fff;padding:10px;font-weight:bold;text-align:center;font-size:1rem;}
+    .osh-chk-row{padding:9px 12px;border-bottom:1px solid #eee;display:flex;align-items:flex-start;gap:10px;}
+    .osh-chk-row input[type="checkbox"]{margin-top:4px;transform:scale(1.2);accent-color:#dc3545;}
+    .osh-chk-row label{font-weight:600;color:#333;cursor:pointer;line-height:1.4;flex:1;font-size:0.9rem;}
+  </style>
+</head>
+<body>
+
+<button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button>
+<button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
+
+<div class="header" style="display:flex;width:100%;padding:8px 15px;justify-content:space-between;align-items:center;background:#fff;border-bottom:2px solid #fd7e14;">
+  <img src="LOGO-removebg-preview (1).png" alt="Main Logo" onclick="window.location.href='index.html'" style="cursor:pointer;max-height:50px;object-fit:contain;">
+  <div class="header-titles" style="flex:1;text-align:center;padding:0 8px;">
+    <h1 style="font-size:1.05rem;margin:0;color:#003366;">General Department of Safety and Compliance</h1>
+    <h2 style="font-size:0.9rem;margin:3px 0 0 0;color:#fd7e14;">قسم السلامة والصحة المهنية (OSH)</h2>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button type="button" id="oshBackMainBtn" onclick="window.location.href='index.html'" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.85rem;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-house"></i> الرئيسية
+    </button>
+    <button type="button" onclick="oshLogout()" style="background:#dc3545;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.85rem;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-right-from-bracket"></i> خروج
+    </button>
+  </div>
+</div>
+
+<div class="content-area" style="display:block;">
+  <h1 style="color:#fd7e14;text-align:center;font-weight:900;font-size:2rem;margin-bottom:5px;">
+    إدارة السلامة والصحة المهنية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Occupational Safety & Health Department (OSH)</span>
+  </h1>
+
+  <!-- التبويبان الرئيسيان -->
+  <div style="display:flex;gap:12px;justify-content:center;margin:20px auto;max-width:750px;flex-wrap:wrap;">
+    <button type="button" id="osh-main-tab-daily" onclick="switchOshMainTab('daily')" style="flex:1;min-width:220px;padding:14px 20px;background:#fd7e14;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;box-shadow:0 4px 12px rgba(253,126,20,0.28);font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-clipboard-check"></i> 01 - الفحص اليومي والمرور الدوري (OSH)
+    </button>
+    <button type="button" id="osh-main-tab-monthly" onclick="switchOshMainTab('monthly')" style="flex:1;min-width:220px;padding:14px 20px;background:#6c757d;color:#fff;border:none;border-radius:8px;font-weight:900;font-size:1.05rem;cursor:pointer;font-family:'Cairo',sans-serif;">
+      <i class="fa-solid fa-file-invoice"></i> 02 - التقرير الشهري للسلامة والصحة المهنية
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 01. الفحص اليومي للسلامة والصحة المهنية -->
+  <!-- ========================================================================= -->
+  <div id="osh-view-daily">
+    <div class="nav-controls">
+      <button type="button" class="new-btn" style="background:#fd7e14;" onclick="clearOshDailyForm()"><i class="fa-solid fa-plus"></i> جولة تفتيش جديدة</button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('first')"><i class="fa-solid fa-angles-right"></i></button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('prev')"><i class="fa-solid fa-angle-right"></i></button>
+      <div class="nav-counter" id="nav-osh-daily-counter">0 / 0</div>
+      <button type="button" class="nav-btn" onclick="navOshDaily('next')"><i class="fa-solid fa-angle-left"></i></button>
+      <button type="button" class="nav-btn" onclick="navOshDaily('last')"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchOshDailySubTab('entry')" id="btn-osh-daily-entry"><i class="fa-solid fa-pen-to-square"></i> نموذج الفحص اليومي (إدخال)</button>
+        <button class="tab-btn" onclick="switchOshDailySubTab('report')" id="btn-osh-daily-report"><i class="fa-solid fa-file-contract"></i> الجولات المحفوظة وطباعة بيان الفحص</button>
+      </div>
+
+      <!-- إدخال الفحص اليومي -->
+      <div id="tab-osh-daily-entry" class="tab-content active">
+        <form id="oshDailyForm" onsubmit="event.preventDefault(); submitOshDailyInspection(event);">
+          <div class="form-grid" style="background:#fff8f1;padding:15px;border-radius:8px;border:1.5px solid #fd7e14;margin-bottom:20px;">
+            <div class="form-group"><label>التاريخ:</label><input type="date" id="oshDailyDate" required></div>
+            <div class="form-group"><label>الوقت:</label><input type="time" id="oshDailyTime" required></div>
+            <div class="form-group"><label>الوردية:</label><select id="oshDailyShift"><option value="صباحي">صباحي</option><option value="مسائي">مسائي</option></select></div>
+            <div class="form-group"><label>نطاق التفتيش:</label>
+              <select id="oshDailyScope">
+                <option value="مرور يومي عام على مرافق المطار">مرور يومي عام على مرافق المطار</option>
+                <option value="الفحص الدوري لطفايات الحريق وصناديق الإطفاء">الفحص الدوري لطفايات الحريق وصناديق الإطفاء</option>
+                <option value="تفتيش محطات الكهرباء واللوحات الفرعية">تفتيش محطات الكهرباء واللوحات الفرعية</option>
+                <option value="تفتيش صالات السفر والوصول والأسواق الحرة">تفتيش صالات السفر والوصول والأسواق الحرة</option>
+                <option value="تفتيش الورش والمخازن وساحات الانتظار">تفتيش الورش والمخازن وساحات الانتظار</option>
+              </select>
+            </div>
+            <div class="form-group"><label>القائم بالتفتيش (مفتش OSH):</label><input type="text" id="oshDailyInspector" required placeholder="اسم مسئول السلامة والصحة المهنية..."></div>
+          </div>
+
+          <!-- قائمة بنود الفحص اليومي القياسية -->
+          <h3 style="color:#003366;margin-bottom:10px;font-size:1.1rem;"><i class="fa-solid fa-list-check"></i> قائمة فحص السلامة والصحة المهنية (حدد البند في حال وجود مخالفة):</h3>
+          <div id="osh-checklist-grid" class="osh-check-grid"></div>
+
+          <!-- جدول حالات عدم المطابقة التفصيلية -->
+          <div style="border:1.5px solid #003366;border-radius:8px;overflow:hidden;margin-top:20px;margin-bottom:20px;background:#fff;">
+            <div style="background:#003366;color:#fff;padding:10px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <span>حالات عدم المطابقة والمخاطر المرصودة خلال الجولة</span>
+              <button type="button" onclick="addOshFindingRow()" style="background:#fd7e14;color:#fff;border:none;padding:5px 14px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:12px;">
+                <i class="fa-solid fa-plus"></i> إضافة مخالفة يدوياً
+              </button>
+            </div>
+            <div style="width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+              <table class="report-table" style="width:100%;min-width:850px;margin:0;font-size:11.5px;">
+                <thead>
+                  <tr>
+                    <th style="width:28%;">وصف الخطر / الحالة غير المطابقة</th>
+                    <th style="width:15%;">المكان / الموقع</th>
+                    <th style="width:14%;">تصنيف الخطر</th>
+                    <th style="width:14%;">الجهة المسئولة</th>
+                    <th style="width:16%;">الإجراء التصحيحي المتخذ</th>
+                    <th style="width:9%;">الحالة</th>
+                    <th style="width:4%;">حذف</th>
+                  </tr>
+                </thead>
+                <tbody id="osh-findings-entry-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <button type="button" onclick="submitOshDailyInspection(event)" class="submit-btn" id="submitOshDailyBtn" style="background-color:#fd7e14;font-size:1.05rem;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> حفظ جولة السلامة والصحة المهنية
+          </button>
+          <p id="oshDailyMsg" style="text-align:center;margin-top:12px;font-weight:bold;"></p>
+        </form>
+      </div>
+
+      <!-- الجولات المحفوظة وطباعة البيان اليومي -->
+      <div id="tab-osh-daily-report" class="tab-content">
+        <div class="report-wrapper" style="margin-top:10px;margin-bottom:25px;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <h3 style="color:#fd7e14;margin-bottom:12px;">الجولات اليومية المسجلة للسلامة والصحة المهنية:</h3>
+          <table class="report-table rtl-table" dir="rtl" style="min-width:650px;">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوقت</th>
+                <th>الوردية</th>
+                <th>نطاق التفتيش</th>
+                <th>المفتش</th>
+                <th>حالة الجولة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="saved-osh-daily-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="report-filters" style="border-top:2px solid #eee;padding-top:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group"><label>اختر تاريخ البيان للطباعة:</label><input type="date" id="oshPrintDate"></div>
+          <button type="button" onclick="generateOshDailyPrintView()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;"><i class="fa-solid fa-eye"></i> عرض البيان الرسمي</button>
+          <button type="button" onclick="exportOshDailyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;"><i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)</button>
+          <button type="button" onclick="exportOshDailyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;"><i class="fa-solid fa-file-pdf"></i> طباعة / PDF</button>
+        </div>
+
+        <div id="printable-osh-daily-report" style="display:none;background:#fff;padding:22px;margin-top:20px;border:2px solid #000;direction:rtl;color:#000;font-family:'Cairo',Arial,sans-serif;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 02. التقرير الشهري للسلامة والصحة المهنية -->
+  <!-- ========================================================================= -->
+  <div id="osh-view-monthly" style="display:none;">
+    <div class="survey-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchOshMonthlySubTab('data')" id="btn-osh-monthly-data"><i class="fa-solid fa-database"></i> 1- بيانات التقرير الشهري (إدخال وحفظ)</button>
+        <button class="tab-btn" onclick="switchOshMonthlySubTab('extract')" id="btn-osh-monthly-extract"><i class="fa-solid fa-file-export"></i> 2- استخراج التقرير الشهري (معاينة وتصدير)</button>
+      </div>
+
+      <!-- 1. بيانات التقرير الشهري -->
+      <div id="tab-osh-monthly-data" class="tab-content active">
+        <div style="background:#fff8f1;padding:15px;border-radius:8px;border:1.5px solid #fd7e14;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="min-width:180px;">
+            <label style="font-weight:bold;color:#003366;">شهر التقرير:</label>
+            <input type="month" id="oshMonthlyMonth" onchange="loadOshMonthlyForm()">
+          </div>
+          <div class="form-group" style="min-width:200px;">
+            <label style="font-weight:bold;color:#003366;">إعداد (مسئول السلامة والصحة المهنية):</label>
+            <input type="text" id="oshMonthlyPreparedBy" placeholder="اسم المعد...">
+          </div>
+          <button type="button" onclick="autoPopulateOshMonthly()" class="submit-btn" style="width:auto;padding:10px 16px;background:#17a2b8;margin:0;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> تجميع البيانات تلقائياً من الفحص اليومي
+          </button>
+        </div>
+
+        <div id="osh-monthly-form-container"></div>
+
+        <button type="button" onclick="saveOshMonthlyReport()" id="saveOshMonthlyBtn" class="submit-btn" style="background:#28a745;margin-top:20px;font-size:1.05rem;">
+          <i class="fa-solid fa-floppy-disk"></i> حفظ وإثبات بيانات التقرير الشهري (OSH)
+        </button>
+        <p id="oshMonthlyMsg" style="text-align:center;margin-top:10px;font-weight:bold;"></p>
+      </div>
+
+      <!-- 2. استخراج التقرير الشهري -->
+      <div id="tab-osh-monthly-extract" class="tab-content">
+        <div class="report-filters" style="background:#f0f8ff;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group">
+            <label style="font-weight:bold;color:#003366;">اختر الشهر لاستخراج التقرير:</label>
+            <input type="month" id="oshExtractMonth">
+          </div>
+          <button type="button" onclick="generateOshMonthlyPreview()" class="submit-btn" style="width:auto;padding:10px 18px;background:#003366;">
+            <i class="fa-solid fa-eye"></i> عرض التقرير الشهري
+          </button>
+          <button type="button" onclick="exportOshMonthlyPNG()" class="submit-btn" style="width:auto;padding:10px 18px;background:#28a745;">
+            <i class="fa-solid fa-file-image"></i> تصدير كصورة (PNG)
+          </button>
+          <button type="button" onclick="exportOshMonthlyPDF()" class="submit-btn" style="width:auto;padding:10px 18px;background:#d9534f;">
+            <i class="fa-solid fa-file-pdf"></i> طباعة / PDF
+          </button>
+          <button type="button" onclick="sendOshMonthlyEmail()" class="submit-btn" style="width:auto;padding:10px 18px;background:#f39c12;">
+            <i class="fa-solid fa-envelope"></i> إرسال بالإيميل
+          </button>
+        </div>
+
+        <div id="printable-osh-monthly-report" style="display:none;background:#fff;padding:0;margin-top:20px;direction:rtl;color:#000;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="osh.js"></script>
+</body>
+</html>
