@@ -22,6 +22,30 @@ function getSessionUserObj() {
   }
 }
 
+function receiveDirectoryFromAppData(dirList) {
+  if (Array.isArray(dirList) && dirList.length > 0) {
+    directoryData = dirList;
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
+    renderTable(directoryData);
+    populateDeptDatalist(directoryData);
+  }
+}
+
+function openDirExternalLink(e, url) {
+  if (e) e.preventDefault();
+  if (!url) return;
+  try {
+    if (url.startsWith("tel:")) {
+      window.location.href = url;
+    } else {
+      const w = window.open(url, "_system");
+      if (!w) window.open(url, "_blank", "noopener,noreferrer");
+    }
+  } catch (err) {
+    window.location.href = url;
+  }
+}
+
 function initDirectorySection() {
   updateConnectionStatus();
   const uObj = getSessionUserObj();
@@ -33,7 +57,11 @@ function initDirectorySection() {
   } else {
     if (unlockBtn) unlockBtn.style.display = "none";
   }
-  loadData(false);
+  if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
+    receiveDirectoryFromAppData(window.globalDirectoryData);
+  } else {
+    loadData(false);
+  }
 }
 
 function dirLogout() {
@@ -126,7 +154,18 @@ function exitAdminMode() {
   }
 }
 
-function triggerPrint() {
+async function triggerPrint() {
+  if (typeof window.isMobileAppOrDevice === "function" && window.isMobileAppOrDevice()) {
+    const tblBox = document.querySelector("#directory-section .table-container");
+    if (!tblBox) return alert("لا توجد بيانات للطباعة!");
+    try {
+      const cvs = await window.rmfWithDesktopWidth(tblBox, () => html2canvas(tblBox, { scale: 1.8, useCORS: true, backgroundColor: "#ffffff" }), "820px");
+      await window.rmfExportCanvas(cvs, "Marsa_Alam_Airport_Phone_Directory.png", "دليل هاتف مطار مرسى علم الدولي");
+    } catch (err) {
+      alert("حدث خطأ أثناء تجهيز صورة الدليل.");
+    }
+    return;
+  }
   setTimeout(() => { window.print(); }, 100);
 }
 
@@ -144,39 +183,47 @@ function formatMobileInput(input) {
 
 function loadData(isRefresh = false) {
   let cachedData = null;
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) cachedData = JSON.parse(raw);
-  } catch (e) {}
+  if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
+    cachedData = window.globalDirectoryData;
+  } else {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) cachedData = JSON.parse(raw);
+    } catch (e) {}
+  }
 
-  if (cachedData && Array.isArray(cachedData) && !isRefresh && directoryData.length === 0) {
+  if (cachedData && Array.isArray(cachedData) && cachedData.length > 0 && !isRefresh) {
     directoryData = cachedData;
     renderTable(directoryData);
     populateDeptDatalist(directoryData);
   }
 
-  if (!navigator.onLine) {
-    if (isRefresh) alert("أنت غير متصل بالإنترنت. يرجى التحقق من الشبكة للمزامنة.");
-    else if (!cachedData) {
-      document.getElementById("table-body").innerHTML = '<tr><td colspan="6" style="color:red; text-align:center; padding:15px;">لا يوجد اتصال بالإنترنت ولا توجد بيانات محفوظة مسبقاً.</td></tr>';
-    }
-    return;
-  }
-
   if (isRefresh) {
-    document.getElementById("table-body").innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري مزامنة أحدث البيانات من Google Sheets...</td></tr>';
+    const tb = document.getElementById("table-body");
+    if (tb) tb.innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري مزامنة أحدث البيانات من Google Sheets...</td></tr>';
   }
 
   const cb = "jsonpDir_" + Math.round(100000 * Math.random());
+  const timeoutId = setTimeout(() => {
+    delete window[cb];
+    if (!directoryData || directoryData.length === 0) {
+      const tb = document.getElementById("table-body");
+      if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:18px; color:#dc3545; font-weight:bold;">تعذر سحب البيانات حالياً. <button type="button" onclick="forceRefreshData()" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
+    }
+  }, 8500);
+
   window[cb] = function (d) {
+    clearTimeout(timeoutId);
     try {
       if (d && d.status === "success" && Array.isArray(d.directory)) {
         directoryData = d.directory;
+        window.globalDirectoryData = directoryData;
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
         renderTable(directoryData);
         populateDeptDatalist(directoryData);
-      } else if (!cachedData) {
-        document.getElementById("table-body").innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
+      } else if (!directoryData || directoryData.length === 0) {
+        const tb = document.getElementById("table-body");
+        if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
       }
     } catch (err) {
       console.error(err);
@@ -188,9 +235,11 @@ function loadData(isRefresh = false) {
   const s = document.createElement("script");
   s.src = window.API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
   s.onerror = () => {
+    clearTimeout(timeoutId);
     delete window[cb];
-    if (!cachedData) {
-      document.getElementById("table-body").innerHTML = '<tr><td colspan="6" style="color:red; text-align:center; padding:15px;">تعذر الاتصال بقاعدة البيانات.</td></tr>';
+    if (!directoryData || directoryData.length === 0) {
+      const tb = document.getElementById("table-body");
+      if (tb) tb.innerHTML = '<tr><td colspan="6" style="color:#dc3545; text-align:center; padding:15px; font-weight:bold;">تعذر الاتصال بقاعدة البيانات. <button type="button" onclick="forceRefreshData()" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
     }
   };
   document.body.appendChild(s);
@@ -244,8 +293,8 @@ function renderTable(data) {
           <div class="mobile-cell">
             <span class="mobile-number-text">${mobileStr}</span>
             <div class="quick-actions">
-              <a href="tel:${mobileRaw}" class="action-btn-call" title="اتصال"><i class="fas fa-phone-alt"></i></a>
-              <a href="https://wa.me/${waNumber}" target="_blank" class="action-btn-wa" title="واتساب"><i class="fab fa-whatsapp"></i></a>
+              <a href="tel:${mobileRaw}" onclick="openDirExternalLink(event, 'tel:${mobileRaw}')" class="action-btn-call" title="اتصال"><i class="fas fa-phone-alt"></i></a>
+              <a href="https://wa.me/${waNumber}" onclick="openDirExternalLink(event, 'https://wa.me/${waNumber}')" class="action-btn-wa" title="واتساب"><i class="fab fa-whatsapp"></i></a>
             </div>
           </div>
         `;

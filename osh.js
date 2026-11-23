@@ -527,18 +527,19 @@ function generateOshDailyPrintView(specificRep) {
   box.scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportOshDailyPNG() {
+async function exportOshDailyPNG() {
   const el = document.getElementById('printable-osh-daily-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض البيان الرسمي أولاً!");
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => {
-    cvs.toBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `OSH_Daily_${document.getElementById('oshPrintDate')?.value || 'Report'}.png`; a.click(); }, 'image/png');
-  });
+  const dt = document.getElementById('oshPrintDate')?.value || 'Report';
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `OSH_Daily_${dt}.png`, `بيان السلامة والصحة المهنية (${dt})`);
 }
 
-function exportOshDailyPDF() {
+async function exportOshDailyPDF() {
   const el = document.getElementById('printable-osh-daily-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض البيان الرسمي أولاً!");
-  html2pdf().set({ margin: 0.25, filename: `OSH_Daily_${document.getElementById('oshPrintDate')?.value || 'Report'}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(el).save();
+  const dt = document.getElementById('oshPrintDate')?.value || 'Report';
+  await window.rmfExportElementToPdf(el, `OSH_Daily_${dt}.pdf`, { margin: 0.25, filename: `OSH_Daily_${dt}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }, `بيان السلامة والصحة المهنية (${dt})`);
 }
 
 // =============================================================================
@@ -761,15 +762,18 @@ function generateOshMonthlyPreview() {
   }
 }
 
-function exportOshMonthlyPNG() {
+async function exportOshMonthlyPNG() {
   const el = document.getElementById('printable-osh-monthly-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => { cvs.toBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `OSH_Monthly_${document.getElementById('oshExtractMonth')?.value}.png`; a.click(); }, 'image/png'); });
+  const m = document.getElementById('oshExtractMonth')?.value || 'Report';
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `OSH_Monthly_${m}.png`, `التقرير الشهري للسلامة والصحة المهنية (${m})`);
 }
-function exportOshMonthlyPDF() {
+async function exportOshMonthlyPDF() {
   const el = document.getElementById('printable-osh-monthly-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
-  html2pdf().set({ margin: 0.25, filename: `OSH_Monthly_${document.getElementById('oshExtractMonth')?.value}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(el).save();
+  const m = document.getElementById('oshExtractMonth')?.value || 'Report';
+  await window.rmfExportElementToPdf(el, `OSH_Monthly_${m}.pdf`, { margin: 0.25, filename: `OSH_Monthly_${m}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }, `التقرير الشهري للسلامة والصحة المهنية (${m})`);
 }
 async function sendOshMonthlyEmail() {
   const mStr = document.getElementById('oshExtractMonth')?.value;

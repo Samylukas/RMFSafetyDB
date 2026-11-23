@@ -508,7 +508,7 @@ html, body {
 .btn-add { background-color: var(--success-green); color: white; display: none; }
 .btn-exit-admin { background-color: var(--danger-red); color: white; display: none; }
 .table-container { background: white; border-radius: 8px; box-shadow: 0 3px 12px rgba(0,0,0,0.05); border: 1px solid #dce4ec; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-#directory-table { width: 100%; border-collapse: collapse; text-align: center; }
+#directory-table { width: 100%; min-width: 560px; border-collapse: collapse; text-align: center; }
 .print-spacer { display: none; }
 #directory-table th { background-color: #003366; color: #ffffff; padding: 9px 6px; font-size: 12.5px; border: 1px solid #1a4a75; font-weight: 700; white-space: nowrap; }
 #directory-table td { padding: 6px 6px; border: 1px solid var(--border-color); font-size: 12.5px; font-weight: 600; color: var(--text-dark); line-height: 1.3; }

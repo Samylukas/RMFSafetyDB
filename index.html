@@ -7,7 +7,7 @@
   <link rel="preload" as="image" href="LOGO-removebg-preview (1).png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=2026.2">
+  <link rel="stylesheet" href="style.css?v=2026.3">
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -255,6 +255,7 @@
 
 <!-- ================== osh-section ================== -->
 <div id="osh-section" class="content-area" style="display:none;">
+<button class="back-btn" id="oshBackMainBtn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button>
 <h1 style="color:#fd7e14;text-align:center;font-weight:900;font-size:2rem;margin-bottom:5px;">
     إدارة السلامة والصحة المهنية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Occupational Safety & Health Department (OSH)</span>
   </h1>
@@ -439,6 +440,7 @@
 
 <!-- ================== env-section ================== -->
 <div id="env-section" class="content-area" style="display:none;">
+<button class="back-btn" id="envBackMainBtn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button>
 <h1 style="color:#28a745;text-align:center;font-weight:900;font-size:2rem;margin-bottom:5px;">
     إدارة البيئة ومكافحة مخاطر الحياة البرية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Environment & Wildlife Hazard Control Department</span>
   </h1>
@@ -638,6 +640,7 @@
 
 <!-- ================== general-report-section ================== -->
 <div id="general-report-section" class="content-area" style="display:none;">
+<button class="back-btn" onclick="openSection('main-dashboard')"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button>
 <h1 style="color:#003366;text-align:center;font-weight:900;font-size:1.95rem;margin-bottom:8px;">
     التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة <br><span style="font-size:1.05rem;color:#777;font-family:sans-serif;">Consolidated General Department Monthly Report</span>
   </h1>
@@ -707,6 +710,7 @@
 
 <!-- ================== قسم دليل هاتف المطار (Phone Directory Section) ================== -->
 <div id="directory-section" class="content-area" style="display:none;">
+<button class="back-btn" onclick="goBackToDashboard()"><i class="fa-solid fa-arrow-right"></i> رجوع للوحة</button>
 <div class="dir-container">
   <div class="dir-top-bar">
     <h2 class="dir-page-title"><i class="fa-solid fa-phone-volume" style="color:#17a2b8;"></i> دليل أرقام الطوارئ والإدارات بالمطار</h2>
@@ -889,10 +893,10 @@
     }
   }, 4200);
 </script>
-<script src="script.js?v=2026.2"></script>
-<script src="osh.js?v=2026.2"></script>
-<script src="env.js?v=2026.2"></script>
-<script src="general-report.js?v=2026.2"></script>
-<script src="directory.js?v=2026.2"></script>
+<script src="script.js?v=2026.3"></script>
+<script src="osh.js?v=2026.3"></script>
+<script src="env.js?v=2026.3"></script>
+<script src="general-report.js?v=2026.3"></script>
+<script src="directory.js?v=2026.3"></script>
 </body>
 </html>

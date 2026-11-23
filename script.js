@@ -4,6 +4,269 @@
  */
 
 // =============================================================================
+// 0. محرك التصدير والمشاركة الذكي للموبايل آب والويب (Universal Mobile & Web Export)
+// =============================================================================
+window.isMobileAppOrDevice = function () {
+  const ua = navigator.userAgent || '';
+  const isTouchMobile = /Android|iPhone|iPad|iPod|WebView|wv|Capacitor|Cordova|Mobile/i.test(ua);
+  const isLocalhostApp = (window.location && window.location.hostname === 'localhost');
+  return isTouchMobile || isLocalhostApp;
+};
+
+window.rmfWithDesktopWidth = async function (el, fn, targetWidth = '820px') {
+  if (!el) return await fn();
+  const prevWidth = el.style.width;
+  const prevMaxWidth = el.style.maxWidth;
+  const prevMinWidth = el.style.minWidth;
+  const prevMargin = el.style.margin;
+  el.style.width = targetWidth;
+  el.style.maxWidth = targetWidth;
+  el.style.minWidth = targetWidth;
+  el.style.margin = '0 auto';
+  await new Promise(r => setTimeout(r, 80));
+  try {
+    return await fn();
+  } finally {
+    el.style.width = prevWidth;
+    el.style.maxWidth = prevMaxWidth;
+    el.style.minWidth = prevMinWidth;
+    el.style.margin = prevMargin;
+  }
+};
+
+window.rmfDataUrlToFile = function (dataUrl, filename, mimeType) {
+  try {
+    const parts = dataUrl.split(',');
+    const mime = mimeType || (parts[0].match(/:(.*?);/) || [])[1] || 'application/octet-stream';
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new File([u8arr], filename, { type: mime });
+  } catch (e) {
+    return null;
+  }
+};
+
+window.rmfShareFilesNative = async function (files, titleText) {
+  try {
+    if (navigator.canShare && navigator.canShare({ files: files })) {
+      await navigator.share({
+        files: files,
+        title: titleText || 'تقرير إدارة السلامة والمطابقة',
+        text: titleText || 'مرفق التقرير الصادر من نظام إدارة السلامة والمطابقة بمطار مرسى علم الدولي'
+      });
+      return true;
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return true;
+  }
+  return false;
+};
+
+window.rmfShowExportModal = function (items, modalTitle) {
+  let old = document.getElementById('rmf-mobile-export-modal');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'rmf-mobile-export-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,15,35,0.82);z-index:999999;display:flex;justify-content:center;align-items:center;padding:12px;direction:rtl;font-family:Cairo,sans-serif;';
+
+  const isMulti = items.length > 1;
+  const isPdf = items.length === 1 && items[0].mimeType === 'application/pdf';
+
+  let cardsHtml = items.map((it, idx) => {
+    const previewHtml = it.mimeType === 'application/pdf'
+      ? `<div style="padding:25px;background:#fff5f5;border:1.5px dashed #dc3545;border-radius:8px;text-align:center;margin:10px 0;">
+           <i class="fa-solid fa-file-pdf" style="font-size:3.2rem;color:#dc3545;margin-bottom:8px;"></i>
+           <div style="font-weight:900;color:#003366;font-size:0.95rem;direction:ltr;">${it.filename}</div>
+           <div style="font-size:0.8rem;color:#555;margin-top:4px;">ملف PDF جاهز للحفظ أو المشاركة على الهاتف</div>
+         </div>`
+      : `<div style="margin:8px 0;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#f8fafc;text-align:center;">
+           <img src="${it.dataUrl}" alt="${it.filename}" style="max-width:100%;max-height:${isMulti ? '260px' : '52vh'};object-fit:contain;display:block;margin:0 auto;">
+         </div>`;
+
+    return `
+      <div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin-bottom:12px;background:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-weight:bold;color:#003366;font-size:0.85rem;direction:ltr;">${it.filename}</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button type="button" class="rmf-exp-share-one" data-idx="${idx}" style="background:#28a745;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:bold;font-size:0.82rem;cursor:pointer;font-family:Cairo,sans-serif;">
+              <i class="fa-solid fa-share-nodes"></i> مشاركة / حفظ
+            </button>
+            <a href="${it.dataUrl}" download="${it.filename}" style="background:#003366;color:#fff;text-decoration:none;padding:6px 12px;border-radius:6px;font-weight:bold;font-size:0.82rem;display:inline-flex;align-items:center;gap:5px;">
+              <i class="fa-solid fa-download"></i> تنزيل
+            </a>
+          </div>
+        </div>
+        ${previewHtml}
+      </div>
+    `;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div style="background:#f8fafc;width:100%;max-width:640px;max-height:92vh;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+      <div style="background:#003366;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;font-size:1rem;font-weight:900;"><i class="fa-solid fa-file-export"></i> ${modalTitle || 'تصدير وحفظ التقرير'}</h3>
+        <button type="button" id="rmf-exp-close-btn" style="background:rgba(255,255,255,0.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer;">&times;</button>
+      </div>
+      <div style="padding:12px 14px;overflow-y:auto;flex:1;">
+        <div style="background:#e8f4fd;border-right:4px solid #003366;padding:8px 12px;border-radius:6px;font-size:0.82rem;color:#003366;font-weight:bold;margin-bottom:10px;">
+          ${isPdf
+            ? 'اضغط على (مشاركة / حفظ) لإرسال الملف أو حفظه في مدير الملفات، أو اضغط (تنزيل).'
+            : 'اضغط على (مشاركة / حفظ) لحفظ الصورة في الهاتف أو إرسالها عبر واتساب، أو اضغط مطولاً على الصورة واختر (حفظ الصورة).'}
+        </div>
+        ${isMulti ? `<div style="margin-bottom:12px;text-align:center;">
+          <button type="button" id="rmf-exp-share-all" style="background:#e67e22;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:900;font-size:0.92rem;cursor:pointer;width:100%;font-family:Cairo,sans-serif;">
+            <i class="fa-solid fa-share-from-square"></i> مشاركة وحفظ جميع الصفحات (${items.length} صفحات) دفعة واحدة
+          </button>
+        </div>` : ''}
+        ${cardsHtml}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.getElementById('rmf-exp-close-btn').onclick = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  overlay.querySelectorAll('.rmf-exp-share-one').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const i = Number(btn.getAttribute('data-idx'));
+      const it = items[i];
+      const f = window.rmfDataUrlToFile(it.dataUrl, it.filename, it.mimeType);
+      if (f) {
+        const ok = await window.rmfShareFilesNative([f], it.filename);
+        if (!ok) alert('اضغط على زر (تنزيل) الأزرق أو اضغط مطولاً على الصورة لحفظها في الاستوديو.');
+      }
+    });
+  });
+
+  const shareAllBtn = document.getElementById('rmf-exp-share-all');
+  if (shareAllBtn) {
+    shareAllBtn.addEventListener('click', async () => {
+      const allFiles = items.map(it => window.rmfDataUrlToFile(it.dataUrl, it.filename, it.mimeType)).filter(Boolean);
+      if (allFiles.length > 0) {
+        const ok = await window.rmfShareFilesNative(allFiles, modalTitle || 'صفحات التقرير');
+        if (!ok) alert('يمكنك مشاركة أو تنزيل كل صفحة من الأزرار أدناه.');
+      }
+    });
+  }
+};
+
+window.rmfExportCanvas = async function (canvas, filename, titleAr) {
+  const dataUrl = canvas.toDataURL('image/png');
+  if (!window.isMobileAppOrDevice()) {
+    await new Promise(resolve => {
+      canvas.toBlob(blob => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); resolve(); }, 800);
+        } else {
+          resolve();
+        }
+      }, 'image/png');
+    });
+    return;
+  }
+  const file = window.rmfDataUrlToFile(dataUrl, filename, 'image/png');
+  if (file) {
+    await window.rmfShareFilesNative([file], titleAr || filename);
+  }
+  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'image/png' }], titleAr || filename);
+};
+
+window.rmfExportMultiPages = async function (pageItems, titleAr) {
+  if (!window.isMobileAppOrDevice()) {
+    for (let i = 0; i < pageItems.length; i++) {
+      const it = pageItems[i];
+      await new Promise(resolve => {
+        it.canvas.toBlob(blob => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = it.filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); resolve(); }, 500);
+          } else {
+            resolve();
+          }
+        }, 'image/png');
+      });
+    }
+    return;
+  }
+  const modalItems = pageItems.map(it => ({
+    dataUrl: it.canvas.toDataURL('image/png'),
+    filename: it.filename,
+    mimeType: 'image/png'
+  }));
+  window.rmfShowExportModal(modalItems, titleAr || 'صفحات التقرير');
+};
+
+window.rmfExportElementToPdf = async function (element, filename, opt, titleAr) {
+  if (!window.isMobileAppOrDevice()) {
+    await html2pdf().set(opt).from(element).save();
+    return;
+  }
+  const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+  const dataUrl = await new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(pdfBlob);
+  });
+  const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+  await window.rmfShareFilesNative([pdfFile], titleAr || filename);
+  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'application/pdf' }], titleAr || filename);
+};
+
+window.rmfExportJsPdfInstance = async function (pdfInstance, filename, titleAr) {
+  if (!window.isMobileAppOrDevice()) {
+    pdfInstance.save(filename);
+    return;
+  }
+  const pdfBlob = pdfInstance.output('blob');
+  const dataUrl = await new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(pdfBlob);
+  });
+  const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+  await window.rmfShareFilesNative([pdfFile], titleAr || filename);
+  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'application/pdf' }], titleAr || filename);
+};
+
+window.rmfExportPdfBytes = async function (byteNumbers, filename, titleAr) {
+  const blob = new Blob([byteNumbers], { type: 'application/pdf' });
+  if (!window.isMobileAppOrDevice()) {
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); } catch (e) {} }, 1000);
+    return;
+  }
+  const dataUrl = await new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(blob);
+  });
+  const pdfFile = new File([blob], filename, { type: 'application/pdf' });
+  await window.rmfShareFilesNative([pdfFile], titleAr || filename);
+  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'application/pdf' }], titleAr || filename);
+};
+
+// =============================================================================
 // 1. الثوابت والإعدادات العامة (Constants & Configurations)
 // =============================================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxDScIUg6bc3SotrSqzXbVnYgsGMtGEo8_R_0x_sITYRsRjlqbvUiZI1y2fZxR8ifY/exec";
@@ -449,6 +712,11 @@ function loadAppDataInit() {
           try { localStorage.setItem('rmf_incidents', JSON.stringify(globalIncidents)); } catch (e) {}
         }
         globalFod = d.fod || [];
+        if (Array.isArray(d.directory) && d.directory.length > 0) {
+          window.globalDirectoryData = d.directory;
+          try { localStorage.setItem('rmf_phone_directory_cache', JSON.stringify(d.directory)); } catch (e) {}
+          if (typeof receiveDirectoryFromAppData === 'function') receiveDirectoryFromAppData(d.directory);
+        }
         globalSpiData = d.spi || [];
 
         if (d.quarterly && Array.isArray(d.quarterly) && d.quarterly.length > 0) {
@@ -720,15 +988,13 @@ async function renderPdfSmart(targetDoc) {
   }
 }
 
-function openPdfInExternalViewer() {
-  if (!window.currentPdfBlobUrl) return alert('يرجى الانتظار حتى اكتمال جلب الملف.');
-  const a = document.createElement('a');
-  a.href = window.currentPdfBlobUrl;
-  a.download = window.currentPdfFileName || 'Flight_Schedule.pdf';
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { try { document.body.removeChild(a); } catch (e) {} }, 1000);
+async function openPdfInExternalViewer() {
+  if (!window.currentActiveDoc || !window.currentActiveDoc.pdfBase64) return alert('يرجى الانتظار حتى اكتمال جلب الملف.');
+  const binaryStr = atob(window.currentActiveDoc.pdfBase64);
+  const byteNumbers = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) byteNumbers[i] = binaryStr.charCodeAt(i);
+  const fname = window.currentPdfFileName || window.currentActiveDoc.fileName || 'Flight_Schedule.pdf';
+  await window.rmfExportPdfBytes(byteNumbers, fname, 'جدول الرحلات اليومي (PDF)');
 }
 
 
@@ -1033,7 +1299,7 @@ async function exportSpiPDF() {
   if (!el) return alert('لا يوجد تقرير معروض للطباعة!');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التصدير...'; }
   const opt = { margin: [8, 8, 8, 8], filename: `SPI_Report_${yMain}${isComp ? '_vs_' + yComp : ''}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-  try { await html2pdf().set(opt).from(el).save(); } catch (err) { window.print(); } finally { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> تصدير (PDF)'; } }
+  try { await window.rmfExportElementToPdf(el, opt.filename, opt, 'مؤشرات الأداء والحركة (SPI)'); } catch (err) { console.error(err); } finally { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> تصدير (PDF)'; } }
 }
 
 function buildEvaluationForm() {
@@ -1254,7 +1520,7 @@ function generateModernReport() {
 }
 
 function exportModernPDF() {
-  html2pdf().set({ margin: 0.3, filename: 'Captain_Surveys_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'in', format: 'a4' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '.avoid-page-break'] } }).from(document.getElementById('printable-report')).save();
+  window.rmfExportElementToPdf(document.getElementById('printable-report'), 'Captain_Surveys_Report.pdf', { margin: 0.3, filename: 'Captain_Surveys_Report.pdf', image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'in', format: 'a4' }, pagebreak: { mode: 'css', avoid: ['tr', 'table', '.avoid-page-break'] } }, 'تقرير استبيان الكابتن (PDF)');
 }
 
 function setupCustomDropdown() {
@@ -1661,19 +1927,15 @@ function exportDailyPNG() {
   let target = document.getElementById('printable-daily-report') || document.getElementById('as-f-01-01-container');
   if (!target || target.style.display === 'none') { if (btn) { btn.disabled = false; btn.innerHTML = origHtml; } return alert("يرجى الضغط على زر (عرض النموذج) أولاً!"); }
   let dt = (document.getElementById('isoReportDate')?.value || new Date().toISOString().split('T')[0]);
-  const doCapture = () => {
-    html2canvas(target, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false }).then(cvs => {
-      cvs.toBlob(blob => {
-        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
-        if (!blob) return alert("تعذر استخراج الصورة.");
-        let u = URL.createObjectURL(blob);
-        let a = document.createElement('a'); a.download = `Daily_Inspection_AS_F_01_01_${dt}.png`; a.href = u; document.body.appendChild(a); a.click();
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000);
-      }, 'image/png');
-    }).catch(err => {
-      if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  const doCapture = async () => {
+    try {
+      const cvs = await window.rmfWithDesktopWidth(target, () => html2canvas(target, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false }), '860px');
+      await window.rmfExportCanvas(cvs, `Daily_Inspection_AS_F_01_01_${dt}.png`, `نموذج الفحص اليومي (${dt})`);
+    } catch (err) {
       alert("خطأ أثناء إنشاء الصورة!");
-    });
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+    }
   };
   if (typeof html2canvas === 'undefined') { let s = document.createElement('script'); s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"; s.onload = doCapture; document.head.appendChild(s); } else { doCapture(); }
 }
@@ -2056,13 +2318,9 @@ function exportIsoIncidentImage(incId) {
   tempDiv.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:820px;background:#fff;padding:15px;";
   tempDiv.innerHTML = generateIsoPagesHtml(inc);
   document.body.appendChild(tempDiv);
-  html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false }).then(cvs => {
-    cvs.toBlob(blob => {
-      document.body.removeChild(tempDiv);
-      if (!blob) return printIsoIncidentReport(incId);
-      let u = URL.createObjectURL(blob); let a = document.createElement('a'); a.download = `Incident_Report_AS_F_01_05_${dt}_${incId}.png`; a.href = u; document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000);
-    }, 'image/png');
+  html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false }).then(async cvs => {
+    document.body.removeChild(tempDiv);
+    await window.rmfExportCanvas(cvs, `Incident_Report_AS_F_01_05_${dt}_${incId}.png`, `تقرير واقعة (${dt})`);
   }).catch(e => { document.body.removeChild(tempDiv); printIsoIncidentReport(incId); });
 }
 
@@ -2133,7 +2391,7 @@ function generateFodPrintReport() {
 }
 
 function exportFodPDF() {
-  html2pdf().set({ margin: 0.2, filename: 'FOD_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' }, pagebreak: { avoid: ['tr', 'table'] } }).from(document.getElementById('printable-fod-report')).save();
+  window.rmfExportElementToPdf(document.getElementById('printable-fod-report'), 'FOD_Report.pdf', { margin: 0.2, filename: 'FOD_Report.pdf', image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' }, pagebreak: { avoid: ['tr', 'table'] } }, 'تقرير الأجسام الغريبة FOD (PDF)');
 }
 
 // =============================================================================
@@ -2148,16 +2406,14 @@ function openQuarterlyCompany(cType) {
   if (box) { box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth' }); }
 }
 
-function viewQuarterlyPdf(url, fileName) {
+async function viewQuarterlyPdf(url, fileName) {
   if (!url) return alert('رابط المستند غير صالح!');
   if (url.startsWith('http')) { window.open(url, '_blank'); return; }
   try {
     let base64Parts = url.split(','); let base64Str = base64Parts.length > 1 ? base64Parts[1] : base64Parts[0];
-    let byteCharacters = atob(base64Str); let byteNumbers = new Array(byteCharacters.length);
+    let byteCharacters = atob(base64Str); let byteNumbers = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-    let byteArray = new Uint8Array(byteNumbers); let blob = new Blob([byteArray], { type: 'application/pdf' });
-    let blobUrl = URL.createObjectURL(blob); window.open(blobUrl, '_blank');
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    await window.rmfExportPdfBytes(byteNumbers, fileName || 'Quarterly_Inspection.pdf', fileName || 'تقرير التفتيش الربع سنوي');
   } catch (e) { alert('تعذر فتح المستند.'); }
 }
 
@@ -2706,17 +2962,13 @@ async function exportMainReportImage(format = 'png') {
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استخراج الصورة...'; }
   const monthName = document.getElementById('mainReportMonth')?.value || 'Report';
   try {
-    const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
-    canvas.toBlob(blob => {
-      if (!blob) throw new Error("Blob creation failed");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `Airside_Safety_Monthly_Report_${monthName}.png`;
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
-      if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
-    }, 'image/png');
+    const scaleVal = window.isMobileAppOrDevice() ? 1.5 : 2;
+    const canvas = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: scaleVal, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false }), '820px');
+    await window.rmfExportCanvas(canvas, `Airside_Safety_Monthly_Report_${monthName}.png`, `التقرير الشهري لمنطقة التحركات الجوية (${monthName})`);
   } catch (err) {
+    console.error(err);
     alert("حدث خطأ أثناء استخراج الصورة، يرجى المحاولة مرة أخرى.");
+  } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
 }
@@ -2734,22 +2986,29 @@ async function exportMainReportPagesAsImages() {
   const pageTitles = ["01_Cover", "02_General_KPIs", "03_SPIs_YTD", "04_Incidents_Log", "05_Pilot_Surveys", "06_FOD_Collected"];
 
   try {
-    for (let i = 0; i < pages.length; i++) {
-      const pageEl = pages[i];
-      const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
-      await new Promise(resolve => {
-        canvas.toBlob(blob => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Monthly_Report_${monthName}_${pageTitles[i] || ('Page_' + (i + 1))}.png`;
-            document.body.appendChild(a); a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); resolve(); }, 600);
-          } else resolve();
-        }, 'image/png');
-      });
+    const renderedPages = await window.rmfWithDesktopWidth(el, async () => {
+      const arr = [];
+      for (let i = 0; i < pages.length; i++) {
+        if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> صفحة ${i + 1} / ${pages.length}...`;
+        const canvas = await html2canvas(pages[i], { scale: 1.8, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+        arr.push({
+          canvas: canvas,
+          filename: `Monthly_Report_${monthName}_${pageTitles[i] || ('Page_' + (i + 1))}.png`
+        });
+      }
+      return arr;
+    }, '820px');
+
+    await window.rmfExportMultiPages(renderedPages, `صفحات التقرير الشهري (${monthName})`);
+    if (!window.isMobileAppOrDevice()) {
+      alert("✅ تم استخراج صفحات التقرير الـ 6 كصور PNG عالية الدقة بنجاح!");
     }
-    alert("✅ تم استخراج صفحات التقرير الـ 6 كصور PNG عالية الدقة بنجاح!");
-  } catch (err) { alert("حدث خطأ أثناء استخراج صفحات التقرير."); } finally { if (btn) { btn.disabled = false; btn.innerHTML = origHtml; } }
+  } catch (err) {
+    console.error(err);
+    alert("حدث خطأ أثناء استخراج صفحات التقرير.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
 }
 
 async function exportMainReportPDF() { return exportMainReportImage('png'); }
@@ -2767,15 +3026,22 @@ async function sendReportViaEmail() {
   const prepBy = document.getElementById('mainReportPreparedBy')?.value?.trim() || 'سامي لوكاس';
 
   try {
-    const canvas = await html2canvas(el, { scale: 1.5, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
-    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+    const imgData = await window.rmfWithDesktopWidth(el, async () => {
+      const canvas = await html2canvas(el, { scale: 1.25, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+      return canvas.toDataURL('image/jpeg', 0.80);
+    }, '820px');
     let hB = `<div dir="rtl" style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto;"><h2 style="color: #003366; border-bottom: 2px solid #003366; padding-bottom: 8px;">التقرير الشهري لمنطقة التحركات الجوية - ${m}</h2><p><b>السادة / إدارة السلامة والمطابقة المحترمين،</b><br>تحية طيبة وبعد،،<br><br>نرفق لسيادتكم التقرير الشهري الشامل لمؤشرات السلامة لمنطقة التحركات الجوية لشهر (${m}).</p><p>يرجى الاطلاع على صورة التقرير المرفقة أدناه.</p><div style="text-align: center; margin: 20px 0;"><img src="cid:monthlyReportImage" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" alt="التقرير الشهري"></div><p>وتفضلوا بقبول فائق الاحترام والتقدير،،<br><b>مُعِد التقرير:</b> ${prepBy}<br><b>إدارة سلامة المطارات</b><br><b>مطار مرسى علم الدولي</b></p></div>`;
     await fetch(API_URL, {
       method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: "sendReportEmail", performedBy: getCurrentActorName(), subject: `التقرير الشهري لمنطقة التحركات الجوية - ${m}`, htmlBody: hB, imageData: imgData, imageName: `Airside_Safety_Report_${m}.jpg` })
     });
     alert("✅ تم إرسال التقرير الشامل بنجاح إلى إدارة السلامة والمطابقة!");
-  } catch (err) { alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل أو فشل معالجة الصورة."); } finally { if (btn) { btn.disabled = false; btn.innerHTML = origHtml; } }
+  } catch (err) {
+    console.error(err);
+    alert("❌ تعذر الاتصال بالسيرفر لإرسال الإيميل أو فشل معالجة الصورة.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
 }
 
 // =============================================================================
@@ -3667,20 +3933,19 @@ function generateCdDailyPrintView(specificRep) {
   box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportCdDailyPNG() {
+async function exportCdDailyPNG() {
   const el = document.getElementById('printable-cd-daily-report');
   if (!el || el.style.display === 'none') return alert("يرجى الضغط على زر (عرض البيان الرسمي) أولاً!");
   const dt = document.getElementById('cdPrintDate')?.value || new Date().toISOString().split('T')[0];
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => {
-    cvs.toBlob(blob => { if (!blob) return; const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `Civil_Defense_Daily_${dt}.png`; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000); }, 'image/png');
-  });
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `Civil_Defense_Daily_${dt}.png`, `بيان الحماية المدنية اليومي (${dt})`);
 }
 
-function exportCdDailyPDF() {
+async function exportCdDailyPDF() {
   const el = document.getElementById('printable-cd-daily-report');
   if (!el || el.style.display === 'none') return alert("يرجى الضغط على زر (عرض البيان الرسمي) أولاً!");
   const dt = document.getElementById('cdPrintDate')?.value || new Date().toISOString().split('T')[0];
-  html2pdf().set({ margin: 0.25, filename: `Civil_Defense_Daily_${dt}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(el).save();
+  await window.rmfExportElementToPdf(el, `Civil_Defense_Daily_${dt}.pdf`, { margin: 0.25, filename: `Civil_Defense_Daily_${dt}.pdf`, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }, `بيان الحماية المدنية اليومي (${dt})`);
 }
 
 function loadCdMonthlyDataForm() {
@@ -3883,20 +4148,19 @@ function generateCdMonthlyReportPreview() {
   previewEl.scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportCdMonthlyImage() {
+async function exportCdMonthlyImage() {
   const el = document.getElementById('printable-cd-monthly-report');
   if (!el || el.style.display === 'none') return alert("يرجى الضغط على (عرض التقرير الشهري) أولاً!");
   const mStr = document.getElementById('cdExtractMonth')?.value || 'Report';
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => {
-    cvs.toBlob(blob => { if (!blob) return; const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = `Civil_Defense_Monthly_Report_${mStr}.png`; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 1000); }, 'image/png');
-  });
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `Civil_Defense_Monthly_Report_${mStr}.png`, `التقرير الشهري للحماية المدنية (${mStr})`);
 }
 
-function exportCdMonthlyPDF() {
+async function exportCdMonthlyPDF() {
   const el = document.getElementById('printable-cd-monthly-report');
   if (!el || el.style.display === 'none') return alert("يرجى الضغط على (عرض التقرير الشهري) أولاً!");
   const mStr = document.getElementById('cdExtractMonth')?.value || 'Report';
-  html2pdf().set({ margin: 0.25, filename: `Civil_Defense_Monthly_Report_${mStr}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(el).save();
+  await window.rmfExportElementToPdf(el, `Civil_Defense_Monthly_Report_${mStr}.pdf`, { margin: 0.25, filename: `Civil_Defense_Monthly_Report_${mStr}.pdf`, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }, `التقرير الشهري للحماية المدنية (${mStr})`);
 }
 
 async function sendCdMonthlyEmail() {

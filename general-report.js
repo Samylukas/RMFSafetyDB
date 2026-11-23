@@ -1111,26 +1111,24 @@ async function exportGrPagesAsImages(btn) {
   const mStr = document.getElementById('grMonth')?.value || 'Report';
 
   try {
-    await withDesktopReportWidth(el, async () => {
+    const renderedPages = await withDesktopReportWidth(el, async () => {
+      const arr = [];
       for (let i = 0; i < pages.length; i++) {
         if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> صفحة ${i + 1} / ${pages.length}...`;
-        const cvs = await html2canvas(pages[i], { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
-        await new Promise(res => {
-          cvs.toBlob(b => {
-            if (b) {
-              const u = URL.createObjectURL(b);
-              const a = document.createElement('a');
-              a.href = u;
-              a.download = `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`;
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); res(); }, 450);
-            } else res();
-          }, 'image/png');
+        const cvs = await html2canvas(pages[i], { scale: 1.8, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+        arr.push({
+          canvas: cvs,
+          filename: `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`
         });
       }
+      return arr;
     });
-    alert(`✅ تم تصدير جميع صفحات التقرير المجمع (${pages.length} صفحات) كصور PNG عالية الدقة بنجاح!`);
+    if (typeof window.rmfExportMultiPages === 'function') {
+      await window.rmfExportMultiPages(renderedPages, `التقرير الشهري المجمع (${mStr})`);
+    }
+    if (!window.isMobileAppOrDevice || !window.isMobileAppOrDevice()) {
+      alert(`✅ تم تصدير جميع صفحات التقرير المجمع (${pages.length} صفحات) كصور PNG عالية الدقة بنجاح!`);
+    }
   } catch (err) {
     console.error(err);
     alert("حدث خطأ أثناء تصدير الصور.");
@@ -1189,7 +1187,11 @@ async function exportGrPDF(btn) {
         pdf.addImage(imgData, 'JPEG', x, y, imgW, imgH, undefined, 'FAST');
       }
 
-      pdf.save(`General_Department_Monthly_Report_${mStr}.pdf`);
+      if (typeof window.rmfExportJsPdfInstance === 'function') {
+        await window.rmfExportJsPdfInstance(pdf, `General_Department_Monthly_Report_${mStr}.pdf`, `التقرير الشهري المجمع (${mStr})`);
+      } else {
+        pdf.save(`General_Department_Monthly_Report_${mStr}.pdf`);
+      }
     });
   } catch (err) {
     console.error(err);

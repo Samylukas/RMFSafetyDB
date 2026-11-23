@@ -451,16 +451,19 @@ function generateEnvDailyPrintView(specificRep) {
   box.scrollIntoView({ behavior: 'smooth' });
 }
 
-function exportEnvDailyPNG() {
+async function exportEnvDailyPNG() {
   const el = document.getElementById('printable-env-daily-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض البيان الرسمي أولاً!");
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => { cvs.toBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `ENV_Daily_${document.getElementById('envPrintDate')?.value}.png`; a.click(); }, 'image/png'); });
+  const dt = document.getElementById('envPrintDate')?.value || 'Report';
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `ENV_Daily_${dt}.png`, `بيان التفتيش البيئي اليومي (${dt})`);
 }
 
-function exportEnvDailyPDF() {
+async function exportEnvDailyPDF() {
   const el = document.getElementById('printable-env-daily-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض البيان الرسمي أولاً!");
-  html2pdf().set({ margin: 0.25, filename: `ENV_Daily_${document.getElementById('envPrintDate')?.value}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(el).save();
+  const dt = document.getElementById('envPrintDate')?.value || 'Report';
+  await window.rmfExportElementToPdf(el, `ENV_Daily_${dt}.pdf`, { margin: 0.25, filename: `ENV_Daily_${dt}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }, `بيان التفتيش البيئي اليومي (${dt})`);
 }
 
 // =============================================================================
@@ -737,15 +740,18 @@ function generateEnvMonthlyPreview() {
   }
 }
 
-function exportEnvMonthlyPNG() {
+async function exportEnvMonthlyPNG() {
   const el = document.getElementById('printable-env-monthly-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
-  html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(cvs => { cvs.toBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `ENV_Monthly_${document.getElementById('envExtractMonth')?.value}.png`; a.click(); }, 'image/png'); });
+  const m = document.getElementById('envExtractMonth')?.value || 'Report';
+  const cvs = await window.rmfWithDesktopWidth(el, () => html2canvas(el, { scale: 1.8, useCORS: true, backgroundColor: '#ffffff' }), '840px');
+  await window.rmfExportCanvas(cvs, `ENV_Monthly_${m}.png`, `التقرير الشهري للبيئة والحياة البرية (${m})`);
 }
-function exportEnvMonthlyPDF() {
+async function exportEnvMonthlyPDF() {
   const el = document.getElementById('printable-env-monthly-report');
   if (!el || el.style.display === 'none') return alert("اضغط على عرض التقرير أولاً!");
-  html2pdf().set({ margin: 0.25, filename: `ENV_Monthly_${document.getElementById('envExtractMonth')?.value}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }).from(el).save();
+  const m = document.getElementById('envExtractMonth')?.value || 'Report';
+  await window.rmfExportElementToPdf(el, `ENV_Monthly_${m}.pdf`, { margin: 0.25, filename: `ENV_Monthly_${m}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4' } }, `التقرير الشهري للبيئة والحياة البرية (${m})`);
 }
 async function sendEnvMonthlyEmail() {
   const mStr = document.getElementById('envExtractMonth')?.value;
