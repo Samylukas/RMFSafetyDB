@@ -11,28 +11,48 @@
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <style>html,body{max-width:100vw;overflow-x:hidden;margin:0;padding:0;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}#login-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,51,102,0.06);z-index:99999;justify-content:center;align-items:center;}.iso-input-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.iso-input-table td{border:1px solid #ccc;padding:6px;vertical-align:middle;}.iso-input-table td.lbl{background:#f0f4f8;font-weight:bold;color:#003366;width:15%;}.iso-input-table input,.iso-input-table select{width:100%;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:4px;}.fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}#splash-screen{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;display:flex;justify-content:center;align-items:center;background:#fff;overflow:hidden;transition:all 0.8s ease;}.splash-content{width:100%;max-width:360px;padding:10px;text-align:center;}.splash-logo{max-width:92%;width:260px;height:auto;object-fit:contain;display:block;margin:0 auto 15px auto;image-rendering:-webkit-optimize-contrast;}.runway-container{position:relative;width:100%;max-width:210px;margin:15px auto 0 auto;transform:scale(0.9);transform-origin:center;}.runway-track{width:100%;height:38px;background:#003366;border-radius:4px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;padding:0 8px;}.runway-track::after{content:'';position:absolute;left:35px;right:35px;top:50%;transform:translateY(-50%);height:3px;background:repeating-linear-gradient(90deg,#fff,#fff 10px,transparent 10px,transparent 20px);z-index:1;}.runway-num{font-size:1.1rem;font-weight:900;color:#ffffff;z-index:2;display:inline-block;width:24px;text-align:center;font-family:sans-serif;}.left-num{transform:rotate(-90deg);}.right-num{transform:rotate(90deg);}.loading-airplane{position:absolute;color:#f39c12;font-size:1.8rem;top:-10px;left:-10%;z-index:10;animation:landingAnim 3.8s cubic-bezier(0.1,0.8,0.2,1) forwards;}@keyframes landingAnim{0%{left:-20%;top:-100px;transform:rotate(25deg) scale(1.4);opacity:0;}10%{opacity:1;}35%{left:15%;top:-3px;transform:rotate(0deg) scale(1.05);}100%{left:85%;top:-3px;transform:rotate(0deg) scale(1);}}#app-header{display:none;width:100%;padding:8px 15px;justify-content:space-between;align-items:center;background:#fff;border-bottom:2px solid #003366;}.header-titles{flex:1;text-align:center;min-width:0;padding:0 8px;}.header-titles h1{font-size:1.05rem;margin:0;word-break:break-word;color:#003366;line-height:1.2;}.header-titles h2{font-size:0.9rem;margin:3px 0 0 0;color:#555;}@media(max-width:768px){#app-header{padding:6px 8px;}.header-titles h1{font-size:0.75rem;line-height:1.2;}.header-titles h2{font-size:0.65rem;line-height:1.2;}.main-logo,.dept-logo{max-height:38px!important;max-width:48px!important;}.departments-grid,.submenu-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))!important;gap:10px!important;}.dept-card,.sub-card{padding:12px 6px!important;}.dept-icon,.sub-icon{font-size:1.6rem!important;}.dept-title,.sub-title{font-size:0.85rem!important;}.dept-subtitle,.sub-subtitle{font-size:0.7rem!important;}}.table-responsive,.report-wrapper,#spi-matrix-container,#additional-tables-container{width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}</style>
+  <style>#login-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,51,102,0.06);z-index:99999;justify-content:center;align-items:center;}.iso-input-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.iso-input-table td{border:1px solid #ccc;padding:6px;vertical-align:middle;}.iso-input-table td.lbl{background:#f0f4f8;font-weight:bold;color:#003366;width:15%;}.iso-input-table input,.iso-input-table select{width:100%;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:4px;}.fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}.table-responsive,.report-wrapper,#spi-matrix-container,#additional-tables-container{width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}</style>
 </head>
 <body>
 
 <button id="scrollTop" class="scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fa-solid fa-arrow-up"></i></button><button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
-<!-- شاشة البداية بالفيديو الاحترافي -->
-<div id="video-splash-screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:999999;display:flex;justify-content:center;align-items:center;overflow:hidden;transition:opacity 0.8s ease;">
-  <video id="introVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;">
+<!-- شاشة البداية بالفيديو الاحترافي المتجاوب مع الموبايل والكمبيوتر -->
+<div id="video-splash-screen">
+  <video id="introVideo" autoplay muted playsinline webkit-playsinline preload="auto">
     <source src="intro.mp4" type="video/mp4">
   </video>
-  <button type="button" onclick="endVideoSplash()" style="position:absolute;bottom:25px;left:20px;background:rgba(0,0,0,0.5);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;z-index:1000000;">تخطي <i class="fa-solid fa-forward"></i></button>
+  <button type="button" id="skipSplashBtn" onclick="endVideoSplash()">تخطي <i class="fa-solid fa-forward"></i></button>
 </div>
 
-<div id="login-screen"><div class="login-box" style="background:#fff;padding:30px 25px;border-radius:12px;border:1px solid #ddd;box-shadow:0 15px 35px rgba(0,0,0,0.15);width:90%;max-width:380px;text-align:center;box-sizing:border-box;"><img src="LOGO-removebg-preview (1).png" style="height:55px;margin-bottom:10px;object-fit:contain;"><h2 style="color:#003366;margin:0 0 20px 0;font-size:1.4rem;">تسجيل الدخول للنظام</h2><div class="input-group" style="position:relative;margin-bottom:15px;text-align:right;"><input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" style="width:100%;padding:10px 40px 10px 15px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><datalist id="usersList"></datalist><i class="fa-solid fa-user" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i></div><div class="input-group" style="position:relative;margin-bottom:20px;text-align:right;"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')login();" style="width:100%;padding:10px 40px 10px 40px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><i class="fa-solid fa-lock" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i><i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position:absolute;left:14px!important;right:auto!important;top:50%;transform:translateY(-50%);cursor:pointer;color:#777;z-index:10;font-size:1.05rem;"></i></div><button type="button" class="login-btn" onclick="login()" style="width:100%;background:#003366;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><p id="loginError" style="color:#dc3545;margin-top:10px;font-size:0.85rem;display:none;">⚠️ اسم المستخدم أو كلمة المرور غير صحيحة!</p></div></div>
+<div id="login-screen"><div class="login-box" style="background:#fff;padding:30px 25px;border-radius:12px;border:1px solid #ddd;box-shadow:0 15px 35px rgba(0,0,0,0.15);width:90%;max-width:380px;text-align:center;box-sizing:border-box;"><img src="LOGO-removebg-preview (1).png" style="height:68px;margin-bottom:12px;object-fit:contain;"><h2 style="color:#003366;margin:0 0 20px 0;font-size:1.4rem;">تسجيل الدخول للنظام</h2><div class="input-group" style="position:relative;margin-bottom:15px;text-align:right;"><input type="text" id="loginUser" list="usersList" value="Admin" placeholder="اسم المستخدم" style="width:100%;padding:10px 40px 10px 15px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><datalist id="usersList"></datalist><i class="fa-solid fa-user" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i></div><div class="input-group" style="position:relative;margin-bottom:20px;text-align:right;"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')login();" style="width:100%;padding:10px 40px 10px 40px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><i class="fa-solid fa-lock" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i><i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position:absolute;left:14px!important;right:auto!important;top:50%;transform:translateY(-50%);cursor:pointer;color:#777;z-index:10;font-size:1.05rem;"></i></div><button type="button" class="login-btn" onclick="login()" style="width:100%;background:#003366;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><p id="loginError" style="color:#dc3545;margin-top:10px;font-size:0.85rem;display:none;">⚠️ اسم المستخدم أو كلمة المرور غير صحيحة!</p></div></div>
 
-<div class="header" id="app-header" style="display:none;"><img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Main Logo" onclick="handleLogoTripleClick()" title="اضغط 3 مرات للدخول لإدارة الحسابات" style="cursor:pointer;max-height:50px;object-fit:contain;"><div class="header-titles"><h1>General Department of Safety and Compliance</h1><h2>الإدارة العامة للسلامة والمطابقة</h2></div><div style="display:flex;align-items:center;gap:12px;"><button type="button" onclick="logout()" title="تسجيل الخروج" style="background:#dc3545;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:0.85rem;"><i class="fa-solid fa-right-from-bracket"></i> خروج</button><img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Logo" style="max-height:50px;object-fit:contain;"></div></div>
+<!-- الهيدر الموحد -->
+<div class="header" id="app-header" style="display:none;">
+  <div class="header-right">
+    <img src="LOGO-removebg-preview (1).png" class="main-logo" alt="Marsa Alam Airport Logo" onclick="handleLogoTripleClick()" title="اضغط 3 مرات للدخول لإدارة الحسابات">
+  </div>
+  <div class="header-titles">
+    <h1>General Department of Safety and Compliance</h1>
+    <h2 id="headerDeptSubtitle">الإدارة العامة للسلامة والمطابقة</h2>
+  </div>
+  <div class="header-left">
+    <button type="button" id="headerHomeBtn" class="hdr-btn-home" onclick="openSection('main-dashboard')" style="display:none;" title="العودة للرئيسية">
+      <i class="fa-solid fa-house"></i> الرئيسية
+    </button>
+    <button type="button" class="hdr-btn-logout" onclick="logout()" title="تسجيل الخروج">
+      <i class="fa-solid fa-right-from-bracket"></i> خروج
+    </button>
+    <img src="wmremove-transformed-removebg-preview.png" class="dept-logo" alt="Safety Emblem">
+  </div>
+</div>
 
 <!-- اللوحة الرئيسية -->
 <div id="main-dashboard" class="content-area" style="display:none;">
-    <h1 class="welcome-text" style="margin-bottom:30px;">الإدارات المركزية <br><span style="font-size:1.1rem;color:#777;font-family:sans-serif;">Central Departments</span></h1>
-    <div class="departments-grid" style="max-width: 950px; margin: 0 auto;">
+    <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size:1.05rem;color:#64748b;font-family:sans-serif;font-weight:600;">Central Departments</span></h1>
+
+    <!-- الصف الأول: الإدارات الأربعة الأساسية -->
+    <div class="main-depts-row">
         <div class="dept-card" onclick="openSection('airport-safety-dashboard')" style="border-top:4px solid #003366;">
             <i class="fa-solid fa-plane-circle-check dept-icon" style="color:#003366;"></i>
             <h3 class="dept-title">إدارة سلامة المطارات</h3>
@@ -53,8 +73,17 @@
             <h3 class="dept-title">الحماية المدنية</h3>
             <div class="dept-subtitle">Civil Defense</div>
         </div>
-        <div class="dept-card" onclick="openFlightSchedule()" style="border-top: 4px solid #003366;">
-            <i class="fa-solid fa-plane-departure dept-icon" style="color: #003366;"></i>
+    </div>
+
+    <!-- الصف الثاني: التقرير المجمع وجدول الرحلات ودليل الهاتف -->
+    <div class="main-tools-row">
+        <div class="dept-card" onclick="window.location.href='general-report.html'" style="border-top:4px solid #e67e22;background:linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);">
+            <i class="fa-solid fa-folder-tree dept-icon" style="color:#e67e22;"></i>
+            <h3 class="dept-title">التقرير الشهري المجمع للإدارة العامة</h3>
+            <div class="dept-subtitle">Consolidated General Report</div>
+        </div>
+        <div class="dept-card" onclick="openFlightSchedule()" style="border-top:4px solid #003366;">
+            <i class="fa-solid fa-plane-departure dept-icon" style="color:#003366;"></i>
             <h3 class="dept-title">جدول الرحلات</h3>
             <div class="dept-subtitle">Flight Schedule</div>
         </div>
@@ -62,11 +91,6 @@
             <i class="fa-solid fa-phone-volume dept-icon" style="color:#17a2b8;"></i>
             <h3 class="dept-title">دليل هاتف المطار</h3>
             <div class="dept-subtitle">Airport Phone Directory</div>
-        </div>
-        <div class="dept-card" onclick="window.location.href='general-report.html'" style="border-top:4px solid #e67e22;background:#fffdf9;grid-column:1 / -1;">
-            <i class="fa-solid fa-folder-tree dept-icon" style="color:#e67e22;"></i>
-            <h3 class="dept-title">التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة</h3>
-            <div class="dept-subtitle">Consolidated General Department Monthly Report</div>
         </div>
     </div>
 </div>
