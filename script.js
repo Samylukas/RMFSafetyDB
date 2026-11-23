@@ -74,7 +74,38 @@ document.addEventListener('DOMContentLoaded', () => {
   buildEvaluationForm();
   setupCustomDropdown();
   loadAppDataInit();
-  startSplashScreen();
+  try {
+    const savedSess = sessionStorage.getItem('rmf_user');
+    if (savedSess) {
+      const uObj = JSON.parse(savedSess);
+      if (uObj && uObj.Username) {
+        currentLoggedInUser = uObj;
+        const vSplash = document.getElementById('video-splash-screen');
+        if (vSplash) vSplash.style.display = 'none';
+        const lS = document.getElementById('login-screen');
+        if (lS) lS.style.display = 'none';
+        const hdr = document.getElementById('app-header');
+        if (hdr) hdr.style.display = 'flex';
+        const bBtn = document.getElementById('backToMainBtn');
+        const r = (uObj.Role || '').toLowerCase();
+        if (r.includes('safety') || r.includes('مطارات')) {
+          if (bBtn) bBtn.style.display = 'none';
+          openSection('airport-safety-dashboard');
+        } else if (r.includes('fire') || r.includes('حماية') || r.includes('مدنية')) {
+          openCivilDefenseSection();
+        } else {
+          if (bBtn) bBtn.style.display = 'inline-block';
+          openSection('main-dashboard');
+        }
+      } else {
+        startSplashScreen();
+      }
+    } else {
+      startSplashScreen();
+    }
+  } catch (e) {
+    startSplashScreen();
+  }
   
   const today = new Date().toISOString().split('T')[0];
   if (document.getElementById('isoReportDate') && !document.getElementById('isoReportDate').value) document.getElementById('isoReportDate').value = today;
@@ -137,6 +168,7 @@ function login() {
 
   if (foundUser) {
     currentLoggedInUser = foundUser;
+    try { sessionStorage.setItem('rmf_user', JSON.stringify(foundUser)); } catch (e) {}
     const lS = document.getElementById('login-screen');
     if (lS) lS.style.display = 'none';
     const hdr = document.getElementById('app-header');
@@ -153,9 +185,9 @@ function login() {
       if (bBtn) bBtn.style.display = 'none';
       openSection('airport-safety-dashboard');
     } else if (r.includes('osh') || r.includes('صحة') || r.includes('مهنية')) {
-      openGenericDoc('السلامة والصحة المهنية', 'main-dashboard');
+      window.location.href = 'osh.html';
     } else if (r.includes('env') || r.includes('بيئة') || r.includes('برية')) {
-      openGenericDoc('البيئة والحياة البرية', 'main-dashboard');
+      window.location.href = 'env.html';
     } else if (r.includes('fire') || r.includes('حماية') || r.includes('مدنية')) {
       openCivilDefenseSection();
     } else {
@@ -171,6 +203,7 @@ function login() {
 
 function logout() {
   currentLoggedInUser = null;
+  try { sessionStorage.removeItem('rmf_user'); } catch (e) {}
   document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
   const hdr = document.getElementById('app-header');
   if (hdr) hdr.style.display = 'none';
