@@ -229,6 +229,35 @@ function openSection(sId) {
     t.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  const subEl = document.getElementById('headerDeptSubtitle');
+  const homeBtn = document.getElementById('headerHomeBtn');
+  const hdrEl = document.getElementById('app-header');
+  const r = (currentLoggedInUser && currentLoggedInUser.Role ? currentLoggedInUser.Role : '').toLowerCase();
+  const isAdmin = r.includes('admin') || r === '';
+
+  if (subEl && hdrEl) {
+    if (sId === 'main-dashboard') {
+      subEl.innerText = 'الإدارة العامة للسلامة والمطابقة';
+      subEl.style.color = '#555';
+      hdrEl.style.borderBottomColor = '#003366';
+      if (homeBtn) homeBtn.style.display = 'none';
+    } else if (sId === 'civil-defense-section') {
+      subEl.innerText = 'قسم سلامة الحماية المدنية (Civil Defense & ARFF)';
+      subEl.style.color = '#dc3545';
+      hdrEl.style.borderBottomColor = '#dc3545';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    } else if (sId === 'flight-schedule-section') {
+      subEl.innerText = 'جدول الرحلات اليومي (Flight Schedule)';
+      subEl.style.color = '#003366';
+      hdrEl.style.borderBottomColor = '#003366';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    } else {
+      subEl.innerText = 'إدارة سلامة المطارات (Airport Safety Department)';
+      subEl.style.color = '#003366';
+      hdrEl.style.borderBottomColor = '#003366';
+      if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+  }
 }
 
 function openAdminSection(sId) { openSection(sId); }
