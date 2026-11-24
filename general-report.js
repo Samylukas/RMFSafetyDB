@@ -168,63 +168,48 @@ function loadLocalCachesForGr() {
 
 function fetchLiveAllDataForGr() {
   if (grLiveFetchPromise) return grLiveFetchPromise;
-  grLiveFetchPromise = new Promise(resolve => {
-    const cb = 'jsonpGr_' + Math.round(100000 * Math.random());
-    const timer = setTimeout(() => { delete window[cb]; grLiveFetchPromise = null; resolve(false); }, 25000);
-    window[cb] = function (d) {
-      clearTimeout(timer);
-      try {
-        if (d && d.status === 'success') {
-          if (Array.isArray(d.surveys)) { grAppData.surveys = d.surveys; try { localStorage.setItem('rmf_surveys', JSON.stringify(d.surveys)); } catch (e) {} }
-          if (Array.isArray(d.incidents)) { grAppData.incidents = d.incidents; try { localStorage.setItem('rmf_incidents', JSON.stringify(d.incidents)); } catch (e) {} }
-          if (Array.isArray(d.fod)) { grAppData.fod = d.fod; try { localStorage.setItem('rmf_fod', JSON.stringify(d.fod)); } catch (e) {} }
-          if (Array.isArray(d.movements)) { grAppData.movements = d.movements; try { localStorage.setItem('rmf_movements', JSON.stringify(d.movements)); } catch (e) {} }
-          if (Array.isArray(d.daily)) {
-            let rMap = {};
-            d.daily.forEach(row => {
-              let repId = row.Report_ID;
-              if (!rMap[repId]) {
-                rMap[repId] = {
-                  id: repId,
-                  date: normalizeDateStr(row.Date),
-                  shift: row.Shift,
-                  findings: []
-                };
-              }
-              if (row.Category && row.Category !== "لا توجد ملاحظات") {
-                let rawSt = String(row.Status || '').trim();
-                let isCl = rawSt === 'مغلق' || rawSt.toLowerCase() === 'closed' || String(row.Corrective_Action || '').includes('تم تلافي');
-                rMap[repId].findings.push({
-                  category: row.Category,
-                  item: row.Finding_Item,
-                  location: row.Location,
-                  responsible: row.Responsible,
-                  note: row.Corrective_Action || '',
-                  status: isCl ? 'مغلق' : 'مفتوح'
-                });
-              }
-            });
-            grAppData.daily = Object.values(rMap);
-            try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(grAppData.daily)); } catch (e) {}
-          }
-          if (Array.isArray(d.cdDaily) && d.cdDaily.length > 0) grAppData.cdDaily = d.cdDaily;
-          if (d.cdMonthly && typeof d.cdMonthly === 'object' && Object.keys(d.cdMonthly).length > 0) grAppData.cdMonthly = d.cdMonthly;
-          if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) grAppData.oshDaily = d.oshDaily;
-          if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) grAppData.oshMonthly = d.oshMonthly;
-          if (Array.isArray(d.envDaily) && d.envDaily.length > 0) grAppData.envDaily = d.envDaily;
-          if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) grAppData.envMonthly = d.envMonthly;
+  grLiveFetchPromise = fetch(window.API_URL + '?action=getAppData&_t=' + Date.now(), { method: 'GET' })
+    .then(res => res.json())
+    .then(d => {
+      if (d && d.status === 'success') {
+        if (Array.isArray(d.surveys)) { grAppData.surveys = d.surveys; try { localStorage.setItem('rmf_surveys', JSON.stringify(d.surveys)); } catch (e) {} }
+        if (Array.isArray(d.incidents)) { grAppData.incidents = d.incidents; try { localStorage.setItem('rmf_incidents', JSON.stringify(d.incidents)); } catch (e) {} }
+        if (Array.isArray(d.fod)) { grAppData.fod = d.fod; try { localStorage.setItem('rmf_fod', JSON.stringify(d.fod)); } catch (e) {} }
+        if (Array.isArray(d.movements)) { grAppData.movements = d.movements; try { localStorage.setItem('rmf_movements', JSON.stringify(d.movements)); } catch (e) {} }
+        if (Array.isArray(d.daily)) {
+          let rMap = {};
+          d.daily.forEach(row => {
+            let repId = row.Report_ID;
+            if (!rMap[repId]) {
+              rMap[repId] = { id: repId, date: normalizeDateStr(row.Date), shift: row.Shift, findings: [] };
+            }
+            if (row.Category && row.Category !== "لا توجد ملاحظات") {
+              let rawSt = String(row.Status || '').trim();
+              let isCl = rawSt === 'مغلق' || rawSt.toLowerCase() === 'closed' || String(row.Corrective_Action || '').includes('تم تلافي');
+              rMap[repId].findings.push({
+                category: row.Category, item: row.Finding_Item, location: row.Location,
+                responsible: row.Responsible, note: row.Corrective_Action || '', status: isCl ? 'مغلق' : 'مفتوح'
+              });
+            }
+          });
+          grAppData.daily = Object.values(rMap);
+          try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(grAppData.daily)); } catch (e) {}
         }
-      } catch (err) {} finally {
-        delete window[cb];
-        grLiveFetchPromise = null;
-        resolve(true);
+        if (Array.isArray(d.cdDaily) && d.cdDaily.length > 0) grAppData.cdDaily = d.cdDaily;
+        if (d.cdMonthly && typeof d.cdMonthly === 'object' && Object.keys(d.cdMonthly).length > 0) grAppData.cdMonthly = d.cdMonthly;
+        if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) grAppData.oshDaily = d.oshDaily;
+        if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) grAppData.oshMonthly = d.oshMonthly;
+        if (Array.isArray(d.envDaily) && d.envDaily.length > 0) grAppData.envDaily = d.envDaily;
+        if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) grAppData.envMonthly = d.envMonthly;
       }
-    };
-    const s = document.createElement('script');
-    s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
-    s.onerror = () => { clearTimeout(timer); delete window[cb]; grLiveFetchPromise = null; resolve(false); };
-    document.body.appendChild(s);
-  });
+      grLiveFetchPromise = null;
+      return true;
+    })
+    .catch(err => {
+      console.error("GR Fetch Error:", err);
+      grLiveFetchPromise = null;
+      return false;
+    });
   return grLiveFetchPromise;
 }
 

@@ -203,41 +203,28 @@ function loadData(isRefresh = false) {
     if (tb) tb.innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل أحدث بيانات دليل الهاتف...</td></tr>';
   }
 
-  const cb = "jsonpDir_" + Math.round(100000 * Math.random());
-  const timeoutId = setTimeout(() => {
-    delete window[cb];
+  // Pure direct fetch for Mobile compatibility (no JSONP)
+  fetch(window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now(), {
+    method: "GET"
+  })
+  .then(res => res.json())
+  .then(d => {
+    if (d && d.status === "success" && Array.isArray(d.directory)) {
+      directoryData = d.directory;
+      window.globalDirectoryData = directoryData;
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
+      renderTable(directoryData);
+      populateDeptDatalist(directoryData);
+    } else if (!directoryData || directoryData.length === 0) {
+      if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
+    }
+  })
+  .catch(err => {
+    console.error("Directory fetch error:", err);
     if ((!directoryData || directoryData.length === 0) && tb) {
       tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:18px; color:#dc3545; font-weight:bold;">تعذر سحب البيانات حالياً. <button type="button" onclick="forceRefreshData()" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
     }
-  }, 10000);
-
-  window[cb] = function (d) {
-    clearTimeout(timeoutId);
-    try {
-      if (d && d.status === "success" && Array.isArray(d.directory)) {
-        directoryData = d.directory;
-        window.globalDirectoryData = directoryData;
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
-        renderTable(directoryData);
-        populateDeptDatalist(directoryData);
-      } else if ((!directoryData || directoryData.length === 0) && tb) {
-        tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
-      }
-    } finally {
-      delete window[cb];
-    }
-  };
-
-  const s = document.createElement("script");
-  s.src = window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now() + "&callback=" + cb;
-  s.onerror = () => {
-    clearTimeout(timeoutId);
-    delete window[cb];
-    if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:18px; color:#dc3545; font-weight:bold;">حدث خطأ في الاتصال. <button type="button" onclick="forceRefreshData()" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
-    }
-  };
-  document.body.appendChild(s);
+  });
 }
 
 function forceRefreshData() {

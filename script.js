@@ -696,9 +696,9 @@ function loadAppDataInit() {
     if (cQ) globalQuarterlyDocs = JSON.parse(cQ);
   } catch (e) {}
 
-  const cb = 'jsonpInit_' + Math.round(100000 * Math.random());
-  window[cb] = function (d) {
-    try {
+  fetch(API_URL + "?action=getAppData&_t=" + Date.now())
+    .then(res => res.json())
+    .then(d => {
       if (d && d.status === "success") {
         globalFleetData = d.fleet ? d.fleet.reverse() : [];
         globalSurveys = d.surveys ? [...d.surveys] : [];
@@ -804,16 +804,8 @@ function loadAppDataInit() {
         populateFilterSelect('surveyFilterAirline', globalSurveys, 'CAR', 'car');
         populateFilterSelect('surveyFilterReg', globalSurveys, 'REG', 'reg');
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      delete window[cb];
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
-  document.body.appendChild(s);
+    })
+    .catch(err => console.error("Init App Data Fetch Error:", err));
 }
 
 function populateFilterSelect(elId, dataArray, key1, key2) {
