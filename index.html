@@ -6,12 +6,13 @@
   <title>General Department of Safety and Compliance - Marsa Alam Airport</title>
   <link rel="preload" as="image" href="LOGO-removebg-preview (1).png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=2026.3">
+  <link rel="stylesheet" href="style.css?v=2026.5">
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <style>#login-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,51,102,0.06);z-index:99999;justify-content:center;align-items:center;}.iso-input-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.iso-input-table td{border:1px solid #ccc;padding:6px;vertical-align:middle;}.iso-input-table td.lbl{background:#f0f4f8;font-weight:bold;color:#003366;width:15%;}.iso-input-table input,.iso-input-table select{width:100%;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:4px;}.fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free","FontAwesome"!important;font-style:normal!important;}.table-responsive,.report-wrapper,#spi-matrix-container,#additional-tables-container{width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}</style>
+  <style>#login-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,51,102,0.06);z-index:99999;justify-content:center;align-items:center;}.iso-input-table{width:100%;border-collapse:collapse;margin-bottom:15px;}.iso-input-table td{border:1px solid #ccc;padding:6px;vertical-align:middle;}.iso-input-table td.lbl{background:#f0f4f8;font-weight:bold;color:#003366;width:15%;}.iso-input-table input,.iso-input-table select{width:100%;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:4px;}.fa,.fas,.fa-solid,.fa-regular,.fa-brands{font-family:"Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;font-weight:900;font-style:normal!important;}.table-responsive,.report-wrapper,#spi-matrix-container,#additional-tables-container{width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}</style>
 </head>
 <body>
 
@@ -22,9 +23,7 @@
   <video id="introVideo" autoplay muted playsinline webkit-playsinline preload="auto">
     <source src="intro.mp4" type="video/mp4">
   </video>
-  <button type="button" id="skipSplashBtn" onclick="endVideoSplash()">تخطي <i class="fa-solid fa-forward"></i></button>
 </div>
-
 <div id="login-screen"><div class="login-box" style="background:#fff;padding:30px 25px;border-radius:12px;border:1px solid #ddd;box-shadow:0 15px 35px rgba(0,0,0,0.15);width:90%;max-width:380px;text-align:center;box-sizing:border-box;"><img src="LOGO-removebg-preview (1).png" style="height:68px;margin-bottom:12px;object-fit:contain;"><h2 style="color:#003366;margin:0 0 20px 0;font-size:1.4rem;">تسجيل الدخول للنظام</h2><div class="input-group" id="loginUserDropdownWrap" style="position:relative;margin-bottom:15px;text-align:right;"><input type="text" id="loginUser" value="Admin" placeholder="اسم المستخدم" autocomplete="off" style="width:100%;padding:10px 40px 10px 40px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;font-family:'Cairo',sans-serif;font-weight:bold;color:#003366;"><i class="fa-solid fa-user" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;pointer-events:none;"></i><i class="fa-solid fa-chevron-down" id="loginUserArrowBtn" title="اختر اسم المستخدم" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#003366;font-size:1rem;cursor:pointer;z-index:12;padding:4px;"></i><div id="loginUserDropdownList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #003366;border-radius:8px;max-height:210px;overflow-y:auto;z-index:100001;box-shadow:0 8px 22px rgba(0,51,102,0.18);text-align:right;"></div></div><div class="input-group" style="position:relative;margin-bottom:20px;text-align:right;"><input type="password" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')login();" style="width:100%;padding:10px 40px 10px 40px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:1rem;"><i class="fa-solid fa-lock" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#777;font-size:1rem;"></i><i class="fa-solid fa-eye" id="passToggleIcon" onclick="toggleLoginPassword()" style="position:absolute;left:14px!important;right:auto!important;top:50%;transform:translateY(-50%);cursor:pointer;color:#777;z-index:10;font-size:1.05rem;"></i></div><button type="button" class="login-btn" onclick="login()" style="width:100%;background:#003366;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;"><i class="fa-solid fa-right-to-bracket"></i> دخول</button><p id="loginError" style="color:#dc3545;margin-top:10px;font-size:0.85rem;display:none;">⚠️ اسم المستخدم أو كلمة المرور غير صحيحة!</p></div></div>
 
 <!-- الهيدر الموحد -->
@@ -880,9 +879,15 @@
     </div>
 </div>
 
+
+<script src="script.js?v=2026.5"></script>
+<script src="osh.js?v=2026.5"></script>
+<script src="env.js?v=2026.5"></script>
+<script src="general-report.js?v=2026.5"></script>
+<script src="directory.js?v=2026.5"></script>
 <script>
   setTimeout(function(){
-    var sp = document.getElementById('splash-screen');
+    var sp = document.getElementById('video-splash-screen');
     if(sp && sp.style.display !== 'none'){
       sp.style.opacity = '0';
       setTimeout(function(){
@@ -891,12 +896,7 @@
         if(ls) ls.style.display = 'flex';
       }, 700);
     }
-  }, 4200);
+  }, 10000);
 </script>
-<script src="script.js?v=2026.3"></script>
-<script src="osh.js?v=2026.3"></script>
-<script src="env.js?v=2026.3"></script>
-<script src="general-report.js?v=2026.3"></script>
-<script src="directory.js?v=2026.3"></script>
 </body>
 </html>

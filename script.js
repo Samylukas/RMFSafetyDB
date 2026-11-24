@@ -386,7 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('isoReportDate') && !document.getElementById('isoReportDate').value) document.getElementById('isoReportDate').value = today;
   if (document.getElementById('dailyDate') && !document.getElementById('dailyDate').value) document.getElementById('dailyDate').value = today;
 });
-
 function isCurrentUserAdmin() {
   const r = (currentLoggedInUser && currentLoggedInUser.Role ? currentLoggedInUser.Role : '').toLowerCase();
   return r.includes('admin');
@@ -415,6 +414,8 @@ function handleLogoTripleClick() {
     openAdminSection('account-management-section');
   }
 }
+
+
 
 function startSplashScreen() {
   const vSplash = document.getElementById('video-splash-screen');
@@ -448,7 +449,7 @@ function login() {
   const u = (document.getElementById('loginUser')?.value || '').trim();
   const p = (document.getElementById('loginPass')?.value || '').trim();
   const err = document.getElementById('loginError');
-  let foundUser = globalUsers.find(user => user.Username === u && String(user.Password) === p);
+  let foundUser = globalUsers.find(user => String(user.Username).trim().toLowerCase() === u.toLowerCase() && String(user.Password).trim() === p);
 
   if (!foundUser) {
     if (u.toLowerCase() === 'admin' && p === '1234') foundUser = { Role: 'Admin', Username: 'Admin' };
