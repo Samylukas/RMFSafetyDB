@@ -4235,31 +4235,28 @@ function renderMainConnectionBadge(isOnline) {
 }
 
 let rmfPingInFlight = false;
-async function checkRealInternetConnection() {
+function checkRealInternetConnection() {
   if (navigator.onLine === false) {
     renderMainConnectionBadge(false);
-    return false;
+    return Promise.resolve(false);
   }
-  if (rmfPingInFlight) return window.rmfIsOnline;
+  if (rmfPingInFlight) return Promise.resolve(window.rmfIsOnline);
   rmfPingInFlight = true;
-  try {
-    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timer = ctrl ? setTimeout(() => ctrl.abort(), 2500) : null;
-    await fetch('https://www.google.com/favicon.ico?_t=' + Date.now(), {
-      method: 'HEAD',
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: ctrl ? ctrl.signal : undefined
-    });
-    if (timer) clearTimeout(timer);
-    renderMainConnectionBadge(true);
-    return true;
-  } catch (err) {
-    renderMainConnectionBadge(false);
-    return false;
-  } finally {
-    rmfPingInFlight = false;
-  }
+  return new Promise(resolve => {
+    let settled = false;
+    const done = (ok) => {
+      if (settled) return;
+      settled = true;
+      rmfPingInFlight = false;
+      renderMainConnectionBadge(ok);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), 2000);
+    const img = new Image();
+    img.onload = () => { clearTimeout(timer); done(true); };
+    img.onerror = () => { clearTimeout(timer); done(false); };
+    img.src = 'https://www.google.com/favicon.ico?_t=' + Date.now() + '_' + Math.random();
+  });
 }
 
 window.addEventListener('online', () => checkRealInternetConnection());
@@ -4270,5 +4267,5 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('DOMContentLoaded', () => {
   renderMainConnectionBadge(navigator.onLine !== false);
   checkRealInternetConnection();
-  setInterval(checkRealInternetConnection, 3000);
+  setInterval(checkRealInternetConnection, 2000);
 });

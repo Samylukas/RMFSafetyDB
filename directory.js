@@ -173,12 +173,12 @@ function fetchDirectoryJsonp(actionName) {
       clearTimeout(timer);
       delete window[cb];
       if (s.parentNode) s.parentNode.removeChild(s);
-      if (d && d.status === "success" && Array.isArray(d.directory)) {
+      if (d && d.status === "success" && Array.isArray(d.directory) && d.directory.length > 0) {
         resolve(d.directory);
-      } else if (Array.isArray(d)) {
+      } else if (Array.isArray(d) && d.length > 0) {
         resolve(d);
       } else {
-        reject(new Error("Invalid payload"));
+        reject(new Error("Empty/Invalid JSONP"));
       }
     };
 
@@ -190,6 +190,44 @@ function fetchDirectoryJsonp(actionName) {
       reject(new Error("Script load error"));
     };
     document.body.appendChild(s);
+  });
+}
+
+async function fetchDirectoryViaGet() {
+  const res = await fetch(window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now(), { method: "GET" });
+  const d = await res.json();
+  if (d && d.status === "success" && Array.isArray(d.directory) && d.directory.length > 0) return d.directory;
+  if (Array.isArray(d) && d.length > 0) return d;
+  throw new Error("Empty GET");
+}
+
+async function fetchDirectoryViaPost() {
+  const res = await fetch(window.API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: "getDirectory" })
+  });
+  const d = await res.json();
+  if (d && d.status === "success" && Array.isArray(d.directory) && d.directory.length > 0) return d.directory;
+  throw new Error("Empty POST");
+}
+
+function firstNonEmptyPromise(promises) {
+  return new Promise((resolve, reject) => {
+    let rejectedCount = 0;
+    const total = promises.length;
+    promises.forEach(p => {
+      Promise.resolve(p).then(val => {
+        if (Array.isArray(val) && val.length > 0) resolve(val);
+        else {
+          rejectedCount++;
+          if (rejectedCount >= total) reject(new Error("All failed"));
+        }
+      }).catch(() => {
+        rejectedCount++;
+        if (rejectedCount >= total) reject(new Error("All failed"));
+      });
+    });
   });
 }
 
@@ -219,20 +257,18 @@ window.loadData = async function (isRefresh = false) {
   }
 
   try {
-    let list = null;
-    try {
-      list = await fetchDirectoryJsonp("getDirectoryOnly");
-    } catch (e1) {
-      list = await fetchDirectoryJsonp("getAppData");
-    }
+    const list = await firstNonEmptyPromise([
+      fetchDirectoryViaPost(),
+      fetchDirectoryViaGet(),
+      fetchDirectoryJsonp("getDirectoryOnly"),
+      fetchDirectoryJsonp("getAppData")
+    ]);
     if (Array.isArray(list) && list.length > 0) {
       directoryData = list;
       window.globalDirectoryData = list;
       try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
       renderTable(directoryData);
       populateDeptDatalist(directoryData);
-    } else if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#777;font-weight:bold;">لا توجد أرقام مسجلة في الشيت حالياً. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">تحديث</button></td></tr>';
     }
   } catch (err) {
     if ((!directoryData || directoryData.length === 0) && tb) {
