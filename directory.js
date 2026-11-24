@@ -159,7 +159,41 @@ window.formatMobileInput = function (input) {
   input.value = formatted;
 };
 
-window.loadData = function (isRefresh = false) {
+function fetchDirectoryJsonp(actionName) {
+  return new Promise((resolve, reject) => {
+    const cb = "jsonpDir_" + actionName + "_" + Math.round(1000000 * Math.random());
+    const s = document.createElement("script");
+    const timer = setTimeout(() => {
+      delete window[cb];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      reject(new Error("Timeout"));
+    }, 9000);
+
+    window[cb] = function (d) {
+      clearTimeout(timer);
+      delete window[cb];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      if (d && d.status === "success" && Array.isArray(d.directory)) {
+        resolve(d.directory);
+      } else if (Array.isArray(d)) {
+        resolve(d);
+      } else {
+        reject(new Error("Invalid payload"));
+      }
+    };
+
+    s.src = window.API_URL + "?action=" + actionName + "&_t=" + Date.now() + "&callback=" + cb;
+    s.onerror = () => {
+      clearTimeout(timer);
+      delete window[cb];
+      if (s.parentNode) s.parentNode.removeChild(s);
+      reject(new Error("Script load error"));
+    };
+    document.body.appendChild(s);
+  });
+}
+
+window.loadData = async function (isRefresh = false) {
   let cachedData = null;
   if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
     cachedData = window.globalDirectoryData;
@@ -180,53 +214,31 @@ window.loadData = function (isRefresh = false) {
   }
 
   const tb = document.getElementById("table-body");
-  if (!navigator.onLine) {
-    if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="color:#dc3545;text-align:center;padding:15px;font-weight:bold;">غير متصل بالإنترنت ولا توجد بيانات محفوظة مسبقاً.</td></tr>';
-    }
-    return;
-  }
-
   if (isRefresh || (!directoryData || directoryData.length === 0)) {
     if (tb) tb.innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل بيانات دليل الهاتف...</td></tr>';
   }
 
-  // استخدام JSONP لأنه يعمل 100% داخل تطبيق الأندرويد (WebView) بدون حظر CORS
-  const cb = "jsonpDir_" + Math.round(100000 * Math.random());
-  const timer = setTimeout(() => {
-    delete window[cb];
-    if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#dc3545;font-weight:bold;">تعذر سحب البيانات حالياً. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
-    }
-  }, 12000);
-
-  window[cb] = function (d) {
-    clearTimeout(timer);
+  try {
+    let list = null;
     try {
-      if (d && d.status === "success" && Array.isArray(d.directory) && d.directory.length > 0) {
-        directoryData = d.directory;
-        window.globalDirectoryData = directoryData;
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
-        renderTable(directoryData);
-        populateDeptDatalist(directoryData);
-      } else if ((!directoryData || directoryData.length === 0) && tb) {
-        tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:15px;color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
-      }
-    } finally {
-      delete window[cb];
+      list = await fetchDirectoryJsonp("getDirectoryOnly");
+    } catch (e1) {
+      list = await fetchDirectoryJsonp("getAppData");
     }
-  };
-
-  const s = document.createElement("script");
-  s.src = window.API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
-  s.onerror = () => {
-    clearTimeout(timer);
-    delete window[cb];
+    if (Array.isArray(list) && list.length > 0) {
+      directoryData = list;
+      window.globalDirectoryData = list;
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
+      renderTable(directoryData);
+      populateDeptDatalist(directoryData);
+    } else if ((!directoryData || directoryData.length === 0) && tb) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#777;font-weight:bold;">لا توجد أرقام مسجلة في الشيت حالياً. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">تحديث</button></td></tr>';
+    }
+  } catch (err) {
     if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#dc3545;font-weight:bold;">تعذر الاتصال بقاعدة البيانات. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#dc3545;font-weight:bold;">تعذر سحب البيانات حالياً (تحقق من الاتصال). <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
     }
-  };
-  document.body.appendChild(s);
+  }
 };
 
 window.forceRefreshData = function () {

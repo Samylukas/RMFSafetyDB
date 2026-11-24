@@ -15,7 +15,7 @@
       --success-green: #28A745;
       --danger-red: #DC3545;
       --warning-yellow: #FFC107;
-      --info-cyan: #17a2b8;
+      --info-cyan: #6f42c1;
       --text-dark: #333;
     }
 
@@ -44,7 +44,7 @@
     }
 
     .dir-page-title {
-      color: var(--primary-blue);
+      color: #6f42c1;
       font-weight: 900;
       font-size: 1.55rem;
       margin: 0;
@@ -91,7 +91,7 @@
     .search-box input {
       width: 100%;
       padding: 9px 34px 9px 34px;
-      border: 1.5px solid var(--primary-blue);
+      border: 1.5px solid #6f42c1;
       border-radius: 6px;
       font-family: 'Cairo', sans-serif;
       font-size: 13.5px;
@@ -103,7 +103,7 @@
       right: 11px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--primary-blue);
+      color: #6f42c1;
       font-size: 13.5px;
     }
 
@@ -140,7 +140,7 @@
     }
 
     .dir-btn:hover { opacity: 0.9; }
-    .btn-print { background-color: var(--primary-blue); color: white; }
+    .btn-print { background-color: #6f42c1; color: white; }
     .btn-refresh { background-color: var(--info-cyan); color: white; }
     .btn-admin-unlock { background-color: #6f42c1; color: white; display: none; }
     .btn-add { background-color: var(--success-green); color: white; display: none; }
@@ -226,7 +226,7 @@
       font-size: 11px;
     }
 
-    .action-btn-call { background-color: var(--primary-blue); }
+    .action-btn-call { background-color: #6f42c1; }
     .action-btn-wa { background-color: #25D366; }
 
     .action-cell { display: none; width: 80px; }
@@ -288,7 +288,7 @@
       text-align: center;
       padding: 18px;
       font-weight: bold;
-      color: var(--primary-blue);
+      color: #6f42c1;
       font-size: 14px;
     }
 
@@ -383,13 +383,13 @@
 <button id="scrollBottom" class="scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="fa-solid fa-arrow-down"></i></button>
 
 <!-- الهيدر الموحد للنظام -->
-<div class="header" style="border-bottom-color:#17a2b8;">
+<div class="header" style="border-bottom-color:#6f42c1;">
   <div class="header-right">
     <img src="LOGO-removebg-preview (1).png" class="main-logo" id="secret-logo" alt="Marsa Alam Airport Logo" title="الضغط 3 مرات لتفعيل وضع الإدارة">
   </div>
   <div class="header-titles">
     <h1>General Department of Safety and Compliance</h1>
-    <h2 style="color:#17a2b8;">دليل هاتف مطار مرسى علم الدولي (Airport Phone Directory)</h2>
+    <h2 style="color:#6f42c1;">دليل هاتف مطار مرسى علم الدولي (Airport Phone Directory)</h2>
   </div>
   <div class="header-left">
     <button type="button" class="hdr-btn-home" onclick="window.location.href='index.html'" title="العودة للرئيسية">
@@ -404,12 +404,8 @@
 
 <div class="dir-container">
   <div class="dir-top-bar">
-    <h2 class="dir-page-title"><i class="fa-solid fa-phone-volume" style="color:#17a2b8;"></i> دليل أرقام الطوارئ والإدارات بالمطار</h2>
-    <div class="status-container" id="connection-status">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text" style="color: var(--success-green);">متصل (Online)</span>
+    <h2 class="dir-page-title"><i class="fa-solid fa-phone-volume" style="color:#6f42c1;"></i> دليل أرقام الطوارئ والإدارات بالمطار</h2>
     </div>
-  </div>
 
   <div class="controls-bar">
     <div class="search-box">
@@ -449,7 +445,7 @@
 
 <div class="dir-modal" id="admin-modal">
   <div class="dir-modal-content">
-    <h3 id="modal-title" style="color: var(--primary-blue); border-bottom: 1.5px solid #003366; padding-bottom: 8px; font-size: 16px; margin-top: 0;">إضافة رقم جديد</h3>
+    <h3 id="modal-title" style="color: #6f42c1; border-bottom: 1.5px solid #003366; padding-bottom: 8px; font-size: 16px; margin-top: 0;">إضافة رقم جديد</h3>
     <input type="hidden" id="emp-id">
     <label>الإدارة / القسم:</label>
     <input type="text" id="emp-dept" list="dirDeptsList" placeholder="اكتب اسم الإدارة...">

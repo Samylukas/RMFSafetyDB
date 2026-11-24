@@ -4211,25 +4211,64 @@ async function sendCdMonthlyEmail() {
 
 
 // =============================================================================
-// 15. مؤشر حالة الاتصال بالإنترنت على الداشبورد الرئيسية (Online / Offline)
+// 15. مؤشر حالة الاتصال الفعلي بالإنترنت على الداشبورد الرئيسية (Real Network Probe)
 // =============================================================================
-function updateMainConnectionStatus() {
+window.rmfIsOnline = navigator.onLine !== false;
+
+function renderMainConnectionBadge(isOnline) {
+  window.rmfIsOnline = !!isOnline;
   const dot = document.getElementById('main-status-dot');
   const txt = document.getElementById('main-status-text');
+  const box = document.getElementById('main-connection-status');
   if (!dot || !txt) return;
-  if (navigator.onLine) {
+  if (isOnline) {
     dot.style.backgroundColor = '#28A745';
     txt.style.color = '#28A745';
     txt.innerText = 'متصل (Online)';
+    if (box) box.style.borderColor = '#b7eb8f';
   } else {
     dot.style.backgroundColor = '#DC3545';
     txt.style.color = '#DC3545';
     txt.innerText = 'غير متصل (Offline)';
+    if (box) box.style.borderColor = '#ffa39e';
   }
 }
-window.addEventListener('online', updateMainConnectionStatus);
-window.addEventListener('offline', updateMainConnectionStatus);
+
+let rmfPingInFlight = false;
+async function checkRealInternetConnection() {
+  if (navigator.onLine === false) {
+    renderMainConnectionBadge(false);
+    return false;
+  }
+  if (rmfPingInFlight) return window.rmfIsOnline;
+  rmfPingInFlight = true;
+  try {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 2500) : null;
+    await fetch('https://www.google.com/favicon.ico?_t=' + Date.now(), {
+      method: 'HEAD',
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: ctrl ? ctrl.signal : undefined
+    });
+    if (timer) clearTimeout(timer);
+    renderMainConnectionBadge(true);
+    return true;
+  } catch (err) {
+    renderMainConnectionBadge(false);
+    return false;
+  } finally {
+    rmfPingInFlight = false;
+  }
+}
+
+window.addEventListener('online', () => checkRealInternetConnection());
+window.addEventListener('offline', () => renderMainConnectionBadge(false));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) checkRealInternetConnection();
+});
 document.addEventListener('DOMContentLoaded', () => {
-  updateMainConnectionStatus();
-  setInterval(updateMainConnectionStatus, 2000);
+  renderMainConnectionBadge(navigator.onLine !== false);
+  checkRealInternetConnection();
+  setInterval(checkRealInternetConnection, 3000);
 });

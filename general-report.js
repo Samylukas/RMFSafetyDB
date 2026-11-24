@@ -152,33 +152,42 @@ function formatGrTrendBadge(curVal, prevVal, higherBetter, unit = "", pad2 = tru
 
 function loadLocalCachesForGr() {
   try {
-    grAppData.surveys = JSON.parse(localStorage.getItem('rmf_surveys') || '[]');
-    grAppData.daily = JSON.parse(localStorage.getItem('rmf_daily_inspections') || '[]');
-    grAppData.incidents = JSON.parse(localStorage.getItem('rmf_incidents') || '[]');
-    grAppData.fod = JSON.parse(localStorage.getItem('rmf_fod') || '[]');
-    grAppData.movements = JSON.parse(localStorage.getItem('rmf_movements') || '[]');
-    grAppData.cdDaily = JSON.parse(localStorage.getItem('rmf_cd_daily') || '[]');
-    grAppData.cdMonthly = JSON.parse(localStorage.getItem('rmf_cd_monthly') || '{}');
-    grAppData.oshDaily = JSON.parse(localStorage.getItem('rmf_osh_daily') || '[]');
-    grAppData.oshMonthly = JSON.parse(localStorage.getItem('rmf_osh_monthly') || '{}');
-    grAppData.envDaily = JSON.parse(localStorage.getItem('rmf_env_daily') || '[]');
-    grAppData.envMonthly = JSON.parse(localStorage.getItem('rmf_env_monthly') || '{}');
+    const lsSurveys = JSON.parse(localStorage.getItem('rmf_surveys') || '[]');
+    const lsDaily = JSON.parse(localStorage.getItem('rmf_daily_inspections') || '[]');
+    const lsInc = JSON.parse(localStorage.getItem('rmf_incidents') || '[]');
+    const lsFod = JSON.parse(localStorage.getItem('rmf_fod') || '[]');
+    const lsMov = JSON.parse(localStorage.getItem('rmf_movements') || '[]');
+    const lsCdD = JSON.parse(localStorage.getItem('rmf_cd_daily') || '[]');
+    const lsCdM = JSON.parse(localStorage.getItem('rmf_cd_monthly') || '{}');
+    const lsOshD = JSON.parse(localStorage.getItem('rmf_osh_daily') || '[]');
+    const lsOshM = JSON.parse(localStorage.getItem('rmf_osh_monthly') || '{}');
+    const lsEnvD = JSON.parse(localStorage.getItem('rmf_env_daily') || '[]');
+    const lsEnvM = JSON.parse(localStorage.getItem('rmf_env_monthly') || '{}');
+
+    grAppData.surveys = (typeof globalSurveys !== 'undefined' && Array.isArray(globalSurveys) && globalSurveys.length) ? globalSurveys : lsSurveys;
+    grAppData.daily = (typeof globalDailyInspections !== 'undefined' && Array.isArray(globalDailyInspections) && globalDailyInspections.length) ? globalDailyInspections : lsDaily;
+    grAppData.incidents = (typeof globalIncidents !== 'undefined' && Array.isArray(globalIncidents) && globalIncidents.length) ? globalIncidents : lsInc;
+    grAppData.fod = (typeof globalFod !== 'undefined' && Array.isArray(globalFod) && globalFod.length) ? globalFod : lsFod;
+    grAppData.movements = lsMov;
+    grAppData.cdDaily = (typeof globalCivilDefenseDaily !== 'undefined' && Array.isArray(globalCivilDefenseDaily) && globalCivilDefenseDaily.length) ? globalCivilDefenseDaily : lsCdD;
+    grAppData.cdMonthly = (typeof globalCivilDefenseMonthly !== 'undefined' && globalCivilDefenseMonthly && Object.keys(globalCivilDefenseMonthly).length) ? globalCivilDefenseMonthly : lsCdM;
+    grAppData.oshDaily = (typeof globalOshDaily !== 'undefined' && Array.isArray(globalOshDaily) && globalOshDaily.length) ? globalOshDaily : lsOshD;
+    grAppData.oshMonthly = (typeof globalOshMonthly !== 'undefined' && globalOshMonthly && Object.keys(globalOshMonthly).length) ? globalOshMonthly : lsOshM;
+    grAppData.envDaily = (typeof globalEnvDaily !== 'undefined' && Array.isArray(globalEnvDaily) && globalEnvDaily.length) ? globalEnvDaily : lsEnvD;
+    grAppData.envMonthly = (typeof globalEnvMonthly !== 'undefined' && globalEnvMonthly && Object.keys(globalEnvMonthly).length) ? globalEnvMonthly : lsEnvM;
   } catch (e) {}
 }
 
 function fetchLiveAllDataForGr() {
   if (grLiveFetchPromise) return grLiveFetchPromise;
   grLiveFetchPromise = new Promise(resolve => {
-    if (!navigator.onLine) {
-      grLiveFetchPromise = null;
-      return resolve(false);
-    }
+
     const cb = 'jsonpGr_' + Math.round(100000 * Math.random());
     const timer = setTimeout(() => {
       delete window[cb];
       grLiveFetchPromise = null;
       resolve(false);
-    }, 8000);
+    }, 5500);
 
     window[cb] = function (d) {
       clearTimeout(timer);
@@ -342,13 +351,24 @@ function resolveEnvMonthly(monthKey) {
 }
 
 async function generateConsolidatedMonthlyReport() {
-  const mStr = document.getElementById('grMonth')?.value;
-  if (!mStr) return alert("اختر شهر التقرير أولاً!");
+  const monthInp = document.getElementById('grMonth');
+  if (monthInp && !monthInp.value) {
+    monthInp.value = new Date().toISOString().slice(0, 7);
+  }
+  const mStr = monthInp?.value || new Date().toISOString().slice(0, 7);
+
+  loadLocalCachesForGr();
+  const outBox = document.getElementById('printable-general-report');
+  if (outBox) {
+    outBox.style.display = 'block';
+    outBox.innerHTML = '<div style="background:#fff;padding:30px;text-align:center;border-radius:10px;border:1.5px solid #003366;font-weight:bold;color:#003366;font-size:15px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;"></i><br>جاري تجميع وإصدار التقرير الشهري المجمع...</div>';
+  }
 
   const btn = document.getElementById('genGrBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تجميع ومراجعة بيانات الإدارات الأربع...'; }
 
   await fetchLiveAllDataForGr();
+  loadLocalCachesForGr();
 
   const pmStr = getPrevMonthStr(mStr);
   const yCur = mStr.split('-')[0], mCurInt = parseInt(mStr.split('-')[1]);
@@ -859,9 +879,10 @@ async function generateConsolidatedMonthlyReport() {
   out.innerHTML = pageCover + pageAv1 + pageAv2 + pageAv3 + pageAv4 + pageAv5 + pageCd + pageOsh + pageEnv + pageGenAndRecs;
   out.style.display = 'block';
 
-  // تدمير الرسوم القديمة ورسم الجديدة
+  // تدمير الرسوم القديمة ورسم الجديدة بأمان
   grChartInstances.forEach(c => { try { c.destroy(); } catch (e) {} });
   grChartInstances = [];
+  if (typeof Chart !== 'undefined') { try {
 
   const intTickOpts = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } };
 
@@ -1077,6 +1098,7 @@ async function generateConsolidatedMonthlyReport() {
     }));
   }
 
+  } catch (chartErr) { console.warn('GR Chart error:', chartErr); } }
   out.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -1095,10 +1117,13 @@ function withDesktopReportWidth(el, fn) {
 }
 
 async function exportGrPagesAsImages(btn) {
-  const el = document.getElementById('printable-general-report');
-  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  let el = document.getElementById('printable-general-report');
+  let pages = document.querySelectorAll('#printable-general-report .gr-page');
   if (!el || el.style.display === 'none' || !pages.length) {
-    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+    await generateConsolidatedMonthlyReport();
+    el = document.getElementById('printable-general-report');
+    pages = document.querySelectorAll('#printable-general-report .gr-page');
+    if (!el || !pages.length) return;
   }
   const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تصدير الصور...'; }
@@ -1109,7 +1134,7 @@ async function exportGrPagesAsImages(btn) {
       const arr = [];
       for (let i = 0; i < pages.length; i++) {
         if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> صفحة ${i + 1} / ${pages.length}...`;
-        const cvs = await html2canvas(pages[i], { scale: 1.8, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+        const cvs = await html2canvas(pages[i], { scale: (window.isMobileAppOrDevice && window.isMobileAppOrDevice()) ? 1.35 : 1.8, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
         arr.push({
           canvas: cvs,
           filename: `General_Safety_Report_${mStr}_Page_${String(i + 1).padStart(2, '0')}.png`
@@ -1132,10 +1157,13 @@ async function exportGrPagesAsImages(btn) {
 }
 
 async function exportGrPDF(btn) {
-  const el = document.getElementById('printable-general-report');
-  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  let el = document.getElementById('printable-general-report');
+  let pages = document.querySelectorAll('#printable-general-report .gr-page');
   if (!el || el.style.display === 'none' || !pages.length) {
-    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+    await generateConsolidatedMonthlyReport();
+    el = document.getElementById('printable-general-report');
+    pages = document.querySelectorAll('#printable-general-report .gr-page');
+    if (!el || !pages.length) return;
   }
   const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تجهيز ملف PDF...'; }
@@ -1160,7 +1188,7 @@ async function exportGrPDF(btn) {
       for (let i = 0; i < pages.length; i++) {
         if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> تجهيز PDF (${i + 1} / ${pages.length})...`;
         const cvs = await html2canvas(pages[i], {
-          scale: 2,
+          scale: (window.isMobileAppOrDevice && window.isMobileAppOrDevice()) ? 1.35 : 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
@@ -1197,10 +1225,13 @@ async function exportGrPDF(btn) {
 
 async function sendGrViaEmail(btn) {
   const mStr = document.getElementById('grMonth')?.value;
-  const el = document.getElementById('printable-general-report');
-  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  let el = document.getElementById('printable-general-report');
+  let pages = document.querySelectorAll('#printable-general-report .gr-page');
   if (!el || el.style.display === 'none' || !pages.length) {
-    return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
+    await generateConsolidatedMonthlyReport();
+    el = document.getElementById('printable-general-report');
+    pages = document.querySelectorAll('#printable-general-report .gr-page');
+    if (!el || !pages.length) return;
   }
   const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال التقرير بالإيميل...'; }
