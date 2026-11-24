@@ -369,15 +369,15 @@ html, body {
 }
 
 .nav-controls {
-  display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;
+  display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; align-items: center; flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 5px; -webkit-overflow-scrolling: touch;
 }
 .nav-btn {
-  background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 6px 12px; cursor: pointer; color: var(--primary); font-weight: bold;
+  background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; cursor: pointer; color: var(--primary); font-weight: bold; flex-shrink: 0; font-size: 0.9rem;
 }
 .new-btn {
-  background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 6px 15px; cursor: pointer; font-weight: bold; font-family: 'Cairo', sans-serif;
+  background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-weight: bold; font-family: 'Cairo', sans-serif; flex-shrink: 0; white-space: nowrap; font-size: 0.9rem;
 }
-.nav-counter { font-weight: bold; color: #555; background: #fff; padding: 4px 10px; border-radius: 4px; border: 1px solid #ccc; }
+.nav-counter { font-weight: bold; color: #555; background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; flex-shrink: 0; white-space: nowrap; font-size: 0.9rem; }
 .survey-container {
   background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #ddd;
 }

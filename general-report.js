@@ -170,7 +170,7 @@ function fetchLiveAllDataForGr() {
   if (grLiveFetchPromise) return grLiveFetchPromise;
   grLiveFetchPromise = new Promise(resolve => {
     const cb = 'jsonpGr_' + Math.round(100000 * Math.random());
-    const timer = setTimeout(() => { delete window[cb]; grLiveFetchPromise = null; resolve(false); }, 9000);
+    const timer = setTimeout(() => { delete window[cb]; grLiveFetchPromise = null; resolve(false); }, 25000);
     window[cb] = function (d) {
       clearTimeout(timer);
       try {
