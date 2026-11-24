@@ -181,50 +181,48 @@ function formatMobileInput(input) {
   input.value = formatted;
 }
 
-function loadData(isRefresh = false) {
-  let cachedData = null;
-  if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
-    cachedData = window.globalDirectoryData;
-  } else {
+async function loadData(isRefresh = false) {
+    let cachedData = localStorage.getItem(CACHE_KEY);
+    
+    if (cachedData && !isRefresh && directoryData.length === 0) {
+        directoryData = JSON.parse(cachedData);
+        renderTable(directoryData);
+    }
+
+    if (!navigator.onLine) {
+        if(isRefresh) alert("أنت غير متصل بالإنترنت. يرجى التحقق من الشبكة للمزامنة.");
+        else if(!cachedData) {
+            const tb = document.getElementById('table-body');
+            if(tb) tb.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">لا يوجد اتصال بالإنترنت ولا توجد بيانات محفوظة مسبقاً.</td></tr>';
+        }
+        return;
+    }
+
+    const tb = document.getElementById('table-body');
+    if (isRefresh && tb) {
+        tb.innerHTML = '<tr><td colspan="6" class="loading">جاري مزامنة أحدث البيانات...</td></tr>';
+    }
+
     try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) cachedData = JSON.parse(raw);
-    } catch (e) {}
-  }
-
-  if (cachedData && Array.isArray(cachedData) && cachedData.length > 0 && !isRefresh) {
-    directoryData = cachedData;
-    renderTable(directoryData);
-    populateDeptDatalist(directoryData);
-  }
-
-  const tb = document.getElementById("table-body");
-  if (isRefresh || (!directoryData || directoryData.length === 0)) {
-    if (tb) tb.innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل أحدث بيانات دليل الهاتف...</td></tr>';
-  }
-
-  // Pure direct fetch for Mobile compatibility (no JSONP)
-  fetch(window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now(), {
-    method: "GET"
-  })
-  .then(res => res.json())
-  .then(d => {
-    if (d && d.status === "success" && Array.isArray(d.directory)) {
-      directoryData = d.directory;
-      window.globalDirectoryData = directoryData;
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
-      renderTable(directoryData);
-      populateDeptDatalist(directoryData);
-    } else if (!directoryData || directoryData.length === 0) {
-      if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
+        let response = await fetch(window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now(), { method: 'GET' });
+        let freshData = await response.json();
+        if(freshData && freshData.status === 'success' && freshData.directory) {
+            directoryData = freshData.directory;
+        } else {
+            directoryData = freshData;
+        }
+        localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData));
+        renderTable(directoryData);
+        populateDeptDatalist(directoryData);
+    } catch (error) {
+        console.error("Direct fetch error:", error);
+        if (!cachedData && tb) {
+            tb.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">تعذر الاتصال بقاعدة البيانات.</td></tr>';
+        } else if (isRefresh) {
+            alert("حدث خطأ أثناء المزامنة. سيتم عرض البيانات المحفوظة.");
+            renderTable(directoryData);
+        }
     }
-  })
-  .catch(err => {
-    console.error("Directory fetch error:", err);
-    if ((!directoryData || directoryData.length === 0) && tb) {
-      tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:18px; color:#dc3545; font-weight:bold;">تعذر سحب البيانات حالياً. <button type="button" onclick="forceRefreshData()" style="background:#003366;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
-    }
-  });
 }
 
 function forceRefreshData() {
