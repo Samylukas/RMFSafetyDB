@@ -770,6 +770,26 @@ function loadAppDataInit() {
           globalCivilDefenseMonthly = d.cdMonthly;
           try { localStorage.setItem('rmf_cd_monthly', JSON.stringify(globalCivilDefenseMonthly)); } catch (e) {}
         }
+        if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) {
+          window.globalOshDaily = d.oshDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+          try { localStorage.setItem('rmf_osh_daily', JSON.stringify(window.globalOshDaily)); } catch (e) {}
+          if (typeof renderSavedOshDaily === 'function') renderSavedOshDaily();
+        }
+        if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) {
+          window.globalOshMonthly = d.oshMonthly;
+          try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(window.globalOshMonthly)); } catch (e) {}
+          if (typeof loadOshMonthlyForm === 'function') loadOshMonthlyForm();
+        }
+        if (Array.isArray(d.envDaily) && d.envDaily.length > 0) {
+          window.globalEnvDaily = d.envDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+          try { localStorage.setItem('rmf_env_daily', JSON.stringify(window.globalEnvDaily)); } catch (e) {}
+          if (typeof renderSavedEnvDaily === 'function') renderSavedEnvDaily();
+        }
+        if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) {
+          window.globalEnvMonthly = d.envMonthly;
+          try { localStorage.setItem('rmf_env_monthly', JSON.stringify(window.globalEnvMonthly)); } catch (e) {}
+          if (typeof loadEnvMonthlyForm === 'function') loadEnvMonthlyForm();
+        }
         try {
           localStorage.setItem('rmf_surveys', JSON.stringify(globalSurveys || []));
           localStorage.setItem('rmf_fod', JSON.stringify(globalFod || []));

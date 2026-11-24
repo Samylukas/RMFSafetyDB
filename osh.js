@@ -158,27 +158,77 @@ function oshLogout() {
   window.location.href = 'index.html';
 }
 
+function applyOshServerData(d) {
+  if (!d || d.status !== 'success') return false;
+  let updated = false;
+  if (Array.isArray(d.oshDaily)) {
+    globalOshDaily = d.oshDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+    window.globalOshDaily = globalOshDaily;
+    try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
+    renderSavedOshDaily();
+    updated = true;
+  }
+  if (d.oshMonthly && typeof d.oshMonthly === 'object') {
+    globalOshMonthly = Object.assign({}, globalOshMonthly, d.oshMonthly);
+    window.globalOshMonthly = globalOshMonthly;
+    try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(globalOshMonthly)); } catch (e) {}
+    loadOshMonthlyForm();
+    updated = true;
+  }
+  return updated;
+}
+
+async function postOshPayloadToServer(payload) {
+  try {
+    await fetch(window.API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
 function syncOshFromServer() {
-  const cb = 'jsonpOsh_' + Math.round(100000 * Math.random());
-  window[cb] = function (d) {
-    try {
-      if (d && d.status === 'success') {
-        if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) {
-          globalOshDaily = d.oshDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
-          try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
-          renderSavedOshDaily();
-        }
-        if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) {
-          globalOshMonthly = d.oshMonthly;
-          try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(globalOshMonthly)); } catch (e) {}
-          loadOshMonthlyForm();
-        }
-      }
-    } catch (err) {} finally { delete window[cb]; }
+  // 1. POST fetch (fast dedicated endpoint)
+  fetch(window.API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'getOshEnvData' })
+  })
+    .then(r => r.json())
+    .then(d => applyOshServerData(d))
+    .catch(() => {});
+
+  // 2. GET fetch
+  fetch(window.API_URL + '?action=getOshEnvData&_t=' + Date.now(), { method: 'GET' })
+    .then(r => r.json())
+    .then(d => applyOshServerData(d))
+    .catch(() => {});
+
+  // 3. JSONP fast endpoint
+  const cb1 = 'jsonpOshFast_' + Math.round(1000000 * Math.random());
+  window[cb1] = function (d) {
+    try { applyOshServerData(d); } finally { delete window[cb1]; }
   };
-  const s = document.createElement('script');
-  s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
-  document.body.appendChild(s);
+  const s1 = document.createElement('script');
+  s1.src = window.API_URL + '?action=getOshEnvData&_t=' + Date.now() + '&callback=' + cb1;
+  s1.onerror = () => { delete window[cb1]; };
+  document.body.appendChild(s1);
+
+  // 4. JSONP full getAppData fallback
+  const cb2 = 'jsonpOshFull_' + Math.round(1000000 * Math.random());
+  window[cb2] = function (d) {
+    try { applyOshServerData(d); } finally { delete window[cb2]; }
+  };
+  const s2 = document.createElement('script');
+  s2.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb2;
+  s2.onerror = () => { delete window[cb2]; };
+  document.body.appendChild(s2);
 }
 
 function switchOshMainTab(tab) {
@@ -332,16 +382,15 @@ function submitOshDailyInspection(e) {
   const btn = document.getElementById('submitOshDailyBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
 
-  fetch(window.API_URL, {
-    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: isOshEditMode ? 'updateOSHDaily' : 'submitOSHDaily', performedBy: getOshActorName(), reportData: repObj })
-  }).finally(() => {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ جولة السلامة والصحة المهنية'; btn.style.backgroundColor = '#fd7e14'; }
+  const actName = isOshEditMode ? 'updateOSHDaily' : 'submitOSHDaily';
+  postOshPayloadToServer({ action: actName, performedBy: getOshActorName(), reportData: repObj }).finally(() => {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ جولة السلامة والصحة المهنية'; btn.style.backgroundColor = '#fd7e14'; btn.style.color = '#fff'; }
     isOshEditMode = false; currentOshEditId = null;
-    alert('✅ تم حفظ جولة السلامة والصحة المهنية بنجاح!');
+    alert('✅ تم حفظ جولة السلامة والصحة المهنية في جوجل شيت بنجاح!');
     if (document.getElementById('oshPrintDate')) document.getElementById('oshPrintDate').value = repObj.date;
     switchOshDailySubTab('report');
     generateOshDailyPrintView(repObj);
+    setTimeout(() => syncOshFromServer(), 1500);
   });
 }
 
@@ -448,7 +497,7 @@ function deleteOshDailyRecord(idx) {
   globalOshDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_osh_daily', JSON.stringify(globalOshDaily)); } catch (e) {}
   renderSavedOshDaily();
-  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteOSHDaily', performedBy: getOshActorName(), id: delId }) });
+  postOshPayloadToServer({ action: 'deleteOSHDaily', performedBy: getOshActorName(), id: delId }).then(() => setTimeout(() => syncOshFromServer(), 1500));
 }
 
 function generateOshDailyPrintView(specificRep) {
@@ -693,11 +742,15 @@ function saveOshMonthlyReport() {
   globalOshMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_osh_monthly', JSON.stringify(globalOshMonthly)); } catch (e) {}
 
-  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveOSHMonthly', performedBy: getOshActorName(), monthlyData: obj }) }).finally(() => {
-    alert("✅ تم حفظ بيانات التقرير الشهري للسلامة والصحة المهنية بنجاح!");
+  const mBtn = document.getElementById('saveOshMonthlyBtn');
+  if (mBtn) { mBtn.disabled = true; mBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...'; }
+  postOshPayloadToServer({ action: 'saveOSHMonthly', performedBy: getOshActorName(), monthlyData: obj }).finally(() => {
+    if (mBtn) { mBtn.disabled = false; mBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ وإثبات بيانات التقرير الشهري (OSH)'; }
+    alert("✅ تم حفظ بيانات التقرير الشهري للسلامة والصحة المهنية في جوجل شيت بنجاح!");
     document.getElementById('oshExtractMonth').value = mStr;
     switchOshMonthlySubTab('extract');
     generateOshMonthlyPreview();
+    setTimeout(() => syncOshFromServer(), 1500);
   });
 }
 
@@ -784,3 +837,31 @@ async function sendOshMonthlyEmail() {
   await fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم السلامة والصحة المهنية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `OSH_Report_${mStr}.jpg` }) });
   alert("✅ تم إرسال التقرير بالإيميل بنجاح!");
 }
+
+
+window.initOshSection = initOshSection;
+window.syncOshFromServer = syncOshFromServer;
+window.switchOshMainTab = switchOshMainTab;
+window.switchOshDailySubTab = switchOshDailySubTab;
+window.switchOshMonthlySubTab = switchOshMonthlySubTab;
+window.onOshChecklistToggle = onOshChecklistToggle;
+window.addOshFindingRow = addOshFindingRow;
+window.toggleOshFindingStatusBtn = toggleOshFindingStatusBtn;
+window.submitOshDailyInspection = submitOshDailyInspection;
+window.navOshDaily = navOshDaily;
+window.loadOshDailyToForm = loadOshDailyToForm;
+window.clearOshDailyForm = clearOshDailyForm;
+window.copyOshDailyToToday = copyOshDailyToToday;
+window.deleteOshDailyRecord = deleteOshDailyRecord;
+window.generateOshDailyPrintView = generateOshDailyPrintView;
+window.exportOshDailyPNG = exportOshDailyPNG;
+window.exportOshDailyPDF = exportOshDailyPDF;
+window.loadOshMonthlyForm = loadOshMonthlyForm;
+window.addOshMonthlyItemRow = addOshMonthlyItemRow;
+window.recalcOshMonthlyDiff = recalcOshMonthlyDiff;
+window.autoPopulateOshMonthly = autoPopulateOshMonthly;
+window.saveOshMonthlyReport = saveOshMonthlyReport;
+window.generateOshMonthlyPreview = generateOshMonthlyPreview;
+window.exportOshMonthlyPNG = exportOshMonthlyPNG;
+window.exportOshMonthlyPDF = exportOshMonthlyPDF;
+window.sendOshMonthlyEmail = sendOshMonthlyEmail;

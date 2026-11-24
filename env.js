@@ -118,27 +118,77 @@ function envLogout() {
   window.location.href = 'index.html';
 }
 
+function applyEnvServerData(d) {
+  if (!d || d.status !== 'success') return false;
+  let updated = false;
+  if (Array.isArray(d.envDaily)) {
+    globalEnvDaily = d.envDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
+    window.globalEnvDaily = globalEnvDaily;
+    try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
+    renderSavedEnvDaily();
+    updated = true;
+  }
+  if (d.envMonthly && typeof d.envMonthly === 'object') {
+    globalEnvMonthly = Object.assign({}, globalEnvMonthly, d.envMonthly);
+    window.globalEnvMonthly = globalEnvMonthly;
+    try { localStorage.setItem('rmf_env_monthly', JSON.stringify(globalEnvMonthly)); } catch (e) {}
+    loadEnvMonthlyForm();
+    updated = true;
+  }
+  return updated;
+}
+
+async function postEnvPayloadToServer(payload) {
+  try {
+    await fetch(window.API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
 function syncEnvFromServer() {
-  const cb = 'jsonpEnv_' + Math.round(100000 * Math.random());
-  window[cb] = function (d) {
-    try {
-      if (d && d.status === 'success') {
-        if (Array.isArray(d.envDaily) && d.envDaily.length > 0) {
-          globalEnvDaily = d.envDaily.sort((a, b) => String((a.date || '') + ' ' + (a.time || '')).localeCompare(String((b.date || '') + ' ' + (b.time || ''))));
-          try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
-          renderSavedEnvDaily();
-        }
-        if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) {
-          globalEnvMonthly = d.envMonthly;
-          try { localStorage.setItem('rmf_env_monthly', JSON.stringify(globalEnvMonthly)); } catch (e) {}
-          loadEnvMonthlyForm();
-        }
-      }
-    } catch (err) {} finally { delete window[cb]; }
+  // 1. POST fetch (fast dedicated endpoint)
+  fetch(window.API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'getOshEnvData' })
+  })
+    .then(r => r.json())
+    .then(d => applyEnvServerData(d))
+    .catch(() => {});
+
+  // 2. GET fetch
+  fetch(window.API_URL + '?action=getOshEnvData&_t=' + Date.now(), { method: 'GET' })
+    .then(r => r.json())
+    .then(d => applyEnvServerData(d))
+    .catch(() => {});
+
+  // 3. JSONP fast endpoint
+  const cb1 = 'jsonpEnvFast_' + Math.round(1000000 * Math.random());
+  window[cb1] = function (d) {
+    try { applyEnvServerData(d); } finally { delete window[cb1]; }
   };
-  const s = document.createElement('script');
-  s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
-  document.body.appendChild(s);
+  const s1 = document.createElement('script');
+  s1.src = window.API_URL + '?action=getOshEnvData&_t=' + Date.now() + '&callback=' + cb1;
+  s1.onerror = () => { delete window[cb1]; };
+  document.body.appendChild(s1);
+
+  // 4. JSONP full getAppData fallback
+  const cb2 = 'jsonpEnvFull_' + Math.round(1000000 * Math.random());
+  window[cb2] = function (d) {
+    try { applyEnvServerData(d); } finally { delete window[cb2]; }
+  };
+  const s2 = document.createElement('script');
+  s2.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb2;
+  s2.onerror = () => { delete window[cb2]; };
+  document.body.appendChild(s2);
 }
 
 function switchEnvMainTab(tab) {
@@ -259,16 +309,15 @@ function submitEnvDailyInspection(e) {
   const btn = document.getElementById('submitEnvDailyBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...'; }
 
-  fetch(window.API_URL, {
-    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: isEnvEditMode ? 'updateENVDaily' : 'submitENVDaily', performedBy: getEnvActorName(), reportData: repObj })
-  }).finally(() => {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة'; btn.style.backgroundColor = '#28a745'; }
+  const actName = isEnvEditMode ? 'updateENVDaily' : 'submitENVDaily';
+  postEnvPayloadToServer({ action: actName, performedBy: getEnvActorName(), reportData: repObj }).finally(() => {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة'; btn.style.backgroundColor = '#28a745'; btn.style.color = '#fff'; }
     isEnvEditMode = false; currentEnvEditId = null;
-    alert('✅ تم حفظ بيان التفتيش اليومي للبيئة بنجاح!');
+    alert('✅ تم حفظ بيان التفتيش اليومي للبيئة في جوجل شيت بنجاح!');
     if (document.getElementById('envPrintDate')) document.getElementById('envPrintDate').value = repObj.date;
     switchEnvDailySubTab('report');
     generateEnvDailyPrintView(repObj);
+    setTimeout(() => syncEnvFromServer(), 1500);
   });
 }
 
@@ -300,6 +349,7 @@ function renderSavedEnvDaily() {
         <td style="white-space:nowrap;">
           <button type="button" onclick="generateEnvDailyPrintView(globalEnvDaily[${idx}])" style="background:#003366;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;"><i class="fa-solid fa-eye"></i> البيان</button>
           <button type="button" onclick="loadEnvDailyToForm(${idx})" style="background:#ffc107;color:#000;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;font-weight:bold;margin-left:3px;"><i class="fa-solid fa-pen"></i> تعديل</button>
+          <button type="button" onclick="copyEnvDailyToToday(${idx})" style="background:#17a2b8;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;margin-left:3px;"><i class="fa-solid fa-copy"></i> نسخ لليوم</button>
           <button type="button" onclick="deleteEnvDailyRecord(${idx})" style="background:#dc3545;color:#fff;border:none;padding:5px 8px;border-radius:4px;cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
@@ -336,6 +386,8 @@ function loadEnvDailyToForm(idx) {
   (rep.findings || []).forEach(f => addEnvFindingRow(f));
   isEnvEditMode = true; currentEnvEditId = rep.id;
   updateEnvNavCounter();
+  const btn = document.getElementById('submitEnvDailyBtn');
+  if (btn) { btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> حفظ التعديلات وتحديث البيان'; btn.style.backgroundColor = '#ffc107'; btn.style.color = '#000'; }
 }
 
 function clearEnvDailyForm() {
@@ -346,6 +398,35 @@ function clearEnvDailyForm() {
   document.getElementById('env-findings-entry-tbody').innerHTML = '';
   addEnvFindingRow();
   updateEnvNavCounter();
+  const btn = document.getElementById('submitEnvDailyBtn');
+  if (btn) { btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة'; btn.style.backgroundColor = '#28a745'; btn.style.color = '#fff'; }
+}
+
+function copyEnvDailyToToday(idx) {
+  const rep = globalEnvDaily[idx];
+  if (!rep) return;
+  if (!confirm(`هل تريد نسخ الحالات المعلقة من سجل (${rep.date}) إلى تفتيش اليوم؟`)) return;
+  currentEnvDailyIndex = -1; isEnvEditMode = false; currentEnvEditId = null;
+  document.getElementById('envDailyForm').reset();
+  document.getElementById('envDailyDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('envDailyTime').value = new Date().toTimeString().slice(0, 5);
+  document.getElementById('envDailyType').value = rep.type || 'التفتيش اليومي للبيئة ومكافحة مخاطر الحياة البرية';
+  document.getElementById('envDailyInspector').value = rep.inspector || 'أحمد إسماعيل محمد';
+  const tb = document.getElementById('env-findings-entry-tbody');
+  if (tb) tb.innerHTML = '';
+  let cnt = 0;
+  (rep.findings || []).forEach(f => {
+    if (f.status !== 'تم' && f.status !== 'مغلق') {
+      addEnvFindingRow(f);
+      cnt++;
+    }
+  });
+  if (cnt === 0) addEnvFindingRow();
+  updateEnvNavCounter();
+  const btn = document.getElementById('submitEnvDailyBtn');
+  if (btn) { btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ بيان التفتيش اليومي للبيئة'; btn.style.backgroundColor = '#28a745'; btn.style.color = '#fff'; }
+  switchEnvDailySubTab('entry');
+  alert(`✅ تم نسخ (${cnt}) حالة معلقة إلى تفتيش اليوم.`);
 }
 
 function deleteEnvDailyRecord(idx) {
@@ -355,7 +436,7 @@ function deleteEnvDailyRecord(idx) {
   globalEnvDaily.splice(idx, 1);
   try { localStorage.setItem('rmf_env_daily', JSON.stringify(globalEnvDaily)); } catch (e) {}
   renderSavedEnvDaily();
-  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteENVDaily', performedBy: getEnvActorName(), id: delId }) });
+  postEnvPayloadToServer({ action: 'deleteENVDaily', performedBy: getEnvActorName(), id: delId }).then(() => setTimeout(() => syncEnvFromServer(), 1500));
 }
 
 function generateEnvDailyPrintView(specificRep) {
@@ -640,11 +721,15 @@ function saveEnvMonthlyReport() {
   globalEnvMonthly[mStr] = obj;
   try { localStorage.setItem('rmf_env_monthly', JSON.stringify(globalEnvMonthly)); } catch (e) {}
 
-  fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveENVMonthly', performedBy: getEnvActorName(), monthlyData: obj }) }).finally(() => {
-    alert("✅ تم حفظ بيانات التقرير الشهري للبيئة والحياة البرية بنجاح!");
+  const mBtn = document.getElementById('saveEnvMonthlyBtn');
+  if (mBtn) { mBtn.disabled = true; mBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ في الشيت...'; }
+  postEnvPayloadToServer({ action: 'saveENVMonthly', performedBy: getEnvActorName(), monthlyData: obj }).finally(() => {
+    if (mBtn) { mBtn.disabled = false; mBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ وإثبات بيانات التقرير الشهري للبيئة'; }
+    alert("✅ تم حفظ بيانات التقرير الشهري للبيئة والحياة البرية في جوجل شيت بنجاح!");
     document.getElementById('envExtractMonth').value = mStr;
     switchEnvMonthlySubTab('extract');
     generateEnvMonthlyPreview();
+    setTimeout(() => syncEnvFromServer(), 1500);
   });
 }
 
@@ -762,3 +847,30 @@ async function sendEnvMonthlyEmail() {
   await fetch(window.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'sendReportEmail', subject: `التقرير الشهري لقسم البيئة والحياة البرية - ${mStr}`, htmlBody: `<div dir="rtl"><h2>التقرير الشهري لقسم البيئة ومكافحة مخاطر الحياة البرية - ${mStr}</h2><img src="cid:monthlyReportImage" style="max-width:100%;"></div>`, imageData: imgData, imageName: `ENV_Report_${mStr}.jpg` }) });
   alert("✅ تم إرسال التقرير بالإيميل بنجاح!");
 }
+
+
+window.initEnvSection = initEnvSection;
+window.syncEnvFromServer = syncEnvFromServer;
+window.switchEnvMainTab = switchEnvMainTab;
+window.switchEnvDailySubTab = switchEnvDailySubTab;
+window.switchEnvMonthlySubTab = switchEnvMonthlySubTab;
+window.addEnvFindingRow = addEnvFindingRow;
+window.toggleEnvFindingStatusBtn = toggleEnvFindingStatusBtn;
+window.submitEnvDailyInspection = submitEnvDailyInspection;
+window.navEnvDaily = navEnvDaily;
+window.loadEnvDailyToForm = loadEnvDailyToForm;
+window.clearEnvDailyForm = clearEnvDailyForm;
+window.copyEnvDailyToToday = copyEnvDailyToToday;
+window.deleteEnvDailyRecord = deleteEnvDailyRecord;
+window.generateEnvDailyPrintView = generateEnvDailyPrintView;
+window.exportEnvDailyPNG = exportEnvDailyPNG;
+window.exportEnvDailyPDF = exportEnvDailyPDF;
+window.loadEnvMonthlyForm = loadEnvMonthlyForm;
+window.addEnvMonthlyObsRow = addEnvMonthlyObsRow;
+window.recalcEnvMonthlyDiff = recalcEnvMonthlyDiff;
+window.autoPopulateEnvMonthly = autoPopulateEnvMonthly;
+window.saveEnvMonthlyReport = saveEnvMonthlyReport;
+window.generateEnvMonthlyPreview = generateEnvMonthlyPreview;
+window.exportEnvMonthlyPNG = exportEnvMonthlyPNG;
+window.exportEnvMonthlyPDF = exportEnvMonthlyPDF;
+window.sendEnvMonthlyEmail = sendEnvMonthlyEmail;
