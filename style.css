@@ -503,7 +503,7 @@ html, body {
 .dir-btn { padding: 8px 14px; border: none; border-radius: 6px; font-family: 'Cairo', sans-serif; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; transition: opacity 0.2s; }
 .dir-btn:hover { opacity: 0.9; }
 .btn-print { background-color: var(--primary-blue); color: white; }
-.btn-refresh { background-color: var(--info-cyan); color: white; }
+.btn-refresh { background-color: #6f42c1; color: white; }
 .btn-admin-unlock { background-color: #6f42c1; color: white; display: none; }
 .btn-add { background-color: var(--success-green); color: white; display: none; }
 .btn-exit-admin { background-color: var(--danger-red); color: white; display: none; }

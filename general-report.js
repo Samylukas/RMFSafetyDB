@@ -168,48 +168,63 @@ function loadLocalCachesForGr() {
 
 function fetchLiveAllDataForGr() {
   if (grLiveFetchPromise) return grLiveFetchPromise;
-  grLiveFetchPromise = fetch(window.API_URL + '?action=getAppData&_t=' + Date.now(), { method: 'GET' })
-    .then(res => res.json())
-    .then(d => {
-      if (d && d.status === 'success') {
-        if (Array.isArray(d.surveys)) { grAppData.surveys = d.surveys; try { localStorage.setItem('rmf_surveys', JSON.stringify(d.surveys)); } catch (e) {} }
-        if (Array.isArray(d.incidents)) { grAppData.incidents = d.incidents; try { localStorage.setItem('rmf_incidents', JSON.stringify(d.incidents)); } catch (e) {} }
-        if (Array.isArray(d.fod)) { grAppData.fod = d.fod; try { localStorage.setItem('rmf_fod', JSON.stringify(d.fod)); } catch (e) {} }
-        if (Array.isArray(d.movements)) { grAppData.movements = d.movements; try { localStorage.setItem('rmf_movements', JSON.stringify(d.movements)); } catch (e) {} }
-        if (Array.isArray(d.daily)) {
-          let rMap = {};
-          d.daily.forEach(row => {
-            let repId = row.Report_ID;
-            if (!rMap[repId]) {
-              rMap[repId] = { id: repId, date: normalizeDateStr(row.Date), shift: row.Shift, findings: [] };
-            }
-            if (row.Category && row.Category !== "لا توجد ملاحظات") {
-              let rawSt = String(row.Status || '').trim();
-              let isCl = rawSt === 'مغلق' || rawSt.toLowerCase() === 'closed' || String(row.Corrective_Action || '').includes('تم تلافي');
-              rMap[repId].findings.push({
-                category: row.Category, item: row.Finding_Item, location: row.Location,
-                responsible: row.Responsible, note: row.Corrective_Action || '', status: isCl ? 'مغلق' : 'مفتوح'
-              });
-            }
-          });
-          grAppData.daily = Object.values(rMap);
-          try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(grAppData.daily)); } catch (e) {}
+  grLiveFetchPromise = new Promise(resolve => {
+    if (!navigator.onLine) {
+      grLiveFetchPromise = null;
+      return resolve(false);
+    }
+    const cb = 'jsonpGr_' + Math.round(100000 * Math.random());
+    const timer = setTimeout(() => {
+      delete window[cb];
+      grLiveFetchPromise = null;
+      resolve(false);
+    }, 8000);
+
+    window[cb] = function (d) {
+      clearTimeout(timer);
+      try {
+        if (d && d.status === 'success') {
+          if (Array.isArray(d.surveys)) { grAppData.surveys = d.surveys; try { localStorage.setItem('rmf_surveys', JSON.stringify(d.surveys)); } catch (e) {} }
+          if (Array.isArray(d.incidents)) { grAppData.incidents = d.incidents; try { localStorage.setItem('rmf_incidents', JSON.stringify(d.incidents)); } catch (e) {} }
+          if (Array.isArray(d.fod)) { grAppData.fod = d.fod; try { localStorage.setItem('rmf_fod', JSON.stringify(d.fod)); } catch (e) {} }
+          if (Array.isArray(d.movements)) { grAppData.movements = d.movements; try { localStorage.setItem('rmf_movements', JSON.stringify(d.movements)); } catch (e) {} }
+          if (Array.isArray(d.daily)) {
+            let rMap = {};
+            d.daily.forEach(row => {
+              let repId = row.Report_ID;
+              if (!rMap[repId]) {
+                rMap[repId] = { id: repId, date: normalizeDateStr(row.Date), shift: row.Shift, findings: [] };
+              }
+              if (row.Category && row.Category !== "لا توجد ملاحظات") {
+                let rawSt = String(row.Status || '').trim();
+                let isCl = rawSt === 'مغلق' || rawSt.toLowerCase() === 'closed' || String(row.Corrective_Action || '').includes('تم تلافي');
+                rMap[repId].findings.push({
+                  category: row.Category, item: row.Finding_Item, location: row.Location,
+                  responsible: row.Responsible, note: row.Corrective_Action || '', status: isCl ? 'مغلق' : 'مفتوح'
+                });
+              }
+            });
+            grAppData.daily = Object.values(rMap);
+            try { localStorage.setItem('rmf_daily_inspections', JSON.stringify(grAppData.daily)); } catch (e) {}
+          }
+          if (Array.isArray(d.cdDaily) && d.cdDaily.length > 0) grAppData.cdDaily = d.cdDaily;
+          if (d.cdMonthly && typeof d.cdMonthly === 'object' && Object.keys(d.cdMonthly).length > 0) grAppData.cdMonthly = d.cdMonthly;
+          if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) grAppData.oshDaily = d.oshDaily;
+          if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) grAppData.oshMonthly = d.oshMonthly;
+          if (Array.isArray(d.envDaily) && d.envDaily.length > 0) grAppData.envDaily = d.envDaily;
+          if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) grAppData.envMonthly = d.envMonthly;
         }
-        if (Array.isArray(d.cdDaily) && d.cdDaily.length > 0) grAppData.cdDaily = d.cdDaily;
-        if (d.cdMonthly && typeof d.cdMonthly === 'object' && Object.keys(d.cdMonthly).length > 0) grAppData.cdMonthly = d.cdMonthly;
-        if (Array.isArray(d.oshDaily) && d.oshDaily.length > 0) grAppData.oshDaily = d.oshDaily;
-        if (d.oshMonthly && typeof d.oshMonthly === 'object' && Object.keys(d.oshMonthly).length > 0) grAppData.oshMonthly = d.oshMonthly;
-        if (Array.isArray(d.envDaily) && d.envDaily.length > 0) grAppData.envDaily = d.envDaily;
-        if (d.envMonthly && typeof d.envMonthly === 'object' && Object.keys(d.envMonthly).length > 0) grAppData.envMonthly = d.envMonthly;
+      } catch (err) {} finally {
+        delete window[cb];
+        grLiveFetchPromise = null;
+        resolve(true);
       }
-      grLiveFetchPromise = null;
-      return true;
-    })
-    .catch(err => {
-      console.error("GR Fetch Error:", err);
-      grLiveFetchPromise = null;
-      return false;
-    });
+    };
+    const s = document.createElement('script');
+    s.src = window.API_URL + '?action=getAppData&_t=' + Date.now() + '&callback=' + cb;
+    s.onerror = () => { clearTimeout(timer); delete window[cb]; grLiveFetchPromise = null; resolve(false); };
+    document.body.appendChild(s);
+  });
   return grLiveFetchPromise;
 }
 
@@ -220,21 +235,15 @@ function getPrevMonthStr(ms) {
 
 async function fetchSpiForYearGr(year) {
   const yStr = String(year || '2026');
-  try {
-    let res = await fetch(window.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getSPIData', year: yStr })
-    });
-    let j = await res.json();
-    if (j.status === 'success' && j.data) {
-      try { localStorage.setItem('spi_records_' + yStr, JSON.stringify(j.data)); } catch (e) {}
-      return j.data;
-    }
-  } catch (e) {}
+  if (window.globalSpiRecords && window.globalSpiRecords[yStr] && window.globalSpiRecords[yStr].movements) {
+    return window.globalSpiRecords[yStr];
+  }
   try {
     let ls = localStorage.getItem('spi_records_' + yStr);
-    if (ls) return JSON.parse(ls);
+    if (ls) {
+      let pLs = JSON.parse(ls);
+      if (pLs && pLs.movements) return pLs;
+    }
   } catch (e) {}
   return { movements: {}, events: {} };
 }
@@ -1189,7 +1198,8 @@ async function exportGrPDF(btn) {
 async function sendGrViaEmail(btn) {
   const mStr = document.getElementById('grMonth')?.value;
   const el = document.getElementById('printable-general-report');
-  if (!el || el.style.display === 'none') {
+  const pages = document.querySelectorAll('#printable-general-report .gr-page');
+  if (!el || el.style.display === 'none' || !pages.length) {
     return alert("اضغط على (تجميع وإصدار التقرير الشهري المجمع) أولاً!");
   }
   const origHtml = btn ? btn.innerHTML : '';
@@ -1197,22 +1207,44 @@ async function sendGrViaEmail(btn) {
   const mgrName = document.getElementById('grManagerName')?.value || 'محمد محمد مرسي';
 
   try {
-    await withDesktopReportWidth(el, async () => {
-      const cvs = await html2canvas(el, { scale: 1.4, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
-      const imgData = cvs.toDataURL('image/jpeg', 0.85);
-      await fetch(window.API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'sendReportEmail',
-          performedBy: mgrName,
-          subject: `التقرير الشهري المجمع لإدارة السلامة والمطابقة - ${mStr}`,
-          htmlBody: `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;"><h2>التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة - ${mStr}</h2><p>إعداد واعتماد: <b>${mgrName}</b> - مدير إدارة السلامة والمطابقة</p><img src="cid:monthlyReportImage" style="max-width:100%;border:1px solid #ddd;border-radius:8px;"></div>`,
-          imageData: imgData,
-          imageName: `General_Safety_Report_${mStr}.jpg`
-        })
-      });
+    const imgData = await withDesktopReportWidth(el, async () => {
+      const pageCanvases = [];
+      let totalH = 0;
+      const targetW = 720;
+      for (let i = 0; i < pages.length; i++) {
+        const c = await html2canvas(pages[i], { scale: 1.0, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+        const scaledH = Math.round((c.height * targetW) / c.width);
+        pageCanvases.push({ c, h: scaledH });
+        totalH += scaledH + 8;
+      }
+      const scaleDown = totalH > 6000 ? (6000 / totalH) : 1;
+      const merged = document.createElement('canvas');
+      merged.width = Math.round(targetW * scaleDown);
+      merged.height = Math.round(totalH * scaleDown);
+      const ctx = merged.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, merged.width, merged.height);
+      let y = 0;
+      for (const item of pageCanvases) {
+        const drawH = Math.round(item.h * scaleDown);
+        ctx.drawImage(item.c, 0, y, merged.width, drawH);
+        y += drawH + Math.round(8 * scaleDown);
+      }
+      return merged.toDataURL('image/jpeg', 0.78);
+    });
+
+    await fetch(window.API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'sendReportEmail',
+        performedBy: mgrName,
+        subject: `التقرير الشهري المجمع لإدارة السلامة والمطابقة - ${mStr}`,
+        htmlBody: `<div dir="rtl" style="font-family:Arial,sans-serif;color:#333;"><h2>التقرير الشهري المجمع للإدارة العامة للسلامة والمطابقة - ${mStr}</h2><p>إعداد واعتماد: <b>${mgrName}</b> - مدير إدارة السلامة والمطابقة</p><img src="cid:monthlyReportImage" style="max-width:100%;border:1px solid #ddd;border-radius:8px;"></div>`,
+        imageData: imgData,
+        imageName: `General_Safety_Report_${mStr}.jpg`
+      })
     });
     alert("✅ تم إرسال التقرير الشهري المجمع بالإيميل بنجاح!");
   } catch (err) {
@@ -1221,4 +1253,15 @@ async function sendGrViaEmail(btn) {
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
+}
+
+window.initGeneralReportSection = initGeneralReportSection;
+window.addGrRecommendationRow = addGrRecommendationRow;
+window.generateConsolidatedMonthlyReport = generateConsolidatedMonthlyReport;
+window.exportGrPagesAsImages = exportGrPagesAsImages;
+window.exportGrPDF = exportGrPDF;
+window.sendGrViaEmail = sendGrViaEmail;
+
+if (document.readyState !== 'loading') {
+  initGeneralReportSection();
 }

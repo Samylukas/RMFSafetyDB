@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=2026.8">
+  <link rel="stylesheet" href="style.css?v=2026.9">
   <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -48,6 +48,12 @@
 
 <!-- اللوحة الرئيسية -->
 <div id="main-dashboard" class="content-area" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+      <div class="status-container" id="main-connection-status">
+        <span class="status-dot" id="main-status-dot"></span>
+        <span id="main-status-text" style="color: var(--success-green);">متصل (Online)</span>
+      </div>
+    </div>
     <h1 class="welcome-text">الإدارات المركزية <br><span style="font-size:1.05rem;color:#64748b;font-family:sans-serif;font-weight:600;">Central Departments</span></h1>
 
     <!-- الصف الأول: الإدارات الأربعة الأساسية -->
@@ -105,7 +111,7 @@
         <div class="sub-card" onclick="openSection('monthly-report-section')" style="border-top: 4px solid #6f42c1;"><i class="fa-solid fa-file-invoice sub-icon" style="color:#6f42c1;"></i><h3 class="sub-title">التقرير الشهري</h3><div class="sub-subtitle">Monthly Report</div></div>
         <div class="sub-card" onclick="openSection('fod-section')" style="border-top: 4px solid #fd7e14;"><i class="fa-solid fa-circle-exclamation sub-icon" style="color:#fd7e14;"></i><h3 class="sub-title">الأجسام الغريبة</h3><div class="sub-subtitle">FOD</div></div>
         <div class="sub-card" onclick="openSection('quarterly-inspection-section')" style="border-top: 4px solid #20c997;"><i class="fa-solid fa-magnifying-glass-chart sub-icon" style="color:#20c997;"></i><h3 class="sub-title">التفتيش الربع سنوي</h3><div class="sub-subtitle">Quarterly Airside Inspection</div></div>
-        <div class="sub-card" onclick="openDirectorySection()" style="border-top: 4px solid #6c757d;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6c757d;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
+        <div class="sub-card" onclick="openDirectorySection()" style="border-top: 4px solid #6f42c1;"><i class="fa-solid fa-phone-volume sub-icon" style="color:#6f42c1;"></i><h3 class="sub-title">دليل هاتف المطار</h3><div class="sub-subtitle">Airport Phone Directory</div></div>
     </div>
 </div>
 
@@ -713,10 +719,6 @@
 <div class="dir-container">
   <div class="dir-top-bar">
     <h2 class="dir-page-title"><i class="fa-solid fa-phone-volume" style="color:#6f42c1;"></i> دليل أرقام الطوارئ والإدارات بالمطار</h2>
-    <div class="status-container" id="connection-status">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text" style="color: var(--success-green);">متصل (Online)</span>
-    </div>
   </div>
 
   <div class="controls-bar">
@@ -880,11 +882,11 @@
 </div>
 
 
-<script src="script.js?v=2026.8"></script>
-<script src="osh.js?v=2026.8"></script>
-<script src="env.js?v=2026.8"></script>
-<script src="general-report.js?v=2026.8"></script>
-<script src="directory.js?v=2026.8"></script>
+<script src="script.js?v=2026.9"></script>
+<script src="osh.js?v=2026.9"></script>
+<script src="env.js?v=2026.9"></script>
+<script src="general-report.js?v=2026.9"></script>
+<script src="directory.js?v=2026.9"></script>
 <script>
   setTimeout(function(){
     var sp = document.getElementById('video-splash-screen');

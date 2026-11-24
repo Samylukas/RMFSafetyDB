@@ -22,16 +22,17 @@ function getSessionUserObj() {
   }
 }
 
-function receiveDirectoryFromAppData(dirList) {
+window.receiveDirectoryFromAppData = function (dirList) {
   if (Array.isArray(dirList) && dirList.length > 0) {
     directoryData = dirList;
+    window.globalDirectoryData = dirList;
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
     renderTable(directoryData);
     populateDeptDatalist(directoryData);
   }
-}
+};
 
-function openDirExternalLink(e, url) {
+window.openDirExternalLink = function (e, url) {
   if (e) e.preventDefault();
   if (!url) return;
   try {
@@ -44,10 +45,9 @@ function openDirExternalLink(e, url) {
   } catch (err) {
     window.location.href = url;
   }
-}
+};
 
-function initDirectorySection() {
-  updateConnectionStatus();
+window.initDirectorySection = function () {
   const uObj = getSessionUserObj();
   const unlockBtn = document.getElementById("admin-unlock-btn");
   if (uObj && uObj.Username) {
@@ -58,11 +58,11 @@ function initDirectorySection() {
     if (unlockBtn) unlockBtn.style.display = "none";
   }
   if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
-    receiveDirectoryFromAppData(window.globalDirectoryData);
+    window.receiveDirectoryFromAppData(window.globalDirectoryData);
   } else {
-    loadData(false);
+    window.loadData(false);
   }
-}
+};
 
 function dirLogout() {
   if (typeof logout === "function") { logout(); return; }
@@ -70,28 +70,7 @@ function dirLogout() {
   window.location.href = "index.html";
 }
 
-function updateConnectionStatus() {
-  const statusDot = document.getElementById("status-dot");
-  const statusText = document.getElementById("status-text");
-  if (!statusDot || !statusText) return;
-  if (navigator.onLine) {
-    statusDot.style.backgroundColor = "var(--success-green)";
-    statusText.style.color = "var(--success-green)";
-    statusText.innerText = "متصل (Online)";
-  } else {
-    statusDot.style.backgroundColor = "var(--danger-red)";
-    statusText.style.color = "var(--danger-red)";
-    statusText.innerText = "غير متصل (Offline)";
-  }
-}
-
-window.addEventListener("online", updateConnectionStatus);
-window.addEventListener("offline", updateConnectionStatus);
-setInterval(updateConnectionStatus, 2500);
-
 document.addEventListener("DOMContentLoaded", () => {
-  updateConnectionStatus();
-
   const uObj = getSessionUserObj();
   if (uObj && uObj.Username) {
     currentActorName = uObj.Username;
@@ -102,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Triple click on logo for Admin edit mode
   let clicks = 0;
   let clickTimer = null;
   const logo = document.getElementById("secret-logo");
@@ -116,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isDirAdmin) return alert("أنت بالفعل في وضع التعديل!");
         const sessUser = getSessionUserObj();
         if (sessUser && (sessUser.Role || "").toLowerCase().includes("admin")) {
-          enableAdminDirectoryMode();
+          window.enableAdminDirectoryMode();
         } else {
           alert("⚠️ وضع تعديل دليل الهاتف مخصص لمدير النظام (Admin) فقط!");
         }
@@ -124,10 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  loadData();
+  window.loadData(false);
 });
 
-function enableAdminDirectoryMode() {
+window.enableAdminDirectoryMode = function () {
   if (!navigator.onLine) return alert("لا يمكن تفعيل وضع التعديل بدون اتصال بالإنترنت!");
   const sessUser = getSessionUserObj();
   if (!sessUser || !(sessUser.Role || "").toLowerCase().includes("admin")) {
@@ -140,9 +118,9 @@ function enableAdminDirectoryMode() {
   document.getElementById("add-btn").style.display = "inline-flex";
   document.getElementById("exit-admin-btn").style.display = "inline-flex";
   document.querySelectorAll(".action-cell").forEach(cell => cell.style.display = "table-cell");
-}
+};
 
-function exitAdminMode() {
+window.exitAdminMode = function () {
   isDirAdmin = false;
   document.getElementById("add-btn").style.display = "none";
   document.getElementById("exit-admin-btn").style.display = "none";
@@ -152,9 +130,9 @@ function exitAdminMode() {
     const unlockBtn = document.getElementById("admin-unlock-btn");
     if (unlockBtn) unlockBtn.style.display = "inline-flex";
   }
-}
+};
 
-async function triggerPrint() {
+window.triggerPrint = async function () {
   if (typeof window.isMobileAppOrDevice === "function" && window.isMobileAppOrDevice()) {
     const tblBox = document.querySelector("#directory-section .table-container");
     if (!tblBox) return alert("لا توجد بيانات للطباعة!");
@@ -167,9 +145,9 @@ async function triggerPrint() {
     return;
   }
   setTimeout(() => { window.print(); }, 100);
-}
+};
 
-function formatMobileInput(input) {
+window.formatMobileInput = function (input) {
   let value = input.value.replace(/\D/g, "");
   if (value.length > 11) value = value.substring(0, 11);
   let formatted = "";
@@ -179,55 +157,81 @@ function formatMobileInput(input) {
     if (value.length > 7) formatted += " " + value.substring(7, 11);
   }
   input.value = formatted;
-}
+};
 
-async function loadData(isRefresh = false) {
-    let cachedData = localStorage.getItem(CACHE_KEY);
-    
-    if (cachedData && !isRefresh && directoryData.length === 0) {
-        directoryData = JSON.parse(cachedData);
-        renderTable(directoryData);
-    }
-
-    if (!navigator.onLine) {
-        if(isRefresh) alert("أنت غير متصل بالإنترنت. يرجى التحقق من الشبكة للمزامنة.");
-        else if(!cachedData) {
-            const tb = document.getElementById('table-body');
-            if(tb) tb.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">لا يوجد اتصال بالإنترنت ولا توجد بيانات محفوظة مسبقاً.</td></tr>';
-        }
-        return;
-    }
-
-    const tb = document.getElementById('table-body');
-    if (isRefresh && tb) {
-        tb.innerHTML = '<tr><td colspan="6" class="loading">جاري مزامنة أحدث البيانات...</td></tr>';
-    }
-
+window.loadData = function (isRefresh = false) {
+  let cachedData = null;
+  if (Array.isArray(window.globalDirectoryData) && window.globalDirectoryData.length > 0) {
+    cachedData = window.globalDirectoryData;
+  } else {
     try {
-        let response = await fetch(window.API_URL + "?action=getDirectoryOnly&_t=" + Date.now(), { method: 'GET' });
-        let freshData = await response.json();
-        if(freshData && freshData.status === 'success' && freshData.directory) {
-            directoryData = freshData.directory;
-        } else {
-            directoryData = freshData;
-        }
-        localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData));
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) cachedData = parsed;
+      }
+    } catch (e) {}
+  }
+
+  if (cachedData && Array.isArray(cachedData) && cachedData.length > 0 && !isRefresh) {
+    directoryData = cachedData;
+    renderTable(directoryData);
+    populateDeptDatalist(directoryData);
+  }
+
+  const tb = document.getElementById("table-body");
+  if (!navigator.onLine) {
+    if ((!directoryData || directoryData.length === 0) && tb) {
+      tb.innerHTML = '<tr><td colspan="6" style="color:#dc3545;text-align:center;padding:15px;font-weight:bold;">غير متصل بالإنترنت ولا توجد بيانات محفوظة مسبقاً.</td></tr>';
+    }
+    return;
+  }
+
+  if (isRefresh || (!directoryData || directoryData.length === 0)) {
+    if (tb) tb.innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل بيانات دليل الهاتف...</td></tr>';
+  }
+
+  // استخدام JSONP لأنه يعمل 100% داخل تطبيق الأندرويد (WebView) بدون حظر CORS
+  const cb = "jsonpDir_" + Math.round(100000 * Math.random());
+  const timer = setTimeout(() => {
+    delete window[cb];
+    if ((!directoryData || directoryData.length === 0) && tb) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#dc3545;font-weight:bold;">تعذر سحب البيانات حالياً. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
+    }
+  }, 12000);
+
+  window[cb] = function (d) {
+    clearTimeout(timer);
+    try {
+      if (d && d.status === "success" && Array.isArray(d.directory) && d.directory.length > 0) {
+        directoryData = d.directory;
+        window.globalDirectoryData = directoryData;
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
         renderTable(directoryData);
         populateDeptDatalist(directoryData);
-    } catch (error) {
-        console.error("Direct fetch error:", error);
-        if (!cachedData && tb) {
-            tb.innerHTML = '<tr><td colspan="6" style="color:red; text-align:center;">تعذر الاتصال بقاعدة البيانات.</td></tr>';
-        } else if (isRefresh) {
-            alert("حدث خطأ أثناء المزامنة. سيتم عرض البيانات المحفوظة.");
-            renderTable(directoryData);
-        }
+      } else if ((!directoryData || directoryData.length === 0) && tb) {
+        tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:15px;color:#777;">لا توجد أرقام مسجلة في الشيت حالياً.</td></tr>';
+      }
+    } finally {
+      delete window[cb];
     }
-}
+  };
 
-function forceRefreshData() {
-  loadData(true);
-}
+  const s = document.createElement("script");
+  s.src = window.API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
+  s.onerror = () => {
+    clearTimeout(timer);
+    delete window[cb];
+    if ((!directoryData || directoryData.length === 0) && tb) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:16px;color:#dc3545;font-weight:bold;">تعذر الاتصال بقاعدة البيانات. <button type="button" onclick="forceRefreshData()" style="background:#6f42c1;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:8px;font-family:Cairo,sans-serif;">إعادة المحاولة</button></td></tr>';
+    }
+  };
+  document.body.appendChild(s);
+};
+
+window.forceRefreshData = function () {
+  window.loadData(true);
+};
 
 function populateDeptDatalist(data) {
   const dl = document.getElementById("dirDeptsList");
@@ -304,7 +308,7 @@ function renderTable(data) {
   }
 }
 
-function filterTable() {
+window.filterTable = function () {
   const input = (document.getElementById("search-input")?.value || "").toLowerCase();
   const clrBtn = document.getElementById("clear-search-btn");
   if (clrBtn) clrBtn.style.display = input.length > 0 ? "block" : "none";
@@ -318,18 +322,18 @@ function filterTable() {
            (row.Mobile && String(row.Mobile).toLowerCase().includes(input));
   });
   renderTable(filteredData);
-}
+};
 
-function clearSearch() {
+window.clearSearch = function () {
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.value = "";
     searchInput.focus();
   }
-  filterTable();
-}
+  window.filterTable();
+};
 
-function openModal(id = null) {
+window.openModal = function (id = null) {
   if (!isDirAdmin) return alert("⚠️ هذه الصلاحية مخصصة لمدير النظام (Admin) فقط!");
   document.getElementById("admin-modal").style.display = "flex";
   if (id) {
@@ -343,24 +347,24 @@ function openModal(id = null) {
       document.getElementById("emp-ext").value = emp.EXT !== undefined ? emp.EXT : (emp.Ext || "");
       const mobileInput = document.getElementById("emp-mobile");
       mobileInput.value = emp.Mobile || "";
-      formatMobileInput(mobileInput);
+      window.formatMobileInput(mobileInput);
     }
   } else {
     document.getElementById("modal-title").innerText = "إضافة رقم جديد للدليل";
     document.querySelectorAll(".dir-modal-content input[type='text']").forEach(i => i.value = "");
     document.getElementById("emp-id").value = "DIR-" + Date.now();
   }
-}
+};
 
-function closeModal() {
+window.closeModal = function () {
   document.getElementById("admin-modal").style.display = "none";
-}
+};
 
-function editRecord(id) {
-  openModal(id);
-}
+window.editRecord = function (id) {
+  window.openModal(id);
+};
 
-async function saveRecord() {
+window.saveRecord = async function () {
   if (!navigator.onLine) return alert("لا يمكنك إضافة أو تعديل بيانات وأنت غير متصل بالإنترنت!");
   if (!isDirAdmin) return alert("⚠️ صلاحية مرفوضة: للمدير فقط.");
 
@@ -385,8 +389,8 @@ async function saveRecord() {
     mobile: mobile
   };
 
-  closeModal();
-  document.getElementById("table-body").innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والمزامنة وتسجيل الحركة...</td></tr>';
+  window.closeModal();
+  document.getElementById("table-body").innerHTML = '<tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والمزامنة...</td></tr>';
 
   try {
     await fetch(window.API_URL, {
@@ -404,14 +408,14 @@ async function saveRecord() {
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
     renderTable(directoryData);
     populateDeptDatalist(directoryData);
-    setTimeout(() => forceRefreshData(), 1500);
+    setTimeout(() => window.forceRefreshData(), 1500);
   } catch (err) {
     alert("حدث خطأ أثناء الحفظ!");
     renderTable(directoryData);
   }
-}
+};
 
-async function deleteRecord(id) {
+window.deleteRecord = async function (id) {
   if (!navigator.onLine) return alert("لا يمكنك حذف بيانات وأنت غير متصل بالإنترنت!");
   if (!isDirAdmin) return alert("⚠️ صلاحية مرفوضة: للمدير فقط.");
 
@@ -437,9 +441,9 @@ async function deleteRecord(id) {
     directoryData = directoryData.filter(e => String(e.ID) !== String(id));
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(directoryData)); } catch (e) {}
     renderTable(directoryData);
-    setTimeout(() => forceRefreshData(), 1500);
+    setTimeout(() => window.forceRefreshData(), 1500);
   } catch (err) {
     alert("حدث خطأ أثناء الحذف!");
     renderTable(directoryData);
   }
-}
+};

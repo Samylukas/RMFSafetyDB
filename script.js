@@ -154,6 +154,31 @@ window.rmfShowExportModal = function (items, modalTitle) {
   }
 };
 
+window.rmfUploadAndDownloadOnMobile = async function (dataUrl, filename, mimeType) {
+  if (!navigator.onLine) return false;
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'saveExportedFile',
+        performedBy: getCurrentActorName(),
+        fileName: filename,
+        mimeType: mimeType,
+        fileData: dataUrl
+      })
+    });
+    const json = await res.json();
+    if (json && json.status === 'success' && json.downloadUrl) {
+      window.location.href = json.downloadUrl;
+      return true;
+    }
+  } catch (e) {
+    console.warn('Mobile Drive export fallback:', e);
+  }
+  return false;
+};
+
 window.rmfExportCanvas = async function (canvas, filename, titleAr) {
   const dataUrl = canvas.toDataURL('image/png');
   if (!window.isMobileAppOrDevice()) {
@@ -174,11 +199,12 @@ window.rmfExportCanvas = async function (canvas, filename, titleAr) {
     });
     return;
   }
-  const file = window.rmfDataUrlToFile(dataUrl, filename, 'image/png');
-  if (file) {
-    await window.rmfShareFilesNative([file], titleAr || filename);
+  const okDrive = await window.rmfUploadAndDownloadOnMobile(dataUrl, filename, 'image/png');
+  if (!okDrive) {
+    const file = window.rmfDataUrlToFile(dataUrl, filename, 'image/png');
+    if (file) await window.rmfShareFilesNative([file], titleAr || filename);
+    window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'image/png' }], titleAr || filename);
   }
-  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'image/png' }], titleAr || filename);
 };
 
 window.rmfExportMultiPages = async function (pageItems, titleAr) {
@@ -238,9 +264,12 @@ window.rmfExportJsPdfInstance = async function (pdfInstance, filename, titleAr) 
     r.onload = () => res(r.result);
     r.readAsDataURL(pdfBlob);
   });
-  const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
-  await window.rmfShareFilesNative([pdfFile], titleAr || filename);
-  window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'application/pdf' }], titleAr || filename);
+  const okDrive = await window.rmfUploadAndDownloadOnMobile(dataUrl, filename, 'application/pdf');
+  if (!okDrive) {
+    const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+    await window.rmfShareFilesNative([pdfFile], titleAr || filename);
+    window.rmfShowExportModal([{ dataUrl: dataUrl, filename: filename, mimeType: 'application/pdf' }], titleAr || filename);
+  }
 };
 
 window.rmfExportPdfBytes = async function (byteNumbers, filename, titleAr) {
@@ -578,8 +607,8 @@ function openSection(sId) {
       if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     } else if (sId === 'directory-section') {
       subEl.innerText = 'دليل هاتف مطار مرسى علم الدولي (Airport Phone Directory)';
-      subEl.style.color = '#17a2b8';
-      hdrEl.style.borderBottomColor = '#17a2b8';
+      subEl.style.color = '#6f42c1';
+      hdrEl.style.borderBottomColor = '#6f42c1';
       if (homeBtn) homeBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     } else if (sId === 'flight-schedule-section') {
       subEl.innerText = 'جدول الرحلات اليومي (Flight Schedule)';
@@ -696,9 +725,9 @@ function loadAppDataInit() {
     if (cQ) globalQuarterlyDocs = JSON.parse(cQ);
   } catch (e) {}
 
-  fetch(API_URL + "?action=getAppData&_t=" + Date.now())
-    .then(res => res.json())
-    .then(d => {
+  const cb = 'jsonpInit_' + Math.round(100000 * Math.random());
+  window[cb] = function (d) {
+    try {
       if (d && d.status === "success") {
         globalFleetData = d.fleet ? d.fleet.reverse() : [];
         globalSurveys = d.surveys ? [...d.surveys] : [];
@@ -804,8 +833,16 @@ function loadAppDataInit() {
         populateFilterSelect('surveyFilterAirline', globalSurveys, 'CAR', 'car');
         populateFilterSelect('surveyFilterReg', globalSurveys, 'REG', 'reg');
       }
-    })
-    .catch(err => console.error("Init App Data Fetch Error:", err));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      delete window[cb];
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL + "?action=getAppData&_t=" + Date.now() + "&callback=" + cb;
+  document.body.appendChild(s);
 }
 
 function populateFilterSelect(elId, dataArray, key1, key2) {
@@ -4171,3 +4208,28 @@ async function sendCdMonthlyEmail() {
     alert("✅ تم إرسال التقرير الشهري للحماية المدنية بالإيميل بنجاح!");
   } catch (err) { alert("❌ تعذر إرسال الإيميل."); }
 }
+
+
+// =============================================================================
+// 15. مؤشر حالة الاتصال بالإنترنت على الداشبورد الرئيسية (Online / Offline)
+// =============================================================================
+function updateMainConnectionStatus() {
+  const dot = document.getElementById('main-status-dot');
+  const txt = document.getElementById('main-status-text');
+  if (!dot || !txt) return;
+  if (navigator.onLine) {
+    dot.style.backgroundColor = '#28A745';
+    txt.style.color = '#28A745';
+    txt.innerText = 'متصل (Online)';
+  } else {
+    dot.style.backgroundColor = '#DC3545';
+    txt.style.color = '#DC3545';
+    txt.innerText = 'غير متصل (Offline)';
+  }
+}
+window.addEventListener('online', updateMainConnectionStatus);
+window.addEventListener('offline', updateMainConnectionStatus);
+document.addEventListener('DOMContentLoaded', () => {
+  updateMainConnectionStatus();
+  setInterval(updateMainConnectionStatus, 2000);
+});
